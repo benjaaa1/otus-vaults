@@ -1,0 +1,40 @@
+{
+    "name": "@scaffold-eth/monorepo",
+    "version": "1.0.0",
+    "keywords": [
+      "ethereum",
+      "react",
+      "uniswap",
+      "workspaces",
+      "yarn"
+    ],
+    "private": true,
+    "scripts": {
+        "chain": "yarn workspace @otus-finance/hardhat chain",
+        "start": "yarn workspace @otus-finance/react-app start",
+        "deploy": "yarn workspace @otus-finance/hardhat deploy",
+        "verify": "yarn workspace @otus-finance/hardhat verify",
+        "surge": "yarn workspace @otus-finance/react-app surge",
+        "build": "yarn workspace @otus-finance/react-app build --max-old-space-size=12288",
+        "watch": "yarn workspace @otus-finance/hardhat watch",
+        "accounts": "yarn workspace @otus-finance/hardhat accounts",
+        "balance": "yarn workspace @otus-finance/hardhat balance",
+        "send": "yarn workspace @otus-finance/hardhat send",
+        "generate": "yarn workspace @otus-finance/hardhat generate",
+        "account": "yarn workspace @otus-finance/hardhat account"
+    },
+    "workspaces": {
+      "packages": [
+        "packages/*"
+      ],
+      "nohoist": [
+        "**/@graphprotocol/graph-ts",
+        "**/@graphprotocol/graph-ts/**",
+        "**/hardhat",
+        "**/hardhat/**",
+        "**/hardhat-ts",
+        "**/hardhat-ts/**"
+      ]
+    }
+  }
+  
