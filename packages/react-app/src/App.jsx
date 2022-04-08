@@ -260,8 +260,11 @@ function App(props) {
         <Menu.Item key="/">
           <Link to="/">App Home</Link>
         </Menu.Item>
-        <Menu.Item key="/debug">
-          <Link to="/debug">Debug Contracts</Link>
+        <Menu.Item key="/otus-vault">
+          <Link to="/otus-vault">Otus Vault</Link>
+        </Menu.Item>
+        <Menu.Item key="/strategy">
+          <Link to="/strategy">Strategy</Link>
         </Menu.Item>
         <Menu.Item key="/hints">
           <Link to="/hints">Hints</Link>
@@ -279,7 +282,7 @@ function App(props) {
           {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
           <Home yourLocalBalance={yourLocalBalance} readContracts={readContracts} />
         </Route>
-        <Route exact path="/debug">
+        <Route exact path="/otus-vault">
           {/*
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
@@ -287,7 +290,7 @@ function App(props) {
             */}
 
           <Contract
-            name="YourContract"
+            name="OtusVault"
             price={price}
             signer={userSigner}
             provider={localProvider}
@@ -295,6 +298,25 @@ function App(props) {
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
           />
+          
+        </Route>
+        <Route exact path="/strategy">
+          {/*
+                🎛 this scaffolding is full of commonly used components
+                this <Contract/> component will automatically parse your ABI
+                and give you a form to interact with it locally
+            */}
+
+          <Contract
+            name="Strategy"
+            price={price}
+            signer={userSigner}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+          />
+          
         </Route>
         <Route path="/hints">
           <Hints

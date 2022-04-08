@@ -4,18 +4,24 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@eth-optimism/hardhat-ovm": "^0.2.4",
+    "@ethereum-waffle/mock-contract": "^3.4.4",
+    "@lyrafinance/core": "^0.1.1-alpha",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
     "@nomiclabs/hardhat-etherscan": "^3.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@openzeppelin/contracts": "^4.4.2",
+    "@openzeppelin/contracts-upgradeable": "^4.5.2",
     "@tenderly/hardhat-tenderly": "^1.0.10",
-    "chai": "^4.2.0",
+    "@typechain/ethers-v5": "^9.0.0",
+    "@typechain/hardhat": "^4.0.0",
     "chalk": "^4.1.0",
     "dotenv": "^8.2.0",
     "ethereum-waffle": "^3.1.1",
     "ethers": "^5.4.4",
     "hardhat": "^2.9.2",
     "hardhat-deploy": "^0.9.0",
+    "hardhat-deploy-ethers": "^0.3.0-beta.13",
     "hardhat-gas-reporter": "^1.0.4",
     "node-watch": "^0.7.0",
     "qrcode-terminal": "^0.12.0",
@@ -34,6 +40,14 @@
     "send": "hardhat send",
     "generate": "hardhat generate",
     "account": "hardhat account",
-    "verify": "hardhat verify"
+    "verify": "hardhat etherscan-verify --api-key MZ32HEXZ9DJX42KRYZARYQY3C57CVMN3U3"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^17.0.23",
+    "chai": "^4.3.6",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
   }
 }

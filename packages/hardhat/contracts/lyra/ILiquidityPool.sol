@@ -1,3 +1,7 @@
+pragma solidity >=0.8.4;
+
+import "./ILyraGlobals.sol"; 
+
 interface ILiquidityPool {
     struct Collateral {
         uint quote;

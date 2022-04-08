@@ -1,39 +1,38 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity >=0.8.4;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-import {ISynthetix} from "./synthetix/ISynthetix.sol";
-import {IOptionMarket} from "./lyra/IOptionMarket.sol";
-import {IFuturesMarket} from "./kwenta/IFuturesMarket.sol";
+import './synthetix/interfaces/IFuturesMarket.sol';
 
 import {BaseVault} from "./BaseVault.sol";
-import {Strategy} from "./strategies/Strategy.sol";
 import {Vault} from "./libraries/Vault.sol";
+import {Strategy} from "./strategies/Strategy.sol";
 
 /// @notice LyraVault help users run option-selling strategies on Lyra AMM.
-contract OtusVault is Ownable, BaseVault {
+contract OtusVault is BaseVault {
   using SafeMath for uint;
 
+  address public supervisor; 
   string public vaultName; 
   Strategy public strategy;
   // Amount locked for scheduled withdrawals last week;
   uint128 public lastQueuedWithdrawAmount;
   uint256 public currentExpiry; 
-  uint256 public keeper; 
+  address public keeper; 
+  uint256 public roundHedgeAttempts; 
+  uint public roundPremiumCollected; 
+  uint256 public roundExpiry; 
+
+  IERC20 collateralAsset; 
 
   /************************************************
    *  IMMUTABLES & CONSTANTS
    ***********************************************/
-  
-  /// @notice Fee
-  IOptionMarket public immutable optionMarket;
-  /// @notice Fee
-  IFuturesMarket public immutable futuresMarket;
-  /// @notice Fee
-  ISynthetix public immutable synthetix;
+
+  // IFuturesMarket public immutable futuresMarket;
+  address public immutable futuresMarket;
 
   /************************************************
    *  EVENTS
@@ -41,13 +40,13 @@ contract OtusVault is Ownable, BaseVault {
 
   event StrategyUpdated(address strategy);
 
-  event Trade(address user, uint positionId, uint premium);
+  event Trade(address user, uint16 roundId, uint premium);
 
   event RoundStarted(uint16 roundId, uint104 lockAmount);
 
   event RoundClosed(uint16 roundId, uint104 lockAmount);
 
-  event RoundSettled(uint16 roundId, uint currentCollateral);
+  event RoundSettled(address user, uint16 roundId, uint currentCollateral);
 
   event KeeperUpdated(address keeper);
 
@@ -65,22 +64,30 @@ contract OtusVault is Ownable, BaseVault {
   ***********************************************/
 
   constructor(
-    address _optionMarket,
-    address _futuresMarket, 
-    address _susd,
+    address _futuresMarket,
+    uint _roundDuration
+  ) BaseVault(_roundDuration) {
+    futuresMarket = _futuresMarket;
+  }
+
+  function initialize(
+    address _supervisor, 
+    address _owner,
     address _feeRecipient,
-    address _synthetix,
-    uint _roundDuration,
     string memory _tokenName,
     string memory _tokenSymbol,
     Vault.VaultParams memory _vaultParams
-  ) BaseVault(_feeRecipient, _roundDuration, _tokenName, _tokenSymbol, _vaultParams) {
-    optionMarket = IOptionMarket(_optionMarket);
-    futuresMarket = IFuturesMarket(_futuresMarket);
+  ) external initializer {
 
-    synthetix = ISynthetix(_synthetix);
-    IERC20(_vaultParams.asset).approve(_optionMarket, type(uint).max);
-    IERC20(_vaultParams.asset).approve(_futuresMarket, type(uint).max);
+    supervisor = _supervisor; 
+    baseInitialize(
+      _owner,
+      _feeRecipient, 
+      _tokenName, 
+      _tokenSymbol, 
+      _vaultParams
+    ); 
+
   }
 
   /************************************************
@@ -93,16 +100,10 @@ contract OtusVault is Ownable, BaseVault {
   */
   function setStrategy(address _strategy) external onlyOwner {
     strategy = Strategy(_strategy);
+    collateralAsset = IERC20(vaultParams.asset);
+    collateralAsset.approve(_strategy, type(uint).max);
+    collateralAsset.approve(futuresMarket, type(uint).max);
     emit StrategyUpdated(_strategy);
-  }
-
-  /**
-  * @notice Sets the keeper of the vault
-  * @param _keeper is the address of the _keeper
-  */
-  function setKeeper(address _keeper) external onlyOwner {
-    keeper =_keeper;
-    emit KeeperUpdated(_keeper);
   }
 
   /************************************************
@@ -120,7 +121,7 @@ contract OtusVault is Ownable, BaseVault {
     vaultState.lockedAmount = 0;
     vaultState.nextRoundReadyTimestamp = block.timestamp.add(Vault.ROUND_DELAY); // 12 hour delay til next round starts
     vaultState.roundInProgress = false;
-    vaultState.roundHedgeAttempts = 0; 
+    roundHedgeAttempts = 0; 
 
     emit RoundClosed(vaultState.round, lockAmount);
   }
@@ -128,36 +129,37 @@ contract OtusVault is Ownable, BaseVault {
   /**
    * @notice Settle outstanding positions after closing round.
    */
-  function settle() public {
+  function settleRound() external {
     require(!vaultState.roundInProgress, "round opened");
-    require(block.timestamp > vaultState.currentExpiry, "ROUND_NOT_OVER");
-    /// Settle all the options sold from last round
-    strategy.settleRound();
-    uint currentCollateral = IERC20(vaultParams.asset).balanceOf(address(this));
+    require(block.timestamp > strategy.activeExpiry(), "ROUND_NOT_OVER");
+    /// Settle all the options sold from last round loop through positions and settle
+    // strategy.reducePosition();
+    uint currentCollateral = collateralAsset.balanceOf(address(this));
     // if roundEndCollateral + premiumCollected > startCollateral 
     // => charge performance and management fees on the difference. 
-    valultState.previousRoundSettled = true; 
-    emit RoundSettled(msg.sender, currentCollateral);
+    emit RoundSettled(msg.sender, vaultState.round, currentCollateral);
   }
 
   /************************************************
-   *  KEEPER ACTIONS - FOR NOW ONLY OWNER ACTIONS
+   *  KEEPER ACTIONS
    ***********************************************/
 
   /**
    * @notice Start the next/new round
    */
-  function nextRound() external onlyKeeper {
+  function nextRound() external {
     //can't start next round before outstanding expired positions are settled. 
-    require(!vaultState.roundInProgress && valultState.previousRoundSettled, "round opened");
+    require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
+
+    // move this to be set auto 
+    strategy.setBoard();
 
     (uint lockedBalance, uint queuedWithdrawAmount) = _rollToNextRound(uint(lastQueuedWithdrawAmount));
 
     vaultState.lockedAmount = uint104(lockedBalance);
     vaultState.lockedAmountLeft = lockedBalance;
     vaultState.roundInProgress = true;
-    valultState.previousRoundSettled = false; 
 
     lastQueuedWithdrawAmount = uint128(queuedWithdrawAmount);
 
@@ -168,27 +170,43 @@ contract OtusVault is Ownable, BaseVault {
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function nextRoundTrade() external onlyKeeper {
+  function nextRoundTrade(uint strikeId) external {
     // can only make a trade after the next round is in progress and before trade period 
     // after everything we should update a vaultState param to show trade in progress
     // period between startnextround and closeround
-    require(vaultState.roundInProgress && valultState.previousRoundSettled, "round closed"); 
-    uint currentCollateral = IERC20(vaultParams.asset).balanceOf(address(this));
-    (
-      uint premiumCollected, 
-      uint256 optionsCollateral, 
-      uint256 hedgeCollateral, 
-      uint256 expiry
-    ) = strategy.startTradeForRound(currentCollateral);
-    uint collateralAfter = IERC20(vaultParams.asset).balanceOf(address(this));
+    require(vaultState.roundInProgress, "round closed");
+    uint currentCollateral = collateralAsset.balanceOf(address(this));
+    (uint positionId, uint premiumReceived, uint collateralAdded) = strategy.startTradeForRound(strikeId, currentCollateral);
+    uint collateralAfter = collateralAsset.balanceOf(address(this));
     uint assetUsed = currentCollateral.sub(collateralAfter);
 
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft.sub(assetUsed);
-    vaultState.roundPremiumCollected = premiumCollected;
-    vaultState.roundOptionsCollateral = optionsCollateral;
-    vaultState.roundHedgeCollateral = hedgeCollateral;
-    vaultState.currentExpiry = expiry; 
+    
+    roundPremiumCollected = premiumReceived;
 
-    emit Trade(msg.sender, positionId, realPremium);
+    emit Trade(msg.sender, vaultState.round, premiumReceived);
   }
+
+  /// @dev anyone close part of the position with premium made by the strategy if a position is dangerous
+  /// @param positionId the positiion to close
+  function reducePosition(uint positionId) external onlyKeeper {
+    strategy.reducePosition(positionId);
+  }
+
+  /**
+   * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
+   */
+  function openPosition() external onlyKeeper {
+    require(vaultState.roundInProgress, "Round closed");
+    strategy._openKwentaPosition(roundHedgeAttempts);
+  }
+
+  /**
+  * @dev called by keeper 
+  * update vault collateral, call 
+  */
+  function closeHedge() external onlyKeeper {
+    strategy._closeKwentaPosition();
+  }
+
 }

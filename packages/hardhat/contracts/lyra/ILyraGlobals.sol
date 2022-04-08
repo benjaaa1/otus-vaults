@@ -1,3 +1,11 @@
+pragma solidity >=0.8.4;
+
+import '../synthetix/interfaces/ISynthetix.sol';
+import '../synthetix/interfaces/IExchanger.sol';
+import '../synthetix/interfaces/IExchangeRates.sol';
+
+import "./ICollateralShort.sol";
+
 interface ILyraGlobals {
     enum ExchangeType {BASE_QUOTE, QUOTE_BASE, ALL}
 

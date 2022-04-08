@@ -21,7 +21,8 @@
         "balance": "yarn workspace @otus-finance/hardhat balance",
         "send": "yarn workspace @otus-finance/hardhat send",
         "generate": "yarn workspace @otus-finance/hardhat generate",
-        "account": "yarn workspace @otus-finance/hardhat account"
+        "account": "yarn workspace @otus-finance/hardhat account",
+        "compile": "yarn workspace @otus-finance/hardhat compile"
     },
     "workspaces": {
       "packages": [

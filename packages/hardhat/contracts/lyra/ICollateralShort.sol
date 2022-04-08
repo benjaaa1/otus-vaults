@@ -1,3 +1,5 @@
+pragma solidity >=0.8.4;
+
 interface ICollateralShort {
     struct Loan {
         // ID for the loan

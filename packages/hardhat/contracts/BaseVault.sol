@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity >=0.8.4;
+
+import "hardhat/console.sol";
 
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 import {Vault} from "./libraries/Vault.sol";
-import {VaultLifecycle} from "./libraries/VaultLifecycle.sol";
+import {VaultLifeCycle} from "./libraries/VaultLifeCycle.sol";
 import {ShareMath} from "./libraries/ShareMath.sol";
 
-import "hardhat/console.sol";
-
-contract BaseVault is ReentrancyGuard, Ownable, ERC20, Initializable {
+contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgradeable {
   using SafeERC20 for IERC20;
   using SafeMath for uint;
   using ShareMath for Vault.DepositReceipt;
@@ -50,6 +50,9 @@ contract BaseVault is ReentrancyGuard, Ownable, ERC20, Initializable {
   /// @notice Management fee charged on entire AUM in rollToNextOption. Only charged when there is no loss.
   uint public managementFee;
 
+  /// @notice Fees collected; 
+  uint fees;
+
   // Gap is left to avoid storage collisions. Though RibbonVault is not upgradeable, we add this as a safety measure.
   uint[30] private ____gap;
 
@@ -59,11 +62,11 @@ contract BaseVault is ReentrancyGuard, Ownable, ERC20, Initializable {
   // https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable#modifying-your-contracts
 
   /************************************************
-   *  IMMUTABLES & CONSTANTS
+   *  CONSTANTS
    ***********************************************/
 
   // Round per year scaled up FEE_MULTIPLIER
-  uint private immutable roundPerYear;
+  uint private roundPerYear;
 
   /************************************************
    *  EVENTS
@@ -88,22 +91,32 @@ contract BaseVault is ReentrancyGuard, Ownable, ERC20, Initializable {
   /************************************************
    *  CONSTRUCTOR & INITIALIZATION
    ***********************************************/
+  constructor(
+    uint _roundDuration
+  ) {
+    uint _roundPerYear = uint(365 days).mul(Vault.FEE_MULTIPLIER).div(_roundDuration);
+    roundPerYear = _roundPerYear;
+  }
 
   /**
-   * @notice Initializes the contract with immutable variables
+   * @notice Initializes the contract with variables from user
    */
-  constructor(
+  function baseInitialize(
+    address _owner,
     address _feeRecipient,
-    uint _roundDuration,
     string memory _tokenName,
     string memory _tokenSymbol,
     Vault.VaultParams memory _vaultParams
-  ) ERC20(_tokenName, _tokenSymbol) {
-    feeRecipient = _feeRecipient;
-    uint _roundPerYear = uint(365 days).mul(Vault.FEE_MULTIPLIER).div(_roundDuration);
-    roundPerYear = _roundPerYear;
-    vaultParams = _vaultParams;
+  ) internal initializer {
 
+    __ReentrancyGuard_init();
+    __ERC20_init(_tokenName, _tokenSymbol);
+    __Ownable_init();
+    transferOwnership(_owner);
+
+    feeRecipient = _feeRecipient;
+    vaultParams = _vaultParams;
+    
     uint assetBalance = IERC20(vaultParams.asset).balanceOf(address(this));
     ShareMath.assertUint104(assetBalance);
     vaultState.lastLockedAmount = uint104(assetBalance);
@@ -386,7 +399,7 @@ contract BaseVault is ReentrancyGuard, Ownable, ERC20, Initializable {
     * Need to check if address is auto compounding or if they're letting premium stay on the side
     */
   function _rollToNextRound(uint lastQueuedWithdrawAmount) internal returns (uint, uint) {
-    (uint currentBalance, uint lockedBalance, uint queuedWithdrawAmount, uint newPricePerShare, uint mintShares) = VaultLifecycle.rollover(
+    (uint currentBalance, uint lockedBalance, uint queuedWithdrawAmount, uint newPricePerShare, uint mintShares) = VaultLifeCycle.rollover(
       totalSupply(),
       vaultParams.asset,
       vaultParams.decimals,
@@ -406,12 +419,12 @@ contract BaseVault is ReentrancyGuard, Ownable, ERC20, Initializable {
     lockedBalance = lockedBalance.sub(lockedBalance.add(withdrawAmountDiff));
     // take fees from premium collected here / profit made in week
     uint256 pastRoundProfit = currentBalance - vaultState.lastLockedAmount; 
-    uint fees = _collectVaultFees(pastRoundProfit);
+    
+    fees += _collectVaultFees(pastRoundProfit);
 
     // update round info
     vaultState.totalPending = 0;
     vaultState.round = uint16(currentRound + 1);
-    vaultState.pastRoundFees = fees; 
 
     _mint(address(this), mintShares);
 
@@ -424,7 +437,7 @@ contract BaseVault is ReentrancyGuard, Ownable, ERC20, Initializable {
    * @return vaultFee is the fee deducted
    */
   function _collectVaultFees(uint pastRoundProfit) internal returns (uint) {
-    (uint performanceFeeInAsset, , uint vaultFee) = VaultLifecycle.getVaultFees(
+    (uint performanceFeeInAsset, , uint vaultFee) = VaultLifeCycle.getVaultFees(
       vaultState,
       pastRoundProfit,
       performanceFee,

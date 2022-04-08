@@ -1,3 +1,7 @@
+pragma solidity >=0.8.4;
+
+import "./IOptionMarket.sol"; 
+
 interface IOptionMarketViewer {
     struct TradePremiumView {
         uint listingId;

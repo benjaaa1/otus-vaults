@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity >=0.8.4;
 
 library Vault {
   /************************************************
@@ -20,11 +20,11 @@ library Vault {
     address asset;
   }
 
+  // FIX THIS TOO MANY VARIABLES IN STRUCT
   struct VaultState {
     // 32 byte slot 1
     //  Current round number. `round` represents the number of `period`s elapsed.
     uint16 round;
-
     // Amount that is currently locked for selling options
     uint104 lockedAmount;
     // Amount that was locked for selling options in the previous round
@@ -42,24 +42,7 @@ library Vault {
     uint nextRoundReadyTimestamp;
     // true if the current round is in progress, false if the round is idle
     bool roundInProgress;
-
-    int roundHedgeAttempts; 
-
-    bool previousRoundSettled; 
-    // current round options expiry 
-    uint pastRoundFees; 
-    
-    uint256 roundExpiry;
-
-    uint roundPremiumCollected; 
-    
-    uint256 roundOptionsCollateral;
-
-    uint256 roundHedgeCollateral;
-
-  }
-
-  
+  } 
 
   struct DepositReceipt {
     // Maximum of 65535 rounds. Assuming 1 round is 7 days, maximum is 1256 years.

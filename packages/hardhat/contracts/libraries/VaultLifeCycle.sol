@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity >=0.8.4;
 
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -14,7 +14,7 @@ import "hardhat/console.sol";
 /**
  * @dev copied from Ribbon's VaultLifeCycle, changed to internal library for gas optimization
  */
-library VaultLifecycle {
+library VaultLifeCycle {
   using SafeMath for uint;
   using SafeERC20 for IERC20;
 
