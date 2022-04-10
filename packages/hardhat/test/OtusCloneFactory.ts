@@ -22,6 +22,13 @@ import {
 import { seedTestSystem } from '../utils/seedTestSystem';
 import { expect } from '../utils/testSetup';
 
+describe('OtusCloneFactory - unit tests', () => {
+  let deployer: Signer;
+  let deployerAddr: string;
+  let account: Signer;
+  let accountAddr: string;
+})
+
 describe('LiquidityPool - unit tests', () => {
   let deployer: Signer;
   let deployerAddr: string;

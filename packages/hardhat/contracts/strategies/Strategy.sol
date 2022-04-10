@@ -43,6 +43,9 @@ contract Strategy is VaultAdapter, Initializable {
   GWAVOracle public immutable gwavOracle;
   IERC20 public collateralAsset;
 
+  uint public currentStrikePrice;
+  uint setCollateralTo;
+
   // strategies can be updated by different strategizers
   struct StrategyDetail {
     uint collatBuffer; // multiple of vaultAdapter.minCollateral(): 1.1 -> 110% * minCollat
@@ -57,13 +60,36 @@ contract Strategy is VaultAdapter, Initializable {
     uint minTradeInterval;
     uint maxVolVariance;
     uint gwavPeriod;
-    uint collateralPercentage; 
-    // uint requiredLeveragedHedge; 
-    uint256 maxHedgeAttempts; 
-    // uint hedgeStopLossLimit;  // hardcoded for now but should be chosen based on criteria 
+  }
+
+  struct StrategyHedgeDetail {
+    uint hedgePercentage; // 20% + collatPercent == 100%
+    uint256 maxHedgeAttempts; // 
+    uint256 limitStrikePricePercent; // ex. strike price of 3100 2% ~ 3030
+    uint leverageSize; // 150% ~ 1.5x 200% 2x 
+    uint stopLossLimit; 
+  }
+
+  /**
+  * @dev update the strategy for the new round.
+  * strategy should be updated weekly after previous round ends 
+  */
+  function calculateReducePositionPrice() internal view returns (uint strikeLimitPrice) {
+    strikeLimitPrice = currentHedgeStrategy.limitStrikePricePercent.multiplyDecimal(currentStrikePrice);
+  }
+
+  function calculateHedgePositionSize() internal returns (uint totalHedgeSizeAfterFees) {
+    // for now we do a full hedge
+    uint hedgeCollat = _getFullCollateral(currentStrikePrice, currentStrategy.size)
+      .multiplyDecimal(1 - currentStrategy.collatPercent).multiplyDecimal(currentHedgeStrategy.leverageSize);
+
+    (uint fee, ) = IFuturesMarket(futuresMarket).orderFee(int(hedgeCollat));
+
+    uint totalHedgeSizeAfterFees = hedgeCollat - fee; 
   }
 
   StrategyDetail public currentStrategy;
+  StrategyHedgeDetail public currentHedgeStrategy;
 
   /************************************************
    *  EVENTS
@@ -73,7 +99,7 @@ contract Strategy is VaultAdapter, Initializable {
 
   event HedgeClosePosition(address closer);
 
-  event HedgeModifyPosition(address closer, int256 marginDelta, uint256 hedgeAttempt);
+  event HedgeModifyPosition(address closer, uint marginDelta, uint256 hedgeAttempt);
 
 
   /************************************************
@@ -111,10 +137,11 @@ contract Strategy is VaultAdapter, Initializable {
   * @dev update the strategy for the new round.
   * strategy should be updated weekly after previous round ends 
   */
-  function setStrategy(StrategyDetail memory _strategy) external onlyOwner {
+  function setStrategy(StrategyDetail memory _strategy, StrategyHedgeDetail memory _hedgeStrategy) external onlyOwner {
     (, , , , , , , bool roundInProgress) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
     currentStrategy = _strategy;
+    currentHedgeStrategy = _hedgeStrategy; 
   }
 
   /************************************************
@@ -172,7 +199,6 @@ contract Strategy is VaultAdapter, Initializable {
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
     require(isValidStrike(strike), "invalid strike");
 
-    uint setCollateralTo;
     (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike);
 
     require(
@@ -180,9 +206,14 @@ contract Strategy is VaultAdapter, Initializable {
       "collateral transfer from vault failed"
     );
 
-    (positionId, premiumReceived) = _sellStrike(strike, setCollateralTo);
+    // multiply setCollateralTo
 
-    uint256 hedgeCollateral = collateral.sub(collateral.multiplyDecimal(currentStrategy.collateralPercentage / 100));
+    (positionId, premiumReceived) = _sellStrike(strike, setCollateralTo);
+    
+    // set strike 
+    currentStrikePrice = strike.strikePrice; 
+
+    uint256 hedgeCollateral = collateral.sub(collateral.multiplyDecimal(currentHedgeStrategy.hedgePercentage / 100));
     IFuturesMarket(futuresMarket).transferMargin(int256(hedgeCollateral));
 
   }
@@ -314,33 +345,38 @@ contract Strategy is VaultAdapter, Initializable {
   }
 
   /************************************************
-   *  KEEPER ACTIONS
+   *  KEEPER ACTIONS - KWENTA HEDGE
    ***********************************************/
 
   /**
    * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
    */
-  function _openKwentaPosition(uint hedgeAttempts) public onlyVault {
-      require(currentStrategy.maxHedgeAttempts <= hedgeAttempts); 
-      int marginDelta; // 1 - (collateral * .85) * leverage required uint "-" is for shorts
-      IFuturesMarket(futuresMarket).modifyPosition(marginDelta);
-      hedgeAttempts += 1; 
-      emit HedgeModifyPosition(msg.sender, marginDelta, hedgeAttempts);
+  function _openKwentaPosition(uint hedgeAttempts) public onlyVault returns (bool activeShort) {
+    require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts); 
+    require(!activeShort, "Active futures hedge");
+    // uint marginDelta; // 1 - (collateral * .85) * leverage required uint "-" is for shorts
+    uint marginDelta = calculateHedgePositionSize();
+    IFuturesMarket(futuresMarket).modifyPosition(int(marginDelta));
+    hedgeAttempts += 1; 
+    activeShort = true; 
+    emit HedgeModifyPosition(msg.sender, marginDelta, hedgeAttempts);
   }
 
   /**
   * @dev called by keeper 
   * update vault collateral, call 
   */
-  function _closeKwentaPosition() public onlyVault {
-      IFuturesMarket(futuresMarket).closePosition();
-      // transfer all funds back to vault state
-      emit HedgeClosePosition(msg.sender);
+  function _closeKwentaPosition() public onlyVault returns (bool activeShort) {
+    require(activeShort, "No current position");
+    IFuturesMarket(futuresMarket).closePosition();
+    activeShort = false; 
+    // transfer all funds back to vault state
+    emit HedgeClosePosition(msg.sender);
   }
 
-  ////////////////
-  // Validation //
-  ////////////////
+  /************************************************
+   *  VALIDATION
+   ***********************************************/
 
   function isValidBoard(Board memory board) public view returns (bool isValid) {
     return _isValidExpiry(board.expiry);
@@ -384,9 +420,9 @@ contract Strategy is VaultAdapter, Initializable {
       secondsToExpiry <= currentStrategy.maxTimeToExpiry);
   }
 
-  /////////////////////////////
-  // Trade Parameter Helpers //
-  /////////////////////////////
+  /************************************************
+   *  TRADE PARAMETER HELPERS
+   ***********************************************/
 
   function _getFullCollateral(uint strikePrice, uint amount) internal view returns (uint fullCollat) {
     // calculate required collat based on collatBuffer and collatPercent
@@ -430,10 +466,9 @@ contract Strategy is VaultAdapter, Initializable {
       : minPutPremium.multiplyDecimal(currentStrategy.size);
   }
 
-  //////////////////////////////
-  // Active Strike Management //
-  //////////////////////////////
-
+  /************************************************
+   *  ACTIVE STRIKE MANAGEMENT
+   ***********************************************/
   /**
    * @dev add strike id to activeStrikeIds array
    */
@@ -466,9 +501,9 @@ contract Strategy is VaultAdapter, Initializable {
     isActive = strikeToPositionId[strikeId] != 0;
   }
 
-  //////////
-  // Misc //
-  //////////
+  /************************************************
+   *  MISC
+   ***********************************************/
 
   function _isBaseCollat() internal view returns (bool isBase) {
     isBase = (optionType == OptionType.SHORT_CALL_BASE) ? true : false;

@@ -24,6 +24,7 @@ contract OtusVault is BaseVault {
   uint256 public roundHedgeAttempts; 
   uint public roundPremiumCollected; 
   uint256 public roundExpiry; 
+  bool public activeShort; 
 
   IERC20 collateralAsset; 
 
@@ -198,7 +199,7 @@ contract OtusVault is BaseVault {
    */
   function openPosition() external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
-    strategy._openKwentaPosition(roundHedgeAttempts);
+    activeShort = strategy._openKwentaPosition(roundHedgeAttempts);
   }
 
   /**
@@ -206,7 +207,7 @@ contract OtusVault is BaseVault {
   * update vault collateral, call 
   */
   function closeHedge() external onlyKeeper {
-    strategy._closeKwentaPosition();
+    activeShort = strategy._closeKwentaPosition();
   }
 
 }
