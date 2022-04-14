@@ -8,6 +8,9 @@
       "workspaces",
       "yarn"
     ],
+    "config": {
+      "src": "packages/hardhat/test/**/*.ts packages/hardhat/scripts/**/*.ts packages/hardhat/contracts/**/*.sol packages/hardhat/contracts/*.sol packages/hardhat/hardhat.config.ts"
+    },
     "private": true,
     "scripts": {
         "chain": "yarn workspace @otus-finance/hardhat chain",
@@ -22,7 +25,9 @@
         "send": "yarn workspace @otus-finance/hardhat send",
         "generate": "yarn workspace @otus-finance/hardhat generate",
         "account": "yarn workspace @otus-finance/hardhat account",
-        "compile": "yarn workspace @otus-finance/hardhat compile"
+        "compile": "yarn workspace @otus-finance/hardhat compile",
+        "clean": "yarn workspace @otus-finance/hardhat clean",
+        "test": "yarn workspace @otus-finance/hardhat test"
     },
     "workspaces": {
       "packages": [

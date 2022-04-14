@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
+import "hardhat/console.sol";
+
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Vault} from "../libraries/Vault.sol";
@@ -20,16 +22,17 @@ interface IOtusVault {
 }
 
 interface IStrategy {
-	function initialize(address _vault) external; 
+	function owner() external view returns (address); 
+	function initialize(address _vault, address _owner) external; 
 }
 
 contract OtusCloneFactory is Ownable {
 	/// @notice Stores the Supervisor contract implementation address 
-	address public supervisor;
+	address public immutable supervisor;
 	/// @notice Stores the Otus vault contract implementation address
-	address public otusVault;
+	address public immutable otusVault;
 	/// @notice Stores the Strategy contract implementation address 
-	address public strategy;  
+	address public immutable strategy;  
 
 	address public keeper;  
 
@@ -107,9 +110,30 @@ contract OtusCloneFactory is Ownable {
 		require(vaults[supervisors[msg.sender]] != address(0), "Needs a vault");
 		strategies[vaults[supervisors[msg.sender]]] = strategyClone;
 
-		IStrategy(strategyClone).initialize(vaults[supervisors[msg.sender]]);
+		console.log("strategyClone", strategyClone);
+		console.log("vaults[supervisors[msg.sender]]", vaults[supervisors[msg.sender]]);
+
+		address owner0 = IStrategy(strategy).owner(); 
+		address owner = IStrategy(strategyClone).owner(); 
+		console.log("strategy 0 current owner", owner0); 
+		console.log("strategy clone current owner", owner); 
+		console.log("owner i want to be", msg.sender); 
+
+		IStrategy(strategyClone).initialize(vaults[supervisors[msg.sender]], msg.sender);
+
+		address owner1 = IStrategy(strategyClone).owner();
+		console.log("strategy 1 current owner", owner1); 
 
 		emit NewStrategyClone(strategyClone, msg.sender);
 	}
 
 }
+
+
+// Vault adapters can include kwenta connections
+// Vault adapters have a quoteAsset and a baseAsset
+// Example quoteAsset ~ USD baseAsset ~ BTC
+// Multiple strategies can share the same quote and base vault adapters 
+// for now deploy vault adapter for each strategy, vaultadapter has otusmultisig as original owner
+// in clone factory 
+// 

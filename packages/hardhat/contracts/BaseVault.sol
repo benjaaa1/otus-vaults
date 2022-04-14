@@ -103,7 +103,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    */
   function baseInitialize(
     address _owner,
-    address _feeRecipient,
+    address _supervisor,
     string memory _tokenName,
     string memory _tokenSymbol,
     Vault.VaultParams memory _vaultParams
@@ -114,7 +114,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     __Ownable_init();
     transferOwnership(_owner);
 
-    feeRecipient = _feeRecipient;
+    feeRecipient = _supervisor;
     vaultParams = _vaultParams;
     
     uint assetBalance = IERC20(vaultParams.asset).balanceOf(address(this));

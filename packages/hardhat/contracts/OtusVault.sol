@@ -4,11 +4,11 @@ pragma solidity >=0.8.4;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-import './synthetix/interfaces/IFuturesMarket.sol';
+import './interfaces/IFuturesMarket.sol';
 
 import {BaseVault} from "./BaseVault.sol";
 import {Vault} from "./libraries/Vault.sol";
-import {Strategy} from "./strategies/Strategy.sol";
+import {Strategy} from "./Strategy.sol";
 
 /// @notice LyraVault help users run option-selling strategies on Lyra AMM.
 contract OtusVault is BaseVault {
@@ -71,19 +71,22 @@ contract OtusVault is BaseVault {
     futuresMarket = _futuresMarket;
   }
 
+  /**
+  * @notice Initializes contract on clone
+  * @dev Should only be called by owner and only once
+  */
   function initialize(
-    address _supervisor, 
     address _owner,
-    address _feeRecipient,
+    address _supervisor, 
     string memory _tokenName,
     string memory _tokenSymbol,
     Vault.VaultParams memory _vaultParams
-  ) external initializer {
+  ) external {
 
     supervisor = _supervisor; 
     baseInitialize(
       _owner,
-      _feeRecipient, 
+      _supervisor, 
       _tokenName, 
       _tokenSymbol, 
       _vaultParams
@@ -115,30 +118,18 @@ contract OtusVault is BaseVault {
    * @notice Closes the current round, enable user to deposit for the next round
    */
   function closeRound() external {
-    require(block.timestamp < currentExpiry, "Close round after current expiry");
     uint104 lockAmount = vaultState.lockedAmount;
     vaultState.lastLockedAmount = lockAmount;
     vaultState.lockedAmountLeft = 0;
     vaultState.lockedAmount = 0;
-    vaultState.nextRoundReadyTimestamp = block.timestamp.add(Vault.ROUND_DELAY); // 12 hour delay til next round starts
+    vaultState.nextRoundReadyTimestamp = block.timestamp + Vault.ROUND_DELAY;
     vaultState.roundInProgress = false;
     roundHedgeAttempts = 0; 
 
-    emit RoundClosed(vaultState.round, lockAmount);
-  }
+    // won't be able to close if positions are not settled
+    strategy.returnFundsAndClearStrikes();
 
-  /**
-   * @notice Settle outstanding positions after closing round.
-   */
-  function settleRound() external {
-    require(!vaultState.roundInProgress, "round opened");
-    require(block.timestamp > strategy.activeExpiry(), "ROUND_NOT_OVER");
-    /// Settle all the options sold from last round loop through positions and settle
-    // strategy.reducePosition();
-    uint currentCollateral = collateralAsset.balanceOf(address(this));
-    // if roundEndCollateral + premiumCollected > startCollateral 
-    // => charge performance and management fees on the difference. 
-    emit RoundSettled(msg.sender, vaultState.round, currentCollateral);
+    emit RoundClosed(vaultState.round, lockAmount);
   }
 
   /************************************************
@@ -148,13 +139,13 @@ contract OtusVault is BaseVault {
   /**
    * @notice Start the next/new round
    */
-  function nextRound() external {
+  function startNextRound(uint boardId) external onlyOwner {
     //can't start next round before outstanding expired positions are settled. 
     require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
 
     // move this to be set auto 
-    strategy.setBoard();
+    strategy.setBoard(boardId);
 
     (uint lockedBalance, uint queuedWithdrawAmount) = _rollToNextRound(uint(lastQueuedWithdrawAmount));
 
@@ -171,7 +162,7 @@ contract OtusVault is BaseVault {
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function nextRoundTrade(uint strikeId) external {
+  function trade(uint strikeId) external {
     // can only make a trade after the next round is in progress and before trade period 
     // after everything we should update a vaultState param to show trade in progress
     // period between startnextround and closeround
