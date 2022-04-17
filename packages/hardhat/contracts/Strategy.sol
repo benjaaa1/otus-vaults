@@ -39,8 +39,9 @@ contract Strategy is OwnableUpgradeable {
   address public vault;
   address public futuresMarket;
 
-  OtusVault otusVault;
-  OtusAdapter adapter; 
+  OtusVault public otusVault;
+  OtusAdapter public adapter; 
+  
   IERC20 public quoteAsset;
   IERC20 public baseAsset;
 
@@ -49,7 +50,6 @@ contract Strategy is OwnableUpgradeable {
   IERC20 public collateralAsset;
 
   uint public currentStrikePrice;
-  uint setCollateralTo;
 
   // strategies can be updated by different strategizers
   struct Detail {
@@ -106,10 +106,26 @@ contract Strategy is OwnableUpgradeable {
     otusAdapterManager = _otusAdapterManager;
   }
 
-  function initialize(address _vault) external initializer {
+  function initialize(
+    address _vault, 
+    address _owner, 
+    address _quoteAsset, 
+    address _baseAsset,
+    address _adapter
+  ) external initializer {
+    __Ownable_init();
+    transferOwnership(_owner);
     vault = _vault;
     otusVault = OtusVault(_vault); 
-    futuresMarket = otusVault.futuresMarket(); // future kwenta adapter
+    futuresMarket = otusVault.futuresMarket(); // future kwenta adapter --> otusAdapter
+    
+    adapter = OtusAdapter(_adapter);
+
+    quoteAsset = IERC20(_quoteAsset); 
+    baseAsset = IERC20(_baseAsset); 
+
+    quoteAsset.approve(address(vault), type(uint).max);
+    baseAsset.approve(address(vault), type(uint).max);
   }
 
   /************************************************
@@ -122,33 +138,17 @@ contract Strategy is OwnableUpgradeable {
   * quoteAsset usually USD baseAsset usually ETH
   */
   function setStrategy(
-      address _quoteAsset, 
-      address _baseAsset,
       Detail memory _strategy, 
       HedgeDetail memory _hedgeStrategy,
       uint _tradeOptionType
     ) external onlyOwner {
-
-    OtusAdapterManager adapterManager = OtusAdapterManager(otusAdapterManager); 
-    require(
-      adapterManager.quoteToBaseAssets(_quoteAsset, _baseAsset) != address(0), 
-      "No available adapter"
-    );
-    address _adapter = adapterManager.quoteToBaseAssets(_quoteAsset, _baseAsset);
-    adapter = OtusAdapter(_adapter);
-    
-    quoteAsset = IERC20(_quoteAsset); 
-    baseAsset = IERC20(_baseAsset); 
-
     (, , , , , , , bool roundInProgress) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
+    
     currentStrategy = _strategy;
-    currentHedgeStrategy = _hedgeStrategy; 
+    currentHedgeStrategy = _hedgeStrategy;
 
     tradeOptionType = VaultAdapter.OptionType(_tradeOptionType); 
-
-    quoteAsset.approve(address(vault), type(uint).max);
-    baseAsset.approve(address(vault), type(uint).max);
     collateralAsset = adapter._isBaseCollat(tradeOptionType) ? baseAsset : quoteAsset;
   }
 
@@ -205,23 +205,22 @@ contract Strategy is OwnableUpgradeable {
     require(adapter.isValidStrike(strike, currentStrategy, activeExpiry, tradeOptionType), "invalid strike");
 
     uint currentPositionId = strikeToPositionId[strike.id]; 
-    bool isActiveStrike = _isActiveStrike(strike.id);
-    (collateralToAdd, setCollateralTo) = adapter.getRequiredCollateral(tradeOptionType, strike, currentStrategy, currentPositionId, isActiveStrike);(tradeOptionType, strike, currentStrategy, positionId);
+    uint setCollateralTo; 
+    (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike, currentPositionId);
 
     require(
-      collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
+      collateralAsset.transferFrom(address(vault), address(adapter), collateralToAdd),
       "collateral transfer from vault failed"
     );
 
     // multiply setCollateralTo
-
-    (positionId, premiumReceived) = _sellStrike(strike, setCollateralTo);
+    (positionId, premiumReceived) = sellStrike(strike, setCollateralTo);
     
     // set strike 
     currentStrikePrice = strike.strikePrice; 
 
-    uint256 hedgeCollateral = collateral.sub(collateral.multiplyDecimal(currentHedgeStrategy.hedgePercentage / 100));
-    IFuturesMarket(futuresMarket).transferMargin(int256(hedgeCollateral));
+    // uint256 hedgeCollateral = collateral.sub(collateral.multiplyDecimal(currentHedgeStrategy.hedgePercentage / 100));
+    // IFuturesMarket(futuresMarket).transferMargin(int256(hedgeCollateral));
 
   }
 
@@ -232,7 +231,7 @@ contract Strategy is OwnableUpgradeable {
    * @return positionId
    * @return premiumReceived
    */
-  function _sellStrike(
+  function sellStrike(
     VaultAdapter.Strike memory strike,
     uint setCollateralTo
   ) internal returns (uint, uint) {
@@ -243,12 +242,17 @@ contract Strategy is OwnableUpgradeable {
       currentStrategy,
       tradeOptionType
     );
-    // perform trade
+
+    // before trade is performed send collateral needed to adapter
+    // bring back when trade is complete 
+    // and then all the way back to vault
+
+    // perform trade  
     VaultAdapter.TradeResult memory result = adapter._openPosition(
       VaultAdapter.TradeInputParameters({
         strikeId: strike.id,
         positionId: strikeToPositionId[strike.id],
-        iterations: 4,
+        iterations: 1,
         optionType: tradeOptionType,
         amount: currentStrategy.size,
         setCollateralTo: setCollateralTo,
@@ -318,6 +322,20 @@ contract Strategy is OwnableUpgradeable {
       // quote collateral
       quoteAsset.transfer(address(vault), closeAmount);
     }
+  }
+
+  function getRequiredCollateral(
+    VaultAdapter.Strike memory strike, 
+    uint positionId
+  ) public view returns (uint collateraToAdd, uint setCollateralTo) {
+    bool isActiveStrike = _isActiveStrike(strike.id); 
+    (collateraToAdd, setCollateralTo) = adapter._getRequiredCollateral(
+      tradeOptionType,
+      strike,
+      currentStrategy,
+      positionId,
+      isActiveStrike
+    );
   }
 
   /************************************************

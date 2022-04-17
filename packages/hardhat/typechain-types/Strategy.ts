@@ -22,6 +22,30 @@ import type {
   OnEvent,
 } from "./common";
 
+export declare namespace VaultAdapter {
+  export type StrikeStruct = {
+    id: BigNumberish;
+    expiry: BigNumberish;
+    strikePrice: BigNumberish;
+    skew: BigNumberish;
+    boardIv: BigNumberish;
+  };
+
+  export type StrikeStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    id: BigNumber;
+    expiry: BigNumber;
+    strikePrice: BigNumber;
+    skew: BigNumber;
+    boardIv: BigNumber;
+  };
+}
+
 export declare namespace Strategy {
   export type DetailStruct = {
     collatBuffer: BigNumberish;
@@ -96,23 +120,26 @@ export interface StrategyInterface extends utils.Interface {
     "_openKwentaPosition(uint256)": FunctionFragment;
     "activeExpiry()": FunctionFragment;
     "activeStrikeIds(uint256)": FunctionFragment;
+    "adapter()": FunctionFragment;
     "baseAsset()": FunctionFragment;
     "collateralAsset()": FunctionFragment;
     "currentHedgeStrategy()": FunctionFragment;
     "currentStrategy()": FunctionFragment;
     "currentStrikePrice()": FunctionFragment;
     "futuresMarket()": FunctionFragment;
-    "initialize(address)": FunctionFragment;
+    "getRequiredCollateral((uint256,uint256,uint256,uint256,uint256),uint256)": FunctionFragment;
+    "initialize(address,address,address,address,address)": FunctionFragment;
     "keeper()": FunctionFragment;
     "lastTradeTimestamp(uint256)": FunctionFragment;
     "otusAdapterManager()": FunctionFragment;
+    "otusVault()": FunctionFragment;
     "owner()": FunctionFragment;
     "quoteAsset()": FunctionFragment;
     "reducePosition(uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "returnFundsAndClearStrikes()": FunctionFragment;
     "setBoard(uint256)": FunctionFragment;
-    "setStrategy(address,address,(uint256,uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256),uint256)": FunctionFragment;
+    "setStrategy((uint256,uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256),uint256)": FunctionFragment;
     "startTradeForRound(uint256,uint256)": FunctionFragment;
     "strikeToPositionId(uint256)": FunctionFragment;
     "tradeOptionType()": FunctionFragment;
@@ -136,6 +163,7 @@ export interface StrategyInterface extends utils.Interface {
     functionFragment: "activeStrikeIds",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "adapter", values?: undefined): string;
   encodeFunctionData(functionFragment: "baseAsset", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "collateralAsset",
@@ -157,7 +185,14 @@ export interface StrategyInterface extends utils.Interface {
     functionFragment: "futuresMarket",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "initialize", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "getRequiredCollateral",
+    values: [VaultAdapter.StrikeStruct, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "initialize",
+    values: [string, string, string, string, string]
+  ): string;
   encodeFunctionData(functionFragment: "keeper", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "lastTradeTimestamp",
@@ -167,6 +202,7 @@ export interface StrategyInterface extends utils.Interface {
     functionFragment: "otusAdapterManager",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "otusVault", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "quoteAsset",
@@ -190,13 +226,7 @@ export interface StrategyInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setStrategy",
-    values: [
-      string,
-      string,
-      Strategy.DetailStruct,
-      Strategy.HedgeDetailStruct,
-      BigNumberish
-    ]
+    values: [Strategy.DetailStruct, Strategy.HedgeDetailStruct, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "startTradeForRound",
@@ -232,6 +262,7 @@ export interface StrategyInterface extends utils.Interface {
     functionFragment: "activeStrikeIds",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "adapter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseAsset", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "collateralAsset",
@@ -253,6 +284,10 @@ export interface StrategyInterface extends utils.Interface {
     functionFragment: "futuresMarket",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRequiredCollateral",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "keeper", data: BytesLike): Result;
   decodeFunctionResult(
@@ -263,6 +298,7 @@ export interface StrategyInterface extends utils.Interface {
     functionFragment: "otusAdapterManager",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "otusVault", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "quoteAsset", data: BytesLike): Result;
   decodeFunctionResult(
@@ -382,6 +418,8 @@ export interface Strategy extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    adapter(overrides?: CallOverrides): Promise<[string]>;
+
     baseAsset(overrides?: CallOverrides): Promise<[string]>;
 
     collateralAsset(overrides?: CallOverrides): Promise<[string]>;
@@ -434,8 +472,23 @@ export interface Strategy extends BaseContract {
 
     futuresMarket(overrides?: CallOverrides): Promise<[string]>;
 
+    getRequiredCollateral(
+      strike: VaultAdapter.StrikeStruct,
+      positionId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        collateraToAdd: BigNumber;
+        setCollateralTo: BigNumber;
+      }
+    >;
+
     initialize(
       _vault: string,
+      _owner: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      _adapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -447,6 +500,8 @@ export interface Strategy extends BaseContract {
     ): Promise<[BigNumber]>;
 
     otusAdapterManager(overrides?: CallOverrides): Promise<[string]>;
+
+    otusVault(overrides?: CallOverrides): Promise<[string]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -471,8 +526,6 @@ export interface Strategy extends BaseContract {
     ): Promise<ContractTransaction>;
 
     setStrategy(
-      _quoteAsset: string,
-      _baseAsset: string,
       _strategy: Strategy.DetailStruct,
       _hedgeStrategy: Strategy.HedgeDetailStruct,
       _tradeOptionType: BigNumberish,
@@ -515,6 +568,8 @@ export interface Strategy extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  adapter(overrides?: CallOverrides): Promise<string>;
 
   baseAsset(overrides?: CallOverrides): Promise<string>;
 
@@ -568,8 +623,23 @@ export interface Strategy extends BaseContract {
 
   futuresMarket(overrides?: CallOverrides): Promise<string>;
 
+  getRequiredCollateral(
+    strike: VaultAdapter.StrikeStruct,
+    positionId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber] & {
+      collateraToAdd: BigNumber;
+      setCollateralTo: BigNumber;
+    }
+  >;
+
   initialize(
     _vault: string,
+    _owner: string,
+    _quoteAsset: string,
+    _baseAsset: string,
+    _adapter: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -581,6 +651,8 @@ export interface Strategy extends BaseContract {
   ): Promise<BigNumber>;
 
   otusAdapterManager(overrides?: CallOverrides): Promise<string>;
+
+  otusVault(overrides?: CallOverrides): Promise<string>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -605,8 +677,6 @@ export interface Strategy extends BaseContract {
   ): Promise<ContractTransaction>;
 
   setStrategy(
-    _quoteAsset: string,
-    _baseAsset: string,
     _strategy: Strategy.DetailStruct,
     _hedgeStrategy: Strategy.HedgeDetailStruct,
     _tradeOptionType: BigNumberish,
@@ -647,6 +717,8 @@ export interface Strategy extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    adapter(overrides?: CallOverrides): Promise<string>;
 
     baseAsset(overrides?: CallOverrides): Promise<string>;
 
@@ -700,7 +772,25 @@ export interface Strategy extends BaseContract {
 
     futuresMarket(overrides?: CallOverrides): Promise<string>;
 
-    initialize(_vault: string, overrides?: CallOverrides): Promise<void>;
+    getRequiredCollateral(
+      strike: VaultAdapter.StrikeStruct,
+      positionId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        collateraToAdd: BigNumber;
+        setCollateralTo: BigNumber;
+      }
+    >;
+
+    initialize(
+      _vault: string,
+      _owner: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      _adapter: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     keeper(overrides?: CallOverrides): Promise<string>;
 
@@ -710,6 +800,8 @@ export interface Strategy extends BaseContract {
     ): Promise<BigNumber>;
 
     otusAdapterManager(overrides?: CallOverrides): Promise<string>;
+
+    otusVault(overrides?: CallOverrides): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -727,8 +819,6 @@ export interface Strategy extends BaseContract {
     setBoard(boardId: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     setStrategy(
-      _quoteAsset: string,
-      _baseAsset: string,
       _strategy: Strategy.DetailStruct,
       _hedgeStrategy: Strategy.HedgeDetailStruct,
       _tradeOptionType: BigNumberish,
@@ -807,6 +897,8 @@ export interface Strategy extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    adapter(overrides?: CallOverrides): Promise<BigNumber>;
+
     baseAsset(overrides?: CallOverrides): Promise<BigNumber>;
 
     collateralAsset(overrides?: CallOverrides): Promise<BigNumber>;
@@ -819,8 +911,18 @@ export interface Strategy extends BaseContract {
 
     futuresMarket(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getRequiredCollateral(
+      strike: VaultAdapter.StrikeStruct,
+      positionId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     initialize(
       _vault: string,
+      _owner: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      _adapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -832,6 +934,8 @@ export interface Strategy extends BaseContract {
     ): Promise<BigNumber>;
 
     otusAdapterManager(overrides?: CallOverrides): Promise<BigNumber>;
+
+    otusVault(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -856,8 +960,6 @@ export interface Strategy extends BaseContract {
     ): Promise<BigNumber>;
 
     setStrategy(
-      _quoteAsset: string,
-      _baseAsset: string,
       _strategy: Strategy.DetailStruct,
       _hedgeStrategy: Strategy.HedgeDetailStruct,
       _tradeOptionType: BigNumberish,
@@ -902,6 +1004,8 @@ export interface Strategy extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    adapter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     baseAsset(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     collateralAsset(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -918,8 +1022,18 @@ export interface Strategy extends BaseContract {
 
     futuresMarket(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getRequiredCollateral(
+      strike: VaultAdapter.StrikeStruct,
+      positionId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     initialize(
       _vault: string,
+      _owner: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      _adapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -933,6 +1047,8 @@ export interface Strategy extends BaseContract {
     otusAdapterManager(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    otusVault(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -957,8 +1073,6 @@ export interface Strategy extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     setStrategy(
-      _quoteAsset: string,
-      _baseAsset: string,
       _strategy: Strategy.DetailStruct,
       _hedgeStrategy: Strategy.HedgeDetailStruct,
       _tradeOptionType: BigNumberish,

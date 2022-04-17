@@ -82,7 +82,6 @@ contract OtusVault is BaseVault {
     string memory _tokenSymbol,
     Vault.VaultParams memory _vaultParams
   ) external {
-
     supervisor = _supervisor; 
     baseInitialize(
       _owner,

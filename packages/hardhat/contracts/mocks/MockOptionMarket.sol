@@ -5,4 +5,6 @@ contract MockOptionMarket {
 
 	constructor() {}
 
+	function openPosition() public returns (bool) {}
+
 }

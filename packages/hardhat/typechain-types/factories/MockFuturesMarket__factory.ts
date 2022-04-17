@@ -14,10 +14,23 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "constructor",
   },
+  {
+    inputs: [],
+    name: "modifyPosition",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ];
 
 const _bytecode =
-  "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220bfc45c254e4eef926dbc4539254b2010f1a22588fd33a8c9bfe8f4a039e2c82d64736f6c63430008090033";
+  "0x6080604052348015600f57600080fd5b50607780601d6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c806389419b8014602d575b600080fd5b604080516000815290519081900360200190f3fea2646970667358221220269d009bb9a5b2e554341ffcec226404c18b2e6ef0408e5eec4dfd1cbe2ae5c564736f6c63430008090033";
 
 type MockFuturesMarketConstructorParams =
   | [signer?: Signer]

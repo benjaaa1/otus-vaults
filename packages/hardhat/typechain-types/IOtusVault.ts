@@ -40,14 +40,17 @@ export interface IOtusVaultInterface extends utils.Interface {
   contractName: "IOtusVault";
   functions: {
     "initialize(address,address,string,string,(uint8,uint104,address))": FunctionFragment;
+    "owner()": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "initialize",
     values: [string, string, string, string, Vault.VaultParamsStruct]
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
 
   events: {};
 }
@@ -88,6 +91,8 @@ export interface IOtusVault extends BaseContract {
       _vaultParams: Vault.VaultParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<[string]>;
   };
 
   initialize(
@@ -99,6 +104,8 @@ export interface IOtusVault extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  owner(overrides?: CallOverrides): Promise<string>;
+
   callStatic: {
     initialize(
       _owner: string,
@@ -108,6 +115,8 @@ export interface IOtusVault extends BaseContract {
       _vaultParams: Vault.VaultParamsStruct,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    owner(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {};
@@ -121,6 +130,8 @@ export interface IOtusVault extends BaseContract {
       _vaultParams: Vault.VaultParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -132,5 +143,7 @@ export interface IOtusVault extends BaseContract {
       _vaultParams: Vault.VaultParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

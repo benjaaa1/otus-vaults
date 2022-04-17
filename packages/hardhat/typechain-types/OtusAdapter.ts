@@ -188,18 +188,20 @@ export interface OtusAdapterInterface extends utils.Interface {
     "_getFullCollateral(uint8,uint256,uint256)": FunctionFragment;
     "_getPositions(uint256[])": FunctionFragment;
     "_getPremiumLimit((uint256,uint256,uint256,uint256,uint256),bool,(uint256,uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint8)": FunctionFragment;
+    "_getRequiredCollateral(uint8,(uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint256,bool)": FunctionFragment;
     "_getStrikes(uint256[])": FunctionFragment;
     "_isBaseCollat(uint8)": FunctionFragment;
     "_isCall(uint8)": FunctionFragment;
     "_isValidExpiry(uint256,uint256,uint256)": FunctionFragment;
     "_isValidVolVariance(uint256,uint256,uint256)": FunctionFragment;
     "_openPosition((uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))": FunctionFragment;
-    "getRequiredCollateral(uint8,(uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint256,bool)": FunctionFragment;
     "gwavOracle()": FunctionFragment;
     "isValidStrike((uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint256,uint8)": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setBoard(uint256,(uint256,uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
+    "strategy()": FunctionFragment;
+    "test()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
   };
 
@@ -244,6 +246,16 @@ export interface OtusAdapterInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "_getRequiredCollateral",
+    values: [
+      BigNumberish,
+      VaultAdapter.StrikeStruct,
+      Strategy.DetailStruct,
+      BigNumberish,
+      boolean
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "_getStrikes",
     values: [BigNumberish[]]
   ): string;
@@ -268,16 +280,6 @@ export interface OtusAdapterInterface extends utils.Interface {
     values: [VaultAdapter.TradeInputParametersStruct]
   ): string;
   encodeFunctionData(
-    functionFragment: "getRequiredCollateral",
-    values: [
-      BigNumberish,
-      VaultAdapter.StrikeStruct,
-      Strategy.DetailStruct,
-      BigNumberish,
-      boolean
-    ]
-  ): string;
-  encodeFunctionData(
     functionFragment: "gwavOracle",
     values?: undefined
   ): string;
@@ -299,6 +301,8 @@ export interface OtusAdapterInterface extends utils.Interface {
     functionFragment: "setBoard",
     values: [BigNumberish, Strategy.DetailStruct]
   ): string;
+  encodeFunctionData(functionFragment: "strategy", values?: undefined): string;
+  encodeFunctionData(functionFragment: "test", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
@@ -333,6 +337,10 @@ export interface OtusAdapterInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "_getRequiredCollateral",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "_getStrikes",
     data: BytesLike
   ): Result;
@@ -353,10 +361,6 @@ export interface OtusAdapterInterface extends utils.Interface {
     functionFragment: "_openPosition",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getRequiredCollateral",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "gwavOracle", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isValidStrike",
@@ -368,6 +372,8 @@ export interface OtusAdapterInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setBoard", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "strategy", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "test", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -469,6 +475,20 @@ export interface OtusAdapter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { limitPremium: BigNumber }>;
 
+    _getRequiredCollateral(
+      tradeOptionType: BigNumberish,
+      strike: VaultAdapter.StrikeStruct,
+      currentStrategy: Strategy.DetailStruct,
+      positionId: BigNumberish,
+      isActiveStrike: boolean,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        collateralToAdd: BigNumber;
+        setCollateralTo: BigNumber;
+      }
+    >;
+
     _getStrikes(
       strikeIds: BigNumberish[],
       overrides?: CallOverrides
@@ -507,20 +527,6 @@ export interface OtusAdapter extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    getRequiredCollateral(
-      tradeOptionType: BigNumberish,
-      strike: VaultAdapter.StrikeStruct,
-      currentStrategy: Strategy.DetailStruct,
-      positionId: BigNumberish,
-      isActiveStrike: boolean,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & {
-        collateralToAdd: BigNumber;
-        setCollateralTo: BigNumber;
-      }
-    >;
-
     gwavOracle(overrides?: CallOverrides): Promise<[string]>;
 
     isValidStrike(
@@ -540,8 +546,12 @@ export interface OtusAdapter extends BaseContract {
     setBoard(
       boardId: BigNumberish,
       currentStrategy: Strategy.DetailStruct,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { activeExpiry: BigNumber }>;
+
+    strategy(overrides?: CallOverrides): Promise<[string]>;
+
+    test(overrides?: CallOverrides): Promise<[string] & { t: string }>;
 
     transferOwnership(
       newOwner: string,
@@ -594,6 +604,20 @@ export interface OtusAdapter extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  _getRequiredCollateral(
+    tradeOptionType: BigNumberish,
+    strike: VaultAdapter.StrikeStruct,
+    currentStrategy: Strategy.DetailStruct,
+    positionId: BigNumberish,
+    isActiveStrike: boolean,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber] & {
+      collateralToAdd: BigNumber;
+      setCollateralTo: BigNumber;
+    }
+  >;
+
   _getStrikes(
     strikeIds: BigNumberish[],
     overrides?: CallOverrides
@@ -628,20 +652,6 @@ export interface OtusAdapter extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  getRequiredCollateral(
-    tradeOptionType: BigNumberish,
-    strike: VaultAdapter.StrikeStruct,
-    currentStrategy: Strategy.DetailStruct,
-    positionId: BigNumberish,
-    isActiveStrike: boolean,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber] & {
-      collateralToAdd: BigNumber;
-      setCollateralTo: BigNumber;
-    }
-  >;
-
   gwavOracle(overrides?: CallOverrides): Promise<string>;
 
   isValidStrike(
@@ -661,8 +671,12 @@ export interface OtusAdapter extends BaseContract {
   setBoard(
     boardId: BigNumberish,
     currentStrategy: Strategy.DetailStruct,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  strategy(overrides?: CallOverrides): Promise<string>;
+
+  test(overrides?: CallOverrides): Promise<string>;
 
   transferOwnership(
     newOwner: string,
@@ -715,6 +729,20 @@ export interface OtusAdapter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    _getRequiredCollateral(
+      tradeOptionType: BigNumberish,
+      strike: VaultAdapter.StrikeStruct,
+      currentStrategy: Strategy.DetailStruct,
+      positionId: BigNumberish,
+      isActiveStrike: boolean,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        collateralToAdd: BigNumber;
+        setCollateralTo: BigNumber;
+      }
+    >;
+
     _getStrikes(
       strikeIds: BigNumberish[],
       overrides?: CallOverrides
@@ -749,20 +777,6 @@ export interface OtusAdapter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<VaultAdapter.TradeResultStructOutput>;
 
-    getRequiredCollateral(
-      tradeOptionType: BigNumberish,
-      strike: VaultAdapter.StrikeStruct,
-      currentStrategy: Strategy.DetailStruct,
-      positionId: BigNumberish,
-      isActiveStrike: boolean,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & {
-        collateralToAdd: BigNumber;
-        setCollateralTo: BigNumber;
-      }
-    >;
-
     gwavOracle(overrides?: CallOverrides): Promise<string>;
 
     isValidStrike(
@@ -782,6 +796,10 @@ export interface OtusAdapter extends BaseContract {
       currentStrategy: Strategy.DetailStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    strategy(overrides?: CallOverrides): Promise<string>;
+
+    test(overrides?: CallOverrides): Promise<string>;
 
     transferOwnership(
       newOwner: string,
@@ -844,6 +862,15 @@ export interface OtusAdapter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    _getRequiredCollateral(
+      tradeOptionType: BigNumberish,
+      strike: VaultAdapter.StrikeStruct,
+      currentStrategy: Strategy.DetailStruct,
+      positionId: BigNumberish,
+      isActiveStrike: boolean,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     _getStrikes(
       strikeIds: BigNumberish[],
       overrides?: CallOverrides
@@ -878,15 +905,6 @@ export interface OtusAdapter extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    getRequiredCollateral(
-      tradeOptionType: BigNumberish,
-      strike: VaultAdapter.StrikeStruct,
-      currentStrategy: Strategy.DetailStruct,
-      positionId: BigNumberish,
-      isActiveStrike: boolean,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     gwavOracle(overrides?: CallOverrides): Promise<BigNumber>;
 
     isValidStrike(
@@ -906,8 +924,12 @@ export interface OtusAdapter extends BaseContract {
     setBoard(
       boardId: BigNumberish,
       currentStrategy: Strategy.DetailStruct,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    strategy(overrides?: CallOverrides): Promise<BigNumber>;
+
+    test(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferOwnership(
       newOwner: string,
@@ -961,6 +983,15 @@ export interface OtusAdapter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    _getRequiredCollateral(
+      tradeOptionType: BigNumberish,
+      strike: VaultAdapter.StrikeStruct,
+      currentStrategy: Strategy.DetailStruct,
+      positionId: BigNumberish,
+      isActiveStrike: boolean,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     _getStrikes(
       strikeIds: BigNumberish[],
       overrides?: CallOverrides
@@ -995,15 +1026,6 @@ export interface OtusAdapter extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    getRequiredCollateral(
-      tradeOptionType: BigNumberish,
-      strike: VaultAdapter.StrikeStruct,
-      currentStrategy: Strategy.DetailStruct,
-      positionId: BigNumberish,
-      isActiveStrike: boolean,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     gwavOracle(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     isValidStrike(
@@ -1023,8 +1045,12 @@ export interface OtusAdapter extends BaseContract {
     setBoard(
       boardId: BigNumberish,
       currentStrategy: Strategy.DetailStruct,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    strategy(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    test(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transferOwnership(
       newOwner: string,

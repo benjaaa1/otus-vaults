@@ -63,7 +63,7 @@ describe('Unit test: Basic OtusVault flow', async () => {
       const cap = ethers.utils.parseEther('5000');
       const decimals = 18;
 
-      vault = (await OtusVault.deploy(
+      vault = (await OtusVault.connect(owner).deploy(
         mockFuturesMarket.address,
         86400 * 7,
       )) as OtusVault;

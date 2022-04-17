@@ -14,7 +14,7 @@ import {
 	OtusAdapterManager
 } from '../../../typechain-types';
 
-describe.only('Unit Test - Basic clone vault with manager/supervisor flow', () => {
+describe('Unit Test - Otus Adapter Manager', () => {
 	let otusAdapterManager: OtusAdapterManager;
 
 	let anyone: SignerWithAddress;
@@ -23,6 +23,8 @@ describe.only('Unit Test - Basic clone vault with manager/supervisor flow', () =
 
 	let lyraTestSystem: TestSystemContractsType;
 	let mockOtusAdapter: MockOtusAdapter;
+	let mockOtusAdapter2: MockOtusAdapter; 
+	let mockOtusAdapter2Copy: MockOtusAdapter;
 
 	let baseAsset1: MockERC20;
 	let baseAsset2: MockERC20;
@@ -56,65 +58,106 @@ describe.only('Unit Test - Basic clone vault with manager/supervisor flow', () =
     baseAsset4 = (await MockERC20Factory.deploy('Synthetic LINK', 'sLINK')) as MockERC20;
     quoteAsset = (await MockERC20Factory.deploy('Synthetic USD', 'sUSD')) as MockERC20;
 
-		// const mockOtusAdapterFactory = await ethers.getContractFactory('MockOtusAdapter');
-    // mockOtusAdapter = (await mockOtusAdapterFactory.deploy()) as MockOtusAdapter;
+		const mockOtusAdapterFactory = await ethers.getContractFactory('MockOtusAdapter');
+    mockOtusAdapter = (await mockOtusAdapterFactory.deploy(
+			lyraTestSystem.GWAVOracle.address,
+			lyraTestSystem.testCurve.address, // curve swap
+			lyraTestSystem.optionToken.address,
+			lyraTestSystem.optionMarket.address,
+			lyraTestSystem.liquidityPool.address,
+			lyraTestSystem.shortCollateral.address,
+			lyraTestSystem.synthetixAdapter.address,
+			lyraTestSystem.optionMarketPricer.address,
+			lyraTestSystem.optionGreekCache.address,
+			quoteAsset.address, 
+			baseAsset1.address, 
+			lyraTestSystem.basicFeeCounter.address as string
+		)) as MockOtusAdapter;
+
+		mockOtusAdapter2 = (await mockOtusAdapterFactory.deploy(
+			lyraTestSystem.GWAVOracle.address,
+			lyraTestSystem.testCurve.address, // curve swap
+			lyraTestSystem.optionToken.address,
+			lyraTestSystem.optionMarket.address,
+			lyraTestSystem.liquidityPool.address,
+			lyraTestSystem.shortCollateral.address,
+			lyraTestSystem.synthetixAdapter.address,
+			lyraTestSystem.optionMarketPricer.address,
+			lyraTestSystem.optionGreekCache.address,
+			quoteAsset.address, 
+			baseAsset2.address, 
+			lyraTestSystem.basicFeeCounter.address as string
+		)) as MockOtusAdapter;
+
+		mockOtusAdapter2Copy = (await mockOtusAdapterFactory.deploy(
+			lyraTestSystem.GWAVOracle.address,
+			lyraTestSystem.testCurve.address, // curve swap
+			lyraTestSystem.optionToken.address,
+			lyraTestSystem.optionMarket.address,
+			lyraTestSystem.liquidityPool.address,
+			lyraTestSystem.shortCollateral.address,
+			lyraTestSystem.synthetixAdapter.address,
+			lyraTestSystem.optionMarketPricer.address,
+			lyraTestSystem.optionGreekCache.address,
+			quoteAsset.address, 
+			baseAsset2.address, 
+			lyraTestSystem.basicFeeCounter.address as string
+		)) as MockOtusAdapter;
 
 	});
 
 	describe('deploy', async () => {
     it('should successfully deploy with owner', async () => {
-      const OtusAdapterManagerFactory = await ethers.getContractFactory('OtusAdapterManager', {
-        libraries: {
-          BlackScholes: lyraTestSystem.blackScholes.address,
-        },
-      });
-
+      const OtusAdapterManagerFactory = await ethers.getContractFactory('OtusAdapterManager');
 			otusAdapterManager = (await OtusAdapterManagerFactory.connect(owner).deploy()) as OtusAdapterManager;
-
 			const managerOwner = await otusAdapterManager.owner();
       expect(managerOwner).to.be.eq(owner.address);
-			console.log({ managerOwner, owner: owner.address })
-
 		})
 	});	
 
 	describe('rollover', async () => {
 		it('owner should store quote asset pair and create new adapters', async () => {
 
-			otusAdapterManager.connect(owner).initializeVaultAdapter(
-				lyraTestSystem.GWAVOracle.address,
-				lyraTestSystem.testCurve.address, // curve swap
-				lyraTestSystem.optionToken.address,
-				lyraTestSystem.optionMarket.address,
-				lyraTestSystem.liquidityPool.address,
-				lyraTestSystem.shortCollateral.address,
-				lyraTestSystem.synthetixAdapter.address,
-				lyraTestSystem.optionMarketPricer.address,
-				lyraTestSystem.optionGreekCache.address,
-				quoteAsset.address, 
-				baseAsset1.address, 
-				lyraTestSystem.basicFeeCounter.address as string
-			);
-			console.log(quoteAsset.address, baseAsset1.address)
-			const otusAdapter = await otusAdapterManager.connect(owner).quoteToBaseAssets(baseAsset1.address, quoteAsset.address); //getVaultAdapter(quoteAsset.address, baseAsset1.address); 
-			console.log({ otusAdapter })	
+			await otusAdapterManager.connect(owner).setVaultAdapter(baseAsset1.address, quoteAsset.address, mockOtusAdapter.address);
+			const mockOtusAdapterAddress = await otusAdapterManager.connect(owner).getVaultAdapter(baseAsset1.address, quoteAsset.address); 
+			expect(mockOtusAdapterAddress).to.be.eq(mockOtusAdapter.address); 
 
-			await expect(otusAdapterManager.connect(owner).initializeVaultAdapter(
-				lyraTestSystem.GWAVOracle.address,
-				lyraTestSystem.testCurve.address, // curve swap
-				lyraTestSystem.optionToken.address,
-				lyraTestSystem.optionMarket.address,
-				lyraTestSystem.liquidityPool.address,
-				lyraTestSystem.shortCollateral.address,
-				lyraTestSystem.synthetixAdapter.address,
-				lyraTestSystem.optionMarketPricer.address,
-				lyraTestSystem.optionGreekCache.address,
-				quoteAsset.address, 
-				baseAsset1.address, 
-				lyraTestSystem.basicFeeCounter.address as string
-			)).to.be.revertedWith("Has vault adapter");
+			await otusAdapterManager.connect(owner).setVaultAdapter(baseAsset2.address, quoteAsset.address, mockOtusAdapter2.address);
+			const mockOtusAdapterAddress2 = await otusAdapterManager.connect(owner).getVaultAdapter(baseAsset2.address, quoteAsset.address); 
+			expect(mockOtusAdapterAddress2).to.be.eq(mockOtusAdapter2.address); 
+
+			await expect(
+				otusAdapterManager.connect(owner).setVaultAdapter(baseAsset2.address, quoteAsset.address, mockOtusAdapter2.address)
+			).to.be.revertedWith("Has an available Otus Adapter.");
+
+			await expect(
+				otusAdapterManager.connect(owner).getVaultAdapter(baseAsset3.address, quoteAsset.address)
+			).to.be.revertedWith("No Available Otus Adapter for Assets."); 
 
 		});
+
+		it('should not set vault adapter if not owner', async () => {
+
+			await expect(
+					otusAdapterManager.connect(anyone).setVaultAdapter(baseAsset2.address, quoteAsset.address, mockOtusAdapter2.address)
+				).to.be.revertedWith("Ownable: caller is not the owner");
+
+		})
+
+		it('should not set vault adapter if same base quote pair is already in use', async () => {
+
+			await expect(
+				otusAdapterManager.connect(owner).setVaultAdapter(baseAsset2.address, quoteAsset.address, mockOtusAdapter2Copy.address)
+			).to.be.revertedWith("Has an available Otus Adapter.");
+
+			const hasAdapterTrue = await otusAdapterManager.connect(anyone).hasVaultAdapter(baseAsset2.address, quoteAsset.address); 
+			expect(hasAdapterTrue).to.be.eq(true); 
+
+			const hasAdapterFalse = await otusAdapterManager.connect(anyone).hasVaultAdapter(baseAsset3.address, quoteAsset.address); 
+			expect(hasAdapterFalse).to.be.eq(false); 
+
+		});
+
 	}); 
 
 

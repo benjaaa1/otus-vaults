@@ -6,5 +6,7 @@ contract MockFuturesMarket {
   constructor() {
     // really
   }
+  
+	function modifyPosition() public returns (bool) {}
 
 }

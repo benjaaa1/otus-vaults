@@ -24,13 +24,13 @@ import type {
 export interface IStrategyInterface extends utils.Interface {
   contractName: "IStrategy";
   functions: {
-    "initialize(address,address)": FunctionFragment;
+    "initialize(address,address,address,address,address)": FunctionFragment;
     "owner()": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [string, string]
+    values: [string, string, string, string, string]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
 
@@ -71,6 +71,9 @@ export interface IStrategy extends BaseContract {
     initialize(
       _vault: string,
       _owner: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      _adapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -80,6 +83,9 @@ export interface IStrategy extends BaseContract {
   initialize(
     _vault: string,
     _owner: string,
+    _quoteAsset: string,
+    _baseAsset: string,
+    _adapter: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -89,6 +95,9 @@ export interface IStrategy extends BaseContract {
     initialize(
       _vault: string,
       _owner: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      _adapter: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -101,6 +110,9 @@ export interface IStrategy extends BaseContract {
     initialize(
       _vault: string,
       _owner: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      _adapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -111,6 +123,9 @@ export interface IStrategy extends BaseContract {
     initialize(
       _vault: string,
       _owner: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      _adapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -13,7 +13,7 @@ import {
   Signer,
   utils,
 } from "ethers";
-import { FunctionFragment, Result } from "@ethersproject/abi";
+import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
@@ -27,13 +27,16 @@ export interface MockStrategyInterface extends utils.Interface {
   functions: {
     "boardId()": FunctionFragment;
     "collateral()": FunctionFragment;
-    "initialize(address)": FunctionFragment;
+    "initialize(address,address)": FunctionFragment;
+    "owner()": FunctionFragment;
     "premium()": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
     "returnFundsAndClearStrikes()": FunctionFragment;
     "setBoard(uint256)": FunctionFragment;
     "setMockedTradeAmount(uint256,uint256)": FunctionFragment;
     "tradeCollateralAmount()": FunctionFragment;
     "tradePremiumAmount()": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
   };
 
   encodeFunctionData(functionFragment: "boardId", values?: undefined): string;
@@ -41,8 +44,16 @@ export interface MockStrategyInterface extends utils.Interface {
     functionFragment: "collateral",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "initialize", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "initialize",
+    values: [string, string]
+  ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "premium", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "returnFundsAndClearStrikes",
     values?: undefined
@@ -63,11 +74,20 @@ export interface MockStrategyInterface extends utils.Interface {
     functionFragment: "tradePremiumAmount",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [string]
+  ): string;
 
   decodeFunctionResult(functionFragment: "boardId", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "collateral", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "premium", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "returnFundsAndClearStrikes",
     data: BytesLike
@@ -85,9 +105,25 @@ export interface MockStrategyInterface extends utils.Interface {
     functionFragment: "tradePremiumAmount",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
 
-  events: {};
+  events: {
+    "OwnershipTransferred(address,address)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
 }
+
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  { previousOwner: string; newOwner: string }
+>;
+
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface MockStrategy extends BaseContract {
   contractName: "MockStrategy";
@@ -123,10 +159,17 @@ export interface MockStrategy extends BaseContract {
 
     initialize(
       _vault: string,
+      _owner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
     premium(overrides?: CallOverrides): Promise<[string]>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     returnFundsAndClearStrikes(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -146,6 +189,11 @@ export interface MockStrategy extends BaseContract {
     tradeCollateralAmount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     tradePremiumAmount(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   boardId(overrides?: CallOverrides): Promise<BigNumber>;
@@ -154,10 +202,17 @@ export interface MockStrategy extends BaseContract {
 
   initialize(
     _vault: string,
+    _owner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  owner(overrides?: CallOverrides): Promise<string>;
+
   premium(overrides?: CallOverrides): Promise<string>;
+
+  renounceOwnership(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   returnFundsAndClearStrikes(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -178,14 +233,27 @@ export interface MockStrategy extends BaseContract {
 
   tradePremiumAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
+  transferOwnership(
+    newOwner: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     boardId(overrides?: CallOverrides): Promise<BigNumber>;
 
     collateral(overrides?: CallOverrides): Promise<string>;
 
-    initialize(_vault: string, overrides?: CallOverrides): Promise<void>;
+    initialize(
+      _vault: string,
+      _owner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    owner(overrides?: CallOverrides): Promise<string>;
 
     premium(overrides?: CallOverrides): Promise<string>;
+
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     returnFundsAndClearStrikes(overrides?: CallOverrides): Promise<void>;
 
@@ -200,9 +268,23 @@ export interface MockStrategy extends BaseContract {
     tradeCollateralAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
     tradePremiumAmount(overrides?: CallOverrides): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
-  filters: {};
+  filters: {
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): OwnershipTransferredEventFilter;
+  };
 
   estimateGas: {
     boardId(overrides?: CallOverrides): Promise<BigNumber>;
@@ -211,10 +293,17 @@ export interface MockStrategy extends BaseContract {
 
     initialize(
       _vault: string,
+      _owner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
     premium(overrides?: CallOverrides): Promise<BigNumber>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     returnFundsAndClearStrikes(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -234,6 +323,11 @@ export interface MockStrategy extends BaseContract {
     tradeCollateralAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
     tradePremiumAmount(overrides?: CallOverrides): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -243,10 +337,17 @@ export interface MockStrategy extends BaseContract {
 
     initialize(
       _vault: string,
+      _owner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     premium(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     returnFundsAndClearStrikes(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -269,6 +370,11 @@ export interface MockStrategy extends BaseContract {
 
     tradePremiumAmount(
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

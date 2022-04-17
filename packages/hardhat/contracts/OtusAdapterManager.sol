@@ -14,48 +14,24 @@ contract OtusAdapterManager is Ownable {
 
 	constructor() {}
 
-	function initializeVaultAdapter(
-		GWAVOracle _gwavOracle,
-		address _curveSwap,
-		address _optionToken,
-		address _optionMarket,
-		address _liquidityPool,
-		address _shortCollateral,
-		address _synthetixAdapter,
-		address _optionPricer,
-		address _greekCache,
-		address _quoteAsset, 
-		address _baseAsset,
-		address _feeCounter
-	) public onlyOwner {
-
-		require(getVaultAdapter(_baseAsset, _quoteAsset) == address(0), "Has vault adapter"); 
-
-		OtusAdapter adapter = new OtusAdapter(
-			_gwavOracle,
-			_curveSwap,
-      _optionToken,
-      _optionMarket,
-      _liquidityPool,
-      _shortCollateral,
-      _synthetixAdapter,
-      _optionPricer,
-      _greekCache,
-      _quoteAsset,
-      _baseAsset,
-      _feeCounter
+	function setVaultAdapter(address _baseAsset, address _quoteAsset, address _vaultAdapter) external onlyOwner {
+		require(
+			quoteToBaseAssets[_baseAsset][_quoteAsset] == address(0), 
+			"Has an available Otus Adapter."
 		); 
-
-		quoteToBaseAssets[_baseAsset][_quoteAsset] = address(adapter); 
-
+		quoteToBaseAssets[_baseAsset][_quoteAsset] = _vaultAdapter; 
 	}
-
-	function getVaultAdapter(address _quoteAsset, address _baseAsset) public view returns (address) {
+	
+	function getVaultAdapter(address _baseAsset, address _quoteAsset) public view returns (address) {
 		require(
 			quoteToBaseAssets[_baseAsset][_quoteAsset] != address(0), 
-			"No Available Otus Adapter for Assets"
+			"No Available Otus Adapter for Assets."
 		); 
-		return quoteToBaseAssets[_quoteAsset][_baseAsset]; 
+		return quoteToBaseAssets[_baseAsset][_quoteAsset]; 
+	}
+
+	function hasVaultAdapter(address _baseAsset, address _quoteAsset) public view returns (bool hasAdapter) {
+		hasAdapter = quoteToBaseAssets[_baseAsset][_quoteAsset] != address(0) ? true : false; 
 	}
 
 }

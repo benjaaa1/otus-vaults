@@ -1,6 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
+// Hardhat
+import "hardhat/console.sol";
+
 import {GWAVOracle} from "@lyrafinance/core/contracts/periphery/GWAVOracle.sol";
 import {DecimalMath} from "@lyrafinance/core/contracts/synthetix/DecimalMath.sol";
 import {SignedDecimalMath} from "@lyrafinance/core/contracts/synthetix/SignedDecimalMath.sol";
@@ -13,6 +16,7 @@ contract OtusAdapter is VaultAdapter {
 	using SignedDecimalMath for int;
 
   GWAVOracle public immutable gwavOracle;
+  address public strategy; 
 
 	constructor(
 		GWAVOracle _gwavOracle,
@@ -29,7 +33,6 @@ contract OtusAdapter is VaultAdapter {
     address _feeCounter
 	) {
     gwavOracle = _gwavOracle;
-
 		setLyraAddresses(
       _curveSwap,
       _optionToken,
@@ -48,7 +51,7 @@ contract OtusAdapter is VaultAdapter {
 	/**
   * @dev set the board id that will be traded for the next round
   */
-  function setBoard(uint boardId, Strategy.Detail calldata currentStrategy) public returns (uint activeExpiry) {
+  function setBoard(uint boardId, Strategy.Detail calldata currentStrategy) public view returns (uint activeExpiry) {
     Board memory board = getBoard(boardId);
     require(_isValidExpiry(
       board.expiry, 
@@ -64,7 +67,7 @@ contract OtusAdapter is VaultAdapter {
    * only add collateral if the additional sell will make the position out of buffer range
    * never remove collateral from an existing position
    */
-  function getRequiredCollateral(
+  function _getRequiredCollateral(
 			OptionType tradeOptionType,
 			Strike memory strike, 
 			Strategy.Detail memory currentStrategy,
@@ -102,7 +105,7 @@ contract OtusAdapter is VaultAdapter {
     // get targetCollat for this trade instance
     // prevents vault from adding excess collat just to meet targetCollat
     uint targetCollat = existingCollateral + _getFullCollateral(tradeOptionType, strike.strikePrice, sellAmount).multiplyDecimal(currentStrategy.collatPercent);
-
+    console.log("targetCollat", targetCollat);
     // if excess collateral, keep in position to encourage more option selling
     setCollateralTo = _max(_max(minBufferCollateral, targetCollat), existingCollateral);
 
@@ -129,9 +132,18 @@ contract OtusAdapter is VaultAdapter {
 
     uint[] memory strikeId = _toDynamic(strike.id);
     uint vol = getVols(strikeId)[0];
+    console.log("vol", vol); 
     int callDelta = getDeltas(strikeId)[0];
+    console.log("callDelta", uint(callDelta)); 
+    console.log("_isCall(tradeOptionType)", _isCall(tradeOptionType));
     int delta = _isCall(tradeOptionType) ? callDelta : callDelta - SignedDecimalMath.UNIT;
+    console.log("delta", uint(delta)); 
     uint deltaGap = _abs(currentStrategy.targetDelta - delta);
+    console.log("deltaGap", deltaGap);
+    console.log("currentStrategy.maxDeltaGap", currentStrategy.maxDeltaGap); 
+    console.log(vol >= currentStrategy.minVol && vol <= currentStrategy.maxVol);
+    console.log(deltaGap < currentStrategy.maxDeltaGap);
+
     return vol >= currentStrategy.minVol && vol <= currentStrategy.maxVol && deltaGap < currentStrategy.maxDeltaGap;
   }
 
@@ -180,7 +192,7 @@ contract OtusAdapter is VaultAdapter {
     uint minCollatWithBuffer = minCollat.multiplyDecimal(collatBuffer);
 
     uint fullCollat = _getFullCollateral(tradeOptionType, strikePrice, amount);
-
+    console.log("fullCollat", fullCollat, amount, strikePrice);
     return _min(minCollatWithBuffer, fullCollat);
   }
 
@@ -221,7 +233,15 @@ contract OtusAdapter is VaultAdapter {
 	}
 
 	function _openPosition(TradeInputParameters memory params) public returns (TradeResult memory result) {
-		result = openPosition(params); 
+    // console.log("_openPosition", msg.sender); 
+
+    // (bool success, bytes memory data) = _market.delegatecall(
+    //     abi.encodeWithSignature("openPosition(VaultAdapter.TradeInputParameters)", params)
+    // );
+    // console.log("success", success); 
+    // result = abi.decode(data, (VaultAdapter.TradeResult)); 
+
+    result = openPosition(params); 
 	} 
 
 	function _closePosition(TradeInputParameters memory params) public returns (TradeResult memory result) {
@@ -246,12 +266,17 @@ contract OtusAdapter is VaultAdapter {
   /************************************************
    *  MISC
    ***********************************************/
+  
+  function test() external pure returns (string memory t) {
+    t = "test";
+  }
 
   function _isBaseCollat(OptionType tradeOptionType) public view returns (bool isBase) {
+    console.log("_isBaseCollat"); 
     isBase = (tradeOptionType == OptionType.SHORT_CALL_BASE) ? true : false;
   }
 
-  function _isCall(OptionType tradeOptionType) public view returns (bool isCall) {
+  function _isCall(OptionType tradeOptionType) public pure returns (bool isCall) {
     isCall = (tradeOptionType == OptionType.SHORT_PUT_QUOTE) ? false : true;
   }
 

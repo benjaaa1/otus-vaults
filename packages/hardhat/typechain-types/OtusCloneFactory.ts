@@ -39,9 +39,12 @@ export declare namespace Vault {
 export interface OtusCloneFactoryInterface extends utils.Interface {
   contractName: "OtusCloneFactory";
   functions: {
-    "_cloneStrategy()": FunctionFragment;
+    "_cloneStrategy(address,address,address)": FunctionFragment;
     "_cloneSupervisor()": FunctionFragment;
     "_cloneVault(string,string,(uint8,uint104,address))": FunctionFragment;
+    "_getStrategy()": FunctionFragment;
+    "_getSupervisor()": FunctionFragment;
+    "_getVault()": FunctionFragment;
     "keeper()": FunctionFragment;
     "otusVault()": FunctionFragment;
     "owner()": FunctionFragment;
@@ -57,7 +60,7 @@ export interface OtusCloneFactoryInterface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: "_cloneStrategy",
-    values?: undefined
+    values: [string, string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "_cloneSupervisor",
@@ -67,6 +70,15 @@ export interface OtusCloneFactoryInterface extends utils.Interface {
     functionFragment: "_cloneVault",
     values: [string, string, Vault.VaultParamsStruct]
   ): string;
+  encodeFunctionData(
+    functionFragment: "_getStrategy",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "_getSupervisor",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "_getVault", values?: undefined): string;
   encodeFunctionData(functionFragment: "keeper", values?: undefined): string;
   encodeFunctionData(functionFragment: "otusVault", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -100,6 +112,15 @@ export interface OtusCloneFactoryInterface extends utils.Interface {
     functionFragment: "_cloneVault",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "_getStrategy",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "_getSupervisor",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "_getVault", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "keeper", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "otusVault", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -194,6 +215,9 @@ export interface OtusCloneFactory extends BaseContract {
 
   functions: {
     _cloneStrategy(
+      otusAdapter: string,
+      _quoteAsset: string,
+      _baseAsset: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -207,6 +231,18 @@ export interface OtusCloneFactory extends BaseContract {
       _vaultParams: Vault.VaultParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    _getStrategy(
+      overrides?: CallOverrides
+    ): Promise<[string] & { userStrategy: string }>;
+
+    _getSupervisor(
+      overrides?: CallOverrides
+    ): Promise<[string] & { userSupervisor: string }>;
+
+    _getVault(
+      overrides?: CallOverrides
+    ): Promise<[string] & { userVault: string }>;
 
     keeper(overrides?: CallOverrides): Promise<[string]>;
 
@@ -240,6 +276,9 @@ export interface OtusCloneFactory extends BaseContract {
   };
 
   _cloneStrategy(
+    otusAdapter: string,
+    _quoteAsset: string,
+    _baseAsset: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -253,6 +292,12 @@ export interface OtusCloneFactory extends BaseContract {
     _vaultParams: Vault.VaultParamsStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  _getStrategy(overrides?: CallOverrides): Promise<string>;
+
+  _getSupervisor(overrides?: CallOverrides): Promise<string>;
+
+  _getVault(overrides?: CallOverrides): Promise<string>;
 
   keeper(overrides?: CallOverrides): Promise<string>;
 
@@ -285,7 +330,12 @@ export interface OtusCloneFactory extends BaseContract {
   vaults(arg0: string, overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
-    _cloneStrategy(overrides?: CallOverrides): Promise<void>;
+    _cloneStrategy(
+      otusAdapter: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     _cloneSupervisor(overrides?: CallOverrides): Promise<void>;
 
@@ -295,6 +345,12 @@ export interface OtusCloneFactory extends BaseContract {
       _vaultParams: Vault.VaultParamsStruct,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    _getStrategy(overrides?: CallOverrides): Promise<string>;
+
+    _getSupervisor(overrides?: CallOverrides): Promise<string>;
+
+    _getVault(overrides?: CallOverrides): Promise<string>;
 
     keeper(overrides?: CallOverrides): Promise<string>;
 
@@ -356,6 +412,9 @@ export interface OtusCloneFactory extends BaseContract {
 
   estimateGas: {
     _cloneStrategy(
+      otusAdapter: string,
+      _quoteAsset: string,
+      _baseAsset: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -369,6 +428,12 @@ export interface OtusCloneFactory extends BaseContract {
       _vaultParams: Vault.VaultParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    _getStrategy(overrides?: CallOverrides): Promise<BigNumber>;
+
+    _getSupervisor(overrides?: CallOverrides): Promise<BigNumber>;
+
+    _getVault(overrides?: CallOverrides): Promise<BigNumber>;
 
     keeper(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -403,6 +468,9 @@ export interface OtusCloneFactory extends BaseContract {
 
   populateTransaction: {
     _cloneStrategy(
+      otusAdapter: string,
+      _quoteAsset: string,
+      _baseAsset: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -416,6 +484,12 @@ export interface OtusCloneFactory extends BaseContract {
       _vaultParams: Vault.VaultParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    _getStrategy(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    _getSupervisor(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    _getVault(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     keeper(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

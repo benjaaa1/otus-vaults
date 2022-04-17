@@ -19,6 +19,21 @@ const _abi = [
         name: "_owner",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "_quoteAsset",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_baseAsset",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_adapter",
+        type: "address",
+      },
     ],
     name: "initialize",
     outputs: [],

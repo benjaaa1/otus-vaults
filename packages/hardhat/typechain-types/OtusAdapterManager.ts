@@ -25,10 +25,11 @@ export interface OtusAdapterManagerInterface extends utils.Interface {
   contractName: "OtusAdapterManager";
   functions: {
     "getVaultAdapter(address,address)": FunctionFragment;
-    "initializeVaultAdapter(address,address,address,address,address,address,address,address,address,address,address,address)": FunctionFragment;
+    "hasVaultAdapter(address,address)": FunctionFragment;
     "owner()": FunctionFragment;
     "quoteToBaseAssets(address,address)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "setVaultAdapter(address,address,address)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
   };
 
@@ -37,21 +38,8 @@ export interface OtusAdapterManagerInterface extends utils.Interface {
     values: [string, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "initializeVaultAdapter",
-    values: [
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string
-    ]
+    functionFragment: "hasVaultAdapter",
+    values: [string, string]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -63,6 +51,10 @@ export interface OtusAdapterManagerInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "setVaultAdapter",
+    values: [string, string, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
@@ -72,7 +64,7 @@ export interface OtusAdapterManagerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "initializeVaultAdapter",
+    functionFragment: "hasVaultAdapter",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -82,6 +74,10 @@ export interface OtusAdapterManagerInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setVaultAdapter",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -133,26 +129,16 @@ export interface OtusAdapterManager extends BaseContract {
 
   functions: {
     getVaultAdapter(
-      _quoteAsset: string,
       _baseAsset: string,
+      _quoteAsset: string,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    initializeVaultAdapter(
-      _gwavOracle: string,
-      _curveSwap: string,
-      _optionToken: string,
-      _optionMarket: string,
-      _liquidityPool: string,
-      _shortCollateral: string,
-      _synthetixAdapter: string,
-      _optionPricer: string,
-      _greekCache: string,
-      _quoteAsset: string,
+    hasVaultAdapter(
       _baseAsset: string,
-      _feeCounter: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+      _quoteAsset: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean] & { hasAdapter: boolean }>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -166,6 +152,13 @@ export interface OtusAdapterManager extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setVaultAdapter(
+      _baseAsset: string,
+      _quoteAsset: string,
+      _vaultAdapter: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -173,26 +166,16 @@ export interface OtusAdapterManager extends BaseContract {
   };
 
   getVaultAdapter(
-    _quoteAsset: string,
     _baseAsset: string,
+    _quoteAsset: string,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  initializeVaultAdapter(
-    _gwavOracle: string,
-    _curveSwap: string,
-    _optionToken: string,
-    _optionMarket: string,
-    _liquidityPool: string,
-    _shortCollateral: string,
-    _synthetixAdapter: string,
-    _optionPricer: string,
-    _greekCache: string,
-    _quoteAsset: string,
+  hasVaultAdapter(
     _baseAsset: string,
-    _feeCounter: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+    _quoteAsset: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -206,6 +189,13 @@ export interface OtusAdapterManager extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setVaultAdapter(
+    _baseAsset: string,
+    _quoteAsset: string,
+    _vaultAdapter: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   transferOwnership(
     newOwner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -213,26 +203,16 @@ export interface OtusAdapterManager extends BaseContract {
 
   callStatic: {
     getVaultAdapter(
-      _quoteAsset: string,
       _baseAsset: string,
+      _quoteAsset: string,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    initializeVaultAdapter(
-      _gwavOracle: string,
-      _curveSwap: string,
-      _optionToken: string,
-      _optionMarket: string,
-      _liquidityPool: string,
-      _shortCollateral: string,
-      _synthetixAdapter: string,
-      _optionPricer: string,
-      _greekCache: string,
-      _quoteAsset: string,
+    hasVaultAdapter(
       _baseAsset: string,
-      _feeCounter: string,
+      _quoteAsset: string,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<boolean>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -243,6 +223,13 @@ export interface OtusAdapterManager extends BaseContract {
     ): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    setVaultAdapter(
+      _baseAsset: string,
+      _quoteAsset: string,
+      _vaultAdapter: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     transferOwnership(
       newOwner: string,
@@ -263,25 +250,15 @@ export interface OtusAdapterManager extends BaseContract {
 
   estimateGas: {
     getVaultAdapter(
-      _quoteAsset: string,
       _baseAsset: string,
+      _quoteAsset: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    initializeVaultAdapter(
-      _gwavOracle: string,
-      _curveSwap: string,
-      _optionToken: string,
-      _optionMarket: string,
-      _liquidityPool: string,
-      _shortCollateral: string,
-      _synthetixAdapter: string,
-      _optionPricer: string,
-      _greekCache: string,
-      _quoteAsset: string,
+    hasVaultAdapter(
       _baseAsset: string,
-      _feeCounter: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      _quoteAsset: string,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
@@ -296,6 +273,13 @@ export interface OtusAdapterManager extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setVaultAdapter(
+      _baseAsset: string,
+      _quoteAsset: string,
+      _vaultAdapter: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -304,25 +288,15 @@ export interface OtusAdapterManager extends BaseContract {
 
   populateTransaction: {
     getVaultAdapter(
-      _quoteAsset: string,
       _baseAsset: string,
+      _quoteAsset: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    initializeVaultAdapter(
-      _gwavOracle: string,
-      _curveSwap: string,
-      _optionToken: string,
-      _optionMarket: string,
-      _liquidityPool: string,
-      _shortCollateral: string,
-      _synthetixAdapter: string,
-      _optionPricer: string,
-      _greekCache: string,
-      _quoteAsset: string,
+    hasVaultAdapter(
       _baseAsset: string,
-      _feeCounter: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      _quoteAsset: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -334,6 +308,13 @@ export interface OtusAdapterManager extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setVaultAdapter(
+      _baseAsset: string,
+      _quoteAsset: string,
+      _vaultAdapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -14,10 +14,23 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "constructor",
   },
+  {
+    inputs: [],
+    name: "openPosition",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ];
 
 const _bytecode =
-  "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220b10c76a0942d43879d5bc2ccd4f85faa2c93ce4f6df617491661e36915dbc20b64736f6c63430008090033";
+  "0x6080604052348015600f57600080fd5b50607780601d6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063350245c214602d575b600080fd5b604080516000815290519081900360200190f3fea2646970667358221220eb1299cdf46317340a0f7c286b510010f7c20406e07cb77967cab9300ade46f064736f6c63430008090033";
 
 type MockOptionMarketConstructorParams =
   | [signer?: Signer]

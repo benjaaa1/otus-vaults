@@ -237,6 +237,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockOptionMarket__factory>;
     getContractFactory(
+      name: "MockOptionToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MockOptionToken__factory>;
+    getContractFactory(
       name: "MockOtusAdapter",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockOtusAdapter__factory>;
@@ -569,6 +573,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.MockOptionMarket>;
+    getContractAt(
+      name: "MockOptionToken",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MockOptionToken>;
     getContractAt(
       name: "MockOtusAdapter",
       address: string,

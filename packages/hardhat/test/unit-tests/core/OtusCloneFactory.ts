@@ -1,4 +1,5 @@
 import { parseEther, parseUnits } from '@ethersproject/units';
+import { ZERO_ADDRESS } from '@lyrafinance/core/dist/scripts/util/web3utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
@@ -90,14 +91,14 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
       const setKeeper = await otusCloneFactory.keeper(); 
       expect(setKeeper).to.be.eq(keeper.address);
     }); 
+    
   });
 
   describe('user settings', async() => {
     it('user should be able to clone a supervisor', async() => {
       await otusCloneFactory.connect(anyone)._cloneSupervisor(); 
-      const supervisor = await otusCloneFactory.supervisors(anyone.address);
-      console.log({ supervisor })
-      expect(supervisor).to.not.be.empty;
+      const supervisor = await otusCloneFactory.connect(anyone)._getSupervisor();
+      expect(supervisor).to.not.be.eq(ZERO_ADDRESS);
       expect(supervisor).to.not.be.eq(mockSupervisor.address);
     })
 
@@ -110,8 +111,8 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
         asset: susd.address
       }); 
 
-      const vault = await otusCloneFactory.vaults(anyone.address); 
-      expect(vault).to.not.be.empty;
+      const vault = await otusCloneFactory.connect(anyone)._getVault(); 
+      expect(vault).to.not.be.eq(ZERO_ADDRESS);
       expect(vault).to.not.be.eq(mockOtusVault.address);
     });
 
@@ -123,25 +124,24 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
         decimals,
         cap, 
         asset: susd.address
-      })).to.be.revertedWith('Needs a supervisor');
+      })).to.be.revertedWith('Has no supervisor');
     });
 
     it('user should be able to clone a strategy if they have a vault address', async() => {
       await otusCloneFactory.connect(anyone)._cloneStrategy(); 
+      const strategy = await otusCloneFactory.connect(anyone)._getStrategy(); 
+      expect(strategy).to.not.be.eq(ZERO_ADDRESS);
+      expect(strategy).to.not.be.eq(mockStrategy.address);
 
-      const vault = await otusCloneFactory.vaults(anyone.address); 
-      const strategy = await otusCloneFactory.strategies(vault); 
-      console.log({ strategy })
-      expect(strategy).to.not.be.empty;
     });
 
     it('user should not be able to clone a strategy if they have no supervisor address', async() => {
-      await expect(otusCloneFactory.connect(noone)._cloneStrategy()).to.be.revertedWith('Needs a supervisor'); 
+      await expect(otusCloneFactory.connect(noone)._cloneStrategy()).to.be.revertedWith('Has no supervisor'); 
     });
 
     it('user should not be able to clone a strategy if they have no vault address', async() => {
       await otusCloneFactory.connect(noone)._cloneSupervisor(); 
-      await expect(otusCloneFactory.connect(noone)._cloneStrategy()).to.be.revertedWith('Needs a vault'); 
+      await expect(otusCloneFactory.connect(noone)._cloneStrategy()).to.be.revertedWith('Has no vault'); 
     });
 
   });

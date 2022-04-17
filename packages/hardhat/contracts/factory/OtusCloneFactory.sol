@@ -1,3 +1,4 @@
+
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
@@ -7,11 +8,15 @@ import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Vault} from "../libraries/Vault.sol";
 
+import {OtusAdapter} from "../OtusAdapter.sol";
+
 interface ISupervisor {
 	function initialize() external; 
 }
 
 interface IOtusVault {
+	function owner() external view returns (address); 
+
 	function initialize(
 		address _owner,
 		address _feeRecipient,
@@ -23,7 +28,13 @@ interface IOtusVault {
 
 interface IStrategy {
 	function owner() external view returns (address); 
-	function initialize(address _vault, address _owner) external; 
+	function initialize(
+		address _vault, 
+    address _owner, 
+    address _quoteAsset, 
+    address _baseAsset,
+    address _adapter
+	) external; 
 }
 
 contract OtusCloneFactory is Ownable {
@@ -57,7 +68,7 @@ contract OtusCloneFactory is Ownable {
 	constructor(address _supervisor, address _otusVault, address _strategy) {
 		supervisor = _supervisor; 
 		otusVault = _otusVault; 
-		strategy = _strategy; 
+		strategy = _strategy;
 	}
 
 	/**
@@ -77,6 +88,11 @@ contract OtusCloneFactory is Ownable {
 		emit NewSupervisorClone(supervisorClone, msg.sender); 
 	}
 
+	function _getSupervisor() public view returns (address userSupervisor) {
+		require(supervisors[msg.sender] != address(0), "Has no supervisor");
+		userSupervisor = supervisors[msg.sender];
+	}
+
   	/**
    	* @notice clones OtusVault contract 
 	* @dev add check if supervisor has staked OTUS can create vault
@@ -86,9 +102,9 @@ contract OtusCloneFactory is Ownable {
 		string memory _tokenSymbol,
 		Vault.VaultParams memory _vaultParams
 	) external {
+		address userSupervisor = _getSupervisor(); 
 		address otusVaultClone = Clones.clone(otusVault);
-		require(supervisors[msg.sender] != address(0), "Needs a supervisor");
-		vaults[supervisors[msg.sender]] = otusVaultClone;
+		vaults[userSupervisor] = otusVaultClone;
 
 		IOtusVault(otusVaultClone).initialize(
 			msg.sender,
@@ -101,39 +117,27 @@ contract OtusCloneFactory is Ownable {
 		emit NewVaultClone(otusVaultClone, msg.sender);
 	}
 
+	function _getVault() public view returns (address userVault) {
+		address userSupervisor = _getSupervisor(); 
+		require(vaults[userSupervisor] != address(0), "Has no vault");
+		userVault = vaults[userSupervisor]; 
+	}
+
   /**
    * @notice Clones strategy contract if supervisor has a vault created
    */
-	function _cloneStrategy() external {
+	function _cloneStrategy(address otusAdapter, address _quoteAsset, address _baseAsset) external {
+		address vault = _getVault(); 
 		address strategyClone = Clones.clone(strategy);
-		require(supervisors[msg.sender] != address(0), "Needs a supervisor");
-		require(vaults[supervisors[msg.sender]] != address(0), "Needs a vault");
-		strategies[vaults[supervisors[msg.sender]]] = strategyClone;
-
-		console.log("strategyClone", strategyClone);
-		console.log("vaults[supervisors[msg.sender]]", vaults[supervisors[msg.sender]]);
-
-		address owner0 = IStrategy(strategy).owner(); 
-		address owner = IStrategy(strategyClone).owner(); 
-		console.log("strategy 0 current owner", owner0); 
-		console.log("strategy clone current owner", owner); 
-		console.log("owner i want to be", msg.sender); 
-
-		IStrategy(strategyClone).initialize(vaults[supervisors[msg.sender]], msg.sender);
-
-		address owner1 = IStrategy(strategyClone).owner();
-		console.log("strategy 1 current owner", owner1); 
-
+		strategies[vault] = strategyClone;
+		IStrategy(strategyClone).initialize(vaults[supervisors[msg.sender]], msg.sender, _quoteAsset, _baseAsset, otusAdapter);
 		emit NewStrategyClone(strategyClone, msg.sender);
 	}
 
+	function _getStrategy() public view returns (address userStrategy) {
+		address userVault = _getVault(); 
+		require(strategies[userVault] != address(0), "Has no strategy");
+		userStrategy = strategies[userVault]; 
+	}
+
 }
-
-
-// Vault adapters can include kwenta connections
-// Vault adapters have a quoteAsset and a baseAsset
-// Example quoteAsset ~ USD baseAsset ~ BTC
-// Multiple strategies can share the same quote and base vault adapters 
-// for now deploy vault adapter for each strategy, vaultadapter has otusmultisig as original owner
-// in clone factory 
-// 
