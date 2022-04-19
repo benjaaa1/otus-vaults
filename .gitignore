@@ -8,6 +8,7 @@ packages/hardhat/*.txt
 **/node_modules
 
 packages/hardhat/artifacts*
+packages/hardhat/typechain-types/*
 packages/hardhat/deployments
 packages/react-app/src/contracts/*
 !packages/react-app/src/contracts/external_contracts.js
@@ -67,3 +68,4 @@ yarn-error.log*
 
 # doc directory
 /doc
+packages/hardhat/typechain-types/MockOtusVault.ts

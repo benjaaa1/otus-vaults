@@ -18,6 +18,7 @@ library Vault {
     uint104 cap;
     // Asset used in Theta / Delta Vault
     address asset;
+
   }
 
   // FIX THIS TOO MANY VARIABLES IN STRUCT

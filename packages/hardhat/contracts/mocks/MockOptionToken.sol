@@ -102,7 +102,6 @@ contract MockOptionToken is Ownable, ERC721Enumerable {
     uint setCollateralTo,
     bool isOpen
   ) external onlyOptionMarket returns (uint, int pendingCollateral) {
-    console.log("adjustPosition");
     OptionPosition storage position;
     if (_positionId == 0) {
       require(trade.amount != 0 && isOpen, "cannot open trade of amount 0 or close position id 0");

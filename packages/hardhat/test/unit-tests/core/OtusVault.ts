@@ -1,5 +1,7 @@
+import { TestSystem } from '@lyrafinance/core';
 import { parseEther, parseUnits } from '@ethersproject/units';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { TestSystemContractsType } from '@lyrafinance/core/dist/test/utils/deployTestSystem';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
@@ -17,11 +19,15 @@ describe('Unit test: Basic OtusVault flow', async () => {
   let seth: MockERC20;
   let susd: MockERC20;
 
+  let lyraTestSystem: TestSystemContractsType;
+
   // signers
+  let deployer: SignerWithAddress;
   let anyone: SignerWithAddress;
   let owner: SignerWithAddress;
   let depositor: SignerWithAddress;
   let feeRecipient: SignerWithAddress;
+  let keeper: SignerWithAddress;
 
   // fix deposit amount at 1 eth
   const depositAmount = parseEther('1');
@@ -38,11 +44,17 @@ describe('Unit test: Basic OtusVault flow', async () => {
 
   before('prepare signers', async () => {
     const addresses = await ethers.getSigners();
-    owner = addresses[0];
-    anyone = addresses[1];
-    depositor = addresses[2];
-    feeRecipient = addresses[3];
+    deployer = addresses[0]
+    owner = addresses[1];
+    anyone = addresses[2];
+    depositor = addresses[3];
+    feeRecipient = addresses[4];
+    keeper = addresses[5];
   });
+
+  before('deploy lyra core', async () => {
+    lyraTestSystem = await TestSystem.deploy(deployer, true, false);
+  })
 
   before('prepare mocked contracts', async () => {
     const MockERC20Factory = await ethers.getContractFactory('MockERC20');
@@ -53,7 +65,18 @@ describe('Unit test: Basic OtusVault flow', async () => {
     mockFuturesMarket = (await MockFuturesMarketFactory.deploy()) as MockFuturesMarket;
 
     const MockStrategyFactory = await ethers.getContractFactory('MockStrategy');
-    mockedStrategy = (await MockStrategyFactory.deploy(susd.address, susd.address)) as MockStrategy;
+    mockedStrategy = (await MockStrategyFactory.deploy(
+      lyraTestSystem.GWAVOracle.address,
+      lyraTestSystem.testCurve.address,
+      lyraTestSystem.optionToken.address,
+      lyraTestSystem.optionMarket.address,
+      lyraTestSystem.liquidityPool.address,
+      lyraTestSystem.shortCollateral.address,
+      lyraTestSystem.synthetixAdapter.address,
+      lyraTestSystem.optionMarketPricer.address,
+      lyraTestSystem.optionGreekCache.address,
+      lyraTestSystem.basicFeeCounter.address as string,
+    )) as MockStrategy;
   });
 
   describe('deploy', async () => {
@@ -66,6 +89,7 @@ describe('Unit test: Basic OtusVault flow', async () => {
       vault = (await OtusVault.connect(owner).deploy(
         mockFuturesMarket.address,
         86400 * 7,
+        keeper.address
       )) as OtusVault;
       
       await vault.connect(owner).initialize(
@@ -73,6 +97,8 @@ describe('Unit test: Basic OtusVault flow', async () => {
         owner.address,
         'OtusVault Share',
         'Otus VS',
+        true, 
+        0,
         {
           decimals,
           cap,
@@ -99,6 +125,8 @@ describe('Unit test: Basic OtusVault flow', async () => {
         owner.address,
         'OtusVault Share',
         'Otus VS',
+        true, 
+        0,
         {
           decimals,
           cap,
@@ -169,6 +197,8 @@ describe('Unit test: Basic OtusVault flow', async () => {
       );
     });
     it('should be able to set strategy', async () => {
+      // initialize mockedstrategy
+      await mockedStrategy.connect(owner).initialize(vault.address, owner.address, susd.address, seth.address);
       // deploy a new mocked strategy
       await vault.connect(owner).setStrategy(mockedStrategy.address);
       expect(await vault.strategy()).to.be.eq(mockedStrategy.address);

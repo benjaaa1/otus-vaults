@@ -7,23 +7,22 @@ import "hardhat/console.sol";
 
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-
-import {VaultAdapter} from '@lyrafinance/core/contracts/periphery/VaultAdapter.sol';
 import {DecimalMath} from "@lyrafinance/core/contracts/synthetix/DecimalMath.sol";
-import './interfaces/IFuturesMarket.sol';
+import {SignedDecimalMath} from "@lyrafinance/core/contracts/synthetix/SignedDecimalMath.sol";
 
 // Libraries
+import {GWAVOracle} from "@lyrafinance/core/contracts/periphery/GWAVOracle.sol";
 import './synthetix/SignedSafeDecimalMath.sol';
 import './synthetix/SafeDecimalMath.sol';
+import './interfaces/IFuturesMarket.sol';
 
 // Vault 
 import {Vault} from "./libraries/Vault.sol";
 import {OtusVault} from "./OtusVault.sol";
-import {OtusAdapter} from "./OtusAdapter.sol";
-import {OtusAdapterManager} from "./OtusAdapterManager.sol";
+import {VaultAdapter} from "./VaultAdapter.sol";
+import {FuturesAdapter} from "./FuturesAdapter.sol";
 
-contract Strategy is OwnableUpgradeable {
+contract Strategy is VaultAdapter {
   using SafeMath for uint;
   using SafeDecimalMath for uint;
   using SignedSafeMath for int;
@@ -40,13 +39,9 @@ contract Strategy is OwnableUpgradeable {
   address public futuresMarket;
 
   OtusVault public otusVault;
-  OtusAdapter public adapter; 
+  GWAVOracle public immutable gwavOracle;
   
-  IERC20 public quoteAsset;
-  IERC20 public baseAsset;
-
-  VaultAdapter.OptionType public tradeOptionType;
-  address public immutable otusAdapterManager; 
+  OptionType public optionType;
   IERC20 public collateralAsset;
 
   uint public currentStrikePrice;
@@ -102,24 +97,45 @@ contract Strategy is OwnableUpgradeable {
    *  ADMIN
    ***********************************************/
 
-  constructor(address _otusAdapterManager) {
-    otusAdapterManager = _otusAdapterManager;
+  constructor(
+    GWAVOracle _gwavOracle,
+    address _curveSwap,
+    address _optionToken,
+    address _optionMarket,
+    address _liquidityPool,
+    address _shortCollateral,
+    address _synthetixAdapter,
+    address _optionPricer,
+    address _greekCache,
+    address _feeCounter
+  ) VaultAdapter(
+    _curveSwap,
+    _optionToken,
+    _optionMarket,
+    _liquidityPool,
+    _shortCollateral,
+    _synthetixAdapter,
+    _optionPricer,
+    _greekCache,
+    _feeCounter
+  ) {
+    gwavOracle = _gwavOracle;
   }
 
   function initialize(
     address _vault, 
     address _owner, 
     address _quoteAsset, 
-    address _baseAsset,
-    address _adapter
-  ) external initializer {
-    __Ownable_init();
-    transferOwnership(_owner);
+    address _baseAsset
+  ) external {    
+    baseInitialize(
+      _owner, 
+      _quoteAsset, 
+      _baseAsset
+    );
     vault = _vault;
     otusVault = OtusVault(_vault); 
-    futuresMarket = otusVault.futuresMarket(); // future kwenta adapter --> otusAdapter
-    
-    adapter = OtusAdapter(_adapter);
+    futuresMarket = otusVault.futuresMarket(); // future kwenta adapter --> vaultadapter
 
     quoteAsset = IERC20(_quoteAsset); 
     baseAsset = IERC20(_baseAsset); 
@@ -148,80 +164,140 @@ contract Strategy is OwnableUpgradeable {
     currentStrategy = _strategy;
     currentHedgeStrategy = _hedgeStrategy;
 
-    tradeOptionType = VaultAdapter.OptionType(_tradeOptionType); 
-    collateralAsset = adapter._isBaseCollat(tradeOptionType) ? baseAsset : quoteAsset;
+    optionType = OptionType(_tradeOptionType); 
+    collateralAsset = _isBaseCollat() ? baseAsset : quoteAsset;
   }
 
-  /************************************************
-  *  VAULT ACTIONS
-  ***********************************************/
-   
-  /**
-  * @dev set the board id that will be traded for the next round
-  */
-  function setBoard(uint boardId) public onlyVault {
-    activeExpiry = adapter.setBoard(boardId, currentStrategy);
-  }
+  ///////////////////
+  // VAULT ACTIONS //
+  ///////////////////
 
   /**
-   * @dev convert premium into quote asset and send it back to the vault.
+   * @dev set the board id that will be traded for the next round
+   * @param boardId lyra board Id.
+   */
+  function setBoard(uint boardId) external onlyVault {
+    Board memory board = getBoard(boardId);
+    require(_isValidExpiry(board.expiry), "invalid board");
+    activeExpiry = board.expiry;
+  }
+
+
+  /**
+   * @dev convert premium in quote asset into collateral asset and send it back to the vault.
    */
   function returnFundsAndClearStrikes() external onlyVault {
-    VaultAdapter.ExchangeRateParams memory exchangeParams = adapter._getExchangeParams();
+    ExchangeRateParams memory exchangeParams = getExchangeParams();
     uint quoteBal = quoteAsset.balanceOf(address(this));
 
-    uint quoteReceived = 0;
-    if (adapter._isBaseCollat(tradeOptionType)) {
-      // todo: double check this
+    if (_isBaseCollat()) {
+      // exchange quote asset to base asset, and send base asset back to vault
       uint baseBal = baseAsset.balanceOf(address(this));
-      uint minQuoteExpected = baseBal.multiplyDecimal(exchangeParams.spotPrice).multiplyDecimal(
+      uint minQuoteExpected = quoteBal.divideDecimal(exchangeParams.spotPrice).multiplyDecimal(
         DecimalMath.UNIT - exchangeParams.baseQuoteFeeRate
       );
-      quoteReceived = adapter._exchangeFromExactBase(baseBal, minQuoteExpected);
+      uint baseReceived = exchangeFromExactQuote(quoteBal, minQuoteExpected);
+      require(baseAsset.transfer(address(vault), baseBal + baseReceived), "failed to return funds from strategy");
+    } else {
+      // send quote balance directly
+      require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
     }
-    require(quoteAsset.transfer(address(vault), quoteBal + quoteReceived), "failed to return funds from strategy");
 
     _clearAllActiveStrikes();
   }
 
-  /**
-  * @notice request trade detail according to the strategy. 
-  */
-  function startTradeForRound(uint strikeId, uint collateral) 
-    external onlyVault returns (
+
+    /**
+   * @notice sell a fix aomunt of options and collect premium
+   * @dev the vault should pass in a strike id, and the strategy would verify if the strike is valid on-chain.
+   * @param strikeId lyra strikeId to trade
+   * @return positionId
+   * @return premiumReceived
+   */
+  function doTrade(uint strikeId)
+    external
+    onlyVault
+    returns (
       uint positionId,
       uint premiumReceived,
       uint collateralToAdd
-    ) {
-
+    )
+  {
     // validate trade
     require(
       lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <= block.timestamp,
       "min time interval not passed"
     );
-    require(adapter._isValidVolVariance(strikeId, currentStrategy.maxVolVariance, currentStrategy.gwavPeriod), "vol variance exceeded");
+    require(_isValidVolVariance(strikeId), "vol variance exceeded");
 
-    VaultAdapter.Strike memory strike = adapter._getStrikes(_toDynamic(strikeId))[0];
-    require(adapter.isValidStrike(strike, currentStrategy, activeExpiry, tradeOptionType), "invalid strike");
+    Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
+    require(isValidStrike(strike), "invalid strike");
 
-    uint currentPositionId = strikeToPositionId[strike.id]; 
-    uint setCollateralTo; 
-    (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike, currentPositionId);
+    uint setCollateralTo;
+    (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike);
 
     require(
-      collateralAsset.transferFrom(address(vault), address(adapter), collateralToAdd),
+      collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
       "collateral transfer from vault failed"
     );
 
-    // multiply setCollateralTo
-    (positionId, premiumReceived) = sellStrike(strike, setCollateralTo);
-    
-    // set strike 
-    currentStrikePrice = strike.strikePrice; 
+    (positionId, premiumReceived) = _sellStrike(strike, setCollateralTo);
+  }
+  
+  // function calcualteStrategySize(uint currentSize) internal returns (uint strategySize) {
+  //   if (vType == VaultType.SHORT_CALL || vType == VaultType.SHORT_PUT) {
+  //     strategySize = currentSize; 
+  //   }
 
-    // uint256 hedgeCollateral = collateral.sub(collateral.multiplyDecimal(currentHedgeStrategy.hedgePercentage / 100));
-    // IFuturesMarket(futuresMarket).transferMargin(int256(hedgeCollateral));
+  //   if (vType == VaultType.APE_BULL) {
+  //     strategySize = currentSize.multiplyDecimal(.8); // .2 for collateral
+  //   }
 
+  //   if (vType == VaultType.SHORT_STRADDLE) {
+  //     strategySize = currentSize.divideDecimalRound(2); // need half collateral for sell put and ssell call
+  //   }
+  // }
+  /**
+   * @dev calculate required collateral to add in the next trade.
+   * sell size is fixed as currentStrategy.size
+   * only add collateral if the additional sell will make the position out of buffer range
+   * never remove collateral from an existing position
+   */
+  function getRequiredCollateral(Strike memory strike)
+    public
+    view
+    returns (uint collateralToAdd, uint setCollateralTo)
+  {
+    uint sellAmount = currentStrategy.size;
+    ExchangeRateParams memory exchangeParams = getExchangeParams();
+
+    // get existing position info if active
+    uint existingAmount = 0;
+    uint existingCollateral = 0;
+    if (_isActiveStrike(strike.id)) {
+      OptionPosition memory position = getPositions(_toDynamic(strikeToPositionId[strike.id]))[0];
+      existingCollateral = position.collateral;
+      existingAmount = position.amount;
+    }
+
+    // gets minBufferCollat for the whole position
+    uint minBufferCollateral = _getBufferCollateral(
+      strike.strikePrice,
+      strike.expiry,
+      exchangeParams.spotPrice,
+      existingAmount + sellAmount
+    );
+
+    // get targetCollat for this trade instance
+    // prevents vault from adding excess collat just to meet targetCollat
+    uint targetCollat = existingCollateral +
+      _getFullCollateral(strike.strikePrice, sellAmount).multiplyDecimal(currentStrategy.collatPercent);
+
+    // if excess collateral, keep in position to encourage more option selling
+    setCollateralTo = _max(_max(minBufferCollateral, targetCollat), existingCollateral);
+
+    // existingCollateral is never > setCollateralTo
+    collateralToAdd = setCollateralTo - existingCollateral;
   }
 
   /**
@@ -231,34 +307,24 @@ contract Strategy is OwnableUpgradeable {
    * @return positionId
    * @return premiumReceived
    */
-  function sellStrike(
-    VaultAdapter.Strike memory strike,
+  function _sellStrike(
+    Strike memory strike,
     uint setCollateralTo
   ) internal returns (uint, uint) {
     // get minimum expected premium based on minIv
-    uint minExpectedPremium = adapter._getPremiumLimit(
-      strike, 
-      true, 
-      currentStrategy,
-      tradeOptionType
-    );
-
-    // before trade is performed send collateral needed to adapter
-    // bring back when trade is complete 
-    // and then all the way back to vault
-
-    // perform trade  
-    VaultAdapter.TradeResult memory result = adapter._openPosition(
-      VaultAdapter.TradeInputParameters({
+    uint minExpectedPremium = _getPremiumLimit(strike, true);
+    // perform trade
+    TradeResult memory result = openPosition(
+      TradeInputParameters({
         strikeId: strike.id,
         positionId: strikeToPositionId[strike.id],
-        iterations: 1,
-        optionType: tradeOptionType,
-        amount: currentStrategy.size,
+        iterations: 4,
+        optionType: optionType,
+        amount: currentStrategy.size, // size should be different depending on strategy 
         setCollateralTo: setCollateralTo,
         minTotalCost: minExpectedPremium,
         maxTotalCost: type(uint).max,
-        rewardRecipient: otusVault.supervisor() // set to zero address if don't want to wait for whitelist
+        rewardRecipient: address(0) // set to zero address if don't want to wait for whitelist
       })
     );
     lastTradeTimestamp[strike.id] = block.timestamp;
@@ -274,48 +340,46 @@ contract Strategy is OwnableUpgradeable {
   /**
    * @dev use premium in strategy to reduce position size if collateral ratio is out of range
    */
-  function reducePosition(uint positionId) external onlyVault {
-    VaultAdapter.OptionPosition memory position = adapter._getPositions(_toDynamic(positionId))[0];
-    VaultAdapter.Strike memory strike = adapter._getStrikes(_toDynamic(position.strikeId))[0];
-    VaultAdapter.ExchangeRateParams memory exchangeParams = adapter._getExchangeParams();
-
-    require(strikeToPositionId[position.strikeId] != positionId, "invalid positionId");
+  function reducePosition(
+    uint positionId,
+    uint closeAmount
+  ) external onlyVault {
+    OptionPosition memory position = getPositions(_toDynamic(positionId))[0];
+    Strike memory strike = getStrikes(_toDynamic(position.strikeId))[0];
+    require(strikeToPositionId[position.strikeId] == positionId, "invalid positionId");
 
     // only allows closing if collat < minBuffer
-    uint minCollatPerAmount = adapter._getBufferCollateral(
-      tradeOptionType,
-      strike.strikePrice, 
-      strike.expiry, 
-      exchangeParams.spotPrice, 
-      1e18,
-      currentStrategy.collatBuffer
-    );
     require(
-      position.collateral < minCollatPerAmount.multiplyDecimal(position.amount),
-      "position properly collateralized"
+      closeAmount <= getAllowedCloseAmount(position, strike.strikePrice, strike.expiry),
+      "amount exceeds allowed close amount"
     );
 
     // closes excess position with premium balance
-    uint closeAmount = position.amount - position.collateral.divideDecimal(minCollatPerAmount);
-    uint maxExpectedPremium = adapter._getPremiumLimit(strike, false, currentStrategy, tradeOptionType);
-    VaultAdapter.TradeResult memory result = adapter._closePosition(
-      VaultAdapter.TradeInputParameters({
-        strikeId: position.strikeId,
-        positionId: position.positionId,
-        iterations: 3,
-        optionType: tradeOptionType,
-        amount: closeAmount,
-        setCollateralTo: position.collateral,
-        minTotalCost: type(uint).min,
-        maxTotalCost: maxExpectedPremium,
-        rewardRecipient: otusVault.supervisor() // set to zero address if don't want to wait for whitelist
-      })
-    );
+    uint maxExpectedPremium = _getPremiumLimit(strike, false);
+    TradeInputParameters memory tradeParams = TradeInputParameters({
+      strikeId: position.strikeId,
+      positionId: position.positionId,
+      iterations: 3,
+      optionType: optionType,
+      amount: closeAmount,
+      setCollateralTo: position.collateral,
+      minTotalCost: type(uint).min,
+      maxTotalCost: maxExpectedPremium,
+      rewardRecipient: address(0) // set to zero address if don't want to wait for whitelist
+    });
+
+    TradeResult memory result;
+    if (!_isOutsideDeltaCutoff(strike.id)) {
+      result = closePosition(tradeParams);
+    } else {
+      // will pay less competitive price to close position
+      result = forceClosePosition(tradeParams);
+    }
 
     require(result.totalCost <= maxExpectedPremium, "premium paid is above max expected premium");
 
     // return closed collateral amount
-    if (adapter._isBaseCollat(tradeOptionType)) {
+    if (_isBaseCollat()) {
       uint currentBal = baseAsset.balanceOf(address(this));
       baseAsset.transfer(address(vault), currentBal);
     } else {
@@ -324,18 +388,20 @@ contract Strategy is OwnableUpgradeable {
     }
   }
 
-  function getRequiredCollateral(
-    VaultAdapter.Strike memory strike, 
-    uint positionId
-  ) public view returns (uint collateraToAdd, uint setCollateralTo) {
-    bool isActiveStrike = _isActiveStrike(strike.id); 
-    (collateraToAdd, setCollateralTo) = adapter._getRequiredCollateral(
-      tradeOptionType,
-      strike,
-      currentStrategy,
-      positionId,
-      isActiveStrike
-    );
+  /**
+   * @dev calculates the position amount required to stay above the buffer collateral
+   */
+  function getAllowedCloseAmount(
+    OptionPosition memory position,
+    uint strikePrice,
+    uint strikeExpiry
+  ) public view returns (uint closeAmount) {
+    ExchangeRateParams memory exchangeParams = getExchangeParams();
+    uint minCollatPerAmount = _getBufferCollateral(strikePrice, strikeExpiry, exchangeParams.spotPrice, 1e18);
+
+    closeAmount = position.collateral < minCollatPerAmount.multiplyDecimal(position.amount)
+      ? position.amount - position.collateral.divideDecimal(minCollatPerAmount)
+      : 0;
   }
 
   /************************************************
@@ -378,7 +444,7 @@ contract Strategy is OwnableUpgradeable {
 
   function calculateHedgePositionSize() internal view returns (uint totalHedgeSizeAfterFees) {
     // for now we do a full hedge
-    uint hedgeCollat = adapter._getFullCollateral(tradeOptionType, currentStrikePrice, currentStrategy.size)
+    uint hedgeCollat = _getFullCollateral(currentStrikePrice, currentStrategy.size)
       .multiplyDecimal(1 - currentStrategy.collatPercent).multiplyDecimal(currentHedgeStrategy.leverageSize);
 
     (uint fee, ) = IFuturesMarket(futuresMarket).orderFee(int(hedgeCollat));
@@ -386,16 +452,111 @@ contract Strategy is OwnableUpgradeable {
     totalHedgeSizeAfterFees = hedgeCollat - fee; 
   }
 
-	/************************************************
-   *  ACTIVE STRIKE MANAGEMENT
-   ***********************************************/
+  ////////////////
+  // Validation //
+  ////////////////
+
+  /**
+   * @dev verify if the strike is valid for the strategy
+   * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
+   */
+  function isValidStrike(Strike memory strike) public view returns (bool isValid) {
+    if (activeExpiry != strike.expiry) {
+      return false;
+    }
+
+    uint[] memory strikeId = _toDynamic(strike.id);
+    uint vol = getVols(strikeId)[0];
+    int callDelta = getDeltas(strikeId)[0];
+    int delta = _isCall() ? callDelta : callDelta - SignedDecimalMath.UNIT;
+    uint deltaGap = _abs(currentStrategy.targetDelta - delta);
+    return vol >= currentStrategy.minVol && vol <= currentStrategy.maxVol && deltaGap < currentStrategy.maxDeltaGap;
+  }
+
+  /**
+   * @dev check if the vol variance for the given strike is within certain range
+   */
+  function _isValidVolVariance(uint strikeId) internal view returns (bool isValid) {
+    uint volGWAV = gwavOracle.volGWAV(strikeId, currentStrategy.gwavPeriod);
+    uint volSpot = getVols(_toDynamic(strikeId))[0];
+
+    uint volDiff = (volGWAV >= volSpot) ? volGWAV - volSpot : volSpot - volGWAV;
+
+    return isValid = volDiff < currentStrategy.maxVolVariance;
+  }
+
+  /**
+   * @dev check if the expiry of the board is valid according to the strategy
+   */
+  function _isValidExpiry(uint expiry) public view returns (bool isValid) {
+    uint secondsToExpiry = _getSecondsToExpiry(expiry);
+    isValid = (secondsToExpiry >= currentStrategy.minTimeToExpiry &&
+      secondsToExpiry <= currentStrategy.maxTimeToExpiry);
+  }
+
+   /////////////////////////////
+  // Trade Parameter Helpers //
+  /////////////////////////////
+
+  function _getFullCollateral(uint strikePrice, uint amount) internal view returns (uint fullCollat) {
+    // calculate required collat based on collatBuffer and collatPercent
+    fullCollat = _isBaseCollat() ? amount : amount.multiplyDecimal(strikePrice);
+  }
+
+  /**
+   * @dev get amount of collateral needed for shorting {amount} of strike, according to the strategy
+   */
+  function _getBufferCollateral(
+    uint strikePrice,
+    uint expiry,
+    uint spotPrice,
+    uint amount
+  ) internal view returns (uint) {
+    uint minCollat = getMinCollateral(optionType, strikePrice, expiry, spotPrice, amount);
+    uint minCollatWithBuffer = minCollat.multiplyDecimal(currentStrategy.collatBuffer);
+
+    uint fullCollat = _getFullCollateral(strikePrice, amount);
+
+    return _min(minCollatWithBuffer, fullCollat);
+  }
+
+  /**
+   * @dev get minimum premium that the vault should receive.
+   * param listingId lyra option listing id
+   * param size size of trade in Lyra standard sizes
+   */
+  function _getPremiumLimit(Strike memory strike, bool isMin) internal view returns (uint limitPremium) {
+    ExchangeRateParams memory exchangeParams = getExchangeParams();
+    uint limitVol = isMin ? currentStrategy.minVol : currentStrategy.maxVol;
+    (uint minCallPremium, uint minPutPremium) = getPurePremium(
+      _getSecondsToExpiry(strike.expiry),
+      limitVol,
+      exchangeParams.spotPrice,
+      strike.strikePrice
+    );
+
+    limitPremium = _isCall()
+      ? minCallPremium.multiplyDecimal(currentStrategy.size)
+      : minPutPremium.multiplyDecimal(currentStrategy.size);
+  }
+
+  /**
+   * @dev use latest optionMarket delta cutoff to determine whether trade delta is out of bounds
+   */
+  function _isOutsideDeltaCutoff(uint strikeId) internal view returns (bool) {
+    MarketParams memory marketParams = getMarketParams();
+    int callDelta = getDeltas(_toDynamic(strikeId))[0];
+    return callDelta > (int(DecimalMath.UNIT) - marketParams.deltaCutOff) || callDelta < marketParams.deltaCutOff;
+  }
+
+  //////////////////////////////
+  // Active Strike Management //
+  //////////////////////////////
+
   /**
    * @dev add strike id to activeStrikeIds array
    */
-  function _addActiveStrike(
-			uint strikeId, 
-			uint tradedPositionId
-		) internal {
+  function _addActiveStrike(uint strikeId, uint tradedPositionId) internal {
     if (!_isActiveStrike(strikeId)) {
       strikeToPositionId[strikeId] = tradedPositionId;
       activeStrikeIds.push(strikeId);
@@ -405,27 +566,15 @@ contract Strategy is OwnableUpgradeable {
   /**
    * @dev remove position data opened in the current round.
    * this can only be called after the position is settled by lyra
-	 * probably should be on strategy *****
    **/
   function _clearAllActiveStrikes() internal {
     if (activeStrikeIds.length != 0) {
-
-      uint[] memory positionIds; 
-
       for (uint i = 0; i < activeStrikeIds.length; i++) {
         uint strikeId = activeStrikeIds[i];
-        uint positionId = strikeToPositionId[strikeId]; 
-        positionIds[i] = positionId; 
-      }
-
-      VaultAdapter.OptionPosition[] memory positions = adapter._getPositions(positionIds); 
-
-      uint positionIdsLen = positions.length; 
-      VaultAdapter.OptionPosition memory position;
-      for(uint i = 0; i < positionIdsLen; i++) {
-        position = positions[i];
-        require(position.state != VaultAdapter.PositionState.ACTIVE, "cannot clear active position");
-        delete strikeToPositionId[position.strikeId];
+        OptionPosition memory position = getPositions(_toDynamic(strikeToPositionId[strikeId]))[0];
+        // revert if position state is not settled
+        require(position.state != PositionState.ACTIVE, "cannot clear active position");
+        delete strikeToPositionId[strikeId];
         delete lastTradeTimestamp[i];
       }
       delete activeStrikeIds;
@@ -436,8 +585,39 @@ contract Strategy is OwnableUpgradeable {
     isActive = strikeToPositionId[strikeId] != 0;
   }
 
+  //////////
+  // Misc //
+  //////////
+
+  function _isBaseCollat() internal view returns (bool isBase) {
+    isBase = (optionType == OptionType.SHORT_CALL_BASE) ? true : false;
+  }
+
+  function _isCall() internal view returns (bool isCall) {
+    isCall = (optionType == OptionType.SHORT_PUT_QUOTE) ? false : true;
+  }
+
+  function _getSecondsToExpiry(uint expiry) internal view returns (uint) {
+    require(block.timestamp <= expiry, "timestamp expired");
+    return expiry - block.timestamp;
+  }
+
+  function _abs(int val) internal pure returns (uint) {
+    return val >= 0 ? uint(val) : uint(-val);
+  }
+
+  function _min(uint x, uint y) internal pure returns (uint) {
+    return (x < y) ? x : y;
+  }
+
+  function _max(uint x, uint y) internal pure returns (uint) {
+    return (x > y) ? x : y;
+  }
+
+  // temporary fix - eth core devs promised Q2 2022 fix
   function _toDynamic(uint val) internal pure returns (uint[] memory dynamicArray) {
     dynamicArray = new uint[](1);
     dynamicArray[0] = val;
   }
+
 }

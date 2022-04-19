@@ -1,25 +1,75 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import {IERC20Detailed} from "../interfaces/IERC20Detailed.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+// Hardhat
+import "hardhat/console.sol";
 
-contract MockStrategy is OwnableUpgradeable {
-  IERC20Detailed public immutable collateral;
-  IERC20Detailed public immutable premium;
+import {GWAVOracle} from "@lyrafinance/core/contracts/periphery/GWAVOracle.sol";
+import {IERC20Detailed} from "../interfaces/IERC20Detailed.sol";
+import {VaultAdapter} from "../VaultAdapter.sol";
+// Interfaces
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {DecimalMath} from "@lyrafinance/core/contracts/synthetix/DecimalMath.sol";
+import "../interfaces/IFuturesMarket.sol";
+import "./MockOtusVault.sol";
+
+contract MockStrategy is VaultAdapter {
+  GWAVOracle public immutable gwavOracle;
+
+  IERC20Detailed public collateral;
+  IERC20Detailed public premium;
 
   uint public tradePremiumAmount;
   uint public tradeCollateralAmount;
 
   uint public boardId;  
 
-  constructor(IERC20Detailed _premiumToken, IERC20Detailed _collateralToken) {
-    collateral = _collateralToken;
-    premium = _premiumToken;
+  address public vault;
+  address public futuresMarket;
+  MockOtusVault public otusVault;
+
+  constructor(
+    GWAVOracle _gwavOracle,
+    address _curveSwap,
+    address _optionToken,
+    address _optionMarket,
+    address _liquidityPool,
+    address _shortCollateral,
+    address _synthetixAdapter,
+    address _optionPricer,
+    address _greekCache,
+    address _feeCounter
+  ) VaultAdapter(
+    _curveSwap,
+    _optionToken,
+    _optionMarket,
+    _liquidityPool,
+    _shortCollateral,
+    _synthetixAdapter,
+    _optionPricer,
+    _greekCache,
+    _feeCounter
+  ) {
+    gwavOracle = _gwavOracle;
   }
-  function initialize(address _vault, address _owner) external initializer {
-    __Ownable_init();
-    transferOwnership(_owner);
+
+  function initialize(
+    address _vault, 
+    address _owner, 
+    address _quoteAsset, 
+    address _baseAsset
+  ) external {    
+    baseInitialize(
+      _owner, 
+      _quoteAsset, 
+      _baseAsset
+    );
+    vault = _vault;
+    otusVault = MockOtusVault(_vault); 
+    futuresMarket = otusVault.futuresMarket(); // future kwenta adapter --> vaultadapter
+
+    collateral = IERC20Detailed(_baseAsset);
+    premium = IERC20Detailed(_quoteAsset);
   }
   
   function setBoard(uint _boardId) public {

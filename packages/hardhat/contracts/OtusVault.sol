@@ -1,6 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
+// Hardhat
+import "hardhat/console.sol";
+
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -13,6 +16,13 @@ import {Strategy} from "./Strategy.sol";
 /// @notice LyraVault help users run option-selling strategies on Lyra AMM.
 contract OtusVault is BaseVault {
   using SafeMath for uint;
+
+  /************************************************
+  *  IMMUTABLES & CONSTANTS
+  ***********************************************/
+
+  // IFuturesMarket public immutable futuresMarket;
+  address public immutable futuresMarket;
 
   address public supervisor; 
   string public vaultName; 
@@ -28,12 +38,18 @@ contract OtusVault is BaseVault {
 
   IERC20 collateralAsset; 
 
-  /************************************************
-   *  IMMUTABLES & CONSTANTS
-   ***********************************************/
+  enum VaultType {
+    SHORT_PUT,
+    SHORT_CALL,
+    APE_BULL, 
+    APE_BEAR,
+    IRON_CONDOR,
+    SHORT_STRADDLE
+  }
 
-  // IFuturesMarket public immutable futuresMarket;
-  address public immutable futuresMarket;
+  // add details for for vault type ~
+  VaultType public vType; 
+  bool public isPublic;
 
   /************************************************
    *  EVENTS
@@ -41,7 +57,7 @@ contract OtusVault is BaseVault {
 
   event StrategyUpdated(address strategy);
 
-  event Trade(address user, uint16 roundId, uint premium);
+  event Trade(address user, uint positionId, uint16 roundId, uint premium);
 
   event RoundStarted(uint16 roundId, uint104 lockAmount);
 
@@ -66,9 +82,11 @@ contract OtusVault is BaseVault {
 
   constructor(
     address _futuresMarket,
-    uint _roundDuration
+    uint _roundDuration,
+    address _keeper
   ) BaseVault(_roundDuration) {
     futuresMarket = _futuresMarket;
+    keeper = _keeper; 
   }
 
   /**
@@ -80,9 +98,13 @@ contract OtusVault is BaseVault {
     address _supervisor, 
     string memory _tokenName,
     string memory _tokenSymbol,
+    bool _isPublic, 
+    uint _vaultType,
     Vault.VaultParams memory _vaultParams
   ) external {
     supervisor = _supervisor; 
+    isPublic = _isPublic; 
+    vType = VaultType(_vaultType); 
     baseInitialize(
       _owner,
       _supervisor, 
@@ -131,23 +153,24 @@ contract OtusVault is BaseVault {
     emit RoundClosed(vaultState.round, lockAmount);
   }
 
-  /************************************************
-   *  KEEPER ACTIONS
-   ***********************************************/
 
   /**
    * @notice Start the next/new round
    */
   function startNextRound(uint boardId) external onlyOwner {
     //can't start next round before outstanding expired positions are settled. 
+    console.log("vaultState.roundInProgress", vaultState.roundInProgress);
     require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
 
     // move this to be set auto 
     strategy.setBoard(boardId);
+    console.log("lastQueuedWithdrawAmount", uint(lastQueuedWithdrawAmount)); 
+
+    console.log("balance", IERC20(address(collateralAsset)).balanceOf(address(this))); 
 
     (uint lockedBalance, uint queuedWithdrawAmount) = _rollToNextRound(uint(lastQueuedWithdrawAmount));
-
+    console.log("lockedBalance", lockedBalance); 
     vaultState.lockedAmount = uint104(lockedBalance);
     vaultState.lockedAmountLeft = lockedBalance;
     vaultState.roundInProgress = true;
@@ -157,32 +180,50 @@ contract OtusVault is BaseVault {
     emit RoundStarted(vaultState.round, uint104(lockedBalance));
   }
 
-
-  /**
-   * @notice Start the trade for the next/new round depending on strategy
-   */
-  function trade(uint strikeId) external {
+  /*
+  * Depending on vault type here we need some switch or if statements to redirect to proper function
+  */
+  function trade(uint strikeId) external onlyOwner {
     // can only make a trade after the next round is in progress and before trade period 
     // after everything we should update a vaultState param to show trade in progress
     // period between startnextround and closeround
     require(vaultState.roundInProgress, "round closed");
-    uint currentCollateral = collateralAsset.balanceOf(address(this));
-    (uint positionId, uint premiumReceived, uint collateralAdded) = strategy.startTradeForRound(strikeId, currentCollateral);
-    uint collateralAfter = collateralAsset.balanceOf(address(this));
-    uint assetUsed = currentCollateral.sub(collateralAfter);
+    // ape bull
+    if (vType == VaultType.APE_BULL) {
+      _trade(strikeId);
+      _hedge(); 
+    }
 
-    vaultState.lockedAmountLeft = vaultState.lockedAmountLeft.sub(assetUsed);
-    
-    roundPremiumCollected = premiumReceived;
+    // sell put sell call
+    if (vType == VaultType.SHORT_CALL || vType == VaultType.SHORT_PUT) {
+      _trade(strikeId);
+    }
 
-    emit Trade(msg.sender, vaultState.round, premiumReceived);
   }
+
+  /**
+   * @notice Start the trade for the next/new round depending on strategy
+   */
+  function _trade(uint strikeId) internal {
+    (uint positionId, uint premiumReceived, uint collateralAdded) = strategy.doTrade(strikeId);
+    roundPremiumCollected = premiumReceived;
+    // update the remaining locked amount
+    console.log("vaultState.lockedAmountLeft", vaultState.lockedAmountLeft, collateralAdded);
+    vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - collateralAdded;
+    emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
+  }
+
+  function _hedge() internal {}
 
   /// @dev anyone close part of the position with premium made by the strategy if a position is dangerous
   /// @param positionId the positiion to close
-  function reducePosition(uint positionId) external onlyKeeper {
-    strategy.reducePosition(positionId);
+  function reducePosition(uint positionId, uint closeAmount) external onlyKeeper {
+    strategy.reducePosition(positionId, closeAmount);
   }
+
+  /************************************************
+   *  KEEPER ACTIONS
+   ***********************************************/
 
   /**
    * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
@@ -192,7 +233,7 @@ contract OtusVault is BaseVault {
     activeShort = strategy._openKwentaPosition(roundHedgeAttempts);
   }
 
-  /**
+  /**\
   * @dev called by keeper 
   * update vault collateral, call 
   */

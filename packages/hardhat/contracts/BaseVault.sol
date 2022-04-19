@@ -308,7 +308,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     // This checks if there is a withdrawal
     require(withdrawalShares > 0, "Not initiated");
-
+    console.log("withdrawalRound", withdrawalRound, vaultState.round); 
     require(withdrawalRound < vaultState.round, "Round in progress");
 
     // We leave the round number as non-zero to save on gas for subsequent writes
@@ -414,9 +414,9 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     uint withdrawAmountDiff = queuedWithdrawAmount > lastQueuedWithdrawAmount
       ? queuedWithdrawAmount.sub(lastQueuedWithdrawAmount)
       : 0;
-
+    console.log("lockedBalance", lockedBalance); 
     // Take management / performance fee from previous round and deduct
-    lockedBalance = lockedBalance.sub(lockedBalance.add(withdrawAmountDiff));
+    lockedBalance = lockedBalance.sub(_collectVaultFees(lockedBalance.add(withdrawAmountDiff)));
     // take fees from premium collected here / profit made in week
     uint256 pastRoundProfit = currentBalance - vaultState.lastLockedAmount; 
     

@@ -8,8 +8,6 @@ import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Vault} from "../libraries/Vault.sol";
 
-import {OtusAdapter} from "../OtusAdapter.sol";
-
 interface ISupervisor {
 	function initialize() external; 
 }
@@ -22,6 +20,8 @@ interface IOtusVault {
 		address _feeRecipient,
 		string memory _tokenName,
 		string memory _tokenSymbol,
+		bool isPublic, 
+		uint _vaultType,
 		Vault.VaultParams memory _vaultParams
 	) external; 
 }
@@ -29,11 +29,10 @@ interface IOtusVault {
 interface IStrategy {
 	function owner() external view returns (address); 
 	function initialize(
-		address _vault, 
+		address _vault,
     address _owner, 
     address _quoteAsset, 
-    address _baseAsset,
-    address _adapter
+    address _baseAsset
 	) external; 
 }
 
@@ -100,6 +99,8 @@ contract OtusCloneFactory is Ownable {
 	function _cloneVault(
 		string memory _tokenName,
 		string memory _tokenSymbol,
+		bool isPublic, 
+		uint _vaultType,
 		Vault.VaultParams memory _vaultParams
 	) external {
 		address userSupervisor = _getSupervisor(); 
@@ -111,6 +112,8 @@ contract OtusCloneFactory is Ownable {
 			supervisors[msg.sender], 
 			_tokenName, 
 			_tokenSymbol,
+			isPublic, 
+			_vaultType,
 			_vaultParams
 		);
 
@@ -126,11 +129,11 @@ contract OtusCloneFactory is Ownable {
   /**
    * @notice Clones strategy contract if supervisor has a vault created
    */
-	function _cloneStrategy(address otusAdapter, address _quoteAsset, address _baseAsset) external {
+	function _cloneStrategy(address _quoteAsset, address _baseAsset) external {
 		address vault = _getVault(); 
 		address strategyClone = Clones.clone(strategy);
 		strategies[vault] = strategyClone;
-		IStrategy(strategyClone).initialize(vaults[supervisors[msg.sender]], msg.sender, _quoteAsset, _baseAsset, otusAdapter);
+		IStrategy(strategyClone).initialize(vaults[supervisors[msg.sender]], msg.sender, _quoteAsset, _baseAsset);
 		emit NewStrategyClone(strategyClone, msg.sender);
 	}
 

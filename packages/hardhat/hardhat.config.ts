@@ -8,6 +8,7 @@ import 'hardhat-contract-sizer';
 import 'hardhat-gas-reporter';
 import 'hardhat-tracer';
 import 'solidity-coverage';
+import 'hardhat-deploy'; 
 
 dotenv.config();
 

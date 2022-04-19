@@ -18,6 +18,8 @@ contract MockOtusVault is MockBaseVault {
     address _supervisor, 
     string memory _tokenName,
     string memory _tokenSymbol,
+    bool _isPublic, 
+    uint _vaultType,
     Vault.VaultParams memory _vaultParams
   ) external initializer {
 
