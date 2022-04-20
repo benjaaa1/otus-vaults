@@ -99,7 +99,6 @@ contract Strategy is VaultAdapter {
 
   constructor(
     GWAVOracle _gwavOracle,
-    address _curveSwap,
     address _optionToken,
     address _optionMarket,
     address _liquidityPool,
@@ -109,7 +108,6 @@ contract Strategy is VaultAdapter {
     address _greekCache,
     address _feeCounter
   ) VaultAdapter(
-    _curveSwap,
     _optionToken,
     _optionMarket,
     _liquidityPool,

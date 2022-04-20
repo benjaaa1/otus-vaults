@@ -67,7 +67,6 @@ describe('Unit test: Basic OtusVault flow', async () => {
     const MockStrategyFactory = await ethers.getContractFactory('MockStrategy');
     mockedStrategy = (await MockStrategyFactory.deploy(
       lyraTestSystem.GWAVOracle.address,
-      lyraTestSystem.testCurve.address,
       lyraTestSystem.optionToken.address,
       lyraTestSystem.optionMarket.address,
       lyraTestSystem.liquidityPool.address,

@@ -170,7 +170,6 @@ describe('Strategy integration test', async () => {
 
     strategy = (await StrategyFactory.connect(otusMultiSig).deploy(
       lyraTestSystem.GWAVOracle.address,
-      lyraTestSystem.testCurve.address,
       lyraTestSystem.optionToken.address,
       lyraTestSystem.optionMarket.address,
       lyraTestSystem.liquidityPool.address,

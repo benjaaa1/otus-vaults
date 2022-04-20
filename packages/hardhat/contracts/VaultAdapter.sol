@@ -21,7 +21,6 @@ import {ShortCollateral} from '@lyrafinance/core/contracts/ShortCollateral.sol';
 import {OptionGreekCache} from '@lyrafinance/core/contracts/OptionGreekCache.sol';
 import {SynthetixAdapter} from '@lyrafinance/core/contracts/SynthetixAdapter.sol';
 import {BasicFeeCounter} from '@lyrafinance/core/contracts/periphery/BasicFeeCounter.sol';
-import {ICurve} from '@lyrafinance/core/contracts/interfaces/ICurve.sol';
 import {OptionMarketPricer} from '@lyrafinance/core/contracts/OptionMarketPricer.sol';
 
 /**
@@ -120,7 +119,6 @@ contract VaultAdapter is OwnableUpgradeable {
   // Variables //
   ///////////////
 
-  ICurve immutable internal curveSwap;
   OptionToken immutable internal optionToken;
   OptionMarket immutable internal optionMarket;
   LiquidityPool immutable internal liquidityPool;
@@ -134,7 +132,6 @@ contract VaultAdapter is OwnableUpgradeable {
 
 /**
    * @dev Assigns all lyra contracts
-   * @param _curveSwap Curve pool address
    * @param _optionToken OptionToken Address
    * @param _optionMarket OptionMarket Address
    * @param _liquidityPool LiquidityPool address
@@ -145,7 +142,6 @@ contract VaultAdapter is OwnableUpgradeable {
    * @param _feeCounter Fee counter address
  */
   constructor(
-    address _curveSwap,
     address _optionToken,
     address _optionMarket,
     address _liquidityPool,
@@ -155,7 +151,6 @@ contract VaultAdapter is OwnableUpgradeable {
     address _greekCache,
     address _feeCounter
   ) {
-    curveSwap = ICurve(_curveSwap);
     optionToken = OptionToken(_optionToken);
     optionMarket = OptionMarket(_optionMarket);
     liquidityPool = LiquidityPool(_liquidityPool);
@@ -253,18 +248,6 @@ contract VaultAdapter is OwnableUpgradeable {
     baseReceived = synthetixAdapter.exchangeForExactBase(exchangeParams, address(optionMarket), amountBase);
   }
 
-  function swapStables(
-    address from,
-    address to,
-    uint amount,
-    uint expected,
-    address receiver
-  ) internal returns (uint amountOut, int swapFee) {
-    int balStart = int(IERC20(from).balanceOf(address(this)));
-    amountOut = curveSwap.exchange_with_best_rate(from, to, amount, expected, receiver);
-    int balEnd = int(IERC20(from).balanceOf(address(this)));
-    swapFee = balStart - balEnd - int(amountOut);
-  }
 
   //////////////////////////
   // Option Token Actions //

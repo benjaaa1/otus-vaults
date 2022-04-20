@@ -13,8 +13,6 @@ interface ISupervisor {
 }
 
 interface IOtusVault {
-	function owner() external view returns (address); 
-
 	function initialize(
 		address _owner,
 		address _feeRecipient,
@@ -27,7 +25,6 @@ interface IOtusVault {
 }
 
 interface IStrategy {
-	function owner() external view returns (address); 
 	function initialize(
 		address _vault,
     address _owner, 
@@ -73,7 +70,7 @@ contract OtusCloneFactory is Ownable {
 	/**
 	* @notice Set keeper
 	*/
-	function setKeeper(address _keeper) external {
+	function setKeeper(address _keeper) external onlyOwner {
 		keeper = _keeper; 
 	} 
 

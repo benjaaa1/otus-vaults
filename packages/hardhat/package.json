@@ -25,7 +25,6 @@
     "ethers": "^5.4.4",
     "hardhat": "^2.9.2",
     "hardhat-deploy": "^0.9.0",
-    "hardhat-deploy-ethers": "^0.3.0-beta.13",
     "node-watch": "^0.7.0",
     "qrcode-terminal": "^0.12.0",
     "ramda": "^0.27.1",
@@ -49,10 +48,12 @@
     "verify": "hardhat etherscan-verify --api-key MZ32HEXZ9DJX42KRYZARYQY3C57CVMN3U3"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.1.0",
     "@types/node": "^17.0.23",
     "chai": "^4.3.6",
+    "ethers": "^5.6.4",
     "hardhat-contract-sizer": "^2.5.1",
     "hardhat-gas-reporter": "^1.0.8",
     "hardhat-tracer": "^1.1.0-rc.3",

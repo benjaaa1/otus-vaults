@@ -81,7 +81,6 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
     const MockStrategyFactory = await ethers.getContractFactory('MockStrategy')
     mockStrategy = (await MockStrategyFactory.deploy(
       lyraTestSystem.GWAVOracle.address,
-      lyraTestSystem.testCurve.address,
       lyraTestSystem.optionToken.address,
       lyraTestSystem.optionMarket.address,
       lyraTestSystem.liquidityPool.address,
