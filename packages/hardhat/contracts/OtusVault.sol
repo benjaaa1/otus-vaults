@@ -22,7 +22,7 @@ contract OtusVault is BaseVault {
   ***********************************************/
 
   // IFuturesMarket public immutable futuresMarket;
-  address public immutable futuresMarket;
+  // address public immutable futuresMarket;
 
   address public supervisor; 
   string public vaultName; 
@@ -81,17 +81,16 @@ contract OtusVault is BaseVault {
   ***********************************************/
 
   constructor(
-    address _futuresMarket,
     uint _roundDuration,
     address _keeper
   ) BaseVault(_roundDuration) {
-    futuresMarket = _futuresMarket;
     keeper = _keeper; 
   }
 
   /**
   * @notice Initializes contract on clone
   * @dev Should only be called by owner and only once
+  * add checks that supervisor is valid
   */
   function initialize(
     address _owner,
@@ -127,7 +126,7 @@ contract OtusVault is BaseVault {
     strategy = Strategy(_strategy);
     collateralAsset = IERC20(vaultParams.asset);
     collateralAsset.approve(_strategy, type(uint).max);
-    collateralAsset.approve(futuresMarket, type(uint).max);
+    // collateralAsset.approve(futuresMarket, type(uint).max);
     emit StrategyUpdated(_strategy);
   }
 
@@ -228,7 +227,7 @@ contract OtusVault is BaseVault {
   /**
    * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
    */
-  function openPosition() external onlyKeeper {
+  function openHedgePosition() external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
     activeShort = strategy._openKwentaPosition(roundHedgeAttempts);
   }

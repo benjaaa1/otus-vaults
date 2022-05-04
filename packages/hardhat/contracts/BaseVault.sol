@@ -110,14 +110,19 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   ) internal initializer {
 
     __ReentrancyGuard_init();
+    console.log("_tokenName", _tokenName); 
+    console.log("_tokenSymbol", _tokenSymbol); 
     __ERC20_init(_tokenName, _tokenSymbol);
     __Ownable_init();
     transferOwnership(_owner);
 
     feeRecipient = _supervisor;
+    console.log("_vaultParams", _vaultParams.asset); 
     vaultParams = _vaultParams;
     
     uint assetBalance = IERC20(vaultParams.asset).balanceOf(address(this));
+    console.log("assetBalance", assetBalance); 
+    console.log("vaultParams", vaultParams.asset); 
     ShareMath.assertUint104(assetBalance);
     vaultState.lastLockedAmount = uint104(assetBalance);
     vaultState.round = 1;
@@ -190,7 +195,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     require(amount > 0, "!amount");
 
     _depositFor(amount, msg.sender);
-
+    console.log("vaultParams.asset", vaultParams.asset);
     // An approve() by the msg.sender is required beforehand
     IERC20(vaultParams.asset).safeTransferFrom(msg.sender, address(this), amount);
   }
@@ -219,6 +224,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   function _depositFor(uint amount, address creditor) private {
     uint currentRound = vaultState.round;
     uint totalWithDepositedAmount = totalBalance().add(amount);
+    console.log("totalWithDepositedAmount", totalWithDepositedAmount); 
 
     require(totalWithDepositedAmount <= vaultParams.cap, "Exceed cap");
 
@@ -232,7 +238,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
       roundPricePerShare[depositReceipt.round],
       vaultParams.decimals
     );
-
+    console.log("unredeemedShares", unredeemedShares); 
     uint depositAmount = amount;
 
     // If we have a pending deposit in the current round, we add on to the pending deposit
@@ -251,6 +257,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     uint newTotalPending = uint(vaultState.totalPending).add(amount);
     ShareMath.assertUint128(newTotalPending);
+    console.log("unredeemedShares", newTotalPending); 
 
     vaultState.totalPending = uint128(newTotalPending);
   }
@@ -521,6 +528,13 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    * @return total balance of the vault, including the amounts locked in third party protocols
    */
   function totalBalance() public view returns (uint) {
+    console.log("vaultParams.asset", vaultParams.asset); 
+    console.log("address(this)", address(this)); 
+    console.log(
+      "(IERC20(vaultParams.asset).balanceOf(address(msg.sender)", 
+      IERC20(vaultParams.asset).balanceOf(address(msg.sender))
+    ); 
+
     return uint(vaultState.lockedAmount).add(IERC20(vaultParams.asset).balanceOf(address(this)));
   }
 

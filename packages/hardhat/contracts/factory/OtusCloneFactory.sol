@@ -4,8 +4,11 @@ pragma solidity >=0.8.4;
 
 import "hardhat/console.sol";
 
+import {OtusRegistry} from "../OtusRegistry.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+// libraries
 import {Vault} from "../libraries/Vault.sol";
 
 interface ISupervisor {
@@ -22,33 +25,35 @@ interface IOtusVault {
 		uint _vaultType,
 		Vault.VaultParams memory _vaultParams
 	) external; 
+
+	function setStrategy(address _strategy) external; 
 }
 
 interface IStrategy {
 	function initialize(
 		address _vault,
     address _owner, 
+		address _optionToken,
+		address _optionMarket,
+		address _liquidityPool,
+		address _shortCollateral,
+		address _futuresMarket,
     address _quoteAsset, 
     address _baseAsset
 	) external; 
 }
 
-contract OtusCloneFactory is Ownable {
+/**
+ * @dev should move mapping to use 
+ */
+
+contract OtusCloneFactory is OtusRegistry {
 	/// @notice Stores the Supervisor contract implementation address 
 	address public immutable supervisor;
 	/// @notice Stores the Otus vault contract implementation address
 	address public immutable otusVault;
 	/// @notice Stores the Strategy contract implementation address 
 	address public immutable strategy;  
-
-	address public keeper;  
-
-	// msg.sender => supervisor
-	mapping(address => address) public supervisors;
-	// supervisor =>  vault
-	mapping(address => address) public vaults; 
-	// vault =>  strategy
-	mapping(address => address) public strategies;
 	
   /************************************************
    *  EVENTS
@@ -61,39 +66,37 @@ contract OtusCloneFactory is Ownable {
   /**
    * @notice Initializes the contract with immutable variables
    */
-	constructor(address _supervisor, address _otusVault, address _strategy) {
-		supervisor = _supervisor; 
-		otusVault = _otusVault; 
-		strategy = _strategy;
+	constructor(
+			address _supervisor, 
+			address _otusVault, 
+			address _strategy, 
+			address _lyraMarketRegistry,
+			address _futuresMarketManager
+		) 
+		OtusRegistry(_lyraMarketRegistry, _futuresMarketManager) {
+			supervisor = _supervisor; 
+			otusVault = _otusVault; 
+			strategy = _strategy;
 	}
-
-	/**
-	* @notice Set keeper
-	*/
-	function setKeeper(address _keeper) external onlyOwner {
-		keeper = _keeper; 
-	} 
 
 	/**
 	* @notice clones supervisor contract
 	*/
-	function _cloneSupervisor() external {
+	function cloneSupervisor() external {
 		address supervisorClone = Clones.clone(supervisor);
 		supervisors[msg.sender] = supervisorClone;
+		supervisorsList.push(supervisorClone);
 		ISupervisor(supervisorClone).initialize();
 		emit NewSupervisorClone(supervisorClone, msg.sender); 
 	}
 
-	function _getSupervisor() public view returns (address userSupervisor) {
-		require(supervisors[msg.sender] != address(0), "Has no supervisor");
-		userSupervisor = supervisors[msg.sender];
-	}
-
-  	/**
-   	* @notice clones OtusVault contract 
+  /**
+  * @notice clones OtusVault contract 
 	* @dev add check if supervisor has staked OTUS can create vault
-   	*/
-	function _cloneVault(
+  */
+	function cloneVaultWithStrategy(
+		address _quoteAsset, 
+		address _baseAsset,
 		string memory _tokenName,
 		string memory _tokenSymbol,
 		bool isPublic, 
@@ -101,6 +104,7 @@ contract OtusCloneFactory is Ownable {
 		Vault.VaultParams memory _vaultParams
 	) external {
 		address userSupervisor = _getSupervisor(); 
+		require(userSupervisor != address(0), "Has no supervisor"); 
 		address otusVaultClone = Clones.clone(otusVault);
 		vaults[userSupervisor] = otusVaultClone;
 
@@ -114,30 +118,53 @@ contract OtusCloneFactory is Ownable {
 			_vaultParams
 		);
 
-		emit NewVaultClone(otusVaultClone, msg.sender);
-	}
+		// register new vault 
+		_addVault(otusVaultClone);
 
-	function _getVault() public view returns (address userVault) {
-		address userSupervisor = _getSupervisor(); 
-		require(vaults[userSupervisor] != address(0), "Has no vault");
-		userVault = vaults[userSupervisor]; 
+		emit NewVaultClone(otusVaultClone, msg.sender);
+
+		address strategyClone =	_cloneStrategy(
+			otusVaultClone,
+			_quoteAsset, 
+			_baseAsset
+		);
+		
+		(bool success, bytes memory data) = address(otusVaultClone).delegatecall(
+				abi.encodeWithSignature("setStrategy(address)", strategyClone)
+		);
 	}
 
   /**
    * @notice Clones strategy contract if supervisor has a vault created
    */
-	function _cloneStrategy(address _quoteAsset, address _baseAsset) external {
-		address vault = _getVault(); 
-		address strategyClone = Clones.clone(strategy);
-		strategies[vault] = strategyClone;
-		IStrategy(strategyClone).initialize(vaults[supervisors[msg.sender]], msg.sender, _quoteAsset, _baseAsset);
-		emit NewStrategyClone(strategyClone, msg.sender);
-	}
+	function _cloneStrategy(
+		address _vault, 
+		address _quoteAsset, 
+		address _baseAsset
+	 ) internal returns (address strategyClone) {
+		strategyClone = Clones.clone(strategy);
+		strategies[_vault] = strategyClone;
 
-	function _getStrategy() public view returns (address userStrategy) {
-		address userVault = _getVault(); 
-		require(strategies[userVault] != address(0), "Has no strategy");
-		userStrategy = strategies[userVault]; 
+		// OptionMarketAddresses memory marketAddress = getOptionMarketDetails(_baseAsset); 
+		// require(marketAddress.optionToken != address(0), "Failed to get optionToken");
+		// require(marketAddress.optionMarket != address(0), "Failed to get optionMarket");
+		// require(marketAddress.liquidityPool != address(0), "Failed to get liquidityPool");
+		// require(marketAddress.shortCollateral != address(0), "Failed to get shortCollateral");
+		// require(marketAddress.futuresMarket != address(0), "Failed to get futuresMarket");
+
+		IStrategy(strategyClone).initialize(
+			msg.sender,
+			_vault,  
+			address(0x9e7bAAfd72965e575B284065fc8942C377879700),	// marketAddress.optionToken,
+			address(0xb43285B5aF7cad80409e1267Ea21ECB44eEF4a0E),	// marketAddress.optionMarket,
+			address(0xBc704C32183836fE0F64376A95ddeD20F5CF731c),	// marketAddress.liquidityPool,
+			address(0xa56bE2FC5c5D204c2fCc0e5CE5FfEdf1A5749786),	// marketAddress.shortCollateral,
+			address(0x698E403AaC625345C6E5fC2D0042274350bEDf78),	// marketAddress.futuresMarket,
+			_quoteAsset, 
+			_baseAsset
+		);
+
+		emit NewStrategyClone(strategyClone, msg.sender);
 	}
 
 }

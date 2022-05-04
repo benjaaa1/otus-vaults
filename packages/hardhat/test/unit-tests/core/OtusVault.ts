@@ -7,6 +7,7 @@ import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 import { OtusVault, MockERC20, MockStrategy, MockFuturesMarket } from '../../../typechain-types';
 import { FEE_MULTIPLIER } from '../utils/constants';
+import { toBN } from '@lyrafinance/core/dist/scripts/util/web3utils';
 
 describe('Unit test: Basic OtusVault flow', async () => {
   // contract instances
@@ -53,13 +54,13 @@ describe('Unit test: Basic OtusVault flow', async () => {
   });
 
   before('deploy lyra core', async () => {
-    lyraTestSystem = await TestSystem.deploy(deployer, true, false);
+    lyraTestSystem = await TestSystem.deploy(deployer, false, false);
   })
 
   before('prepare mocked contracts', async () => {
     const MockERC20Factory = await ethers.getContractFactory('MockERC20');
-    susd = (await MockERC20Factory.deploy('Synth USD', 'sUSD')) as MockERC20;
-    seth = (await MockERC20Factory.deploy('Synth ETH', 'sUSD')) as MockERC20;
+    susd = lyraTestSystem.snx.quoteAsset as MockERC20;
+    seth = lyraTestSystem.snx.baseAsset as MockERC20;
 
     const MockFuturesMarketFactory = await ethers.getContractFactory('MockFuturesMarket');
     mockFuturesMarket = (await MockFuturesMarketFactory.deploy()) as MockFuturesMarket;
@@ -67,10 +68,6 @@ describe('Unit test: Basic OtusVault flow', async () => {
     const MockStrategyFactory = await ethers.getContractFactory('MockStrategy');
     mockedStrategy = (await MockStrategyFactory.deploy(
       lyraTestSystem.GWAVOracle.address,
-      lyraTestSystem.optionToken.address,
-      lyraTestSystem.optionMarket.address,
-      lyraTestSystem.liquidityPool.address,
-      lyraTestSystem.shortCollateral.address,
       lyraTestSystem.synthetixAdapter.address,
       lyraTestSystem.optionMarketPricer.address,
       lyraTestSystem.optionGreekCache.address,
@@ -197,7 +194,17 @@ describe('Unit test: Basic OtusVault flow', async () => {
     });
     it('should be able to set strategy', async () => {
       // initialize mockedstrategy
-      await mockedStrategy.connect(owner).initialize(vault.address, owner.address, susd.address, seth.address);
+      await mockedStrategy.connect(owner).initialize(
+        vault.address, 
+        owner.address, 
+        lyraTestSystem.optionToken.address,
+        lyraTestSystem.optionMarket.address,
+        lyraTestSystem.liquidityPool.address,
+        lyraTestSystem.shortCollateral.address,
+        mockFuturesMarket.address,
+        susd.address, 
+        seth.address
+      );
       // deploy a new mocked strategy
       await vault.connect(owner).setStrategy(mockedStrategy.address);
       expect(await vault.strategy()).to.be.eq(mockedStrategy.address);

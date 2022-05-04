@@ -29,7 +29,7 @@ import {OptionMarketPricer} from '@lyrafinance/core/contracts/OptionMarketPricer
  * @dev LyraAdapter but inherits from OwnerUpgradable - Provides helpful functions for the vault adapter
  */
 
-contract VaultAdapter is OwnableUpgradeable {
+contract VaultAdapter {
   using DecimalMath for uint;
 
   ///////////////////////
@@ -119,74 +119,51 @@ contract VaultAdapter is OwnableUpgradeable {
   // Variables //
   ///////////////
 
-  OptionToken immutable internal optionToken;
-  OptionMarket immutable internal optionMarket;
-  LiquidityPool immutable internal liquidityPool;
-  ShortCollateral immutable internal shortCollateral;
+  OptionToken internal optionToken;
+  OptionMarket internal optionMarket;
+  LiquidityPool internal liquidityPool;
+  ShortCollateral internal shortCollateral;
   SynthetixAdapter immutable internal synthetixAdapter;
   OptionMarketPricer immutable internal optionPricer;
   OptionGreekCache immutable internal greekCache;
-  IERC20 internal quoteAsset;
-  IERC20 internal baseAsset;
-  BasicFeeCounter immutable internal feeCounter;
+  // BasicFeeCounter immutable internal feeCounter;
 
 /**
    * @dev Assigns all lyra contracts
-   * @param _optionToken OptionToken Address
-   * @param _optionMarket OptionMarket Address
-   * @param _liquidityPool LiquidityPool address
-   * @param _shortCollateral ShortCollateral address
    * @param _synthetixAdapter SynthetixAdapter address
    * @param _optionPricer OptionMarketPricer address
    * @param _greekCache greekCache address
-   * @param _feeCounter Fee counter address
+   * @dev _feeCounter Fee counter address
  */
   constructor(
-    address _optionToken,
-    address _optionMarket,
-    address _liquidityPool,
-    address _shortCollateral,
     address _synthetixAdapter,
     address _optionPricer,
-    address _greekCache,
-    address _feeCounter
+    address _greekCache
+    // address _feeCounter
   ) {
-    optionToken = OptionToken(_optionToken);
-    optionMarket = OptionMarket(_optionMarket);
-    liquidityPool = LiquidityPool(_liquidityPool);
-    shortCollateral = ShortCollateral(_shortCollateral);
     synthetixAdapter = SynthetixAdapter(_synthetixAdapter);
     optionPricer = OptionMarketPricer(_optionPricer);
     greekCache = OptionGreekCache(_greekCache);
-    feeCounter = BasicFeeCounter(_feeCounter);
+    // feeCounter = BasicFeeCounter(_feeCounter);
   }
 
   /**
   * @dev
-  * @param _quoteAsset Quote asset address
-  * @param _baseAsset Base asset address
+   * @param _optionToken OptionToken Address
+   * @param _optionMarket OptionMarket Address
+   * @param _liquidityPool LiquidityPool address
+   * @param _shortCollateral ShortCollateral address
   */
-  function baseInitialize (
-    address _owner,
-    address _quoteAsset,
-    address _baseAsset
-  ) internal initializer {
-    __Ownable_init();
-    transferOwnership(_owner);
-
-    if (address(quoteAsset) != address(0)) {
-      quoteAsset.approve(address(optionMarket), 0);
-    }
-    if (address(baseAsset) != address(0)) {
-      baseAsset.approve(address(optionMarket), 0);
-    }
-
-    quoteAsset = IERC20(_quoteAsset);
-    baseAsset = IERC20(_baseAsset);
-
-    // Do approvals
-    quoteAsset.approve(address(optionMarket), type(uint).max);
-    baseAsset.approve(address(optionMarket), type(uint).max);
+  function optionInitialize (
+    address _optionToken,
+    address _optionMarket,
+    address _liquidityPool,
+    address _shortCollateral
+  ) internal {
+    optionToken = OptionToken(_optionToken); // option token will be different 
+    optionMarket = OptionMarket(_optionMarket); // option market will be different 
+    liquidityPool = LiquidityPool(_liquidityPool); // liquidity pool will be different
+    shortCollateral = ShortCollateral(_shortCollateral); // short collateral will be different
   }
 
   ////////////////////
@@ -199,7 +176,7 @@ contract VaultAdapter is OwnableUpgradeable {
     OptionMarket.Result memory result = optionMarket.openPosition(convertedParams);
 
     if (params.rewardRecipient != address(0)) {
-      feeCounter.addFees(address(optionMarket), params.rewardRecipient, result.totalFee);
+      // feeCounter.addFees(address(optionMarket), params.rewardRecipient, result.totalFee);
     }
     return TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});
   }
@@ -207,7 +184,7 @@ contract VaultAdapter is OwnableUpgradeable {
   function closePosition(TradeInputParameters memory params) internal returns (TradeResult memory) {
     OptionMarket.Result memory result = optionMarket.closePosition(_convertParams(params));
     if (params.rewardRecipient != address(0)) {
-      feeCounter.addFees(address(optionMarket), params.rewardRecipient, result.totalFee);
+      // feeCounter.addFees(address(optionMarket), params.rewardRecipient, result.totalFee);
     }
     return TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});
   }
@@ -215,7 +192,7 @@ contract VaultAdapter is OwnableUpgradeable {
   function forceClosePosition(TradeInputParameters memory params) internal returns (TradeResult memory) {
     OptionMarket.Result memory result = optionMarket.forceClosePosition(_convertParams(params));
     if (params.rewardRecipient != address(0)) {
-      feeCounter.addFees(address(optionMarket), params.rewardRecipient, result.totalFee);
+      // feeCounter.addFees(address(optionMarket), params.rewardRecipient, result.totalFee);
     }
     return TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});
   }

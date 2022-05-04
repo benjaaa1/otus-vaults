@@ -1,7 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -9,9 +10,9 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 contract Supervisor is ReentrancyGuardUpgradeable {
   using SafeERC20 for IERC20;
 
-	IERC20 public immutable otusAsset; 
-
-	address public treasury;
+	// IERC20 public immutable otusAsset; 
+	address public immutable treasury;
+	
 	address public supervisor;
 
 	mapping(address => uint256) deposits; 
@@ -33,9 +34,9 @@ contract Supervisor is ReentrancyGuardUpgradeable {
 	/**
 	* @notice Initializes the contract with immutable variables
 	*/
-	constructor(address _otusTreasury, address asset) {
+	constructor(address _otusTreasury) {
 		treasury = _otusTreasury; 
-		otusAsset = IERC20(asset); 
+		// otusAsset = IERC20(asset); 
 	}
 
 	/**
@@ -46,21 +47,21 @@ contract Supervisor is ReentrancyGuardUpgradeable {
 		supervisor = msg.sender;
 	}
 
-	function stake(uint _amount) external nonReentrant {
-		require(_amount > 0, "!amount");
-		deposits[msg.sender] += _amount; 
-		otusAsset.safeTransferFrom(msg.sender, address(this), _amount);
-		isActive = true; 
-		emit NewSupervisorStake(msg.sender, _amount);
-	}
+	// function stake(uint _amount) external nonReentrant {
+	// 	require(_amount > 0, "!amount");
+	// 	deposits[msg.sender] += _amount; 
+	// 	otusAsset.safeTransferFrom(msg.sender, address(this), _amount);
+	// 	isActive = true; 
+	// 	emit NewSupervisorStake(msg.sender, _amount);
+	// }
 
-	function unstake() external nonReentrant {
-		require(deposits[msg.sender] > 0, "No deposits by user.");
-		uint256 _amount = deposits[msg.sender];
-		deposits[msg.sender] -= _amount; 
-		otusAsset.safeTransferFrom(address(this), msg.sender, _amount);
-		isActive = false; 
-		emit NewSupervisorUnStake(msg.sender, _amount);
-	}
+	// function unstake() external nonReentrant {
+	// 	require(deposits[msg.sender] > 0, "No deposits by user.");
+	// 	uint256 _amount = deposits[msg.sender];
+	// 	deposits[msg.sender] -= _amount; 
+	// 	otusAsset.safeTransferFrom(address(this), msg.sender, _amount);
+	// 	isActive = false; 
+	// 	emit NewSupervisorUnStake(msg.sender, _amount);
+	// }
 
 }

@@ -7,13 +7,16 @@ import "hardhat/console.sol";
 import {GWAVOracle} from "@lyrafinance/core/contracts/periphery/GWAVOracle.sol";
 import {IERC20Detailed} from "../interfaces/IERC20Detailed.sol";
 import {VaultAdapter} from "../VaultAdapter.sol";
+import {FuturesAdapter} from "../FuturesAdapter.sol";
+import {TokenAdapter} from "../TokenAdapter.sol";
+
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {DecimalMath} from "@lyrafinance/core/contracts/synthetix/DecimalMath.sol";
 import "../interfaces/IFuturesMarket.sol";
 import "./MockOtusVault.sol";
 
-contract MockStrategy is VaultAdapter {
+contract MockStrategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   GWAVOracle public immutable gwavOracle;
 
   IERC20Detailed public collateral;
@@ -25,28 +28,17 @@ contract MockStrategy is VaultAdapter {
   uint public boardId;  
 
   address public vault;
-  address public futuresMarket;
   MockOtusVault public otusVault;
 
   constructor(
     GWAVOracle _gwavOracle,
-    address _optionToken,
-    address _optionMarket,
-    address _liquidityPool,
-    address _shortCollateral,
     address _synthetixAdapter,
     address _optionPricer,
-    address _greekCache,
-    address _feeCounter
+    address _greekCache
   ) VaultAdapter(
-    _optionToken,
-    _optionMarket,
-    _liquidityPool,
-    _shortCollateral,
     _synthetixAdapter,
     _optionPricer,
-    _greekCache,
-    _feeCounter
+    _greekCache
   ) {
     gwavOracle = _gwavOracle;
   }
@@ -54,17 +46,35 @@ contract MockStrategy is VaultAdapter {
   function initialize(
     address _vault, 
     address _owner, 
+    address _optionToken,
+    address _optionMarket,
+    address _liquidityPool,
+    address _shortCollateral,
+    address _futuresMarket,
     address _quoteAsset, 
     address _baseAsset
   ) external {    
+    
+    optionInitialize(
+      _optionToken,
+      _optionMarket,
+      _liquidityPool,
+      _shortCollateral
+    );
+
+    futuresInitialize(_futuresMarket);
+
     baseInitialize(
       _owner, 
+      _vault,
+      _futuresMarket, 
+      _optionMarket, 
       _quoteAsset, 
       _baseAsset
     );
+
     vault = _vault;
     otusVault = MockOtusVault(_vault); 
-    futuresMarket = otusVault.futuresMarket(); // future kwenta adapter --> vaultadapter
 
     collateral = IERC20Detailed(_baseAsset);
     premium = IERC20Detailed(_quoteAsset);

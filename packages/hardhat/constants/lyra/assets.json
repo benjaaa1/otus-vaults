@@ -1,0 +1,14 @@
+{
+	"SUSD": {
+		"asset": "USD",
+		"address": "0x62FD93Fc58D94eE253542ECD5C23467F65dCdB73"
+	},
+	"SBTC": {
+		"asset": "BTC",
+		"address": "0x8475CA6E6DcC0A1Fe3872e42705d780F5F793b64"
+	},
+  "SETH": {
+		"asset": "SETH",
+		"address": "0x313dEd458c3903E82A9d965d65984E8be0252A90"
+	}
+}

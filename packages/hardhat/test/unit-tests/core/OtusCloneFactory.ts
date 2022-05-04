@@ -16,7 +16,8 @@ import {
   MockOtusVault,
   MockStrategy,
   MockOptionMarket,
-  MockFuturesMarket
+  MockFuturesMarket,
+  MockFuturesMarketManager,
 } from '../../../typechain-types';
 
 describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
@@ -37,9 +38,12 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
   let mockStrategy: MockStrategy;
   let mockOptionMarket: MockOptionMarket; 
   let mockFuturesMarket: MockFuturesMarket;
-
+  let mockFuturesMarketManager: MockFuturesMarketManager;
+  
   let susd: MockERC20;
   let seth: MockERC20;
+
+  let supervisor: string; 
 
   let lyraTestSystem: TestSystemContractsType;
 
@@ -60,14 +64,17 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
       spotPriceFeeCoefficient: toBN('0.001'),
     };
 
-    lyraTestSystem = await TestSystem.deploy(deployer, true, false, { pricingParams });
+    lyraTestSystem = await TestSystem.deploy(deployer, false, false, { pricingParams });
   })
   
   before('prepare mocked contracts', async () => {
     const MockERC20Factory = await ethers.getContractFactory('MockERC20');
-    mockOtus = (await MockERC20Factory.deploy('Otus Token', 'OTUS')) as MockERC20;
-    susd = (await MockERC20Factory.deploy('Synthetic USD', 'sUSD')) as MockERC20;
-    seth = (await MockERC20Factory.deploy('Synthetic ETH', 'sETH')) as MockERC20;
+    mockOtus = (await MockERC20Factory.deploy('Otus Token', 'OTUS', toBN('1000000'))) as MockERC20;
+    susd = lyraTestSystem.snx.quoteAsset as MockERC20;
+    seth = lyraTestSystem.snx.baseAsset as MockERC20;
+
+    const MockFuturesMarketManagerFactory = await ethers.getContractFactory('MockFuturesMarketManager');
+    mockFuturesMarketManager = (await MockFuturesMarketManagerFactory.deploy()) as MockFuturesMarketManager;
 
     const MockFuturesMarketFactory = await ethers.getContractFactory('MockFuturesMarket');
     mockFuturesMarket = (await MockFuturesMarketFactory.deploy()) as MockFuturesMarket;
@@ -81,10 +88,6 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
     const MockStrategyFactory = await ethers.getContractFactory('MockStrategy')
     mockStrategy = (await MockStrategyFactory.deploy(
       lyraTestSystem.GWAVOracle.address,
-      lyraTestSystem.optionToken.address,
-      lyraTestSystem.optionMarket.address,
-      lyraTestSystem.liquidityPool.address,
-      lyraTestSystem.shortCollateral.address,
       lyraTestSystem.synthetixAdapter.address,
       lyraTestSystem.optionMarketPricer.address,
       lyraTestSystem.optionGreekCache.address,
@@ -99,7 +102,9 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
       otusCloneFactory = (await OtusCloneFactory.deploy(
         mockSupervisor.address,
         mockOtusVault.address,
-        mockStrategy.address
+        mockStrategy.address,
+        lyraTestSystem.lyraRegistry.address,
+        mockFuturesMarketManager.address
       )) as OtusCloneFactory;
 
       const supervisorImm = await otusCloneFactory.supervisor();
@@ -124,8 +129,8 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
 
   describe('user settings', async() => {
     it('user should be able to clone a supervisor', async() => {
-      await otusCloneFactory.connect(anyone)._cloneSupervisor(); 
-      const supervisor = await otusCloneFactory.connect(anyone)._getSupervisor();
+      await otusCloneFactory.connect(anyone).cloneSupervisor(); 
+      supervisor = await otusCloneFactory.connect(anyone)._getSupervisor();
       expect(supervisor).to.not.be.eq(ZERO_ADDRESS);
       expect(supervisor).to.not.be.eq(mockSupervisor.address);
     })
@@ -133,13 +138,20 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
     it('user should be able to clone a vault if they have a supervisor address', async() => {
       const cap = ethers.utils.parseEther('5000');
       const decimals = 18;
-      await otusCloneFactory.connect(anyone)._cloneVault('OtusVault Share', 'Otus VS', true, 0, {
-        decimals,
-        cap, 
-        asset: susd.address
-      }); 
+      await otusCloneFactory.connect(anyone).cloneVaultWithStrategy(
+        susd.address,
+        seth.address,
+        mockFuturesMarket.address,
+        'OtusVault Share', 
+        'Otus VS', 
+        true, 
+        0, {
+          decimals,
+          cap, 
+          asset: susd.address
+        }); 
 
-      const vault = await otusCloneFactory.connect(anyone)._getVault(); 
+      const vault = await otusCloneFactory.connect(anyone)._getVault(supervisor); 
       expect(vault).to.not.be.eq(ZERO_ADDRESS);
       expect(vault).to.not.be.eq(mockOtusVault.address);
     });
@@ -148,27 +160,35 @@ describe('Unit Test - Basic clone vault with manager/supervisor flow', () => {
       const cap = ethers.utils.parseEther('5000');
       const decimals = 18;
 
-      await expect(otusCloneFactory.connect(noone)._cloneVault('OtusVault Share', 'Otus VS', true, 0, {
-        decimals,
-        cap, 
-        asset: susd.address
-      })).to.be.revertedWith('Has no supervisor');
+      await expect(otusCloneFactory.connect(noone).cloneVaultWithStrategy(
+        susd.address, seth.address, mockFuturesMarket.address,
+        'OtusVault Share', 'Otus VS', true, 0, {
+          decimals,
+          cap, 
+          asset: susd.address
+        }
+      )).to.be.revertedWith('Has no supervisor');
     });
 
     it('user should be able to clone a strategy if they have a vault address', async() => {
-      await otusCloneFactory.connect(anyone)._cloneStrategy(susd.address, seth.address); 
-      const strategy = await otusCloneFactory.connect(anyone)._getStrategy(); 
+      const vault = await otusCloneFactory.connect(anyone)._getVault(supervisor); 
+
+      const strategy = await otusCloneFactory.connect(anyone)._getStrategy(vault); 
       expect(strategy).to.not.be.eq(ZERO_ADDRESS);
       expect(strategy).to.not.be.eq(mockStrategy.address);
     });
 
     it('user should not be able to clone a strategy if they have no supervisor address', async() => {
-      await expect(otusCloneFactory.connect(noone)._cloneStrategy(susd.address, seth.address)).to.be.revertedWith('Has no supervisor'); 
-    });
-
-    it('user should not be able to clone a strategy if they have no vault address', async() => {
-      await otusCloneFactory.connect(noone)._cloneSupervisor(); 
-      await expect(otusCloneFactory.connect(noone)._cloneStrategy(susd.address, seth.address)).to.be.revertedWith('Has no vault'); 
+      const cap = ethers.utils.parseEther('5000');
+      const decimals = 18;
+      await expect(otusCloneFactory.connect(noone).cloneVaultWithStrategy(
+        susd.address, seth.address, mockFuturesMarket.address,
+        'OtusVault Share', 'Otus VS', true, 0, {
+          decimals,
+          cap, 
+          asset: susd.address
+        }
+      )).to.be.revertedWith('Has no supervisor'); 
     });
 
   });

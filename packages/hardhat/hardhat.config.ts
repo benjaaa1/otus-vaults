@@ -1,69 +1,164 @@
-import '@eth-optimism/plugins/hardhat/compiler';
-import '@typechain/hardhat'
-import '@nomiclabs/hardhat-ethers'
-import '@nomiclabs/hardhat-waffle'
+// require("dotenv").config();
+// const { utils } = require("ethers");
+// const fs = require("fs");
+// const chalk = require("chalk");
+
+// require("@nomiclabs/hardhat-waffle");
+// require("@tenderly/hardhat-tenderly");
+
+// require("hardhat-deploy");
+// require("hardhat-gas-reporter");
+
+// require("@nomiclabs/hardhat-ethers");
+// require("@nomiclabs/hardhat-etherscan");
+
+// require("@typechain/hardhat");
+
 import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import 'hardhat-contract-sizer';
-import 'hardhat-gas-reporter';
-import 'hardhat-tracer';
-import 'solidity-coverage';
-import 'hardhat-deploy'; 
+import { utils } from "ethers"; 
+import fs from "fs"; 
+import chalk from "chalk"; 
+
+import "@nomiclabs/hardhat-waffle";
+import "@tenderly/hardhat-tenderly";
+
+import "hardhat-deploy";
+import "hardhat-gas-reporter";
+
+import "@otusfinance/otus-hardhat-ethers";
+import "@nomiclabs/hardhat-etherscan";
+
+import "@typechain/hardhat";
 
 dotenv.config();
 
-const mnemonic = fs.existsSync('.secret')
-  ? fs.readFileSync('.secret').toString().trim()
-  : 'test test test test test test test test test test test junk';
+const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
-const etherscanKey = process.env.ETHERSCAN_KEY;
+const defaultNetwork = "localhost";
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
+const mainnetGwei = 21;
 
-export default {
+function mnemonic() {
+  try {
+    return fs.readFileSync("./mnemonic.txt").toString().trim();
+  } catch (e) {
+    if (defaultNetwork !== "localhost") {
+      console.log(
+        "☢️ WARNING: No mnemonic file created for a deploy account. Try `yarn run generate` and then `yarn run account`."
+      );
+    }
+  }
+  return "";
+}
+
+module.exports = {
+  defaultNetwork,
+  gasReporter: {
+    currency: "USD",
+    coinmarketcap: process.env.COINMARKETCAP || null,
+  },
+  networks: {
+    localhost: {
+      url: "http://localhost:8545",
+    },
+    mainnet: {
+      url: "https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925", // <---- YOUR INFURA ID! (or it won't work)
+      gasPrice: mainnetGwei * 1000000000,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    kovan: {
+      url: "https://kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925", // <---- YOUR INFURA ID! (or it won't work)
+      //    url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXXXXX/eth/kovan", // <---- YOUR MORALIS ID! (not limited to infura)
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    optimism: {
+      url: "https://mainnet.optimism.io",
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+      companionNetworks: {
+        l1: "mainnet",
+      },
+    },
+    kovanOptimism: {
+      url: "https://optimism-kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925",
+      ovm: true,
+      timeout: 60000,
+      accounts: {
+        mnemonic: 'wear bubble foil piano inherit cram talent cute minute neglect three play',
+      },
+      companionNetworks: {
+        l1: "kovan",
+      },
+    },
+    localOptimism: {
+      url: "http://localhost:8545",
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+      companionNetworks: {
+        l1: "localOptimismL1",
+      },
+    },
+    localOptimismL1: {
+      url: "http://localhost:9545",
+      gasPrice: 0,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+      companionNetworks: {
+        l2: "localOptimism",
+      },
+    },
+  },
+  solidity: {
+    compilers: [
+      {
+        version: '0.8.9',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1,
+          },
+        },
+      },
+      {
+        version: "0.8.4",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.6.7",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+    ],
+  },
+  ovm: {
+    solcVersion: "0.7.6",
+  },
   namedAccounts: {
     deployer: {
       default: 0, // here this will by default take the first account as deployer
     },
   },
-  networks: {
-    hardhat: {},
-    local: {
-      url: 'http://127.0.0.1:8545',
-      accounts: { mnemonic },
-      gasPrice: 0,
-    },
-    kovan: {
-      url: 'https://kovan.infura.io/v3/',
-    },
-    'local-ovm': {
-      url: 'http://127.0.0.1:8545',
-      accounts: { mnemonic },
-      gasPrice: 0,
-      ovm: true,
-    },
-    'kovan-ovm': {
-      url: 'https://kovan.optimism.io',
-      ovm: true,
-    },
-  },
-  solidity: {
-    version: '0.8.9',
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 1,
-      },
-    },
-  },
-  contractSizer: {
-    alphaSort: true,
-  },
   etherscan: {
-    apiKey: etherscanKey,
-  },
-  gasReporter: {
-    enabled: false,
+    apiKey: {
+      mainnet: "582EMV38X8492YGM6IIB22YVXIBFDB3RU5",
+      optimisticKovan: "582EMV38X8492YGM6IIB22YVXIBFDB3RU5"
+    },
   },
 };
+

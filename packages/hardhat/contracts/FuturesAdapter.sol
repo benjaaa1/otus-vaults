@@ -22,42 +22,19 @@ contract FuturesAdapter {
   // Variables //
   ///////////////
 
-  IFuturesMarket immutable internal futuresMarket; 
-  IERC20 internal quoteAsset;
-  IERC20 internal baseAsset;
+  IFuturesMarket internal futuresMarket; 
 
-/**
-   * @dev Assign synthetix futures contracts
-   * @param _futuresMarket Synthetix futures market address
- */
-  constructor(
-    address _futuresMarket
-  ) {
-    futuresMarket = IFuturesMarket(_futuresMarket);
-  }
+  /**
+  * @dev Assign synthetix futures contracts
+  */
+  constructor() {}
 
   /**
   * @dev
-  * @param _quoteAsset Quote asset address
-  * @param _baseAsset Base asset address
+  * @param _futuresMarket futures market address
   */
-  function baseInitialize (
-    address _quoteAsset,
-    address _baseAsset
-  ) internal {
-    if (address(quoteAsset) != address(0)) {
-      quoteAsset.approve(address(futuresMarket), 0);
-    }
-    if (address(baseAsset) != address(0)) {
-      baseAsset.approve(address(futuresMarket), 0);
-    }
-
-    quoteAsset = IERC20(_quoteAsset);
-    baseAsset = IERC20(_baseAsset);
-
-    // Do approvals
-    quoteAsset.approve(address(futuresMarket), type(uint).max);
-    baseAsset.approve(address(futuresMarket), type(uint).max);
+  function futuresInitialize (address _futuresMarket) internal {
+    futuresMarket = IFuturesMarket(_futuresMarket);
   }
 
   // 1. Vault opens short sell position on ETH
@@ -74,23 +51,23 @@ contract FuturesAdapter {
   // Market Operations //
   ///////////////////////
 
-  function _transferMargin(int marginDelta) external {
+  function _transferMargin(int marginDelta) internal {
     futuresMarket.transferMargin(marginDelta); 
   }
 
-  function _withdrawAllMargin() external {
+  function _withdrawAllMargin() internal {
     futuresMarket.withdrawAllMargin(); 
   }
 
-  function _modifyPosition(int sizeDelta) external {
+  function _modifyPosition(int sizeDelta) internal {
     futuresMarket.modifyPosition(sizeDelta); 
   }
 
-  function _closePosition() external {
+  function _closePosition() internal {
     futuresMarket.closePosition(); 
   }
 
-  function _liquidatePosition() external {
+  function _liquidatePosition() internal {
     futuresMarket.liquidatePosition(address(this)); 
   }
 

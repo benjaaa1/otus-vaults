@@ -14,15 +14,14 @@ import {SignedDecimalMath} from "@lyrafinance/core/contracts/synthetix/SignedDec
 import {GWAVOracle} from "@lyrafinance/core/contracts/periphery/GWAVOracle.sol";
 import './synthetix/SignedSafeDecimalMath.sol';
 import './synthetix/SafeDecimalMath.sol';
-import './interfaces/IFuturesMarket.sol';
-
 // Vault 
 import {Vault} from "./libraries/Vault.sol";
 import {OtusVault} from "./OtusVault.sol";
 import {VaultAdapter} from "./VaultAdapter.sol";
 import {FuturesAdapter} from "./FuturesAdapter.sol";
+import {TokenAdapter} from "./TokenAdapter.sol";
 
-contract Strategy is VaultAdapter {
+contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   using SafeMath for uint;
   using SafeDecimalMath for uint;
   using SignedSafeMath for int;
@@ -34,12 +33,10 @@ contract Strategy is VaultAdapter {
   mapping(uint => uint) public strikeToPositionId;
   mapping(uint => uint) public lastTradeTimestamp;
 
-  address public keeper; 
   address public vault;
-  address public futuresMarket;
 
   OtusVault public otusVault;
-  GWAVOracle public immutable gwavOracle;
+  GWAVOracle public gwavOracle;
   
   OptionType public optionType;
   IERC20 public collateralAsset;
@@ -77,8 +74,6 @@ contract Strategy is VaultAdapter {
    *  EVENTS
    ***********************************************/
 
-  event KeeperUpdated(address keeper);
-
   event HedgeClosePosition(address closer);
 
   event HedgeModifyPosition(address closer, uint marginDelta, uint256 hedgeAttempt);
@@ -97,49 +92,63 @@ contract Strategy is VaultAdapter {
    *  ADMIN
    ***********************************************/
 
+  mapping(OtusVault.VaultType => OptionType) public vaultOptionTypes;
+
   constructor(
-    GWAVOracle _gwavOracle,
+    address _gwavOracle,
+    address _synthetixAdapter,
+    address _optionPricer,
+    address _greekCache
+    // address _feeCounter
+  ) FuturesAdapter() VaultAdapter(
+    _synthetixAdapter,
+    _optionPricer,
+    _greekCache
+    // _feeCounter
+  ) {
+    gwavOracle = GWAVOracle(_gwavOracle);
+    vaultOptionTypes[OtusVault.VaultType.SHORT_PUT] = OptionType.SHORT_PUT_QUOTE;
+    vaultOptionTypes[OtusVault.VaultType.SHORT_CALL] = OptionType.SHORT_CALL_QUOTE;
+    vaultOptionTypes[OtusVault.VaultType.APE_BULL] = OptionType.SHORT_PUT_QUOTE;
+    vaultOptionTypes[OtusVault.VaultType.APE_BEAR] = OptionType.SHORT_CALL_QUOTE;
+    vaultOptionTypes[OtusVault.VaultType.IRON_CONDOR] = OptionType.SHORT_PUT_QUOTE;
+    vaultOptionTypes[OtusVault.VaultType.SHORT_STRADDLE] = OptionType.SHORT_PUT_QUOTE;
+  }
+
+  function initialize(
+    address _owner, 
+    address _vault, 
     address _optionToken,
     address _optionMarket,
     address _liquidityPool,
     address _shortCollateral,
-    address _synthetixAdapter,
-    address _optionPricer,
-    address _greekCache,
-    address _feeCounter
-  ) VaultAdapter(
-    _optionToken,
-    _optionMarket,
-    _liquidityPool,
-    _shortCollateral,
-    _synthetixAdapter,
-    _optionPricer,
-    _greekCache,
-    _feeCounter
-  ) {
-    gwavOracle = _gwavOracle;
-  }
-
-  function initialize(
-    address _vault, 
-    address _owner, 
+    address _futuresMarket,
     address _quoteAsset, 
     address _baseAsset
-  ) external {    
+  ) external { 
+
+    optionInitialize(
+      _optionToken,
+      _optionMarket,
+      _liquidityPool,
+      _shortCollateral
+    );
+
+    futuresInitialize(_futuresMarket);
+
     baseInitialize(
       _owner, 
+      _vault,
+      _futuresMarket, 
+      _optionMarket, 
       _quoteAsset, 
       _baseAsset
-    );
+    ); 
+
     vault = _vault;
     otusVault = OtusVault(_vault); 
-    futuresMarket = otusVault.futuresMarket(); // future kwenta adapter --> vaultadapter
 
-    quoteAsset = IERC20(_quoteAsset); 
-    baseAsset = IERC20(_baseAsset); 
-
-    quoteAsset.approve(address(vault), type(uint).max);
-    baseAsset.approve(address(vault), type(uint).max);
+    optionType = vaultOptionTypes[otusVault.vType()]; 
   }
 
   /************************************************
@@ -153,16 +162,13 @@ contract Strategy is VaultAdapter {
   */
   function setStrategy(
       Detail memory _strategy, 
-      HedgeDetail memory _hedgeStrategy,
-      uint _tradeOptionType
+      HedgeDetail memory _hedgeStrategy
     ) external onlyOwner {
     (, , , , , , , bool roundInProgress) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
     
     currentStrategy = _strategy;
-    currentHedgeStrategy = _hedgeStrategy;
-
-    optionType = OptionType(_tradeOptionType); 
+    currentHedgeStrategy = _hedgeStrategy; 
     collateralAsset = _isBaseCollat() ? baseAsset : quoteAsset;
   }
 
@@ -414,7 +420,7 @@ contract Strategy is VaultAdapter {
     require(!activeShort, "Active futures hedge");
     // uint marginDelta; // 1 - (collateral * .85) * leverage required uint "-" is for shorts
     uint marginDelta = calculateHedgePositionSize();
-    IFuturesMarket(futuresMarket).modifyPosition(int(marginDelta));
+    _modifyPosition(int(marginDelta));
     hedgeAttempts += 1; 
     activeShort = true; 
     emit HedgeModifyPosition(msg.sender, marginDelta, hedgeAttempts);
@@ -426,9 +432,14 @@ contract Strategy is VaultAdapter {
   */
   function _closeKwentaPosition() public onlyVault returns (bool activeShort) {
     require(activeShort, "No current position");
-    IFuturesMarket(futuresMarket).closePosition();
-    activeShort = false; 
+    _closePosition();
+    _withdrawAllMargin();
     // transfer all funds back to vault state
+    (uint marginRemaining, bool invalid) = _remainingMargin(); 
+    require(!invalid, "remaining margin negative"); 
+    quoteAsset.transfer(address(vault), marginRemaining);
+
+    activeShort = false; 
     emit HedgeClosePosition(msg.sender);
   }
 
@@ -445,7 +456,7 @@ contract Strategy is VaultAdapter {
     uint hedgeCollat = _getFullCollateral(currentStrikePrice, currentStrategy.size)
       .multiplyDecimal(1 - currentStrategy.collatPercent).multiplyDecimal(currentHedgeStrategy.leverageSize);
 
-    (uint fee, ) = IFuturesMarket(futuresMarket).orderFee(int(hedgeCollat));
+    (uint fee, ) = _orderFee(int(hedgeCollat));
 
     totalHedgeSizeAfterFees = hedgeCollat - fee; 
   }
@@ -458,7 +469,7 @@ contract Strategy is VaultAdapter {
    * @dev verify if the strike is valid for the strategy
    * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
    */
-  function isValidStrike(Strike memory strike) public view returns (bool isValid) {
+  function isValidStrike(Strike memory strike) internal view returns (bool isValid) {
     if (activeExpiry != strike.expiry) {
       return false;
     }
@@ -486,7 +497,7 @@ contract Strategy is VaultAdapter {
   /**
    * @dev check if the expiry of the board is valid according to the strategy
    */
-  function _isValidExpiry(uint expiry) public view returns (bool isValid) {
+  function _isValidExpiry(uint expiry) internal view returns (bool isValid) {
     uint secondsToExpiry = _getSecondsToExpiry(expiry);
     isValid = (secondsToExpiry >= currentStrategy.minTimeToExpiry &&
       secondsToExpiry <= currentStrategy.maxTimeToExpiry);

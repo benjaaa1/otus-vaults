@@ -1,5 +1,5 @@
 {
-    "name": "@scaffold-eth/monorepo",
+    "name": "@otus-finance/monorepo",
     "version": "1.0.0",
     "keywords": [
       "ethereum",
@@ -16,10 +16,12 @@
         "chain": "yarn workspace @otus-finance/hardhat chain",
         "start": "yarn workspace @otus-finance/react-app start",
         "deploy": "yarn workspace @otus-finance/hardhat deploy",
+        "deploy-kovan-optimism": "yarn workspace @otus-finance/hardhat deploy --network kovanOptimism",
         "verify": "yarn workspace @otus-finance/hardhat verify",
         "surge": "yarn workspace @otus-finance/react-app surge",
         "build": "yarn workspace @otus-finance/react-app build --max-old-space-size=12288",
         "watch": "yarn workspace @otus-finance/hardhat watch",
+        "lyraDeploy": "yarn workspace @otus-finance/hardhat lyraDeploy",
         "accounts": "yarn workspace @otus-finance/hardhat accounts",
         "balance": "yarn workspace @otus-finance/hardhat balance",
         "send": "yarn workspace @otus-finance/hardhat send",
@@ -27,7 +29,8 @@
         "account": "yarn workspace @otus-finance/hardhat account",
         "compile": "yarn workspace @otus-finance/hardhat compile",
         "clean": "yarn workspace @otus-finance/hardhat clean",
-        "test": "yarn workspace @otus-finance/hardhat test"
+        "test": "yarn workspace @otus-finance/hardhat test",
+        "test-kovan": "yarn workspace @otus-finance/hardhat test-kovan"
     },
     "workspaces": {
       "packages": [
