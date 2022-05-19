@@ -8,9 +8,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const otusVault = await ethers.getContract("OtusVault");
   const strategy = await ethers.getContract("Strategy");
   const supervisor = await ethers.getContract("Supervisor");
+  const l2DepositMover = await ethers.getContract("L2DepositMover");
 
   const lyraMarketRegistery = {
-    address: "0xD0E70Deaafb139e662FB7ff906d20BB2c2AD8e40"
+    address: "0xaff8ee51bbe42a1b2666aba062c428c570e0b1fd"
   }
 
   const futuresMarketManager = {
@@ -24,6 +25,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
       supervisor.address, 
       otusVault.address, 
       strategy.address, 
+      l2DepositMover.address,
       lyraMarketRegistery.address, // lyra market
       futuresMarketManager.address
     ],

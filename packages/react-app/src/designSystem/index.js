@@ -1,18 +1,51 @@
 import styled from "styled-components";
-// import { Modal as BootstrapModal } from "react-bootstrap";
+import { Button, ButtonGroup } from '@chakra-ui/react'
 
-import Link from "../components/Common/Link";
+import { Link } from "react-router-dom";
 import colors from "./colors";
+import theme from "./theme";
 
 export const BaseText = styled.span`
-  color: ${colors.text};
-  font-family: "Inter", sans-serif;
-  font-size: 16px;
-  color: white;
+  color: ${props => props.color };
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: ${props => props.size };
+`;
+
+export const BaseHeaderText = styled.span`
+  color: ${props => props.color };
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: ${props => props.size };
+  font-weight: 700; 
+  margin: 0 auto; 
+  padding: ${theme.padding.sm}
 `;
 
 export const BaseLink = styled(Link)`
+  font-family: 'IBM Plex Mono', monospace;
+  text-decoration: none;
   &:hover {
-    text-decoration: none;
+   font-weight: 700;
   }
+`;
+
+export const BaseTag = styled.span`
+  background: ${props => props.bg };
+  padding: ${props => props.ps};
+  margin: ${props => props.ms}
+  border: ${props => props.borderSize}
+`;
+
+export const BaseButton = styled(Button)`
+  background: ${props => props.bg };
+  padding: ${props => props.ps};
+  margin: ${props => props.ms};
+
+`;
+
+export const Container = styled.div`
+  margin-left: auto;
+  margin-right: auto;
+`;
+
+export const BaseBox = styled.div`
 `;

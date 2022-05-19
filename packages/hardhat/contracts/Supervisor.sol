@@ -36,7 +36,6 @@ contract Supervisor is ReentrancyGuardUpgradeable {
 	*/
 	constructor(address _otusTreasury) {
 		treasury = _otusTreasury; 
-		// otusAsset = IERC20(asset); 
 	}
 
 	/**

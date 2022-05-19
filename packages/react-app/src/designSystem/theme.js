@@ -4,15 +4,41 @@ const theme = {
     opacity: 0.64,
     opacityHigher: 0.84,
   },
+  font: {
+    header: 'IBM Plex Mono',
+    headerDefault: 'monospace',
+    sans: 'IBM Plex Sans',
+    sansDefault: 'sans-serif'
+  },
+  fontSize: {
+    xs: "10px",
+    sm: "14px",
+    md: "16px",
+    lg: "32px",
+  },
   border: {
-    radiusBig: "12px",
-    radius: "8px",
+    radiusBig: "8px",
+    radius: "6px",
     radiusSmall: "4px",
-    width: "1px",
+    smallWidth: "1px",
+    width: "2px",
     style: "solid",
   },
+  padding: {
+    xs: "4px",
+    sm: "8px",
+    md: "12px",
+    lg: "20px",
+  },
+  margin: {
+    xs: "4px",
+    sm: "8px",
+    md: "12px",
+    lg: "20px",
+    xl: "40px"
+  },
   header: {
-    height: 80,
+    height: 82,
   },
   footer: {
     desktop: {

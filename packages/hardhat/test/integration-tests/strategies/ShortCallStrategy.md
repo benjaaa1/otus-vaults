@@ -1,9 +1,9 @@
-import { lyraConstants, lyraEvm, TestSystem } from '@lyrafinance/core';
-import { toBN, ZERO_ADDRESS } from '@lyrafinance/core/dist/scripts/util/web3utils';
-import { DEFAULT_PRICING_PARAMS } from '@lyrafinance/core/dist/test/utils/defaultParams';
-import { TestSystemContractsType } from '@lyrafinance/core/dist/test/utils/deployTestSystem';
-import { PricingParametersStruct } from '@lyrafinance/core/dist/typechain-types/OptionMarketViewer';
-import { OptionMarket } from '@lyrafinance/core/dist/typechain-types';
+import { lyraConstants, lyraEvm, TestSystem } from '@lyrafinance/protocol';
+import { toBN, ZERO_ADDRESS } from '@lyrafinance/protocol/dist/scripts/util/web3utils';
+import { DEFAULT_PRICING_PARAMS } from '@lyrafinance/protocol/dist/test/utils/defaultParams';
+import { TestSystemContractsType } from '@lyrafinance/protocol/dist/test/utils/deployTestSystem';
+import { PricingParametersStruct } from '@lyrafinance/protocol/dist/typechain-types/OptionMarketViewer';
+import { OptionMarket } from '@lyrafinance/protocol/dist/typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';

@@ -110,19 +110,16 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   ) internal initializer {
 
     __ReentrancyGuard_init();
-    console.log("_tokenName", _tokenName); 
-    console.log("_tokenSymbol", _tokenSymbol); 
+
     __ERC20_init(_tokenName, _tokenSymbol);
     __Ownable_init();
     transferOwnership(_owner);
 
     feeRecipient = _supervisor;
-    console.log("_vaultParams", _vaultParams.asset); 
     vaultParams = _vaultParams;
     
     uint assetBalance = IERC20(vaultParams.asset).balanceOf(address(this));
-    console.log("assetBalance", assetBalance); 
-    console.log("vaultParams", vaultParams.asset); 
+
     ShareMath.assertUint104(assetBalance);
     vaultState.lastLockedAmount = uint104(assetBalance);
     vaultState.round = 1;
@@ -197,6 +194,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     _depositFor(amount, msg.sender);
     console.log("vaultParams.asset", vaultParams.asset);
     // An approve() by the msg.sender is required beforehand
+    console.log("deposit", msg.sender, address(this), amount);
+
     IERC20(vaultParams.asset).safeTransferFrom(msg.sender, address(this), amount);
   }
 
@@ -271,6 +270,9 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     // We do a max redeem before initiating a withdrawal
     // But we check if they must first have unredeemed shares
+    console.log("depositReceipts[msg.sender].amount", depositReceipts[msg.sender].amount); 
+    console.log("depositReceipts[msg.sender].unredeemedShares", depositReceipts[msg.sender].unredeemedShares); 
+
     if (depositReceipts[msg.sender].amount > 0 || depositReceipts[msg.sender].unredeemedShares > 0) {
       _redeem(0, true);
     }
@@ -280,6 +282,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     Vault.Withdrawal storage withdrawal = withdrawals[msg.sender];
 
     bool withdrawalIsSameRound = withdrawal.round == currentRound;
+
+    console.log("InitiateWithdraw", currentRound); 
 
     emit InitiateWithdraw(msg.sender, numShares, currentRound);
 
@@ -301,6 +305,9 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     ShareMath.assertUint128(newQueuedWithdrawShares);
     vaultState.queuedWithdrawShares = uint128(newQueuedWithdrawShares);
 
+    console.log("_transfer", msg.sender, address(this), numShares);
+    uint balance = balanceOf(msg.sender); 
+    console.log("initiate withdraw balance of sender", balance); 
     _transfer(msg.sender, address(this), numShares);
   }
 
@@ -433,8 +440,10 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     vaultState.totalPending = 0;
     vaultState.round = uint16(currentRound + 1);
 
+    console.log("vaultState.round", vaultState.round); 
+    console.log("mintShares", mintShares); 
     _mint(address(this), mintShares);
-
+    console.log("after minting", balanceOf(address(this)));
     return (lockedBalance, queuedWithdrawAmount);
   }
 

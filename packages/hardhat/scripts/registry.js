@@ -5,11 +5,18 @@ const {getNamedAccounts} = hre;
 const registerMarkets = async () => {
   try {
     const { deployer } = await getNamedAccounts();
-    console.log({deployer}); 
     
     const registry = await ethers.getContract("OtusCloneFactory");
 
-    await registry.setFuturesMarkets("0x1d9aa51453a29613112e970d74f4831a7d08e691", "0x7345544800000000000000000000000000000000000000000000000000000000")
+    await registry.setFuturesMarkets("0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D", "0x7345544800000000000000000000000000000000000000000000000000000000")
+
+    await registry.setOptionMarketDetails("0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2"); 
+
+    const market = await registry.getOptionMarketDetails("0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2"); 
+    console.log({ market })
+
+    // const market1 = await registry.marketAddress("0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2", 0); 
+    // console.log({ market1 })
 
     return true;
   } catch (e) {

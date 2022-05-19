@@ -7,6 +7,7 @@ import "hardhat/console.sol";
 import {OtusRegistry} from "../OtusRegistry.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Strategy} from "../Strategy.sol";
 
 // libraries
 import {Vault} from "../libraries/Vault.sol";
@@ -31,15 +32,17 @@ interface IOtusVault {
 
 interface IStrategy {
 	function initialize(
-		address _vault,
     address _owner, 
-		address _optionToken,
-		address _optionMarket,
-		address _liquidityPool,
-		address _shortCollateral,
-		address _futuresMarket,
-    address _quoteAsset, 
-    address _baseAsset
+    address _vault, 
+		address[] memory marketAddressess,
+    address _gwavOracle
+	) external; 
+}
+
+interface IL2DepositMover {
+	function initialize(
+    address _owner, 
+    address _vault
 	) external; 
 }
 
@@ -48,13 +51,15 @@ interface IStrategy {
  */
 
 contract OtusCloneFactory is OtusRegistry {
+  // Strategy public _strategy; // for delegate call 
 	/// @notice Stores the Supervisor contract implementation address 
 	address public immutable supervisor;
 	/// @notice Stores the Otus vault contract implementation address
 	address public immutable otusVault;
 	/// @notice Stores the Strategy contract implementation address 
 	address public immutable strategy;  
-	
+	/// @notice Stores the Strategy contract implementation address 
+	address public immutable l2DepositMover;  
   /************************************************
    *  EVENTS
    ***********************************************/
@@ -69,14 +74,16 @@ contract OtusCloneFactory is OtusRegistry {
 	constructor(
 			address _supervisor, 
 			address _otusVault, 
-			address _strategy, 
+			address _strategyAddress, 
+			address _l2DepositMover,
 			address _lyraMarketRegistry,
 			address _futuresMarketManager
 		) 
 		OtusRegistry(_lyraMarketRegistry, _futuresMarketManager) {
 			supervisor = _supervisor; 
 			otusVault = _otusVault; 
-			strategy = _strategy;
+			strategy = _strategyAddress;
+			l2DepositMover =_l2DepositMover; 
 	}
 
 	/**
@@ -95,8 +102,7 @@ contract OtusCloneFactory is OtusRegistry {
 	* @dev add check if supervisor has staked OTUS can create vault
   */
 	function cloneVaultWithStrategy(
-		address _quoteAsset, 
-		address _baseAsset,
+		address _optionMarket,
 		string memory _tokenName,
 		string memory _tokenSymbol,
 		bool isPublic, 
@@ -125,13 +131,10 @@ contract OtusCloneFactory is OtusRegistry {
 
 		address strategyClone =	_cloneStrategy(
 			otusVaultClone,
-			_quoteAsset, 
-			_baseAsset
+			_optionMarket
 		);
 		
-		(bool success, bytes memory data) = address(otusVaultClone).delegatecall(
-				abi.encodeWithSignature("setStrategy(address)", strategyClone)
-		);
+		require(strategyClone != address(0), "Strategy not created"); 
 	}
 
   /**
@@ -139,32 +142,32 @@ contract OtusCloneFactory is OtusRegistry {
    */
 	function _cloneStrategy(
 		address _vault, 
-		address _quoteAsset, 
-		address _baseAsset
+		address _optionMarket
 	 ) internal returns (address strategyClone) {
 		strategyClone = Clones.clone(strategy);
 		strategies[_vault] = strategyClone;
 
-		// OptionMarketAddresses memory marketAddress = getOptionMarketDetails(_baseAsset); 
-		// require(marketAddress.optionToken != address(0), "Failed to get optionToken");
-		// require(marketAddress.optionMarket != address(0), "Failed to get optionMarket");
-		// require(marketAddress.liquidityPool != address(0), "Failed to get liquidityPool");
-		// require(marketAddress.shortCollateral != address(0), "Failed to get shortCollateral");
-		// require(marketAddress.futuresMarket != address(0), "Failed to get futuresMarket");
+		address[] memory marketAddresses = getOptionMarketDetails(_optionMarket); 
+		require(marketAddresses[0] != address(0), "Failed to get quote asset");
 
 		IStrategy(strategyClone).initialize(
 			msg.sender,
 			_vault,  
-			address(0x9e7bAAfd72965e575B284065fc8942C377879700),	// marketAddress.optionToken,
-			address(0xb43285B5aF7cad80409e1267Ea21ECB44eEF4a0E),	// marketAddress.optionMarket,
-			address(0xBc704C32183836fE0F64376A95ddeD20F5CF731c),	// marketAddress.liquidityPool,
-			address(0xa56bE2FC5c5D204c2fCc0e5CE5FfEdf1A5749786),	// marketAddress.shortCollateral,
-			address(0x698E403AaC625345C6E5fC2D0042274350bEDf78),	// marketAddress.futuresMarket,
-			_quoteAsset, 
-			_baseAsset
+			marketAddresses,
+			address(0x806b9d822013B8F82cC8763DCC556674853905d5)  // marketAddress.gwavOracle
 		);
 
 		emit NewStrategyClone(strategyClone, msg.sender);
+	}
+
+	function _cloneL2DepositMover(address _vault) external {
+		address l2DepositMoverClone = Clones.clone(l2DepositMover);
+		require(l2DepositMoverClone != address(0), "Deposit clone not created"); 
+		vaultBridge[_vault] = l2DepositMoverClone; 
+		IL2DepositMover(l2DepositMoverClone).initialize(
+			msg.sender,
+			_vault
+		);
 	}
 
 }

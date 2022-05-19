@@ -10,6 +10,21 @@ export const BLOCKNATIVE_DAPPID = "0b58206a-f3c0-4701-a62f-73c7243e8c77";
 export const ALCHEMY_KEY = "xn77lGCuY4cieske5xrNvDuT35Lj-2IX";
 
 export const NETWORKS = {
+  mainnet: {
+    name: "mainnet",
+    color: "#ff8b9e",
+    chainId: 1,
+    rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+    blockExplorer: "https://etherscan.io/",
+  },
+  kovan: {
+    name: "kovan",
+    color: "#7003DD",
+    chainId: 42,
+    rpcUrl: `https://kovan.infura.io/v3/${INFURA_ID}`,
+    blockExplorer: "https://kovan.etherscan.io/",
+    faucet: "https://gitter.im/kovan-testnet/faucet", // https://faucet.kovan.network/
+  },
   localhost: {
     name: "localhost",
     color: "#666666",

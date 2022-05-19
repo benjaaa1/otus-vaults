@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 // Hardhat
 import "hardhat/console.sol";
 
-import {GWAVOracle} from "@lyrafinance/core/contracts/periphery/GWAVOracle.sol";
+import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
 import {IERC20Detailed} from "../interfaces/IERC20Detailed.sol";
 import {VaultAdapter} from "../VaultAdapter.sol";
 import {FuturesAdapter} from "../FuturesAdapter.sol";
@@ -12,12 +12,12 @@ import {TokenAdapter} from "../TokenAdapter.sol";
 
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {DecimalMath} from "@lyrafinance/core/contracts/synthetix/DecimalMath.sol";
+import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
 import "../interfaces/IFuturesMarket.sol";
 import "./MockOtusVault.sol";
 
 contract MockStrategy is FuturesAdapter, VaultAdapter, TokenAdapter {
-  GWAVOracle public immutable gwavOracle;
+  GWAVOracle public gwavOracle;
 
   IERC20Detailed public collateral;
   IERC20Detailed public premium;
@@ -31,25 +31,18 @@ contract MockStrategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   MockOtusVault public otusVault;
 
   constructor(
-    GWAVOracle _gwavOracle,
-    address _synthetixAdapter,
-    address _optionPricer,
-    address _greekCache
-  ) VaultAdapter(
-    _synthetixAdapter,
-    _optionPricer,
-    _greekCache
-  ) {
-    gwavOracle = _gwavOracle;
-  }
+    address _synthetixAdapter
+  ) FuturesAdapter() VaultAdapter( _synthetixAdapter) {}
 
   function initialize(
-    address _vault, 
     address _owner, 
+    address _vault, 
     address _optionToken,
     address _optionMarket,
     address _liquidityPool,
     address _shortCollateral,
+    address _optionPricer,
+    address _greekCache,
     address _futuresMarket,
     address _quoteAsset, 
     address _baseAsset
@@ -59,7 +52,9 @@ contract MockStrategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       _optionToken,
       _optionMarket,
       _liquidityPool,
-      _shortCollateral
+      _shortCollateral,
+      _optionPricer,
+      _greekCache
     );
 
     futuresInitialize(_futuresMarket);

@@ -1,5 +1,5 @@
 const hre = require('hardhat');
-const { toBN } = require('@lyrafinance/core/dist/scripts/util/web3utils');
+const { toBN } = require('@lyrafinance/protocol/dist/scripts/util/web3utils');
 
 const {getNamedAccounts} = hre;
 

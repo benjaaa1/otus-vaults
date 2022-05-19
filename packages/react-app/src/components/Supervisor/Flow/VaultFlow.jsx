@@ -22,7 +22,7 @@ const VaultFlow = ({ contract, signer }) => {
     _tokenName: 'Otus', 
     _tokenSymbol: 'OTV',
     _isPublic: true, 
-    _vaultType: 0, 
+    _vaultType: 4, 
     _vaultParams: {
       decimals: 18,
       cap: ethers.utils.parseEther('500000'), // 500,000 usd cap
@@ -34,7 +34,7 @@ const VaultFlow = ({ contract, signer }) => {
     
     if(contract) {
       try {
-        const { markets } = await getLyraMarkets(); 
+        const {markets} = await getLyraMarkets(); 
         console.log({ markets }); 
         setMarkets(markets);;
       } catch (e) {
@@ -47,7 +47,7 @@ const VaultFlow = ({ contract, signer }) => {
     console.log(vaultDetails); 
     try {
       const {
-        _quoteAsset,
+        _optionMarket,
         _baseAsset,
         _tokenName,
         _tokenSymbol,
@@ -56,8 +56,7 @@ const VaultFlow = ({ contract, signer }) => {
         _vaultParams
       } = vaultDetails; 
       const response = await contract.connect(signer).cloneVaultWithStrategy(
-        _quoteAsset, 
-        _baseAsset, 
+        _optionMarket, 
         _tokenName, 
         _tokenSymbol,
         _isPublic, 
@@ -76,15 +75,16 @@ const VaultFlow = ({ contract, signer }) => {
   }
 
   const onSelectMarket = (selectedId) => {
-    const { name, baseAddress, quoteAddress } = markets.find(({ id }) => id === selectedId);
+    const { name, id, baseAddress, quoteAddress } = markets.find(({ id }) => id === selectedId);
+    console.log({ name, baseAddress, quoteAddress })
     setVaultDetails({ 
       ...vaultDetails,  
       _vaultParams: { 
         ...vaultDetails._vaultParams, 
-        asset: baseAddress 
+        asset: '0xD30a35282c2E2db07d9dAC69Bf3D45a975Bc85D1'// quoteAddress  // used qutoe address for short puts
       }, 
-      _baseAsset: baseAddress, 
-      _quoteAsset: quoteAddress,
+      _baseAsset: '0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D', //baseAddress, 
+      _optionMarket: '0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2', //_optionMarket,
       _tokenName: `OTUS-${name}`,
       _tokenSymbol: `OTV${name}`
     }); 

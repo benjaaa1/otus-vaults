@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Button } from "../../Common/Button"; 
 import { useHistory } from "react-router-dom";
+import { Flex, Box } from 'reflexbox';
+import { BaseShadowBox } from "../../Common/Container";
 
 const SupervisorFlow = ({ contract, signer }) => {
 
@@ -21,9 +23,11 @@ const SupervisorFlow = ({ contract, signer }) => {
   };
 
   return (
-    <Button onClick={createSupervisor}>
-      Create Supervisor
-    </Button> 
+    <BaseShadowBox padding={0}>
+      <Button onClick={createSupervisor}>
+        Create Supervisor
+      </Button> 
+    </BaseShadowBox>
   )
 }
 

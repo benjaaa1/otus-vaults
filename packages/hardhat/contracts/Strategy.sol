@@ -7,11 +7,11 @@ import "hardhat/console.sol";
 
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {DecimalMath} from "@lyrafinance/core/contracts/synthetix/DecimalMath.sol";
-import {SignedDecimalMath} from "@lyrafinance/core/contracts/synthetix/SignedDecimalMath.sol";
+import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
+import {SignedDecimalMath} from "@lyrafinance/protocol/contracts/synthetix/SignedDecimalMath.sol";
 
 // Libraries
-import {GWAVOracle} from "@lyrafinance/core/contracts/periphery/GWAVOracle.sol";
+import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
 import './synthetix/SignedSafeDecimalMath.sol';
 import './synthetix/SafeDecimalMath.sol';
 // Vault 
@@ -28,7 +28,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   using SignedSafeDecimalMath for int;
 
   uint public activeExpiry;
-  
+  uint public activeBoardId;
+
   uint[] public activeStrikeIds;
   mapping(uint => uint) public strikeToPositionId;
   mapping(uint => uint) public lastTradeTimestamp;
@@ -45,18 +46,18 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
   // strategies can be updated by different strategizers
   struct Detail {
-    uint collatBuffer; // multiple of vaultAdapter.minCollateral(): 1.1 -> 110% * minCollat
-    uint collatPercent; // partial collateral: 0.9 -> 90% * fullCollat
-    uint minTimeToExpiry;
-    uint maxTimeToExpiry;
-    int targetDelta;
-    uint maxDeltaGap;
-    uint minVol;
-    uint maxVol;
-    uint size;
-    uint minTradeInterval;
-    uint maxVolVariance;
-    uint gwavPeriod;
+    uint collatBuffer; // slider - multiple of vaultAdapter.minCollateral(): 1.1 -> 110% * minCollat
+    uint collatPercent; // slider - partial collateral: 0.9 -> 90% * fullCollat
+    uint minTimeToExpiry; // slider 
+    uint maxTimeToExpiry; // slider
+    int targetDelta; // slider
+    uint maxDeltaGap; // slider
+    uint minVol; // slider
+    uint maxVol; // slider
+    uint size; // input
+    uint minTradeInterval; // slider
+    uint maxVolVariance; // slider
+    uint gwavPeriod; // slider
   }
 
   struct HedgeDetail {
@@ -92,63 +93,41 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    *  ADMIN
    ***********************************************/
 
-  mapping(OtusVault.VaultType => OptionType) public vaultOptionTypes;
-
-  constructor(
-    address _gwavOracle,
-    address _synthetixAdapter,
-    address _optionPricer,
-    address _greekCache
-    // address _feeCounter
-  ) FuturesAdapter() VaultAdapter(
-    _synthetixAdapter,
-    _optionPricer,
-    _greekCache
-    // _feeCounter
-  ) {
-    gwavOracle = GWAVOracle(_gwavOracle);
-    vaultOptionTypes[OtusVault.VaultType.SHORT_PUT] = OptionType.SHORT_PUT_QUOTE;
-    vaultOptionTypes[OtusVault.VaultType.SHORT_CALL] = OptionType.SHORT_CALL_QUOTE;
-    vaultOptionTypes[OtusVault.VaultType.APE_BULL] = OptionType.SHORT_PUT_QUOTE;
-    vaultOptionTypes[OtusVault.VaultType.APE_BEAR] = OptionType.SHORT_CALL_QUOTE;
-    vaultOptionTypes[OtusVault.VaultType.IRON_CONDOR] = OptionType.SHORT_PUT_QUOTE;
-    vaultOptionTypes[OtusVault.VaultType.SHORT_STRADDLE] = OptionType.SHORT_PUT_QUOTE;
-  }
+  constructor(address _synthetixAdapter) FuturesAdapter() VaultAdapter(_synthetixAdapter) TokenAdapter() {}
 
   function initialize(
     address _owner, 
     address _vault, 
-    address _optionToken,
-    address _optionMarket,
-    address _liquidityPool,
-    address _shortCollateral,
-    address _futuresMarket,
-    address _quoteAsset, 
-    address _baseAsset
+    address[] memory marketAddresses,
+    address _gwavOracle
   ) external { 
 
+    gwavOracle = GWAVOracle(_gwavOracle);
+
     optionInitialize(
-      _optionToken,
-      _optionMarket,
-      _liquidityPool,
-      _shortCollateral
+      marketAddresses[2],	// marketAddress.optionToken,
+      marketAddresses[3],	// marketAddress.optionMarket,
+      marketAddresses[4],	// marketAddress.liquidityPool,
+      marketAddresses[5],	// marketAddress.shortCollateral,
+      marketAddresses[6],  // optionPricer
+      marketAddresses[7]  // greekCache
     );
 
-    futuresInitialize(_futuresMarket);
+    futuresInitialize(marketAddresses[8]);
 
     baseInitialize(
       _owner, 
       _vault,
-      _futuresMarket, 
-      _optionMarket, 
-      _quoteAsset, 
-      _baseAsset
+      marketAddresses[8], 
+      marketAddresses[3],	// marketAddress.optionMarket, 
+      marketAddresses[0],  // quote asset
+      marketAddresses[1]   // base asset
     ); 
 
     vault = _vault;
     otusVault = OtusVault(_vault); 
 
-    optionType = vaultOptionTypes[otusVault.vType()]; 
+    optionType = OptionType(otusVault.optionType());
   }
 
   /************************************************
@@ -180,12 +159,14 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    * @dev set the board id that will be traded for the next round
    * @param boardId lyra board Id.
    */
-  function setBoard(uint boardId) external onlyVault {
+  function setBoard(uint boardId) external {
+    require(boardId > 0, "Board Id incorrect");
     Board memory board = getBoard(boardId);
+    console.log("board.expiry", board.expiry); 
     require(_isValidExpiry(board.expiry), "invalid board");
     activeExpiry = board.expiry;
+    activeBoardId = boardId; 
   }
-
 
   /**
    * @dev convert premium in quote asset into collateral asset and send it back to the vault.
@@ -193,7 +174,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   function returnFundsAndClearStrikes() external onlyVault {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
     uint quoteBal = quoteAsset.balanceOf(address(this));
-
+    console.log("quoteBal", quoteBal);
+    console.log("_isBaseCollat", _isBaseCollat()); 
     if (_isBaseCollat()) {
       // exchange quote asset to base asset, and send base asset back to vault
       uint baseBal = baseAsset.balanceOf(address(this));
@@ -401,12 +383,23 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint strikeExpiry
   ) public view returns (uint closeAmount) {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
+    console.log("getAllowedCloseAmount", strikePrice, strikeExpiry, exchangeParams.spotPrice);
     uint minCollatPerAmount = _getBufferCollateral(strikePrice, strikeExpiry, exchangeParams.spotPrice, 1e18);
+    console.log("minCollatPerAmount", minCollatPerAmount);
+    console.log("position.collateral", position.collateral);
+    console.log("position.amount", position.amount); 
+    console.log("minCollatPerAmount.multiplyDecimal(position.amount)", minCollatPerAmount.multiplyDecimal(position.amount));
 
     closeAmount = position.collateral < minCollatPerAmount.multiplyDecimal(position.amount)
       ? position.amount - position.collateral.divideDecimal(minCollatPerAmount)
       : 0;
   }
+// getAllowedCloseAmount 2700000000000000000000 1653672335 2600000000000000000000
+// minCollatPerAmount 847860939801925427994
+// position.collateral 40500000000000000000000
+// position.amount 15000000000000000000
+// minCollatPerAmount.multiplyDecimal(position.amount) 12717914097028881419910
+
 
   /************************************************
    *  KEEPER ACTIONS - KWENTA HEDGE
@@ -470,6 +463,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
    */
   function isValidStrike(Strike memory strike) internal view returns (bool isValid) {
+    console.log("activeExpiry strike.expiry", activeExpiry, strike.expiry); 
     if (activeExpiry != strike.expiry) {
       return false;
     }
@@ -479,6 +473,17 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     int callDelta = getDeltas(strikeId)[0];
     int delta = _isCall() ? callDelta : callDelta - SignedDecimalMath.UNIT;
     uint deltaGap = _abs(currentStrategy.targetDelta - delta);
+    
+    console.log("strike.id", strike.id); 
+    console.log("vol", vol); 
+    console.log("callDelta", uint(callDelta)); 
+    console.log("_isCall", _isCall()); 
+    console.log("delta", uint(delta)); 
+    console.log("deltaGap", deltaGap); 
+    console.log("currentStrategy.minVol", currentStrategy.minVol);
+    console.log("currentStrategy.maxVol", currentStrategy.maxVol);
+    console.log("currentStrategy.maxDeltaGap", currentStrategy.maxDeltaGap);
+
     return vol >= currentStrategy.minVol && vol <= currentStrategy.maxVol && deltaGap < currentStrategy.maxDeltaGap;
   }
 
@@ -490,7 +495,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint volSpot = getVols(_toDynamic(strikeId))[0];
 
     uint volDiff = (volGWAV >= volSpot) ? volGWAV - volSpot : volSpot - volGWAV;
-
+    console.log("volDiff", volDiff, currentStrategy.maxVolVariance);
     return isValid = volDiff < currentStrategy.maxVolVariance;
   }
 
@@ -499,8 +504,11 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    */
   function _isValidExpiry(uint expiry) internal view returns (bool isValid) {
     uint secondsToExpiry = _getSecondsToExpiry(expiry);
-    isValid = (secondsToExpiry >= currentStrategy.minTimeToExpiry &&
-      secondsToExpiry <= currentStrategy.maxTimeToExpiry);
+    console.log("secondsToExpiry", secondsToExpiry); 
+    console.log("currentStrategy.minTimeToExpiry", currentStrategy.minTimeToExpiry); 
+    console.log("currentStrategy.maxTimeToExpiry", currentStrategy.maxTimeToExpiry); 
+
+    isValid = (secondsToExpiry >= currentStrategy.minTimeToExpiry && secondsToExpiry <= currentStrategy.maxTimeToExpiry);
   }
 
    /////////////////////////////
@@ -607,6 +615,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   }
 
   function _getSecondsToExpiry(uint expiry) internal view returns (uint) {
+    console.log("block.timestamp", block.timestamp); 
     require(block.timestamp <= expiry, "timestamp expired");
     return expiry - block.timestamp;
   }

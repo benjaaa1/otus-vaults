@@ -1,19 +1,3 @@
-// require("dotenv").config();
-// const { utils } = require("ethers");
-// const fs = require("fs");
-// const chalk = require("chalk");
-
-// require("@nomiclabs/hardhat-waffle");
-// require("@tenderly/hardhat-tenderly");
-
-// require("hardhat-deploy");
-// require("hardhat-gas-reporter");
-
-// require("@nomiclabs/hardhat-ethers");
-// require("@nomiclabs/hardhat-etherscan");
-
-// require("@typechain/hardhat");
-
 import * as dotenv from 'dotenv';
 import { utils } from "ethers"; 
 import fs from "fs"; 
@@ -29,10 +13,10 @@ import "@otusfinance/otus-hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 
 import "@typechain/hardhat";
+import "hardhat-dependency-compiler";
+import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths'
 
 dotenv.config();
-
-const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
 const defaultNetwork = "localhost";
 
@@ -67,12 +51,20 @@ module.exports = {
       accounts: {
         mnemonic: mnemonic(),
       },
+      deploy: ['deploy_l1'],
+      companionNetworks: {
+        l2: 'optimism',
+      },
     },
     kovan: {
       url: "https://kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925", // <---- YOUR INFURA ID! (or it won't work)
       //    url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXXXXX/eth/kovan", // <---- YOUR MORALIS ID! (not limited to infura)
       accounts: {
-        mnemonic: mnemonic(),
+        mnemonic: 'wear bubble foil piano inherit cram talent cute minute neglect three play',
+      },
+      deploy: ['deploy_l1'],
+      companionNetworks: {
+        l2: "kovanOptimism",
       },
     },
     optimism: {
@@ -80,6 +72,7 @@ module.exports = {
       accounts: {
         mnemonic: mnemonic(),
       },
+      deploy: ['deploy_l2'],
       companionNetworks: {
         l1: "mainnet",
       },
@@ -91,6 +84,7 @@ module.exports = {
       accounts: {
         mnemonic: 'wear bubble foil piano inherit cram talent cute minute neglect three play',
       },
+      deploy: ['deploy_l2'],
       companionNetworks: {
         l1: "kovan",
       },
@@ -160,5 +154,8 @@ module.exports = {
       optimisticKovan: "582EMV38X8492YGM6IIB22YVXIBFDB3RU5"
     },
   },
+  dependencyCompiler: {
+    paths: lyraContractPaths,
+  }
 };
 

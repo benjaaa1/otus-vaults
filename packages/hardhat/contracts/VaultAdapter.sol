@@ -5,8 +5,8 @@ pragma solidity 0.8.9;
 import "hardhat/console.sol";
 
 // Libraries
-import {BlackScholes} from '@lyrafinance/core/contracts/lib/BlackScholes.sol';
-import {DecimalMath} from '@lyrafinance/core/contracts/synthetix/DecimalMath.sol';
+import {BlackScholes} from '@lyrafinance/protocol/contracts/lib/BlackScholes.sol';
+import {DecimalMath} from '@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol';
 import './interfaces/IFuturesMarket.sol';
 
 // Inherited
@@ -14,14 +14,14 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // Interfaces
-import {OptionToken} from '@lyrafinance/core/contracts/OptionToken.sol';
-import {OptionMarket} from '@lyrafinance/core/contracts/OptionMarket.sol';
-import {LiquidityPool} from '@lyrafinance/core/contracts/LiquidityPool.sol';
-import {ShortCollateral} from '@lyrafinance/core/contracts/ShortCollateral.sol';
-import {OptionGreekCache} from '@lyrafinance/core/contracts/OptionGreekCache.sol';
-import {SynthetixAdapter} from '@lyrafinance/core/contracts/SynthetixAdapter.sol';
-import {BasicFeeCounter} from '@lyrafinance/core/contracts/periphery/BasicFeeCounter.sol';
-import {OptionMarketPricer} from '@lyrafinance/core/contracts/OptionMarketPricer.sol';
+import {OptionToken} from '@lyrafinance/protocol/contracts/OptionToken.sol';
+import {OptionMarket} from '@lyrafinance/protocol/contracts/OptionMarket.sol';
+import {LiquidityPool} from '@lyrafinance/protocol/contracts/LiquidityPool.sol';
+import {ShortCollateral} from '@lyrafinance/protocol/contracts/ShortCollateral.sol';
+import {OptionGreekCache} from '@lyrafinance/protocol/contracts/OptionGreekCache.sol';
+import {SynthetixAdapter} from '@lyrafinance/protocol/contracts/SynthetixAdapter.sol';
+import {BasicFeeCounter} from '@lyrafinance/protocol/contracts/periphery/BasicFeeCounter.sol';
+import {OptionMarketPricer} from '@lyrafinance/protocol/contracts/OptionMarketPricer.sol';
 
 /**
  * @title VaultAdapter 
@@ -124,27 +124,21 @@ contract VaultAdapter {
   LiquidityPool internal liquidityPool;
   ShortCollateral internal shortCollateral;
   SynthetixAdapter immutable internal synthetixAdapter;
-  OptionMarketPricer immutable internal optionPricer;
-  OptionGreekCache immutable internal greekCache;
-  // BasicFeeCounter immutable internal feeCounter;
+  OptionMarketPricer internal optionPricer;
+  OptionGreekCache internal greekCache;
+  // BasicFeeCounter internal feeCounter;
 
 /**
    * @dev Assigns all lyra contracts
    * @param _synthetixAdapter SynthetixAdapter address
-   * @param _optionPricer OptionMarketPricer address
-   * @param _greekCache greekCache address
+   * @dev _optionPricer OptionMarketPricer address
+   * @dev _greekCache greekCache address
    * @dev _feeCounter Fee counter address
  */
   constructor(
-    address _synthetixAdapter,
-    address _optionPricer,
-    address _greekCache
-    // address _feeCounter
+    address _synthetixAdapter
   ) {
     synthetixAdapter = SynthetixAdapter(_synthetixAdapter);
-    optionPricer = OptionMarketPricer(_optionPricer);
-    greekCache = OptionGreekCache(_greekCache);
-    // feeCounter = BasicFeeCounter(_feeCounter);
   }
 
   /**
@@ -158,12 +152,16 @@ contract VaultAdapter {
     address _optionToken,
     address _optionMarket,
     address _liquidityPool,
-    address _shortCollateral
+    address _shortCollateral,
+    address _optionPricer,
+    address _greekCache
   ) internal {
     optionToken = OptionToken(_optionToken); // option token will be different 
     optionMarket = OptionMarket(_optionMarket); // option market will be different 
     liquidityPool = LiquidityPool(_liquidityPool); // liquidity pool will be different
     shortCollateral = ShortCollateral(_shortCollateral); // short collateral will be different
+    optionPricer = OptionMarketPricer(_optionPricer);
+    greekCache = OptionGreekCache(_greekCache);
   }
 
   ////////////////////
@@ -208,9 +206,12 @@ contract VaultAdapter {
 
   function exchangeToExactQuote(uint amountQuote, uint maxBaseUsed) internal returns (uint quoteReceived) {
     SynthetixAdapter.ExchangeParams memory exchangeParams = synthetixAdapter.getExchangeParams(address(optionMarket));
-    uint baseNeeded = synthetixAdapter.estimateExchangeForExactQuote(exchangeParams, amountQuote);
-    require(maxBaseUsed >= baseNeeded, "not enough base");
-    quoteReceived = synthetixAdapter.exchangeFromExactBase(address(optionMarket), baseNeeded);
+    (, quoteReceived) = synthetixAdapter.exchangeToExactQuoteWithLimit(
+      exchangeParams,
+      address(optionMarket),
+      amountQuote,
+      maxBaseUsed
+    );
   }
 
   function exchangeFromExactBase(uint amountBase, uint minQuoteReceived) internal returns (uint quoteReceived) {
@@ -220,11 +221,13 @@ contract VaultAdapter {
 
   function exchangeToExactBase(uint amountBase, uint maxQuoteUsed) internal returns (uint baseReceived) {
     SynthetixAdapter.ExchangeParams memory exchangeParams = synthetixAdapter.getExchangeParams(address(optionMarket));
-    uint quoteNeeded = synthetixAdapter.estimateExchangeForExactBase(exchangeParams, amountBase);
-    require(maxQuoteUsed >= quoteNeeded, "not enough quote");
-    baseReceived = synthetixAdapter.exchangeForExactBase(exchangeParams, address(optionMarket), amountBase);
+    (, baseReceived) = synthetixAdapter.exchangeToExactBaseWithLimit(
+      exchangeParams,
+      address(optionMarket),
+      amountBase,
+      maxQuoteUsed
+    );
   }
-
 
   //////////////////////////
   // Option Token Actions //

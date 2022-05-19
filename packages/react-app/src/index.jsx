@@ -1,19 +1,25 @@
 import React from "react";
-import { ThemeSwitcherProvider } from "react-css-theme-switcher";
 import { BrowserRouter } from "react-router-dom";
 import ReactDOM from "react-dom";
 import App from "./App";
 import "./index.css";
+import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
-const themes = {
-  dark: `${process.env.PUBLIC_URL}/dark-theme.css`,
-};
+const customTheme = extendTheme({
+  styles: {
+    global: {
+      body: {
+        background: "linear-gradient(180deg, #84FFC4 0%, rgba(101, 255, 144, 0.56) 100%) no-repeat", 
+      }
+    }
+  }
+});
 
 ReactDOM.render(
-  <ThemeSwitcherProvider themeMap={themes} defaultTheme={"dark"}>
+  <ChakraProvider  theme={customTheme}>
     <BrowserRouter>
       <App  />
     </BrowserRouter>
-  </ThemeSwitcherProvider>,
+  </ChakraProvider>,
   document.getElementById("root"),
 );

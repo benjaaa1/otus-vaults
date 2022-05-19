@@ -6,10 +6,10 @@ import "hardhat/console.sol";
 // Inherited
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import {SynthetixAdapter} from "@lyrafinance/core/contracts/SynthetixAdapter.sol";
-import {OptionGreekCache} from "@lyrafinance/core/contracts/OptionGreekCache.sol";
-import {OptionMarket} from "@lyrafinance/core/contracts/OptionMarket.sol";
-import {DecimalMath} from "@lyrafinance/core/contracts/synthetix/DecimalMath.sol";
+import {SynthetixAdapter} from "@lyrafinance/protocol/contracts/SynthetixAdapter.sol";
+import {OptionGreekCache} from "@lyrafinance/protocol/contracts/OptionGreekCache.sol";
+import {OptionMarket} from "@lyrafinance/protocol/contracts/OptionMarket.sol";
+import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
 
 /**
  * @title OptionToken
@@ -94,7 +94,7 @@ contract MockOptionToken is Ownable, ERC721Enumerable {
   /////////////////////////
 
   function adjustPosition(
-    OptionMarket.Trade memory trade,
+    OptionMarket.TradeParameters memory trade,
     uint strikeId,
     address trader,
     uint _positionId,

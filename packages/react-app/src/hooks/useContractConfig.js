@@ -7,6 +7,7 @@ export const useContractConfig = () => {
   useEffect(() => {
     const loadFunc = async () => {
       const result = await loadAppContracts();
+      console.log({ result })
       setContractsConfig(result);
     };
     void loadFunc();

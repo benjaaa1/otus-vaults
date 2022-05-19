@@ -7,43 +7,32 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import {IFuturesMarketManager} from "./interfaces/IFuturesMarketManager.sol"; 
-
-abstract contract LyraMarketsRegisry {
-  struct MarketAddresses {
-    address liquidityPool;
-    address liquidityCertificate;
-    address optionGreekCache;
-    address optionMarketPricer;
-    address poolHedger;
-    address shortCollateral;
-    address quoteAsset;
-    address baseAsset;
-    address optionToken;
-  }
-
-  mapping(address => MarketAddresses) public optionMarketsAddresses;
-
-  function getOptionMarkets() external virtual view returns (address[] memory); 
-}
+import {LyraRegistry} from "@lyrafinance/protocol/contracts/periphery/LyraRegistry.sol";
+import {LiquidityPool} from "@lyrafinance/protocol/contracts/LiquidityPool.sol";
+import {OptionGreekCache} from "@lyrafinance/protocol/contracts/OptionGreekCache.sol";
+import {OptionMarketPricer} from "@lyrafinance/protocol/contracts/OptionMarketPricer.sol";
+import {OptionToken} from "@lyrafinance/protocol/contracts/OptionToken.sol";
+import {ShortCollateral} from "@lyrafinance/protocol/contracts/ShortCollateral.sol";
+import {OptionMarket} from "@lyrafinance/protocol/contracts/OptionMarket.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract OtusRegistry is Ownable {
-
+  
   struct OptionMarketAddresses {
     address futuresMarket;
-    address liquidityPool;
     address optionMarket; 
+    address liquidityPool;
+    address greekCache;
+    address optionMarketPricer;
+    address optionToken;
     address shortCollateral;
     address quoteAsset;
-    address baseAsset;
-    address optionToken;
+    address baseAsset; 
   }
 
-  mapping(address => bool) public vaultsStatus;
-  LyraMarketsRegisry immutable public lyraMarketRegistry;
   IFuturesMarketManager immutable public futuresMarketManager;
-
-  // base token => optionmarketdetails
-  mapping(address => OptionMarketAddresses) public baseToOptionMarketAddresses; 
+  LyraRegistry public lyraRegistry; 
+  mapping(address => address[]) public marketAddress; 
 
   mapping(address => address) public futuresMarketByAsset; 
 
@@ -54,12 +43,16 @@ contract OtusRegistry is Ownable {
 	address[] public supervisorsList;
 	// supervisor =>  vault
 	mapping(address => address) public vaults; 
-  address[] public vaultsList; 
 	// vault =>  strategy
 	mapping(address => address) public strategies;
+	// vault => l2bridge
+	mapping(address => address) public vaultBridge; 
+  
+  mapping(address => bool) public vaultsStatus;
+  address[] public vaultsList; 
 
-  constructor(address _lyraMarketRegistry, address _futuresMarketManager) Ownable() {
-    lyraMarketRegistry = LyraMarketsRegisry(_lyraMarketRegistry);
+  constructor(address _lyraRegistry, address _futuresMarketManager) Ownable() {
+    lyraRegistry = LyraRegistry(_lyraRegistry);
     futuresMarketManager = IFuturesMarketManager(_futuresMarketManager);
   }
 
@@ -78,29 +71,33 @@ contract OtusRegistry is Ownable {
     futuresMarket = futuresMarketManager.marketForKey(_synth);
   }
 
-  function setOptionMarketDetails(address optionMarket) public {
-    // address[] memory optionMarkets = lyraMarketRegistry.getOptionMarkets(); 
-    address liquidityPool;
-    address shortCollateral;
-    address quoteAsset;
-    address baseAsset;
-    address optionToken;
+  function setOptionMarketDetails(address _optionMarket) public {
+    LiquidityPool liquidityPool;
+    OptionGreekCache greekCache;
+    OptionMarketPricer optionMarketPricer;
+    OptionToken optionToken;
+    ShortCollateral shortCollateral;
+    IERC20 quoteAsset;
+    IERC20 baseAsset; 
 
-    (liquidityPool,,,,, shortCollateral, quoteAsset, baseAsset, optionToken) = lyraMarketRegistry.optionMarketsAddresses(optionMarket); 
+    (liquidityPool,,greekCache,,optionMarketPricer,optionToken,,shortCollateral,quoteAsset,baseAsset) = lyraRegistry.marketAddresses(OptionMarket(_optionMarket)); 
 
-    OptionMarketAddresses storage newBaseOptionMarketAddresses = baseToOptionMarketAddresses[baseAsset];
-    newBaseOptionMarketAddresses.futuresMarket = futuresMarketByAsset[baseAsset];
-    newBaseOptionMarketAddresses.liquidityPool = liquidityPool;
-    newBaseOptionMarketAddresses.optionMarket = optionMarket;
-    newBaseOptionMarketAddresses.shortCollateral = shortCollateral;
-    newBaseOptionMarketAddresses.quoteAsset = quoteAsset;
-    newBaseOptionMarketAddresses.baseAsset = baseAsset;
-    newBaseOptionMarketAddresses.optionToken = optionToken; 
+    address[] memory marketAddresses = new address[](9); 
+    marketAddresses[0] = address(quoteAsset);
+    marketAddresses[1] = address(baseAsset);
+    marketAddresses[2] = address(optionToken);
+    marketAddresses[3] = _optionMarket;
+    marketAddresses[4] = address(liquidityPool);
+    marketAddresses[5] = address(shortCollateral);
+    marketAddresses[6] = address(optionMarketPricer);
+    marketAddresses[7] = address(greekCache);
+    marketAddresses[8] = futuresMarketByAsset[address(baseAsset)];
 
+    marketAddress[_optionMarket] = marketAddresses;
   }
 
-  function getOptionMarketDetails(address baseToken) public view returns (OptionMarketAddresses memory) {
-    return baseToOptionMarketAddresses[baseToken]; 
+  function getOptionMarketDetails(address _optionMarket) public view returns (address[] memory mad) {
+    mad = marketAddress[_optionMarket];
   }
 
   function getUserManagerDetails() public view returns (address userSupervisor, address userVault, address userStrategy) {

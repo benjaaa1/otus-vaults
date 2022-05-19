@@ -1,6 +1,6 @@
-import { Button } from "antd";
 import Address from "./Address";
 import React from "react";
+import { ConnectButton } from "../Common/Button";
 
 export default function Account({
   address,
@@ -15,7 +15,7 @@ export default function Account({
   if (web3Modal) {
     if (web3Modal.cachedProvider) {
       modalButtons.push(
-        <Button
+        <ConnectButton
           key="logoutbutton"
           style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
           shape="round"
@@ -23,11 +23,11 @@ export default function Account({
           onClick={logoutOfWeb3Modal}
         >
           logout
-        </Button>,
+        </ConnectButton>,
       );
     } else {
       modalButtons.push(
-        <Button
+        <ConnectButton
           key="loginbutton"
           style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
           shape="round"
@@ -36,7 +36,7 @@ export default function Account({
           onClick={loadWeb3Modal}
         >
           connect
-        </Button>,
+        </ConnectButton>,
       );
     }
   }
