@@ -399,8 +399,11 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       "amount exceeds allowed close amount"
     );
 
+    uint currentStrikeStrategyIndex = strategyToStrikeId[position.strikeId];
+    CurrentStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeStrategyIndex]; 
+
     // closes excess position with premium balance
-    uint maxExpectedPremium = _getPremiumLimit(strike, size, false);
+    uint maxExpectedPremium = _getPremiumLimit(strike, size, false, currentStrikeStrategy);
     TradeInputParameters memory tradeParams = TradeInputParameters({
       strikeId: position.strikeId,
       positionId: position.positionId,
@@ -424,7 +427,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     require(result.totalCost <= maxExpectedPremium, "premium paid is above max expected premium");
 
     // return closed collateral amount
-    if (_isBaseCollat(position.optionType)) {
+    if (_isBaseCollat(uint(position.optionType))) {
       uint currentBal = baseAsset.balanceOf(address(this));
       baseAsset.transfer(address(vault), currentBal);
     } else {
