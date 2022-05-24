@@ -378,6 +378,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    */
   function reducePosition(
     uint positionId,
+    uint size, 
     uint closeAmount
   ) external onlyVault {
     OptionPosition memory position = getPositions(_toDynamic(positionId))[0];
