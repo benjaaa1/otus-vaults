@@ -162,7 +162,21 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     (, , , , , , , bool roundInProgress) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
     // delete first previous first? 
-    currentStrikeStrategies = _currentStrikeStrategies;
+    uint len = _currentStrikeStrategies.length; 
+    // currentStrikeStrategies = new CurrentStrategyDetail[](len);
+    // CurrentStrategyDetail memory _currentStrikeStrategy; 
+
+    for(uint i = 0; i < len; i++) {
+      // _currentStrikeStrategy = _currentStrikeStrategies[i];
+      currentStrikeStrategies.push(CurrentStrategyDetail(
+          _currentStrikeStrategies[i].targetDelta,
+          _currentStrikeStrategies[i].maxDeltaGap,
+          _currentStrikeStrategies[i].minVol,
+          _currentStrikeStrategies[i].maxVol,
+          _currentStrikeStrategies[i].maxVolVariance,
+          _currentStrikeStrategies[i].optionType
+      ));
+    }
   }
 
   ///////////////////
