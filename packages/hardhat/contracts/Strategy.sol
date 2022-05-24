@@ -32,6 +32,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
   uint[] public activeStrikeIds;
   mapping(uint => uint) public strikeToPositionId;
+  mapping(uint => uint) public strategyToStrikeId;
   mapping(uint => uint) public lastTradeTimestamp;
 
   address public vault;
@@ -71,8 +72,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint stopLossLimit; 
   }
 
-  StrategyDetail public currentStrategy;
-  CurrentStrategyDetail[] public currentStrikeStrategies; 
+  StrategyDetail public currentStrategy; // this wont change much 
+  CurrentStrategyDetail[] public currentStrikeStrategies; // this will change every week possibly
   HedgeDetail public currentHedgeStrategy;
 
   /************************************************
@@ -163,13 +164,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   function setCurrentStrategy(CurrentStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
     (, , , , , , , bool roundInProgress) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
-    uint len = _currentStrikeStrategies.length; 
-    // delete first? 
-    currentStrikeStrategies = new CurrentStrategyDetail[](len);
-
-    for(uint i = 0; i < len; i++) {
-      currentStrikeStrategies[i] = _currentStrikeStrategies[i];
-    }
+    // delete first previous first? 
+    currentStrikeStrategies = _currentStrikeStrategies;
   }
 
   ///////////////////
@@ -199,17 +195,26 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   function returnFundsAndClearStrikes() external onlyVault {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
     uint quoteBal = quoteAsset.balanceOf(address(this));
-    if (_isBaseCollat()) {
-      // exchange quote asset to base asset, and send base asset back to vault
-      uint baseBal = baseAsset.balanceOf(address(this));
-      uint minQuoteExpected = quoteBal.divideDecimal(exchangeParams.spotPrice).multiplyDecimal(
-        DecimalMath.UNIT - exchangeParams.baseQuoteFeeRate
-      );
-      uint baseReceived = exchangeFromExactQuote(quoteBal, minQuoteExpected);
-      require(baseAsset.transfer(address(vault), baseBal + baseReceived), "failed to return funds from strategy");
-    } else {
-      // send quote balance directly
-      require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
+
+    CurrentStrategyDetail memory currentStrikeStrategy; 
+
+    for(uint i = 0; i < currentStrikeStrategies.length; i++) {
+      currentStrikeStrategy = currentStrikeStrategies[i]; 
+
+      // base asset might not be needed if we only use usd 
+      if (_isBaseCollat(currentStrikeStrategy.optionType)) {
+        // exchange quote asset to base asset, and send base asset back to vault
+        uint baseBal = baseAsset.balanceOf(address(this));
+        uint minQuoteExpected = quoteBal.divideDecimal(exchangeParams.spotPrice).multiplyDecimal(
+          DecimalMath.UNIT - exchangeParams.baseQuoteFeeRate
+        );
+        uint baseReceived = exchangeFromExactQuote(quoteBal, minQuoteExpected);
+        require(baseAsset.transfer(address(vault), baseBal + baseReceived), "failed to return funds from strategy");
+      } else {
+        // send quote balance directly
+        require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
+      }
+
     }
 
     _clearAllActiveStrikes();
@@ -233,7 +238,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
         strikeId = strikeDetail.strikeId; 
         size = strikeDetail.size;
 
-        (_positionId, _premiumReceived, _collateralToAdd) = doTrade(strikeId, size, currentStrikeStrategies[i]);
+        (_positionId, _premiumReceived, _collateralToAdd) = doTrade(strikeId, size, i);
         positionIds[i] = _positionId;
         premiumsReceived[i] = _premiumReceived;
         collateralToAdd[i] = _collateralToAdd; 
@@ -248,13 +253,14 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    * @return positionId
    * @return premiumReceived
    */
-  function doTrade(uint strikeId, uint size, CurrentStrategyDetail memory currentStrikeStrategy)
+  function doTrade(uint strikeId, uint size, uint _currentStrikeStrategyIndex)
     private returns (
       uint positionId,
       uint premiumReceived,
       uint collateralToAdd
     )
   {
+    CurrentStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_currentStrikeStrategyIndex];
     // validate trade
     require(
       lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <= block.timestamp,
@@ -273,7 +279,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       "collateral transfer from vault failed"
     );
 
-    (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy);
+    (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, _currentStrikeStrategyIndex);
   }
 
   function getCollateral(uint strikeId, uint _size, uint _optionType) public view returns (uint, uint, uint) {
@@ -316,7 +322,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       strike.strikePrice,
       strike.expiry,
       exchangeParams.spotPrice,
-      existingAmount + sellAmount
+      existingAmount + sellAmount,
+      _optionType
     );
 
     // get targetCollat for this trade instance
@@ -342,9 +349,10 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     Strike memory strike,
     uint _size, 
     uint setCollateralTo,
-    CurrentStrategyDetail memory currentStrikeStrategy
+    uint _currentStrikeStrategyIndex
   ) internal returns (uint, uint) {
     // get minimum expected premium based on minIv
+    CurrentStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_currentStrikeStrategyIndex]; 
     uint minExpectedPremium = _getPremiumLimit(strike, _size, true, currentStrikeStrategy);
     // perform trade
 
@@ -366,7 +374,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     lastTradeTimestamp[strike.id] = block.timestamp;
 
     // update active strikes
-    _addActiveStrike(strike.id, result.positionId);
+    _addActiveStrike(strike.id, result.positionId, _currentStrikeStrategyIndex);
 
     require(result.totalCost >= minExpectedPremium, "premium received is below min expected premium");
 
@@ -387,7 +395,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
     // only allows closing if collat < minBuffer
     require(
-      closeAmount <= getAllowedCloseAmount(position, strike.strikePrice, strike.expiry),
+      closeAmount <= getAllowedCloseAmount(position, strike.strikePrice, strike.expiry, uint(position.optionType)),
       "amount exceeds allowed close amount"
     );
 
@@ -431,11 +439,12 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   function getAllowedCloseAmount(
     OptionPosition memory position,
     uint strikePrice,
-    uint strikeExpiry
+    uint strikeExpiry,
+    uint _optionType
   ) public view returns (uint closeAmount) {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
     console.log("getAllowedCloseAmount", strikePrice, strikeExpiry, exchangeParams.spotPrice);
-    uint minCollatPerAmount = _getBufferCollateral(strikePrice, strikeExpiry, exchangeParams.spotPrice, 1e18);
+    uint minCollatPerAmount = _getBufferCollateral(strikePrice, strikeExpiry, exchangeParams.spotPrice, 1e18, _optionType);
     console.log("minCollatPerAmount", minCollatPerAmount);
     console.log("position.collateral", position.collateral);
     console.log("position.amount", position.amount); 
@@ -568,13 +577,13 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint expiry,
     uint spotPrice,
     uint amount,
-    CurrentStrategyDetail memory currentStrikeStrategy
+    uint _optionType
   ) internal view returns (uint) {
 
-    uint minCollat = getMinCollateral(OptionType(currentStrikeStrategy.optionType), strikePrice, expiry, spotPrice, amount);
+    uint minCollat = getMinCollateral(OptionType(_optionType), strikePrice, expiry, spotPrice, amount);
     uint minCollatWithBuffer = minCollat.multiplyDecimal(currentStrategy.collatBuffer);
 
-    uint fullCollat = _getFullCollateral(strikePrice, amount, currentStrikeStrategy.optionType);
+    uint fullCollat = _getFullCollateral(strikePrice, amount, _optionType);
 
     return _min(minCollatWithBuffer, fullCollat);
   }
@@ -620,9 +629,10 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   /**
    * @dev add strike id to activeStrikeIds array
    */
-  function _addActiveStrike(uint strikeId, uint tradedPositionId) internal {
+  function _addActiveStrike(uint strikeId, uint tradedPositionId, uint currentStrategyDetailIndex) internal {
     if (!_isActiveStrike(strikeId)) {
       strikeToPositionId[strikeId] = tradedPositionId;
+      strategyToStrikeId[strikeId] = currentStrategyDetailIndex;
       activeStrikeIds.push(strikeId);
     }
   }
@@ -639,6 +649,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
         // revert if position state is not settled
         require(position.state != PositionState.ACTIVE, "cannot clear active position");
         delete strikeToPositionId[strikeId];
+        delete strategyToStrikeId[strikeId];
         delete lastTradeTimestamp[i];
       }
       delete activeStrikeIds;

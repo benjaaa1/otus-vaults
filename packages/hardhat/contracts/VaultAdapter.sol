@@ -61,7 +61,7 @@ contract VaultAdapter {
   }
 
   enum OptionType {
-    LONG_CALL,
+    LONG_CALL, 
     LONG_PUT,
     SHORT_CALL_BASE,
     SHORT_CALL_QUOTE,

@@ -55,7 +55,7 @@ contract OtusVault is BaseVault {
 
   event StrategyUpdated(address strategy);
 
-  event Trade(address user, uint positionId, uint16 roundId, uint premium);
+  event Trade(address user, uint[] positionId, uint16 roundId, uint[] premium);
 
   event RoundStarted(uint16 roundId, uint104 lockAmount);
 
@@ -182,9 +182,9 @@ contract OtusVault is BaseVault {
     emit RoundStarted(vaultState.round, uint104(lockedBalance));
   }
 
-  function getBoard() external view returns (uint, uint, uint, uint, uint, bool) {
-    return _strategy._getBoard(boardId);
-  }
+  // function getBoard() external view returns (uint, uint, uint, uint, uint, bool) {
+  //   return _strategy._getBoard(boardId);
+  // }
 
   struct StrikeDetail {
     uint strikeId;
@@ -195,9 +195,15 @@ contract OtusVault is BaseVault {
    * @notice Start the trade for the next/new round depending on strategy
    */
   function trade(StrikeDetail[] memory _strikeDetails) external onlyOwner {
-    (uint positionId, uint premiumReceived, uint collateralAdded) = _strategy.doTrade(strikeId);
-    roundPremiumCollected = premiumReceived;
+    (uint[] memory positionId, uint[] memory premiumReceived, uint[] memory _collateralAdded) = _strategy.doTrades(_strikeDetails);
+    for(uint i = 0; i < premiumReceived.length; i++) {
+      roundPremiumCollected += premiumReceived[i];
+    }
     // update the remaining locked amount
+    uint collateralAdded; 
+    for(uint i = 0; i < _collateralAdded.length; i++) {
+      collateralAdded += _collateralAdded[i];
+    }
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - collateralAdded;
     emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
   }
@@ -206,8 +212,8 @@ contract OtusVault is BaseVault {
 
   /// @dev anyone close part of the position with premium made by the strategy if a position is dangerous
   /// @param positionId the positiion to close
-  function reducePosition(uint positionId, uint closeAmount) external onlyKeeper {
-    _strategy.reducePosition(positionId, closeAmount);
+  function reducePosition(uint positionId, uint size, uint closeAmount) external onlyKeeper {
+    _strategy.reducePosition(positionId, size, closeAmount);
   }
 
   /************************************************
@@ -216,11 +222,11 @@ contract OtusVault is BaseVault {
 
   /**
    * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
-   */
-  function openHedgePosition() external onlyKeeper {
-    require(vaultState.roundInProgress, "Round closed");
-    activeShort = _strategy._openKwentaPosition(roundHedgeAttempts);
-  }
+  //  */
+  // function openHedgePosition() external onlyKeeper {
+  //   require(vaultState.roundInProgress, "Round closed");
+  //   activeShort = _strategy._openKwentaPosition(roundHedgeAttempts);
+  // }
 
   /**\
   * @dev called by keeper 
