@@ -45,19 +45,23 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   uint public currentStrikePrice;
 
   // strategies can be updated by different strategizers
-  struct Detail {
+  struct StrategyDetail {
     uint collatBuffer; // slider - multiple of vaultAdapter.minCollateral(): 1.1 -> 110% * minCollat
     uint collatPercent; // slider - partial collateral: 0.9 -> 90% * fullCollat
     uint minTimeToExpiry; // slider 
     uint maxTimeToExpiry; // slider
+    uint minTradeInterval; // slider
+    uint gwavPeriod; // slider
+  }
+
+  struct CurrentStrategyDetail {
     int targetDelta; // slider
     uint maxDeltaGap; // slider
     uint minVol; // slider
     uint maxVol; // slider
     uint size; // input
-    uint minTradeInterval; // slider
     uint maxVolVariance; // slider
-    uint gwavPeriod; // slider
+    uint optionType; 
   }
 
   struct HedgeDetail {
@@ -68,7 +72,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint stopLossLimit; 
   }
 
-  Detail public currentStrategy;
+  StrategyDetail public currentStrategy;
+  CurrentStrategyDetail[] public currentStrikeStrategies; 
   HedgeDetail public currentHedgeStrategy;
 
   /************************************************
@@ -139,16 +144,35 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   * strategy should be updated weekly after previous round ends 
   * quoteAsset usually USD baseAsset usually ETH
   */
-  function setStrategy(
-      Detail memory _strategy, 
-      HedgeDetail memory _hedgeStrategy
-    ) external onlyOwner {
+  function setStrategy(StrategyDetail memory _currentStrategy) external onlyOwner {
     (, , , , , , , bool roundInProgress) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
     
-    currentStrategy = _strategy;
-    currentHedgeStrategy = _hedgeStrategy; 
+    currentStrategy = _currentStrategy;
     collateralAsset = _isBaseCollat() ? baseAsset : quoteAsset;
+  }
+
+  function setCurrentStrategy(
+      CurrentStrategyDetail memory _currentStrikeStrategy,
+      HedgeDetail memory _hedgeStrategy
+    ) external onlyOwner {
+      (, , , , , , , bool roundInProgress) = otusVault.vaultState();
+      require(!roundInProgress, "round opened");
+      currentStrikeStrategies[0] = _currentStrikeStrategy; 
+      currentHedgeStrategy = _hedgeStrategy; 
+
+    }
+
+  function setCurrentStrategy(CurrentStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
+    (, , , , , , , bool roundInProgress) = otusVault.vaultState();
+    require(!roundInProgress, "round opened");
+    uint len = _currentStrikeStrategies.length; 
+    // delete first? 
+    currentStrikeStrategies = new CurrentStrategyDetail[](len);
+
+    for(uint i = 0; i < len; i++) {
+      currentStrikeStrategies[i] = _currentStrikeStrategies[i];
+    }
   }
 
   ///////////////////
