@@ -45,7 +45,7 @@ contract OtusVault is BaseVault {
   }
 
   // add details for for vault type ~
-  uint public optionType; 
+  uint public otusVaultType; 
   bool public isPublic;
 
   uint public boardId; 
@@ -99,12 +99,12 @@ contract OtusVault is BaseVault {
     string memory _tokenName,
     string memory _tokenSymbol,
     bool _isPublic, 
-    uint _vaultType,
+    uint _otusVaultType,
     Vault.VaultParams memory _vaultParams
   ) external {
     supervisor = _supervisor; 
     isPublic = _isPublic; 
-    optionType = _vaultType; 
+    otusVaultType = _otusVaultType; 
     baseInitialize(
       _owner,
       _supervisor, 
