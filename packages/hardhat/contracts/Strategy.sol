@@ -40,8 +40,6 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   OtusVault public otusVault;
   GWAVOracle public gwavOracle;
   
-  IERC20 public collateralAsset;
-
   uint public currentStrikePrice;
 
   // strategies can be updated by different strategizers
@@ -147,7 +145,6 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     require(!roundInProgress, "round opened");
     
     currentStrategy = _currentStrategy;
-    collateralAsset = _isBaseCollat() ? baseAsset : quoteAsset;
   }
 
   function setCurrentStrategy(
@@ -274,6 +271,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint setCollateralTo;
     (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike, size, currentStrikeStrategy.optionType);
 
+    IERC20 collateralAsset = _isBaseCollat(currentStrikeStrategy.optionType) ? baseAsset : quoteAsset;
+
     require(
       collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
       "collateral transfer from vault failed"
@@ -282,9 +281,18 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, _currentStrikeStrategyIndex);
   }
 
+  /**
+  * @dev used for verifying collateral from front end  
+  */
   function getCollateral(uint strikeId, uint _size, uint _optionType) public view returns (uint, uint, uint) {
     
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
+
+    uint _currentStrikeStrategyIndex = strategyToStrikeId[strike.id];
+    CurrentStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_currentStrikeStrategyIndex];
+
+    IERC20 collateralAsset = _isBaseCollat(currentStrikeStrategy.optionType) ? baseAsset : quoteAsset;
+
     (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike, _size, _optionType);
     return (
       collateralToAdd, 
