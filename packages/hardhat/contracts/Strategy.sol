@@ -52,6 +52,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint maxTimeToExpiry; // slider
     uint minTradeInterval; // slider
     uint gwavPeriod; // slider
+    
   }
 
   struct CurrentStrategyDetail {
@@ -59,7 +60,6 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint maxDeltaGap; // slider
     uint minVol; // slider
     uint maxVol; // slider
-    uint size; // input
     uint maxVolVariance; // slider
     uint optionType; 
   }
@@ -269,7 +269,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       "collateral transfer from vault failed"
     );
 
-    (positionId, premiumReceived) = _sellStrike(strike, setCollateralTo);
+    (positionId, premiumReceived) = _sellStrike(strike, setCollateralTo, currentStrikeStrategy);
   }
 
   function getCollateral(uint strikeId) public view returns (uint, uint, uint) {
@@ -349,10 +349,11 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    */
   function _sellStrike(
     Strike memory strike,
-    uint setCollateralTo
+    uint setCollateralTo,
+    CurrentStrategyDetail memory currentStrikeStrategy
   ) internal returns (uint, uint) {
     // get minimum expected premium based on minIv
-    uint minExpectedPremium = _getPremiumLimit(strike, true);
+    uint minExpectedPremium = _getPremiumLimit(strike, true, currentStrikeStrategy);
     // perform trade
     TradeResult memory result = openPosition(
       TradeInputParameters({
@@ -585,9 +586,13 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    * param listingId lyra option listing id
    * param size size of trade in Lyra standard sizes
    */
-  function _getPremiumLimit(Strike memory strike, bool isMin) internal view returns (uint limitPremium) {
+  function _getPremiumLimit(
+      Strike memory strike, 
+      bool isMin, 
+      CurrentStrategyDetail memory currentStrikeStrategy
+    ) internal view returns (uint limitPremium) {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
-    uint limitVol = isMin ? currentStrategy.minVol : currentStrategy.maxVol;
+    uint limitVol = isMin ? currentStrikeStrategy.minVol : currentStrikeStrategy.maxVol;
     (uint minCallPremium, uint minPutPremium) = getPurePremium(
       _getSecondsToExpiry(strike.expiry),
       limitVol,
@@ -596,8 +601,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     );
 
     limitPremium = _isCall()
-      ? minCallPremium.multiplyDecimal(currentStrategy.size)
-      : minPutPremium.multiplyDecimal(currentStrategy.size);
+      ? minCallPremium.multiplyDecimal(currentStrikeStrategy.size)
+      : minPutPremium.multiplyDecimal(currentStrikeStrategy.size);
   }
 
   /**
