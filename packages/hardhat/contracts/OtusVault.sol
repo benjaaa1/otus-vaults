@@ -39,9 +39,8 @@ contract OtusVault is BaseVault {
     SHORT_PUT,
     SHORT_CALL,
     APE_BULL, 
-    APE_BEAR,
-    IRON_CONDOR,
-    SHORT_STRADDLE
+    SHORT_STRADDLE,
+    SHORT_STRANGLE
   }
 
   // add details for for vault type ~
@@ -153,13 +152,12 @@ contract OtusVault is BaseVault {
     emit RoundClosed(vaultState.round, lockAmount);
   }
 
-  // setNextBoardStrikeId(boardId, strikeId); users stll need to hit trade 
+  // setNextBoardId(boardId, strikeId); users stll need to hit trade 
   /**
   * @notice Sets next rounds boardId strikeId - should be set before starting round
   */
-  function setNextBoardStrikeId(uint _boardId, uint _strikeId) external onlyOwner {
+  function setNextBoardId(uint _boardId) external onlyOwner {
     boardId = _boardId; 
-    strikeId = _strikeId; 
   }
 
   /**
@@ -188,32 +186,15 @@ contract OtusVault is BaseVault {
     return _strategy._getBoard(boardId);
   }
 
-  /*
-  * Depending on vault type here we need some switch or if statements to redirect to proper function
-  */
-  // function trade() external onlyOwner {
-  //   // can only make a trade after the next round is in progress and before trade period 
-  //   // after everything we should update a vaultState param to show trade in progress
-  //   // period between startnextround and closeround
-  //   require(vaultState.roundInProgress, "round closed");
-  //   // ape bull
-  //   if (vType == VaultType.APE_BULL) {
-  //     _trade();
-  //     _hedge(); 
-  //   }
-
-  //   // sell put sell call
-  //   if (vType == VaultType.SHORT_CALL || vType == VaultType.SHORT_PUT) {
-  //     _trade();
-  //   }
-
-  //   strikeId = 0; 
-  // }
+  struct StrikeDetail {
+    uint strikeId;
+    uint size; 
+  }
 
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function trade() external onlyOwner {
+  function trade(StrikeDetail[] memory _strikeDetails) external onlyOwner {
     (uint positionId, uint premiumReceived, uint collateralAdded) = _strategy.doTrade(strikeId);
     roundPremiumCollected = premiumReceived;
     // update the remaining locked amount
