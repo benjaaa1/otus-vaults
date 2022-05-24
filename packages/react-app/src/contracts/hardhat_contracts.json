@@ -415,7 +415,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0xab8716c1457917D984f5840A8c580cBC4e787702",
+          "address": "0xaC8470198cbc7a7fB8c31C3FAa0BB09C49e2C223",
           "abi": [
             {
               "inputs": [],
@@ -1205,7 +1205,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x5DA6A5B73a9E1DcDf7de99FA048c01Ef1c206fdd",
+          "address": "0x64a5E68AE3a02Fb13625ab1E78C591960A2296b8",
           "abi": [
             {
               "inputs": [
@@ -1879,7 +1879,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0xb765E5C30436B0318133362E3cA494108A9D5902",
+          "address": "0x926fFE5110Ded75209Caf37b8de39Bb361e91621",
           "abi": [
             {
               "inputs": [
@@ -2210,9 +2210,9 @@
                 },
                 {
                   "indexed": false,
-                  "internalType": "uint256",
+                  "internalType": "uint256[]",
                   "name": "positionId",
-                  "type": "uint256"
+                  "type": "uint256[]"
                 },
                 {
                   "indexed": false,
@@ -2222,9 +2222,9 @@
                 },
                 {
                   "indexed": false,
-                  "internalType": "uint256",
+                  "internalType": "uint256[]",
                   "name": "premium",
-                  "type": "uint256"
+                  "type": "uint256[]"
                 }
               ],
               "name": "Trade",
@@ -2550,44 +2550,6 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "getBoard",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "",
-                  "type": "bool"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
               "inputs": [
                 {
                   "internalType": "address",
@@ -2640,7 +2602,7 @@
                 },
                 {
                   "internalType": "uint256",
-                  "name": "_vaultType",
+                  "name": "_otusVaultType",
                   "type": "uint256"
                 },
                 {
@@ -2758,14 +2720,7 @@
             },
             {
               "inputs": [],
-              "name": "openHedgePosition",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "optionType",
+              "name": "otusVaultType",
               "outputs": [
                 {
                   "internalType": "uint256",
@@ -2833,6 +2788,11 @@
                 {
                   "internalType": "uint256",
                   "name": "positionId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "size",
                   "type": "uint256"
                 },
                 {
@@ -2956,14 +2916,9 @@
                   "internalType": "uint256",
                   "name": "_boardId",
                   "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "_strikeId",
-                  "type": "uint256"
                 }
               ],
-              "name": "setNextBoardStrikeId",
+              "name": "setNextBoardId",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -3110,7 +3065,25 @@
               "type": "function"
             },
             {
-              "inputs": [],
+              "inputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "strikeId",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "size",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct OtusVault.StrikeDetail[]",
+                  "name": "_strikeDetails",
+                  "type": "tuple[]"
+                }
+              ],
               "name": "trade",
               "outputs": [],
               "stateMutability": "nonpayable",
@@ -3467,7 +3440,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0xA5C21763acc24c7B1951D4c2AdEBEBc62A3f5274",
+          "address": "0xF2A9E4b39E93c245275d77CD5194cd80E69Ddb4f",
           "abi": [
             {
               "inputs": [
@@ -3554,48 +3527,10 @@
               "inputs": [
                 {
                   "internalType": "uint256",
-                  "name": "boardId",
+                  "name": "_optionType",
                   "type": "uint256"
                 }
               ],
-              "name": "_getBoard",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "",
-                  "type": "bool"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
               "name": "_isCall",
               "outputs": [
                 {
@@ -3605,25 +3540,6 @@
                 }
               ],
               "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "hedgeAttempts",
-                  "type": "uint256"
-                }
-              ],
-              "name": "_openKwentaPosition",
-              "outputs": [
-                {
-                  "internalType": "bool",
-                  "name": "activeShort",
-                  "type": "bool"
-                }
-              ],
-              "stateMutability": "nonpayable",
               "type": "function"
             },
             {
@@ -3666,19 +3582,6 @@
                   "internalType": "uint256",
                   "name": "",
                   "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "collateralAsset",
-              "outputs": [
-                {
-                  "internalType": "contract IERC20",
-                  "name": "",
-                  "type": "address"
                 }
               ],
               "stateMutability": "view",
@@ -3742,38 +3645,8 @@
                   "type": "uint256"
                 },
                 {
-                  "internalType": "int256",
-                  "name": "targetDelta",
-                  "type": "int256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "maxDeltaGap",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "minVol",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "maxVol",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "size",
-                  "type": "uint256"
-                },
-                {
                   "internalType": "uint256",
                   "name": "minTradeInterval",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "maxVolVariance",
                   "type": "uint256"
                 },
                 {
@@ -3802,26 +3675,82 @@
               "inputs": [
                 {
                   "internalType": "uint256",
-                  "name": "strikeId",
+                  "name": "",
                   "type": "uint256"
                 }
               ],
-              "name": "doTrade",
+              "name": "currentStrikeStrategies",
               "outputs": [
                 {
+                  "internalType": "int256",
+                  "name": "targetDelta",
+                  "type": "int256"
+                },
+                {
                   "internalType": "uint256",
-                  "name": "positionId",
+                  "name": "maxDeltaGap",
                   "type": "uint256"
                 },
                 {
                   "internalType": "uint256",
-                  "name": "premiumReceived",
+                  "name": "minVol",
                   "type": "uint256"
                 },
                 {
                   "internalType": "uint256",
+                  "name": "maxVol",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "maxVolVariance",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "optionType",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "strikeId",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "size",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct OtusVault.StrikeDetail[]",
+                  "name": "_strikeDetails",
+                  "type": "tuple[]"
+                }
+              ],
+              "name": "doTrades",
+              "outputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "positionIds",
+                  "type": "uint256[]"
+                },
+                {
+                  "internalType": "uint256[]",
+                  "name": "premiumsReceived",
+                  "type": "uint256[]"
+                },
+                {
+                  "internalType": "uint256[]",
                   "name": "collateralToAdd",
-                  "type": "uint256"
+                  "type": "uint256[]"
                 }
               ],
               "stateMutability": "nonpayable",
@@ -3875,6 +3804,11 @@
                   "internalType": "uint256",
                   "name": "strikeExpiry",
                   "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_optionType",
+                  "type": "uint256"
                 }
               ],
               "name": "getAllowedCloseAmount",
@@ -3893,6 +3827,16 @@
                 {
                   "internalType": "uint256",
                   "name": "strikeId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_size",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_optionType",
                   "type": "uint256"
                 }
               ],
@@ -4008,6 +3952,16 @@
                   "internalType": "struct VaultAdapter.Strike",
                   "name": "strike",
                   "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_size",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_optionType",
+                  "type": "uint256"
                 }
               ],
               "name": "getRequiredCollateral",
@@ -4138,6 +4092,43 @@
                   "internalType": "struct VaultAdapter.Strike",
                   "name": "strike",
                   "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "int256",
+                      "name": "targetDelta",
+                      "type": "int256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxDeltaGap",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVolVariance",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "optionType",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct Strategy.CurrentStrategyDetail",
+                  "name": "currentStrikeStrategy",
+                  "type": "tuple"
                 }
               ],
               "name": "isValidStrike",
@@ -4145,50 +4136,6 @@
                 {
                   "internalType": "bool",
                   "name": "isValid",
-                  "type": "bool"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "_strikeIid",
-                  "type": "uint256"
-                }
-              ],
-              "name": "isValidStrike2",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "int256",
-                  "name": "",
-                  "type": "int256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "",
                   "type": "bool"
                 }
               ],
@@ -4209,19 +4156,6 @@
                   "internalType": "uint256",
                   "name": "",
                   "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "optionType",
-              "outputs": [
-                {
-                  "internalType": "enum VaultAdapter.OptionType",
-                  "name": "",
-                  "type": "uint8"
                 }
               ],
               "stateMutability": "view",
@@ -4258,6 +4192,11 @@
                 {
                   "internalType": "uint256",
                   "name": "positionId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "size",
                   "type": "uint256"
                 },
                 {
@@ -4303,26 +4242,6 @@
                 {
                   "components": [
                     {
-                      "internalType": "uint256",
-                      "name": "collatBuffer",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collatPercent",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minTimeToExpiry",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxTimeToExpiry",
-                      "type": "uint256"
-                    },
-                    {
                       "internalType": "int256",
                       "name": "targetDelta",
                       "type": "int256"
@@ -4344,27 +4263,17 @@
                     },
                     {
                       "internalType": "uint256",
-                      "name": "size",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minTradeInterval",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
                       "name": "maxVolVariance",
                       "type": "uint256"
                     },
                     {
                       "internalType": "uint256",
-                      "name": "gwavPeriod",
+                      "name": "optionType",
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.Detail",
-                  "name": "_strategy",
+                  "internalType": "struct Strategy.CurrentStrategyDetail",
+                  "name": "_currentStrikeStrategy",
                   "type": "tuple"
                 },
                 {
@@ -4400,9 +4309,118 @@
                   "type": "tuple"
                 }
               ],
+              "name": "setCurrentStrategy",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "int256",
+                      "name": "targetDelta",
+                      "type": "int256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxDeltaGap",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVolVariance",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "optionType",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct Strategy.CurrentStrategyDetail[]",
+                  "name": "_currentStrikeStrategies",
+                  "type": "tuple[]"
+                }
+              ],
+              "name": "setCurrentStrategy",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "collatBuffer",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "collatPercent",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minTimeToExpiry",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxTimeToExpiry",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minTradeInterval",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "gwavPeriod",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct Strategy.StrategyDetail",
+                  "name": "_currentStrategy",
+                  "type": "tuple"
+                }
+              ],
               "name": "setStrategy",
               "outputs": [],
               "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "strategyToStrikeId",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
               "type": "function"
             },
             {
