@@ -186,19 +186,15 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   function setBoard(uint boardId) external {
     require(boardId > 0, "Board Id incorrect");
     Board memory board = getBoard(boardId);
-    console.log("board.expiry", board.expiry); 
     require(_isValidExpiry(board.expiry), "invalid board");
     activeExpiry = board.expiry;
     activeBoardId = boardId; 
   }
 
-  function _getBoard(uint boardId) public view returns (uint, uint, uint, uint, uint, bool) {
-    Board memory board = getBoard(boardId); 
-    return (boardId, board.id, board.boardIv, block.timestamp, board.expiry, block.timestamp <= board.expiry);
-  }
-
-    // return Board({id: board.id, expiry: board.expiry, boardIv: board.iv, strikeIds: board.strikeIds});
-
+  // function _getBoard(uint boardId) public view returns (uint, uint, uint, uint, uint, bool) {
+  //   Board memory board = getBoard(boardId); 
+  //   return (boardId, board.id, board.boardIv, block.timestamp, board.expiry, block.timestamp <= board.expiry);
+  // }
 
   /**
    * @dev convert premium in quote asset into collateral asset and send it back to the vault.
@@ -206,8 +202,6 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   function returnFundsAndClearStrikes() external onlyVault {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
     uint quoteBal = quoteAsset.balanceOf(address(this));
-    console.log("quoteBal", quoteBal);
-    console.log("_isBaseCollat", _isBaseCollat()); 
     if (_isBaseCollat()) {
       // exchange quote asset to base asset, and send base asset back to vault
       uint baseBal = baseAsset.balanceOf(address(this));
@@ -224,6 +218,24 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     _clearAllActiveStrikes();
   }
 
+  function doTrades(uint[] calldata strikeIds) external onlyVault returns (
+      uint[] memory positionIds, 
+      uint[] memory premiumsReceived, 
+      uint[] memory collateralToAdd
+    ) {
+    uint len = strikeIds.length; 
+    uint _positionId; 
+    uint _premiumReceived; 
+    uint _collateralToAdd;
+
+    for(uint i = 0; i < len; i++) {
+      (_positionId, _premiumReceived, _collateralToAdd) = doTrade(strikeIds[i], currentStrikeStrategies[i]);
+      positionIds[i] = _positionId;
+      premiumsReceived[i] = _premiumReceived;
+      collateralToAdd[i] = _collateralToAdd; 
+    }
+  }
+
 
     /**
    * @notice sell a fix aomunt of options and collect premium
@@ -232,10 +244,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    * @return positionId
    * @return premiumReceived
    */
-  function doTrade(uint strikeId)
-    external
-    onlyVault
-    returns (
+  function doTrade(uint strikeId, CurrentStrategyDetail memory currentStrikeStrategy)
+    private returns (
       uint positionId,
       uint premiumReceived,
       uint collateralToAdd
@@ -246,10 +256,10 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <= block.timestamp,
       "min time interval not passed"
     );
-    require(_isValidVolVariance(strikeId), "vol variance exceeded");
+    require(_isValidVolVariance(strikeId, currentStrikeStrategy), "vol variance exceeded");
 
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
-    require(isValidStrike(strike), "invalid strike");
+    require(isValidStrike(strike, currentStrikeStrategy), "invalid strike");
 
     uint setCollateralTo;
     (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike);
@@ -506,7 +516,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    * @dev verify if the strike is valid for the strategy
    * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
    */
-  function isValidStrike(Strike memory strike) public view returns (bool isValid) {
+  function isValidStrike(Strike memory strike, CurrentStrategyDetail memory currentStrikeStrategy) public view returns (bool isValid) {
     if (activeExpiry != strike.expiry) {
       return false;
     }
@@ -515,31 +525,21 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint vol = getVols(strikeId)[0];
     int callDelta = getDeltas(strikeId)[0];
     int delta = _isCall() ? callDelta : callDelta - SignedDecimalMath.UNIT;
-    uint deltaGap = _abs(currentStrategy.targetDelta - delta);
+    uint deltaGap = _abs(currentStrikeStrategy.targetDelta - delta);
 
-    return vol >= currentStrategy.minVol && vol <= currentStrategy.maxVol && deltaGap < currentStrategy.maxDeltaGap;
-  }
-
-  function isValidStrike2(uint _strikeIid) public view returns (uint, int, uint, uint, uint, bool) {
-    uint[] memory strikeId = _toDynamic(_strikeIid);
-    uint vol = getVols(strikeId)[0];
-    int callDelta = getDeltas(strikeId)[0];
-    int delta = _isCall() ? callDelta : callDelta - SignedDecimalMath.UNIT;
-    uint deltaGap = _abs(currentStrategy.targetDelta - delta);
-
-    return (activeExpiry, callDelta, currentStrategy.maxDeltaGap, deltaGap, vol, vol >= currentStrategy.minVol && vol <= currentStrategy.maxVol && deltaGap < currentStrategy.maxDeltaGap);
+    return vol >= currentStrikeStrategy.minVol && vol <= currentStrikeStrategy.maxVol && deltaGap < currentStrikeStrategy.maxDeltaGap;
   }
 
   /**
    * @dev check if the vol variance for the given strike is within certain range
    */
-  function _isValidVolVariance(uint strikeId) internal view returns (bool isValid) {
+  function _isValidVolVariance(uint strikeId, CurrentStrategyDetail memory currentStrikeStrategy) internal view returns (bool isValid) {
     uint volGWAV = gwavOracle.volGWAV(strikeId, currentStrategy.gwavPeriod);
     uint volSpot = getVols(_toDynamic(strikeId))[0];
 
     uint volDiff = (volGWAV >= volSpot) ? volGWAV - volSpot : volSpot - volGWAV;
-    console.log("volDiff", volDiff, currentStrategy.maxVolVariance);
-    return isValid = volDiff < currentStrategy.maxVolVariance;
+    console.log("volDiff", volDiff, currentStrikeStrategy.maxVolVariance);
+    return isValid = volDiff < currentStrikeStrategy.maxVolVariance;
   }
 
   /**
