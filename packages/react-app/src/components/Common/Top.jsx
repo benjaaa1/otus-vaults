@@ -1,5 +1,5 @@
 import React from "react";
-import { Flex, Box } from 'reflexbox';
+import { Flex, Box, HStack } from '@chakra-ui/react';
 import { Account } from "../utils";
 import { NavigationLink } from "./Link";
 import styled from "styled-components";
@@ -7,7 +7,7 @@ import colors from "../../designSystem/colors";
 import { NavContainer } from "./Container";
 import theme from "../../designSystem/theme";
 
-const MenuItem = styled.div`
+const MenuItem = styled(Box)`
   margin: 14px; 
 `;
 
@@ -23,29 +23,24 @@ export const Top = ({
 }) => {
   return (
     <NavContainer>
-      <Flex p={theme.padding.md}>
-        <Box
-          width={1/4}
-          color='white'>
+      <Flex minWidth='max-content' alignItems='center' gap='2'>
+        <Box flex='1' p='2'>
           Otus Finance
         </Box>
-        <Flex
-          justifyContent="center"
-          width={2/4}
-          color='white'>
-            <MenuItem>
+        <Box flex='1' p='2' minWidth='max-content' alignItems='center'>
+          <HStack>
+            <MenuItem flex='1'>
               <NavigationLink to="/">Products</NavigationLink>
-            </MenuItem>
-            <MenuItem>
+            </MenuItem >
+            <MenuItem flex='1'>
               <NavigationLink to="/portfolio">Portfolio</NavigationLink>
             </MenuItem>
-            <MenuItem>
+            <MenuItem flex='1'>
               <NavigationLink to="/supervisors">Supervisors</NavigationLink>
             </MenuItem>
-        </Flex>
-        <Box
-          width={1/4}
-          color='white'>
+          </HStack>
+        </Box>
+        <Box flex='1' p='2'>
           <Account
             address={address}
             localProvider={localProvider}
@@ -56,7 +51,7 @@ export const Top = ({
             logoutOfWeb3Modal={logoutOfWeb3Modal}
             blockExplorer={blockExplorer}
           />
-        </Box>
+        </Box >
       </Flex>
     </NavContainer>
   )

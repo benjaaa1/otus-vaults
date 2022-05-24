@@ -170,7 +170,6 @@ contract OtusVault is BaseVault {
     require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
     require(address(_strategy) != address(0), "Strategy not set");
-    require(boardId > 0, "Board Id not set"); 
     _strategy.setBoard(boardId);
 
     (uint lockedBalance, uint queuedWithdrawAmount) = _rollToNextRound(uint(lastQueuedWithdrawAmount));
@@ -183,6 +182,10 @@ contract OtusVault is BaseVault {
     boardId = 0; 
 
     emit RoundStarted(vaultState.round, uint104(lockedBalance));
+  }
+
+  function getBoard() external view returns (uint, uint, uint, uint, uint, bool) {
+    return _strategy._getBoard(boardId);
   }
 
   /*
@@ -214,7 +217,6 @@ contract OtusVault is BaseVault {
     (uint positionId, uint premiumReceived, uint collateralAdded) = _strategy.doTrade(strikeId);
     roundPremiumCollected = premiumReceived;
     // update the remaining locked amount
-    console.log("vaultState.lockedAmountLeft", vaultState.lockedAmountLeft, collateralAdded);
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - collateralAdded;
     emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
   }

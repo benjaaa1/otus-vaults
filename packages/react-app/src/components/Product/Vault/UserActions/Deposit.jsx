@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Button, InputNumber } from "antd";
 import { useParams } from "react-router-dom";
 import { ethers } from "ethers"; 
 import { BaseShadowBox } from "../../../Common/Container";
-import { Flex } from 'reflexbox';
 import { BaseButton } from "../../../../designSystem";
-import { Input, InputGroup, InputLeftElement, InputRightElement } from '@chakra-ui/react'
+import { Box, Input, InputGroup, InputLeftElement, InputRightElement, VStack } from '@chakra-ui/react'
 import { CheckIcon } from '@chakra-ui/icons'; 
 import { parseEther, parseUnits, formatUnits } from '@ethersproject/units';
 
@@ -130,8 +128,7 @@ export const Deposit = ({ l2DepositMover, usdcContract2, usdcContract, l1bridge,
 
   // 0x615a6784b419d914eD17c853e5E28F0910310d32 vault 
   return (
-    <BaseShadowBox padding={0}>
-      <Flex>
+      <VStack>
 
         { /** Need to approve allowance first check first then approve then deposit */}
 
@@ -145,34 +142,33 @@ export const Deposit = ({ l2DepositMover, usdcContract2, usdcContract, l1bridge,
                 fontSize='1.2em'
                 children='$'
               />
-                <Input placeholder='Enter amount' onChange={(event) => onChange(event.target.value)} />
+                <Input color='white' placeholder='Enter amount' onChange={(event) => onChange(event.target.value)} />
               <InputRightElement children={<CheckIcon color='green.500' />} />
             </InputGroup>,
-            <BaseButton onClick={deposit}>
+            <BaseButton width={'100%'} onClick={deposit}>
               Deposit
             </BaseButton>,
-            <BaseButton onClick={depositFromL1}>
+            <BaseButton width={'100%'} onClick={depositFromL1}>
               Deposit From L1
             </BaseButton>
           ] : 
           <>
-          <BaseButton onClick={depositFromL1}>
+          <BaseButton width={'100%'} onClick={depositFromL1}>
           Deposit From L1
         </BaseButton>
-        <BaseButton onClick={approveFromL1}>
+        <BaseButton width={'100%'} onClick={approveFromL1}>
           Approve From L1
         </BaseButton>
-        <BaseButton onClick={count}>
+        <BaseButton width={'100%'} onClick={count}>
           Get From L2
         </BaseButton>
-          <BaseButton onClick={approve}>
-            approve
+          <BaseButton width={'100%'} onClick={approve}>
+            Approve
           </BaseButton> 
           </>
         }
 
-      </Flex>
-    </BaseShadowBox>
+      </VStack>
   );
 }
 

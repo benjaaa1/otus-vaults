@@ -1,56 +1,47 @@
-import Address from "./Address";
+
 import React from "react";
-import { ConnectButton } from "../Common/Button";
+import {
+  Box, 
+  Button,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem
+} from '@chakra-ui/react'; 
+import { useLookupAddress } from "eth-hooks/dapps/ens";
+import { ChevronRightIcon, ChevronDownIcon } from "@chakra-ui/icons";
 
-export default function Account({
-  address,
-  mainnetProvider,
-  blockExplorer,
-  web3Modal,
-  loadWeb3Modal,
-  logoutOfWeb3Modal,
-}) {
+export default function Account({ address, mainnetProvider, blockExplorer, web3Modal, loadWeb3Modal, logoutOfWeb3Modal }) {
 
-  const modalButtons = [];
-  if (web3Modal) {
-    if (web3Modal.cachedProvider) {
-      modalButtons.push(
-        <ConnectButton
-          key="logoutbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
-          shape="round"
-          size="large"
-          onClick={logoutOfWeb3Modal}
-        >
-          logout
-        </ConnectButton>,
-      );
-    } else {
-      modalButtons.push(
-        <ConnectButton
-          key="loginbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
-          shape="round"
-          size="large"
-          /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
-          onClick={loadWeb3Modal}
-        >
-          connect
-        </ConnectButton>,
-      );
-    }
-  }
+  const ens = useLookupAddress(mainnetProvider, address);
+  const ensSplit = ens && ens.split(".");
+  const validEnsCheck = ensSplit && ensSplit[ensSplit.length - 1] === "eth";
+  const etherscanLink = `${blockExplorer || "https://etherscan.io/"}address/${address}`;
+  let displayAddress = address?.substr(0, 5) + "..." + address?.substr(-4);
 
-  const display = (
-    <>
-      {address && <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />}
-    </>
-  )
+  if (validEnsCheck) {
+    displayAddress = ens;
+  } 
 
-  return (
-    <div>
-      {display} 
-      {modalButtons}
-    </div>
-  );
+  return <Box flex="1">
+      {
+        !address ?
+        <Button onClick={() => loadWeb3Modal()} rightIcon={<ChevronRightIcon />}>
+          Connect
+        </Button> :
+        <Menu>
+          <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+            {displayAddress}
+          </MenuButton>
+          <MenuList>
+            <MenuItem onClick={() => window.location.href=`${etherscanLink}`}>View on Etherscan</MenuItem>
+            <MenuItem onClick={() => logoutOfWeb3Modal()}>
+              {
+                web3Modal.cachedProvider ? 'Disconnect' : null
+              }
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      }
+    </Box>
 }

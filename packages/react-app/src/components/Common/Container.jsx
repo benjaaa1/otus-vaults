@@ -1,3 +1,4 @@
+import { Center, Box } from "@chakra-ui/react";
 import React from "react";
 import styled from "styled-components";
 import { BaseBox, Container } from "../../designSystem";
@@ -16,7 +17,10 @@ export const NavContainer = styled(Container)`
 
 export const PageContainer = styled(Container)`
   max-width: ${sizes.xxl}px;
+  padding: 8px; 
 `;
+
+export const HeaderContainer = styled(Center)``;
 
 export const BaseShadowBox  = styled(BaseBox)`
   background: ${colors.background.one};
@@ -24,7 +28,22 @@ export const BaseShadowBox  = styled(BaseBox)`
   box-shadow: -5px -5px 0px 2px ${colors.background.two};
   width: ${props => props.width};
   height: ${props => props.height};
+  min-width: 100%; 
   border-radius: ${theme.border.radius};
   border: ${theme.border.width} solid ${colors.background.two};
   padding: ${props => props.padding};
+`;
+
+export const BaseVaultBox  = styled(Box)`
+  border-radius: ${theme.border.radius};
+  border: ${theme.border.width} solid ${colors.background.two};
+  padding: ${props => props.padding};
+  background: ${colors.background.one};
+`;
+
+export const BaseDepositBox  = styled(Box)`
+  border-radius: ${theme.border.radius};
+  border: ${theme.border.width} solid ${colors.background.two};
+  padding: ${props => props.padding};
+  background: ${colors.background.two};
 `;

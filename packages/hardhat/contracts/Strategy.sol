@@ -168,6 +168,14 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     activeBoardId = boardId; 
   }
 
+  function _getBoard(uint boardId) public view returns (uint, uint, uint, uint, uint, bool) {
+    Board memory board = getBoard(boardId); 
+    return (boardId, board.id, board.boardIv, block.timestamp, board.expiry, block.timestamp <= board.expiry);
+  }
+
+    // return Board({id: board.id, expiry: board.expiry, boardIv: board.iv, strikeIds: board.strikeIds});
+
+
   /**
    * @dev convert premium in quote asset into collateral asset and send it back to the vault.
    */
@@ -229,7 +237,19 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
     (positionId, premiumReceived) = _sellStrike(strike, setCollateralTo);
   }
-  
+
+  function getCollateral(uint strikeId) public view returns (uint, uint, uint) {
+    
+    Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
+    (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike);
+    return (
+      collateralToAdd, 
+      setCollateralTo, 
+      collateralAsset.balanceOf(address(vault))
+    ); 
+
+  }
+
   // function calcualteStrategySize(uint currentSize) internal returns (uint strategySize) {
   //   if (vType == VaultType.SHORT_CALL || vType == VaultType.SHORT_PUT) {
   //     strategySize = currentSize; 
@@ -462,8 +482,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    * @dev verify if the strike is valid for the strategy
    * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
    */
-  function isValidStrike(Strike memory strike) internal view returns (bool isValid) {
-    console.log("activeExpiry strike.expiry", activeExpiry, strike.expiry); 
+  function isValidStrike(Strike memory strike) public view returns (bool isValid) {
     if (activeExpiry != strike.expiry) {
       return false;
     }
@@ -473,18 +492,18 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     int callDelta = getDeltas(strikeId)[0];
     int delta = _isCall() ? callDelta : callDelta - SignedDecimalMath.UNIT;
     uint deltaGap = _abs(currentStrategy.targetDelta - delta);
-    
-    console.log("strike.id", strike.id); 
-    console.log("vol", vol); 
-    console.log("callDelta", uint(callDelta)); 
-    console.log("_isCall", _isCall()); 
-    console.log("delta", uint(delta)); 
-    console.log("deltaGap", deltaGap); 
-    console.log("currentStrategy.minVol", currentStrategy.minVol);
-    console.log("currentStrategy.maxVol", currentStrategy.maxVol);
-    console.log("currentStrategy.maxDeltaGap", currentStrategy.maxDeltaGap);
 
     return vol >= currentStrategy.minVol && vol <= currentStrategy.maxVol && deltaGap < currentStrategy.maxDeltaGap;
+  }
+
+  function isValidStrike2(uint _strikeIid) public view returns (uint, int, uint, uint, uint, bool) {
+    uint[] memory strikeId = _toDynamic(_strikeIid);
+    uint vol = getVols(strikeId)[0];
+    int callDelta = getDeltas(strikeId)[0];
+    int delta = _isCall() ? callDelta : callDelta - SignedDecimalMath.UNIT;
+    uint deltaGap = _abs(currentStrategy.targetDelta - delta);
+
+    return (activeExpiry, callDelta, currentStrategy.maxDeltaGap, deltaGap, vol, vol >= currentStrategy.minVol && vol <= currentStrategy.maxVol && deltaGap < currentStrategy.maxDeltaGap);
   }
 
   /**
@@ -610,7 +629,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     isBase = (optionType == OptionType.SHORT_CALL_BASE) ? true : false;
   }
 
-  function _isCall() internal view returns (bool isCall) {
+  function _isCall() public view returns (bool isCall) {
     isCall = (optionType == OptionType.SHORT_PUT_QUOTE) ? false : true;
   }
 

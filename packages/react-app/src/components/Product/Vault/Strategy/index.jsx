@@ -1,10 +1,10 @@
 import React from "react";
 
-export const Header = () => {
+export const Strategy = () => {
 
   return (
     <div>
-      Header
+      Strategy
     </div>
   );
 }

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Label, Slider, Switch } from '@rebass/forms'
+import { Heading, Text, FormControl, FormLabel, Slider, Switch, Box, Center  } from '@chakra-ui/react'
 import { Button } from "../../Common/Button"; 
 import { Select } from "../../Common/Select"; 
-import { Flex, Box } from 'reflexbox';
 
 import { ethers } from "ethers";
 import { getLyraMarkets } from "../../../graphql";
-import { useHistory, useRouteMatch } from "react-router-dom";
-import colors from "../../../designSystem/colors";
+import { useHistory } from "react-router-dom";
+import { BaseShadowBox } from "../../Common/Container";
 
 const VaultFlow = ({ contract, signer }) => {
 
@@ -44,7 +43,7 @@ const VaultFlow = ({ contract, signer }) => {
   }, []); 
 
   const createVaultWithStrategy = async () => {
-    console.log(vaultDetails); 
+    console.log({vaultDetails, contract}); 
     try {
       const {
         _optionMarket,
@@ -97,67 +96,70 @@ const VaultFlow = ({ contract, signer }) => {
   }
 
   return (
-    <Box
-      bg={colors.background.one}
-      as='form'
-      onSubmit={e => e.preventDefault()}
-      py={3}>
-      <Flex mx={-2} mb={3}>
-        <Box width={1} px={2}>
-          <Label htmlFor='market'>Market</Label>
-          <Select id='market' defaultValue="" onChange={e => onSelectMarket(e.target.value)}>
-            <option value="">Select Market</option>
-            {
-              markets.map(({ id, name }) => (<option value={id}>{name}</option>))
-            }
-          </Select>
-        </Box>
-        <Box width={1} px={2}>
-          <Label htmlFor='vault'>Vault</Label>
-          <Select id='vault' defaultValue="" onChange={e => onSelectVaultType(e.target.value)}>
-            <option value="">Select Vault Type</option>
-            {
-              vaultTypes.map((name, index) => (<option value={index}>{name}</option>))
-            }
-          </Select>
-        </Box>
-      </Flex>
-      <Flex mx={-2} mb={3}>
-        <Box width={1/2} px={2}>
-          <Label width={[ 1/2, 1/4 ]} p={2}>
-            { vaultDetails._tokenName }
-          </Label>
-          <Label width={[ 1/2, 1/4 ]} p={2}>
-            { vaultDetails._tokenSymbol }
-          </Label>
+    <Center>
+      <Box w='474px'>
+      <BaseShadowBox padding="14px">
+        <Box bgImage="url('https://bit.ly/2Z4KKcF')">
+          <Heading>Vault Create</Heading>
         </Box>
 
-        <Box width={1/2} px={2}>
-          <Label htmlFor='isPublic'>Public</Label>
-          <Switch
-              id='isPublic'
-              name='isPublic'
-              defaultValue={true}
+        <Box>
+
+          <FormControl>
+            <FormLabel htmlFor='market'>Market</FormLabel>
+            <Select id='market' placeHolder="Select Market" defaultValue="" onChange={e => onSelectMarket(e.target.value)}>
+              {
+                markets.map(({ id, name }) => (<option value={id}>{name}</option>))
+              }
+            </Select>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel htmlFor='vault'>Vault</FormLabel>
+            <Select id='vault' placeHolder="Select Vault Type" defaultValue="" onChange={e => onSelectVaultType(e.target.value)}>
+              {
+                vaultTypes.map((name, index) => (<option value={index}>{name}</option>))
+              }
+            </Select>
+          </FormControl>
+
+        </Box>
+
+        <Box>
+          <Center p="4">
+            <Text as='i' p="4">
+              { vaultDetails._tokenName }
+            </Text>
+            <Text as='i' p="4">
+              { vaultDetails._tokenSymbol }
+            </Text>
+          </Center>
+          <FormControl>
+            <FormLabel htmlFor='isPublic'>Public</FormLabel>
+            <Switch
+                id='isPublic'
+                name='isPublic'
+                defaultValue={true}
+              />
+          </FormControl>
+          <FormControl>
+            <FormLabel htmlFor='performanceFee'>Performance Fee</FormLabel>
+            <Slider
+              id='performanceFee'
+              name='performanceFee'
+              defaultValue={0}
             />
+          </FormControl>
         </Box>
 
-        <Box width={1} px={2}>
-          <Label htmlFor='performanceFee'>Performance Fee</Label>
-          <Slider
-            id='performanceFee'
-            name='performanceFee'
-            defaultValue={0}
-          />
-        </Box>
-      </Flex>
-      <Flex mx={-2} mb={3}>
-        <Box px={2} ml='auto'>
+        <Box>
           <Button onClick={createVaultWithStrategy}>
             Create Vault
           </Button>
         </Box>
-      </Flex>
-    </Box>
+      </BaseShadowBox>
+      </Box>
+    </Center>
   )
 }
 

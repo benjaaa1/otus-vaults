@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Button, InputNumber } from "antd";
+import { BaseButton } from "../../../../designSystem";
+import { Box, Input, VStack } from '@chakra-ui/react'
 import { ethers } from "ethers"; 
 
 export const Withdrawal = ({ otusVaultContract, susdContract, address, signer }) => {
@@ -29,14 +30,12 @@ export const Withdrawal = ({ otusVaultContract, susdContract, address, signer })
   }
 
   return (
-    <div>
-
-      <InputNumber min={1} max={shares} defaultValue={shares} />
-
-      <Button onClick={initiateWithdraw}>
+    <VStack>
+      <Input color='white' min={1} max={shares} defaultValue={shares} />
+      <BaseButton width={'100%'} onClick={initiateWithdraw}>
         Withdrawal
-      </Button> 
-    </div>
+      </BaseButton> 
+    </VStack>
   );
 }
 

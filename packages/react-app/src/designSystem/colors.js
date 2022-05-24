@@ -5,6 +5,11 @@ const colors = {
   },
   borderDark: "#000000", 
   borderLight: "#FFFFFF", 
+  text: {
+    light: "#ffffff",
+    dark: "#373737",
+    gray: '#959595'
+  },
   products: {
     title: "#959595",
     filledCapacity: "#FF9000",

@@ -6,32 +6,14 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  MenuItemOption,
-  MenuGroup,
-  MenuOptionGroup,
-  MenuDivider,
+  Select as ChakraSelect
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import colors from "../../designSystem/colors";
+import theme from "../../designSystem/theme";
 
-export const Select = styled.select`
-  width: 100%;
-  height: 35px;
-  background: white;
-  color: gray;
-  padding-left: 5px;
-  font-size: 14px;
-  border: none;
-  margin-left: 10px;
-
-  option {
-    color: black;
-    background: white;
-    display: flex;
-    white-space: pre;
-    min-height: 20px;
-    padding: 0px 2px 1px;
-  }
+export const Select = styled(ChakraSelect)`
+  border: ${theme.border.width} solid ${colors.background.two};
 `;
 
 export const BaseMenu = ({ title, options, onClick }) => {
@@ -49,7 +31,6 @@ export const BaseMenu = ({ title, options, onClick }) => {
         { title }
       </MenuButton>
       <MenuList>
-        <MenuItem>Test</MenuItem>
         {
           options.map(({ name, id }) => {
             return <MenuItem onClick={() => onClick(id)}>{ name }</MenuItem>

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Vaults } from "./Vaults"; 
 import { useContractLoader } from "eth-hooks";
-import { PageContainer } from "../Common/Container";
+import { HeaderContainer, PageContainer } from "../Common/Container";
 import { BaseHeaderText, BaseText } from "../../designSystem";
 import { useHistory } from "react-router-dom";
-import { Box } from 'reflexbox';
+import { Flex, Box, Center, VStack } from '@chakra-ui/react';
 import { CTAButton } from "../Common/Button";
 import theme from "../../designSystem/theme";
 import colors from "../../designSystem/colors";
@@ -31,19 +31,17 @@ const Product = ({ signer, contractConfig, chainId  }) => {
   }, [contract])
 
   return <PageContainer>
-      <Box 
-        sx={{
-          p: 4
-        }}
-      >
-        <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.md}>
-          Join one of the many vaults or create your own and implement your own strategy. 
-        </BaseHeaderText>
-        <CTAButton onClick={() => history.push("/supervisors")}>
-          Become a Supervisor
-        </CTAButton>
-      </Box>
-      <Vaults vaults={vaults} />
+      <HeaderContainer p="10">
+        <VStack spacing={2}>
+          <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.md}>
+            Join one of the many vaults or create your own and implement your own strategy, have your community join your vault and earn performance and management fees. 
+          </BaseHeaderText>
+          <CTAButton onClick={() => history.push("/supervisors")}>
+            Become a Supervisor
+          </CTAButton>
+        </VStack>
+      </HeaderContainer>
+      <Vaults vaults={vaults} signer={signer} contractConfig={contractConfig} chainId={chainId} />
     </PageContainer>
   
 }

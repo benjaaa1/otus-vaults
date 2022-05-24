@@ -1,6 +1,5 @@
 import styled from "styled-components";
-import { Button, ButtonGroup } from '@chakra-ui/react'
-
+import { Center, Square, Circle, Button, ButtonGroup } from '@chakra-ui/react'
 import { Link } from "react-router-dom";
 import colors from "./colors";
 import theme from "./theme";

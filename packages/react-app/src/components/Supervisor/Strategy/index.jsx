@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useContractLoader } from "eth-hooks";
-import StrategyDetail from "./StrategyDetail";
-import VaultDetail from "./VaultDetail";
-import { Flex, Box } from 'reflexbox';
+import StrategyDetail from "./Detail/Strategy";
+import VaultDetail from "./Detail/Vault";
+import { Flex, Box } from '@chakra-ui/react';
 import { useHistory, useParams } from "react-router-dom";
 import { BaseShadowBox } from "../../Common/Container";
 
@@ -28,12 +28,12 @@ export default function Strategy({ contract, signer, contractConfig, chainId }) 
   }, [contract])
 
   return (
-      <BaseShadowBox padding={0}>
+      <BaseShadowBox>
         <Flex>
-        <Box width={1/5} sx={{ borderRight: "2px solid #373737"}}>
-          <VaultDetail otusVault={otusVault} signer={signer} />
+        <Box flex="1" sx={{ borderRight: "2px solid #373737"}}>
+          <VaultDetail otusVault={otusVault} strategyAddress={strategyAddress} signer={signer} />
         </Box>
-        <Box width={4/5}>
+        <Box flex="4">
             {
               strategyAddress ? 
               <StrategyDetail 

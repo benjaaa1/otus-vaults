@@ -7,7 +7,7 @@ import SupervisorFlow from "./Flow/SupervisorFlow";
 import VaultFlow from "./Flow/VaultFlow";
 import Strategy from "./Strategy";
 import { PageContainer } from "../Common/Container";
-import { Box } from 'reflexbox';
+import { Flex, Box } from '@chakra-ui/react';
 
 const Supervisor = ({ name, signer, contractConfig, chainId }) => {
 
@@ -61,19 +61,19 @@ const Supervisor = ({ name, signer, contractConfig, chainId }) => {
   
   return (
     <PageContainer>
-      <Box px={12}>
-        <Switch>
-          <Route path={"/supervisors/flow"}>
-            <SupervisorFlow contract={contract} signer={signer} />
-          </Route>
-          <Route path={"/supervisors/vault_flow"}>
-            <VaultFlow contract={contract} signer={signer} /> 
-          </Route>
-          <Route path={"/supervisors/:vault/:strategy"}>
-            <Strategy contract={contract} signer={signer} contractConfig={contractConfig} chainId={chainId} /> 
-          </Route>
-        </Switch> 
-      </Box>
+      
+      <Switch>
+        <Route path={"/supervisors/flow"}>
+          <SupervisorFlow contract={contract} signer={signer} />
+        </Route>
+        <Route path={"/supervisors/vault_flow"}>
+          <VaultFlow contract={contract} signer={signer} /> 
+        </Route>
+        <Route path={"/supervisors/:vault/:strategy"}>
+          <Strategy contract={contract} signer={signer} contractConfig={contractConfig} chainId={chainId} /> 
+        </Route>
+      </Switch> 
+
     </PageContainer>
   );
 }

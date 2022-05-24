@@ -283,7 +283,7 @@ contract VaultAdapter {
   }
 
   // iv * skew only
-  function getVols(uint[] memory strikeIds) internal view returns (uint[] memory vols) {
+  function getVols(uint[] memory strikeIds) public view returns (uint[] memory vols) {
     vols = new uint[](strikeIds.length);
 
     for (uint i = 0; i < strikeIds.length; i++) {
@@ -297,7 +297,7 @@ contract VaultAdapter {
   }
 
   // get deltas only
-  function getDeltas(uint[] memory strikeIds) internal view returns (int[] memory callDeltas) {
+  function getDeltas(uint[] memory strikeIds) public view returns (int[] memory callDeltas) {
     callDeltas = new int[](strikeIds.length);
     for (uint i = 0; i < strikeIds.length; i++) {
       BlackScholes.BlackScholesInputs memory bsInput = _getBsInput(strikeIds[i]);
@@ -305,7 +305,7 @@ contract VaultAdapter {
     }
   }
 
-  function getVegas(uint[] memory strikeIds) internal view returns (uint[] memory vegas) {
+  function getVegas(uint[] memory strikeIds) public view returns (uint[] memory vegas) {
     vegas = new uint[](strikeIds.length);
     for (uint i = 0; i < strikeIds.length; i++) {
       BlackScholes.BlackScholesInputs memory bsInput = _getBsInput(strikeIds[i]);
@@ -319,7 +319,7 @@ contract VaultAdapter {
     uint vol,
     uint spotPrice,
     uint strikePrice
-  ) internal view returns (uint call, uint put) {
+  ) public view returns (uint call, uint put) {
     BlackScholes.BlackScholesInputs memory bsInput = BlackScholes.BlackScholesInputs({
       timeToExpirySec: secondsToExpiry,
       volatilityDecimal: vol,
