@@ -1,36 +1,18 @@
-import React, { useEffect } from "react";
-
+import React, { useEffect, useState } from "react";
 import { useContractLoader } from "eth-hooks";
-import { Button } from "../../../Common/Button";
-import { InputNumber } from "../../../Common/Input";
-import { getLyraMarkets, getLyraMarket, deployment } from "../../../../helpers/lyra";
-import { useState } from "react";
-import { StrikesModal } from "../Strikes";
-import { Flex, Box, Center, FormControl, FormLabel } from '@chakra-ui/react';
-import { BaseMenu, Select } from "../../../Common/Select";
+import { getLyraMarket } from "../../../../helpers/lyra";
 
 import { formatUnits } from "ethers/lib/utils";
-import { BaseHeaderText } from "../../../../designSystem";
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
-  TableContainer,
-} from '@chakra-ui/react'
-import { Slider } from "../../../Common/Slider";
-import { parseEther, parseUnit, parseUnits } from '@ethersproject/units';
+import { parseUnits } from '@ethersproject/units';
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+import { Flex, Box, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td, TableContainer } from '@chakra-ui/react';
+import { BaseHeaderText } from "../../../../designSystem";
+
+import { Select, Slider } from "../../../Common/Select";
+
 const HOUR_SEC = 60 * 60;
 const DAY_SEC = 24 * HOUR_SEC;
 const WEEK_SEC = 7 * DAY_SEC;
-const MONTH_SEC = 28 * DAY_SEC;
-const YEAR_SEC = 365 * DAY_SEC;
 
 export default function StrategyDetail({ otusVault, strategyAddress, signer, contractConfig, chainId }) {
   console.log({ strategyAddress })
@@ -49,8 +31,6 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
   const [board, setBoard] = useState(); 
   const [strikes, setStrikes] = useState([]); 
   const [strikeSelected, setStrikeSelected] = useState();
-
-  const onChange = () => {}
 
   const getL2DepositMoverAddress = async () => {
     try {
@@ -90,37 +70,6 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
     }
   }
 
-  const setStrategy = async () => {
-    try {
-      const response = await contract.connect(signer).setStrategy(
-        {
-          collatBuffer: toBN('1.2'), 
-          collatPercent: toBN('1'),
-          minTimeToExpiry: DAY_SEC,
-          maxTimeToExpiry: WEEK_SEC * 2,
-          targetDelta: toBN('0.2').mul(-1),
-          maxDeltaGap: toBN('0.05'),
-          minVol: toBN('0.8'),
-          maxVol: toBN('1.3'),
-          size: toBN('2'),
-          minTradeInterval: 600,
-          maxVolVariance: toBN('0.1'),
-          gwavPeriod: 600,
-        },
-        {
-          hedgePercentage: toBN('1.2'),
-          maxHedgeAttempts: toBN('5'),
-          limitStrikePricePercent: toBN('0.2'),
-          leverageSize: toBN('2'),
-          stopLossLimit: toBN('0.001')
-        }
-      ); 
-      console.log({ response })
-    } catch (error) {
-      console.log({ error })
-    }
-  }
-
   const startNextRound = async () => {
     try {
       const response = await otusVault.connect(signer).startNextRound(); 
@@ -134,13 +83,6 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
     try {
       const optionType = await contract.vaultOptionTypes(3);
       console.log({ optionType })
-
-      // const strikeId = await otusVault.strikeId();
-      // console.log({ strikeId })
-
-      // const strikeId = await otusVault.strikeId();
-      // console.log({ strikeId })
-
       const response = await otusVault.connect(signer).trade(); 
       console.log({ response })
     } catch (error) {
@@ -216,48 +158,7 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
     return parseUnits(val, 18);
   }
 
-  // const [{
-  //   collatBuffer, 
-  //   collatPercent,
-  //   minTimeToExpiry,
-  //   maxTimeToExpiry,
-  //   targetDelta,
-  //   maxDeltaGap,
-  //   minVol,
-  //   maxVol,
-  //   size,
-  //   minTradeInterval,
-  //   maxVolVariance,
-  //   gwavPeriod
-  // }, setStrategyDetail] = useState({
-  //   collatBuffer: toBN('1.2'), 
-  //   collatPercent: toBN('1'),
-  //   minTimeToExpiry: DAY_SEC,
-  //   maxTimeToExpiry: WEEK_SEC * 2,
-  //   targetDelta: toBN('0.2').mul(-1),
-  //   maxDeltaGap: toBN('0.05'),
-  //   minVol: toBN('0.8'),
-  //   maxVol: toBN('1.3'),
-  //   size: toBN('2'),
-  //   minTradeInterval: 600,
-  //   maxVolVariance: toBN('0.1'),
-  //   gwavPeriod: 600,
-  // });
-
-  const [{
-    collatBuffer, 
-    collatPercent,
-    minTimeToExpiry,
-    maxTimeToExpiry,
-    targetDelta,
-    maxDeltaGap,
-    minVol,
-    maxVol,
-    size,
-    minTradeInterval,
-    maxVolVariance,
-    gwavPeriod
-  }, setStrategyDetail] = useState({
+  const [strategyDetail, setStrategyDetail] = useState({
     collatBuffer: 1.2, 
     collatPercent: 1,
     minTimeToExpiry: DAY_SEC,
@@ -279,27 +180,7 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
     }))
   }
 
-  // const [{
-  //   hedgePercentage,
-  //   maxHedgeAttempts,
-  //   limitStrikePricePercent,
-  //   leverageSize,
-  //   stopLossLimit
-  // }, setHedgeDetail] = useState({
-  //   hedgePercentage: toBN('1.2'),
-  //   maxHedgeAttempts: toBN('5'),
-  //   limitStrikePricePercent: toBN('0.2'),
-  //   leverageSize: toBN('2'),
-  //   stopLossLimit: toBN('0.001')
-  // });
-
-  const [{
-    hedgePercentage,
-    maxHedgeAttempts,
-    limitStrikePricePercent,
-    leverageSize,
-    stopLossLimit
-  }, setHedgeDetail] = useState({
+  const [hedgeDetail, setHedgeDetail] = useState({
     hedgePercentage: 1.2,
     maxHedgeAttempts: 5,
     limitStrikePricePercent: .2,
@@ -307,19 +188,70 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
     stopLossLimit: .001
   });
 
-  
-  const transformToBn = (id, v) => {
-    setStrategyDetailValues(id, toBN(v));
-  }
-
   const setHedgeDetailValues = (id, value) => {
     setHedgeDetail(prevState => ({
       ...prevState,
       [id]: value
     }))
   }
+  
+  const transformToBn = (id, v) => {
+    setStrategyDetailValues(id, toBN(v));
+  }
 
-  return [
+  const setStrategy = async () => {
+    try {
+      const {
+        collatBuffer, 
+        collatPercent,
+        minTimeToExpiry,
+        maxTimeToExpiry,
+        targetDelta,
+        maxDeltaGap,
+        minVol,
+        maxVol,
+        size,
+        minTradeInterval,
+        maxVolVariance,
+        gwavPeriod
+      } = strategyDetail;
+      const {
+        hedgePercentage,
+        maxHedgeAttempts,
+        limitStrikePricePercent,
+        leverageSize,
+        stopLossLimit
+      } = hedgeDetail;
+      const response = await contract.connect(signer).setStrategy(
+        {
+          collatBuffer: toBN(collatBuffer.toString()), 
+          collatPercent: toBN(collatPercent.toString()),
+          minTimeToExpiry: DAY_SEC * minTimeToExpiry,
+          maxTimeToExpiry: WEEK_SEC * maxTimeToExpiry,
+          targetDelta: toBN(targetDelta.toString()).mul(-1),
+          maxDeltaGap: toBN(maxDeltaGap.toString()),
+          minVol: toBN(minVol.toString()),
+          maxVol: toBN(maxVol.toString()),
+          size: toBN(size.toString()),
+          minTradeInterval: 60 * minTradeInterval,
+          maxVolVariance: toBN(maxVolVariance.toString()),
+          gwavPeriod: 60 * gwavPeriod,
+        },
+        {
+          hedgePercentage: toBN(hedgePercentage.toString()),
+          maxHedgeAttempts: toBN(maxHedgeAttempts.toString()),
+          limitStrikePricePercent: toBN(limitStrikePricePercent.toString()),
+          leverageSize: toBN(leverageSize.toString()),
+          stopLossLimit: toBN(stopLossLimit.toString())
+        }
+      ); 
+      console.log({ response })
+    } catch (error) {
+      console.log({ error })
+    }
+  }
+
+  return (
       <Flex>
         
         <Box flex="1" sx={{ borderRight: "1px solid #ccc"}}>
@@ -381,8 +313,8 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
               <Box flex='1' p="4">
                 <Slider name={"Collateral Buffer"} step={.1} min={0} max={2} id={"collatBuffer"} setSliderValue={transformToBn} sliderValue={collatBuffer} label={'%'} />
                 <Slider name={"Collateral Percent"} step={.05} min={0} max={1} id={"collatPercent"} setSliderValue={transformToBn} sliderValue={collatPercent} label={'%'} />
-                <Slider name={"Min. Time to Expiry"} step={.5} min={0} max={7} id={"minTimeToExpiry"} setSliderValue={setStrategyDetailValues} sliderValue={minTimeToExpiry} label={' days'} />
-                <Slider name={"Max Time to Expiry"} step={1} min={0} max={100} id={"maxTimeToExpiry"} setSliderValue={setStrategyDetailValues} sliderValue={maxTimeToExpiry} label={' days'} />
+                <Slider name={"Min. Time to Expiry"} step={1} min={0} max={7} id={"minTimeToExpiry"} setSliderValue={setStrategyDetailValues} sliderValue={minTimeToExpiry} label={' days'} />
+                <Slider name={"Max Time to Expiry"} step={1} min={0} max={8} id={"maxTimeToExpiry"} setSliderValue={setStrategyDetailValues} sliderValue={maxTimeToExpiry} label={' weeks'} />
                 <Slider name={"Target Delta"} step={.1} min={-1} max={1} id={"targetDelta"} setSliderValue={transformToBn} sliderValue={targetDelta} label={''} />    
                 <Slider name={"Max Delta Gap"} step={.05} min={0} max={.5} id={"maxDeltaGap"} setSliderValue={transformToBn} sliderValue={maxDeltaGap} label={''} />
               </Box>
@@ -392,7 +324,7 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
                 <Slider name={"Min Vol"} step={.1} min={0} max={2} id={"minVol"} setSliderValue={transformToBn} sliderValue={minVol} label={''} />
                 <Slider name={"Max Vol"} step={.1} min={0} max={2} id={"maxVol"} setSliderValue={transformToBn} sliderValue={maxVol} label={''} />
                 <Slider name={"Min Trade Interval"} step={5} min={0} max={60} id={"minTradeInterval"} setSliderValue={setStrategyDetailValues} sliderValue={minTradeInterval} label={' minutes'} />
-                <Slider name={"Gwav Period"} step={5} min={0} max={60} id={"gwavPeriod"} setSliderValue={setStrategyDetailValues} sliderValue={gwavPeriod} label={' minutes'} />
+                <Slider name={"Gwav Period"} step={5} min={1} max={60} id={"gwavPeriod"} setSliderValue={setStrategyDetailValues} sliderValue={gwavPeriod} label={' minutes'} />
               </Box>
             </Flex>
 
@@ -418,35 +350,7 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
 
         </Box>
 
-      </Flex>,
-
-      <Flex sx={{ borderTop: "2px solid #9E9E9E", padding: "4px" }}>
-        {/* <Box flex='1' p={4}>
-          <Button onClick={getL2DepositMoverAddress}>getL2DepositMoverAddress</Button>
-        </Box> */}
-        {/* <Box flex='1' p={4}>
-          <Button onClick={allowL1Deposits}>Accept L1 Deposits</Button>
-        </Box> */}
-        <Center flex='1' p={4}>
-          <Button onClick={setStrategyOnVault}>Set Strategy on Vault</Button>
-        </Center>
-        <Center flex='1' p={4}>
-          <Button onClick={setNextBoardStrikeId}>Set Strikes</Button>
-        </Center>
-        <Center flex='1' p={4}>
-          <Button onClick={setStrategy}>Set Strategy</Button>
-        </Center>
-        <Center flex='1' p={4}>
-          <Button onClick={startNextRound}>Start Next Round</Button>
-        </Center>
-        <Center flex='1' p={4}>
-          <Button onClick={trade}>Trade</Button>
-        </Center>
-        <Center flex='1' p={4}>
-          <Button onClick={setStrategy}>Close Round</Button>
-        </Center>
       </Flex>
-
-  ];
+  );
 
 }

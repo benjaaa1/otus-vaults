@@ -16,7 +16,7 @@ const customTheme = extendTheme({
 });
 
 ReactDOM.render(
-  <ChakraProvider  theme={customTheme}>
+  <ChakraProvider theme={customTheme}>
     <BrowserRouter>
       <App  />
     </BrowserRouter>

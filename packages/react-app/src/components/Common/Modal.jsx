@@ -4,8 +4,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalCloseButton,
-  useDisclosure
+  ModalCloseButton
 } from '@chakra-ui/react'
 
 export const OtusModal = ({ title, isOpen, onClose, children }) => {

@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "../Common/Button"; 
 import { useHistory } from "react-router-dom";
-import { Grid, GridItem, Box, IconButton } from '@chakra-ui/react';
+import useWeb3 from "../../hooks/useWeb3";
+import { formatUnits } from "ethers/lib/utils";
+
+import theme from "../../designSystem/theme";
+import { Grid, GridItem, Box } from '@chakra-ui/react';
 import { BaseShadowBox } from "../Common/Container";
 import { AssetTag, ProductTag } from "../Common/Tags";
-import theme from "../../designSystem/theme";
-import { useContractLoader } from "eth-hooks";
-import { formatUnits } from "ethers/lib/utils";
-import { ArrowForwardIcon } from "@chakra-ui/icons";
-import useWeb3 from "../../hooks/useWeb3";
+import { Button } from "../Common/Button"; 
 
 export const Vaults = ({ vaults }) => {
 

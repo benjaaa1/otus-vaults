@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useContractLoader } from "eth-hooks";
+import { useParams } from "react-router-dom";
+
+import { Flex, Box } from '@chakra-ui/react';
 import StrategyDetail from "./Detail/Strategy";
 import VaultDetail from "./Detail/Vault";
-import { Flex, Box } from '@chakra-ui/react';
-import { useHistory, useParams } from "react-router-dom";
 import { BaseShadowBox } from "../../Common/Container";
 
 export default function Strategy({ otusCloneFactory }) {

@@ -7,12 +7,9 @@ import {
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
-  SliderMark,
   Tooltip,
   FormControl,
   FormLabel,
-  FormErrorMessage,
-  FormHelperText
 } from '@chakra-ui/react'
 
 export const Slider = ({ name, id, min, max, step, setSliderValue, sliderValue, label }) => {

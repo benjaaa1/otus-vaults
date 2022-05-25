@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "styled-components";
 import { BaseButton } from "../../designSystem";
 import colors from "../../designSystem/colors";

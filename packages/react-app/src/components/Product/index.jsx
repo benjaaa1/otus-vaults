@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Vaults } from "./Vaults"; 
-import { useContractLoader } from "eth-hooks";
-import { HeaderContainer, PageContainer } from "../Common/Container";
-import { BaseHeaderText, BaseText } from "../../designSystem";
 import { useHistory } from "react-router-dom";
-import { Flex, Box, Center, VStack } from '@chakra-ui/react';
-import { CTAButton } from "../Common/Button";
-import theme from "../../designSystem/theme";
-import colors from "../../designSystem/colors";
-import useChainId from "../../hooks/useChainId";
 import useWeb3 from "../../hooks/useWeb3";
 
-const Product = ({ contractConfig }) => {
+import { VStack } from '@chakra-ui/react';
+
+import theme from "../../designSystem/theme";
+import colors from "../../designSystem/colors";
+import { HeaderContainer, PageContainer } from "../Common/Container";
+import { BaseHeaderText } from "../../designSystem";
+import { CTAButton } from "../Common/Button";
+import { Vaults } from "./Vaults"; 
+
+const Product = () => {
 
   const history = useHistory(); 
   const [vaults, setVaults] = useState([]); 

@@ -1,6 +1,5 @@
-import { Center, Box } from "@chakra-ui/react";
-import React from "react";
 import styled from "styled-components";
+import { Center, Box } from "@chakra-ui/react";
 import { BaseBox, Container } from "../../designSystem";
 import colors from "../../designSystem/colors";
 import sizes from "../../designSystem/sizes";

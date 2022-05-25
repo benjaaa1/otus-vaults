@@ -1,16 +1,10 @@
-import React, { useEffect } from "react";
-
-import { useContractLoader } from "eth-hooks";
-import { Button } from "../../../Common/Button";
-import { useState } from "react";
-import { 
-  Flex, 
-  Center
-} from '@chakra-ui/react';
-
-import { ArrowForwardIcon } from "@chakra-ui/icons";
-import { parseEther, parseUnit, parseUnits } from '@ethersproject/units';
+import React, { useEffect, useState } from "react";
+import { parseUnits } from '@ethersproject/units';
 import { formatUnits } from "ethers/lib/utils";
+
+import { Flex, Center } from '@chakra-ui/react';
+import { ArrowForwardIcon } from "@chakra-ui/icons";
+import { Button } from "../../../Common/Button";
 
 export default function Action({ otusVault, strategy, signer, board, strikeSelected, setStrategy }) {
 

@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { ethers } from "ethers";
+
+import { getLyraMarkets } from "../../../graphql";
+
 import { Heading, Text, FormControl, FormLabel, Slider, Switch, Box, Center  } from '@chakra-ui/react'
 import { Button } from "../../Common/Button"; 
 import { Select } from "../../Common/Select"; 
-
-import { ethers } from "ethers";
-import { getLyraMarkets } from "../../../graphql";
-import { useHistory } from "react-router-dom";
 import { BaseShadowBox } from "../../Common/Container";
 
 const VaultFlow = ({ otusCloneFactory, signer }) => {
-
-  const history = useHistory();
 
   const [vault, setVault] = useState(); 
   const [markets, setMarkets] = useState([]); 

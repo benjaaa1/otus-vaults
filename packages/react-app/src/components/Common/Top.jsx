@@ -1,11 +1,9 @@
 import React from "react";
+import styled from "styled-components";
 import { Flex, Box, HStack } from '@chakra-ui/react';
 import { Account } from "../utils";
 import { NavigationLink } from "./Link";
-import styled from "styled-components";
-import colors from "../../designSystem/colors";
 import { NavContainer } from "./Container";
-import theme from "../../designSystem/theme";
 
 const MenuItem = styled(Box)`
   margin: 14px; 

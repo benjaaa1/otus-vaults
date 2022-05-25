@@ -1,37 +1,32 @@
-import React, { useEffect } from "react";
-
-import { useContractLoader } from "eth-hooks";
-import { getLyraMarkets, getLyraMarket, deployment } from "../../../../helpers/lyra";
-import { useState } from "react";
-import { StrikesModal } from "../Strikes";
-import { Flex, Box, Center, FormControl, FormLabel } from '@chakra-ui/react';
-import { BaseMenu, Select } from "../../../Common/Select";
-
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { parseUnits } from '@ethersproject/units';
 import { formatUnits } from "ethers/lib/utils";
-import { BaseHeaderText } from "../../../../designSystem";
+
+import useWeb3 from "../../../../hooks/useWeb3";
+import { getLyraMarket } from "../../../../helpers/lyra";
+
 import {
+  Flex, 
+  Box,
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
-  TableCaption,
   TableContainer,
-} from '@chakra-ui/react'
-import { Slider } from "../../../Common/Slider";
-import { parseEther, parseUnit, parseUnits } from '@ethersproject/units';
-import Action from "./Action";
-import useWeb3 from "../../../../hooks/useWeb3";
-import { useParams } from "react-router-dom";
+} from '@chakra-ui/react';
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+import { BaseHeaderText } from "../../../../designSystem";
+import { Slider } from "../../../Common/Slider";
+import { Select } from "../../../Common/Select";
+
+import Action from "./Action";
+
 const HOUR_SEC = 60 * 60;
 const DAY_SEC = 24 * HOUR_SEC;
 const WEEK_SEC = 7 * DAY_SEC;
-const MONTH_SEC = 28 * DAY_SEC;
-const YEAR_SEC = 365 * DAY_SEC;
 
 export default function StrategyDetail({ strategyAddress }) {
   
@@ -42,8 +37,6 @@ export default function StrategyDetail({ strategyAddress }) {
   const otusVault = contracts ? contracts['OtusVault'] : "";
 
   const strategy = contracts ? contracts['Strategy'] : "";
-
-  const otusCloneFactory = contracts ? contracts['OtusCloneFactory'] : "";
 
   const [market,] = useState('eth'); 
   const [lyraMarket, setLyraMarket] = useState(null);

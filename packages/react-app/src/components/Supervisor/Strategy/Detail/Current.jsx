@@ -1,36 +1,18 @@
-import React, { useEffect } from "react";
-
+import React, { useEffect, useState } from "react";
 import { useContractLoader } from "eth-hooks";
-import { Button } from "../../../Common/Button";
-import { InputNumber } from "../../../Common/Input";
-import { getLyraMarkets, getLyraMarket, deployment } from "../../../../helpers/lyra";
-import { useState } from "react";
-import { StrikesModal } from "../Strikes";
-import { Flex, Box, Center, FormControl, FormLabel } from '@chakra-ui/react';
-import { BaseMenu, Select } from "../../../Common/Select";
+import { getLyraMarket } from "../../../../helpers/lyra";
 
 import { formatUnits } from "ethers/lib/utils";
-import { BaseHeaderText } from "../../../../designSystem";
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
-  TableContainer,
-} from '@chakra-ui/react'
-import { Slider } from "../../../Common/Slider";
-import { parseEther, parseUnit, parseUnits } from '@ethersproject/units';
+import { parseUnits } from '@ethersproject/units';
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+import { Flex, Box, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td, TableContainer } from '@chakra-ui/react';
+import { BaseHeaderText } from "../../../../designSystem";
+
+import { Select, Slider } from "../../../Common/Select";
+
 const HOUR_SEC = 60 * 60;
 const DAY_SEC = 24 * HOUR_SEC;
 const WEEK_SEC = 7 * DAY_SEC;
-const MONTH_SEC = 28 * DAY_SEC;
-const YEAR_SEC = 365 * DAY_SEC;
 
 export default function StrategyDetail({ otusVault, strategyAddress, signer, contractConfig, chainId }) {
   console.log({ strategyAddress })
@@ -49,8 +31,6 @@ export default function StrategyDetail({ otusVault, strategyAddress, signer, con
   const [board, setBoard] = useState(); 
   const [strikes, setStrikes] = useState([]); 
   const [strikeSelected, setStrikeSelected] = useState();
-
-  const onChange = () => {}
 
   const getL2DepositMoverAddress = async () => {
     try {

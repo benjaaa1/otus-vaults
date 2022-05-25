@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { ethers } from "ethers"; 
-import { BaseShadowBox } from "../../../Common/Container";
-import { BaseButton } from "../../../../designSystem";
-import { Box, Input, InputGroup, InputLeftElement, InputRightElement, VStack } from '@chakra-ui/react'
-import { CheckIcon } from '@chakra-ui/icons'; 
-import { parseEther, parseUnits, formatUnits } from '@ethersproject/units';
 import useWeb3 from "../../../../hooks/useWeb3";
+
+import { ethers } from "ethers"; 
+import { parseUnits, formatUnits } from '@ethersproject/units';
+
+import { BaseButton } from "../../../../designSystem";
+import { Input, InputGroup, InputLeftElement, InputRightElement, VStack } from '@chakra-ui/react'
+import { CheckIcon } from '@chakra-ui/icons'; 
 
 export const Deposit = () => {
 

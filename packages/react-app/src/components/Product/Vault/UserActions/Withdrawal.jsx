@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { BaseButton } from "../../../../designSystem";
-import { Box, Input, VStack } from '@chakra-ui/react'
+import { useParams } from "react-router-dom";
 import { ethers } from "ethers"; 
 import useWeb3 from "../../../../hooks/useWeb3";
-import { useParams } from "react-router-dom";
+import { BaseButton } from "../../../../designSystem";
+import { Input, VStack } from '@chakra-ui/react'
 
 export const Withdrawal = () => {
 

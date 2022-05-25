@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useContractLoader } from "eth-hooks";
 import { ethers } from "ethers"; 
-
 import { Route, Switch, useHistory } from "react-router-dom";
+import useWeb3 from "../../hooks/useWeb3";
+
 import SupervisorFlow from "./Flow/SupervisorFlow";
 import VaultFlow from "./Flow/VaultFlow";
 import Strategy from "./Strategy";
 import { PageContainer } from "../Common/Container";
-import { Flex, Box } from '@chakra-ui/react';
-import useWeb3 from "../../hooks/useWeb3";
 
 const Supervisor = () => {
 

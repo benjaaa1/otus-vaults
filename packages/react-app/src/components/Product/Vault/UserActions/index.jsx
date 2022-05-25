@@ -1,11 +1,10 @@
 import React from "react";
-import { Deposit } from "./Deposit";
-import { Withdrawal } from "./Withdrawal";
-import { useContractLoader } from "eth-hooks";
-import { useParams } from "react-router-dom";
+
 import { Tab, Tabs, TabList, TabPanels, TabPanel } from "@chakra-ui/react";
 import colors from "../../../../designSystem/colors";
 import theme from "../../../../designSystem/theme";
+import { Deposit } from "./Deposit";
+import { Withdrawal } from "./Withdrawal";
 
 export const UserActions = () => {
 

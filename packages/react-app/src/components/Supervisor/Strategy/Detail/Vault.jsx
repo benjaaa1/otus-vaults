@@ -1,10 +1,12 @@
-import { Button } from "../../../Common/Button";
 import React, { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { formatUnits } from "ethers/lib/utils";
+import useWeb3 from "../../../../hooks/useWeb3";
+
 import { Box, HStack, VStack, Text } from '@chakra-ui/react';
 import { ArrowForwardIcon } from "@chakra-ui/icons";
-import useWeb3 from "../../../../hooks/useWeb3";
+
+import { Button } from "../../../Common/Button";
 
 export default function VaultDetail({ strategyAddress }) {
 
