@@ -23,6 +23,8 @@ import {
 import { Slider } from "../../../Common/Slider";
 import { parseEther, parseUnit, parseUnits } from '@ethersproject/units';
 import Action from "./Action";
+import useWeb3 from "../../../../hooks/useWeb3";
+import { useParams } from "react-router-dom";
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const HOUR_SEC = 60 * 60;
@@ -31,9 +33,13 @@ const WEEK_SEC = 7 * DAY_SEC;
 const MONTH_SEC = 28 * DAY_SEC;
 const YEAR_SEC = 365 * DAY_SEC;
 
-export default function StrategyDetail({ otusVault, strategyAddress, signer, contractConfig, chainId }) {
+export default function StrategyDetail({ strategyAddress }) {
+  
+  const { vault } = useParams();
 
-  const contracts = useContractLoader(signer, { ...contractConfig, customAddresses: { Strategy: strategyAddress } }, chainId);
+  const { contracts, signer } = useWeb3({ OtusVault: vault, Strategy: strategyAddress } );
+
+  const otusVault = contracts ? contracts['OtusVault'] : "";
 
   const strategy = contracts ? contracts['Strategy'] : "";
 

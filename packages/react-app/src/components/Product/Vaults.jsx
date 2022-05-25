@@ -8,14 +8,15 @@ import theme from "../../designSystem/theme";
 import { useContractLoader } from "eth-hooks";
 import { formatUnits } from "ethers/lib/utils";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
+import useWeb3 from "../../hooks/useWeb3";
 
-export const Vaults = ({ vaults, signer, contractConfig, chainId }) => {
+export const Vaults = ({ vaults }) => {
 
   return <Grid templateColumns='repeat(3, 1fr)' gap={6}>
     {
       vaults.map(vault => 
         <GridItem w='100%' h='10' mb='10'>
-          <VaultSummary vault={vault} signer={signer} contractConfig={contractConfig} />
+          <VaultSummary vault={vault} />
         </GridItem>
       )
     }
@@ -23,11 +24,11 @@ export const Vaults = ({ vaults, signer, contractConfig, chainId }) => {
   
 }
 
-const VaultSummary = ({ vault, signer, contractConfig, chainId }) => {
+const VaultSummary = ({ vault }) => {
 
   const history = useHistory();
 
-  const contracts = useContractLoader(signer, { ...contractConfig, customAddresses: { OtusVault: vault } }, chainId);
+  const { contracts } = useWeb3({ OtusVault: vault });
 
   const otusVault = contracts ? contracts['OtusVault'] : "";
 

@@ -11,16 +11,7 @@ const MenuItem = styled(Box)`
   margin: 14px; 
 `;
 
-export const Top = ({
-  address,
-  localProvider,
-  userSigner,
-  mainnetProvider,
-  web3Modal,
-  loadWeb3Modal,
-  logoutOfWeb3Modal,
-  blockExplorer
-}) => {
+export const Top = () => {
   return (
     <NavContainer>
       <Flex minWidth='max-content' alignItems='center' gap='2'>
@@ -41,16 +32,7 @@ export const Top = ({
           </HStack>
         </Box>
         <Box flex='1' p='2'>
-          <Account
-            address={address}
-            localProvider={localProvider}
-            mainnetProvider={mainnetProvider}
-            userSigner={userSigner}
-            web3Modal={web3Modal}
-            loadWeb3Modal={loadWeb3Modal}
-            logoutOfWeb3Modal={logoutOfWeb3Modal}
-            blockExplorer={blockExplorer}
-          />
+          <Account />
         </Box >
       </Flex>
     </NavContainer>

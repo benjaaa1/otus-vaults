@@ -11,9 +11,7 @@ import { Tab, Tabs, TabList, TabPanels, TabPanel } from "@chakra-ui/react";
 import colors from "../../../designSystem/colors";
 import theme from "../../../designSystem/theme";
 
-export const Vault = ({ name, signer, provider, address, contractConfig, chainId }) => {
-
-  const { vault } = useParams();
+export const Vault = () => {
 
   return (
     <Flex>
@@ -44,7 +42,7 @@ export const Vault = ({ name, signer, provider, address, contractConfig, chainId
 
       </BaseVaultBox>
       <BaseDepositBox flex="1" p="4" mt="4" ml="4" height={'400px'}>
-        <UserActions name={name} address={address} signer={signer} provider={provider} contractConfig={contractConfig} chainId={chainId} />
+        <UserActions />
       </BaseDepositBox>
     </Flex>
   );

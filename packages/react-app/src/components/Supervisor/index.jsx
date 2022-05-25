@@ -8,24 +8,23 @@ import VaultFlow from "./Flow/VaultFlow";
 import Strategy from "./Strategy";
 import { PageContainer } from "../Common/Container";
 import { Flex, Box } from '@chakra-ui/react';
+import useWeb3 from "../../hooks/useWeb3";
 
-const Supervisor = ({ name, signer, contractConfig, chainId }) => {
+const Supervisor = () => {
 
   const history = useHistory();
 
-  const contracts = useContractLoader(signer, contractConfig, chainId);
+  const { contracts, signer } = useWeb3({}); 
 
-  const contract = contracts ? contracts[name] : "";
-  console.log('contract', contract)
+  const otusCloneFactory = contracts ? contracts['OtusCloneFactory'] : "";
+
   const [loading, setLoading] = useState(true); 
   const [userDetails, setUserDetails] = useState(); 
 
   useEffect(async () => {
-    if(contract) {
+    if(otusCloneFactory) {
       try {
-        console.log("contract", contract);
-        const details = await contract.connect(signer).getUserManagerDetails();  
-        console.log({ details });
+        const details = await otusCloneFactory.connect(signer).getUserManagerDetails();  
         setUserDetails(details); 
        
         if(
@@ -57,20 +56,20 @@ const Supervisor = ({ name, signer, contractConfig, chainId }) => {
       }
       setLoading(false); 
     }
-  }, [contract])
+  }, [otusCloneFactory])
   
   return (
     <PageContainer>
       
       <Switch>
         <Route path={"/supervisors/flow"}>
-          <SupervisorFlow contract={contract} signer={signer} />
+          <SupervisorFlow otusCloneFactory={otusCloneFactory} signer={signer} />
         </Route>
         <Route path={"/supervisors/vault_flow"}>
-          <VaultFlow contract={contract} signer={signer} /> 
+          <VaultFlow otusCloneFactory={otusCloneFactory} signer={signer} /> 
         </Route>
         <Route path={"/supervisors/:vault/:strategy"}>
-          <Strategy contract={contract} signer={signer} contractConfig={contractConfig} chainId={chainId} /> 
+          <Strategy otusCloneFactory={otusCloneFactory} /> 
         </Route>
       </Switch> 
 

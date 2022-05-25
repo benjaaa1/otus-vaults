@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import { Stack, Center, Text, Heading, Box  } from '@chakra-ui/react';
 import { BaseShadowBox } from "../../Common/Container";
 
-const SupervisorFlow = ({ contract, signer }) => {
+const SupervisorFlow = ({ otusCloneFactory, signer }) => {
 
   const history = useHistory();
 
@@ -12,7 +12,7 @@ const SupervisorFlow = ({ contract, signer }) => {
 
   const createSupervisor = async () => {
     try {
-      const response = await contract.connect(signer).cloneSupervisor(); 
+      const response = await otusCloneFactory.connect(signer).cloneSupervisor(); 
       console.log({ response }); 
       history.push(`/supervisors/vault_flow`);
 

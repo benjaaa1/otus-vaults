@@ -4,12 +4,17 @@ import { useHistory, useParams } from "react-router-dom";
 import { formatUnits } from "ethers/lib/utils";
 import { Box, HStack, VStack, Text } from '@chakra-ui/react';
 import { ArrowForwardIcon } from "@chakra-ui/icons";
+import useWeb3 from "../../../../hooks/useWeb3";
 
-export default function VaultDetail({ otusVault, strategyAddress, signer }) {
+export default function VaultDetail({ strategyAddress }) {
 
   const history = useHistory();
 
   const { vault } = useParams();
+
+  const { contracts, signer } = useWeb3({ OtusVault: vault } );
+
+  const otusVault = contracts ? contracts['OtusVault'] : "";
 
   const [asset, setAsset] = useState('');
   const [tokenName, setTokenName] = useState(''); 

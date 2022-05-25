@@ -6,43 +6,33 @@ import { Flex, Box } from '@chakra-ui/react';
 import { useHistory, useParams } from "react-router-dom";
 import { BaseShadowBox } from "../../Common/Container";
 
-export default function Strategy({ contract, signer, contractConfig, chainId }) {
+export default function Strategy({ otusCloneFactory }) {
 
   const { vault } = useParams();
-
-  const contracts = useContractLoader(signer, { ...contractConfig, customAddresses: { OtusVault: vault } }, chainId);
-
-  const otusVault = contracts ? contracts['OtusVault'] : "";
 
   const [strategyAddress, setStrategyAddress] = useState(''); 
 
   useEffect(async () => {
-    if(contract) {
+    if(otusCloneFactory) {
       try {
-        const strategy = await contract._getStrategy(vault); 
+        const strategy = await otusCloneFactory._getStrategy(vault); 
         setStrategyAddress(strategy); 
       } catch (error) {
         console.log({ error })
       }
     }
-  }, [contract])
+  }, [otusCloneFactory])
 
   return (
       <BaseShadowBox>
         <Flex>
         <Box flex="1" sx={{ borderRight: "2px solid #373737"}}>
-          <VaultDetail otusVault={otusVault} strategyAddress={strategyAddress} signer={signer} />
+          <VaultDetail strategyAddress={strategyAddress} />
         </Box>
         <Box flex="4">
             {
               strategyAddress ? 
-              <StrategyDetail 
-                otusVault={otusVault}
-                strategyAddress={strategyAddress}  
-                signer={signer} 
-                contractConfig={contractConfig} 
-                chainId={chainId} 
-              /> : 
+              <StrategyDetail strategyAddress={strategyAddress} /> : 
               null 
             }
         </Box>

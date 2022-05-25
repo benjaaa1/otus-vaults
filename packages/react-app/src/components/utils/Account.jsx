@@ -10,8 +10,19 @@ import {
 } from '@chakra-ui/react'; 
 import { useLookupAddress } from "eth-hooks/dapps/ens";
 import { ChevronRightIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import useWeb3 from "../../hooks/useWeb3";
+import { ALCHEMY_KEY } from "../../constants";
+import { useStaticJsonRPC } from "../../hooks";
 
-export default function Account({ address, mainnetProvider, blockExplorer, web3Modal, loadWeb3Modal, logoutOfWeb3Modal }) {
+const providers = [
+  `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+];
+
+export default function Account() {
+
+  const mainnetProvider = useStaticJsonRPC(providers);
+  
+  const { address, web3CachedProvider, loadWeb3Modal, logoutOfWeb3Modal, blockExplorer } = useWeb3({}); 
 
   const ens = useLookupAddress(mainnetProvider, address);
   const ensSplit = ens && ens.split(".");
@@ -37,7 +48,7 @@ export default function Account({ address, mainnetProvider, blockExplorer, web3M
             <MenuItem onClick={() => window.location.href=`${etherscanLink}`}>View on Etherscan</MenuItem>
             <MenuItem onClick={() => logoutOfWeb3Modal()}>
               {
-                web3Modal.cachedProvider ? 'Disconnect' : null
+                web3CachedProvider ? 'Disconnect' : null
               }
             </MenuItem>
           </MenuList>

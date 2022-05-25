@@ -8,7 +8,7 @@ import { getLyraMarkets } from "../../../graphql";
 import { useHistory } from "react-router-dom";
 import { BaseShadowBox } from "../../Common/Container";
 
-const VaultFlow = ({ contract, signer }) => {
+const VaultFlow = ({ otusCloneFactory, signer }) => {
 
   const history = useHistory();
 
@@ -31,7 +31,7 @@ const VaultFlow = ({ contract, signer }) => {
 
   useEffect(async () => {
     
-    if(contract) {
+    if(otusCloneFactory) {
       try {
         const {markets} = await getLyraMarkets(); 
         console.log({ markets }); 
@@ -43,7 +43,7 @@ const VaultFlow = ({ contract, signer }) => {
   }, []); 
 
   const createVaultWithStrategy = async () => {
-    console.log({vaultDetails, contract}); 
+
     try {
       const {
         _optionMarket,
@@ -54,7 +54,7 @@ const VaultFlow = ({ contract, signer }) => {
         _vaultType,
         _vaultParams
       } = vaultDetails; 
-      const response = await contract.connect(signer).cloneVaultWithStrategy(
+      const response = await otusCloneFactory.connect(signer).cloneVaultWithStrategy(
         _optionMarket, 
         _tokenName, 
         _tokenSymbol,

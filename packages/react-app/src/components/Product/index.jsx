@@ -8,27 +8,28 @@ import { Flex, Box, Center, VStack } from '@chakra-ui/react';
 import { CTAButton } from "../Common/Button";
 import theme from "../../designSystem/theme";
 import colors from "../../designSystem/colors";
+import useChainId from "../../hooks/useChainId";
+import useWeb3 from "../../hooks/useWeb3";
 
-const Product = ({ signer, contractConfig, chainId  }) => {
-  console.log({ chainId });
+const Product = ({ contractConfig }) => {
+
   const history = useHistory(); 
-
   const [vaults, setVaults] = useState([]); 
 
-  const contracts = useContractLoader(signer, contractConfig, chainId);
+  const { contracts } = useWeb3({});
 
-  const contract = contracts ? contracts['OtusCloneFactory'] : "";
+  const otusCloneFactory = contracts ? contracts['OtusCloneFactory'] : "";
 
   useEffect(async () => {
-    if(contract) {
+    if(otusCloneFactory) {
       try {
-        const _vaults = await contract.getActiveVaults();  
+        const _vaults = await otusCloneFactory.getActiveVaults();  
         setVaults(_vaults);  
       } catch (error) {
         console.log({ error })
       }
     }
-  }, [contract])
+  }, [otusCloneFactory])
 
   return <PageContainer>
       <HeaderContainer p="10">
@@ -41,7 +42,7 @@ const Product = ({ signer, contractConfig, chainId  }) => {
           </CTAButton>
         </VStack>
       </HeaderContainer>
-      <Vaults vaults={vaults} signer={signer} contractConfig={contractConfig} chainId={chainId} />
+      <Vaults vaults={vaults} />
     </PageContainer>
   
 }

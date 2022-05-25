@@ -2,8 +2,16 @@ import React, { useEffect, useState } from "react";
 import { BaseButton } from "../../../../designSystem";
 import { Box, Input, VStack } from '@chakra-ui/react'
 import { ethers } from "ethers"; 
+import useWeb3 from "../../../../hooks/useWeb3";
+import { useParams } from "react-router-dom";
 
-export const Withdrawal = ({ otusVaultContract, susdContract, address, signer }) => {
+export const Withdrawal = () => {
+
+  const { vault } = useParams();
+
+  const { address, signer, contracts } = useWeb3({ OtusVault: vault });
+
+  const otusVaultContract = contracts ? contracts['OtusVault'] : "";
 
   const [shares, setShares] = useState(0);
 

@@ -6,10 +6,20 @@ import { BaseButton } from "../../../../designSystem";
 import { Box, Input, InputGroup, InputLeftElement, InputRightElement, VStack } from '@chakra-ui/react'
 import { CheckIcon } from '@chakra-ui/icons'; 
 import { parseEther, parseUnits, formatUnits } from '@ethersproject/units';
+import useWeb3 from "../../../../hooks/useWeb3";
 
-export const Deposit = ({ l2DepositMover, usdcContract2, usdcContract, l1bridge, otusVaultContract, susdContract, address, signer }) => {
+export const Deposit = () => {
 
   const { vault } = useParams();
+
+  const { address, signer, contracts, contractsL1 } = useWeb3({ OtusVault: vault, L2DepositMover: "0xEB27E1c0a5107d8c231B9a742d77c5aa26aA8506" }, {});
+
+  const l2DepositMover = contracts ? contracts['L2DepositMover'] : "";
+  const otusVaultContract = contracts ? contracts['OtusVault'] : "";
+  const susdContract = contracts ? contracts['SUSD'] : "";
+  const usdcContract2 = contracts ? contracts['USDC'] : "";
+  const usdcContract = contractsL1 ? contractsL1['USDC'] : "";
+  const l1bridge = contractsL1 ? contractsL1['L1Bridge'] : "";
 
   const [amount, setAmount] = useState(590); 
   const [allowanceAmount, setAllowanceAmount] = useState(0); 
