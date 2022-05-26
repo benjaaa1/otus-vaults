@@ -20,6 +20,7 @@ interface IOtusVault {
 	function initialize(
 		address _owner,
 		address _feeRecipient,
+		string memory _vaultName,
 		string memory _tokenName,
 		string memory _tokenSymbol,
 		bool isPublic, 
@@ -103,6 +104,7 @@ contract OtusCloneFactory is OtusRegistry {
   */
 	function cloneVaultWithStrategy(
 		address _optionMarket,
+		string memory _vaultName, 
 		string memory _tokenName,
 		string memory _tokenSymbol,
 		bool isPublic, 
@@ -117,6 +119,7 @@ contract OtusCloneFactory is OtusRegistry {
 		IOtusVault(otusVaultClone).initialize(
 			msg.sender,
 			supervisors[msg.sender], 
+			_vaultName,
 			_tokenName, 
 			_tokenSymbol,
 			isPublic, 

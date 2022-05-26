@@ -70,7 +70,6 @@ contract OtusVault is BaseVault {
    ***********************************************/
 
   modifier onlyKeeper {
-    console.log("msg.sender == keeper", msg.sender, keeper); 
     require(msg.sender == keeper, "NOT_KEEPER");
     _;
   }
@@ -83,7 +82,6 @@ contract OtusVault is BaseVault {
     uint _roundDuration,
     address _keeper
   ) BaseVault(_roundDuration) {
-    console.log("keeper = _keeper", _keeper); 
     keeper = _keeper; 
   }
 
@@ -95,6 +93,7 @@ contract OtusVault is BaseVault {
   function initialize(
     address _owner,
     address _supervisor, 
+    string memory _vaultName,
     string memory _tokenName,
     string memory _tokenSymbol,
     bool _isPublic, 
@@ -102,6 +101,7 @@ contract OtusVault is BaseVault {
     Vault.VaultParams memory _vaultParams
   ) external {
     supervisor = _supervisor; 
+    vaultName = _vaultName; 
     isPublic = _isPublic; 
     otusVaultType = _otusVaultType; 
     baseInitialize(
