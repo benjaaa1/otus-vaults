@@ -2,8 +2,10 @@ const colors = {
   background: {
     one: "#ffffff",
     two: "#373737",
+    three: "#84FFC4"
   },
   borderDark: "#000000", 
+  borderGray: "#E8E8E8", 
   borderLight: "#FFFFFF", 
   text: {
     light: "#ffffff",

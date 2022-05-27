@@ -1,9 +1,8 @@
-import { useUserProviderAndSigner } from "eth-hooks";
-import React, { useCallback, useEffect, useState } from "react";
+import React  from "react";
 import { Route, Switch } from "react-router-dom";
-import { NETWORKS, ALCHEMY_KEY } from "./constants";
-import { Web3ModalSetup } from "./helpers";
-import { useStaticJsonRPC } from "./hooks";
+
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import Product from "./components/Product";
 import Supervisor from "./components/Supervisor";
@@ -30,8 +29,10 @@ function App(props) {
           <Supervisor />
         </Route>
       </Switch>
+      <ToastContainer />
     </PageContainer>
   );
 }
 
 export default App;
+

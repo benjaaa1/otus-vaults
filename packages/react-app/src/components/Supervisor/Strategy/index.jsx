@@ -1,44 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 
-import { Flex, Box } from '@chakra-ui/react';
+import { Flex, Box, Center, Spinner } from '@chakra-ui/react';
 import StrategyDetail from "./Detail/Strategy";
 import VaultDetail from "./Detail/Vault";
-import { BaseShadowBox } from "../../Common/Container";
+import { StrategyBox, VaultStrategyBox } from "../../Common/Container";
+import useStrategy from "../../../hooks/useStrategy";
+import { StrategyProvider } from "../../../context/StrategyContext";
 
-export default function Strategy({ otusCloneFactory }) {
+export default function Strategy() {
 
-  const { vault } = useParams();
-
-  const [strategyAddress, setStrategyAddress] = useState(''); 
-
-  useEffect(async () => {
-    if(otusCloneFactory) {
-      try {
-        const strategy = await otusCloneFactory._getStrategy(vault); 
-        setStrategyAddress(strategy); 
-      } catch (error) {
-        console.log({ error })
-      }
-    }
-  }, [otusCloneFactory])
+  const { loading, strategyAddress } = useStrategy();
 
   return (
-      <BaseShadowBox>
-        <Flex>
-        <Box flex="1" sx={{ borderRight: "2px solid #373737"}}>
+    <Flex>
+      <StrategyProvider>
+        <StrategyBox flex="4" p="4" mt="4" minHeight={'600px'}>
+        {
+          !loading && strategyAddress ? 
+          <StrategyDetail /> : 
+          <Center><Spinner /></Center> 
+        }
+        </StrategyBox>
+        <VaultStrategyBox flex="1" p="4" mt="4" ml="4" height={'400px'}>
           <VaultDetail strategyAddress={strategyAddress} />
-        </Box>
-        <Box flex="4">
-            {
-              strategyAddress ? 
-              <StrategyDetail strategyAddress={strategyAddress} /> : 
-              null 
-            }
-        </Box>
-        </Flex>
-      </BaseShadowBox>
-
+        </VaultStrategyBox>
+      </StrategyProvider>
+    </Flex>
   );
 
 }

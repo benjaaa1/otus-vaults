@@ -9,7 +9,7 @@ export const NavContainer = styled(Container)`
   max-width: ${sizes.xxl}px;
   margin-top: ${theme.margin.md};
   margin-bottom: ${theme.margin.md};
-  border: 2px solid ${colors.borderDark};
+  border: 2px solid ${colors.borderGray};
   border-radius: ${theme.border.radius};
   background: ${colors.background.one};
 `;
@@ -45,4 +45,18 @@ export const BaseDepositBox  = styled(Box)`
   border: ${theme.border.width} solid ${colors.background.two};
   padding: ${props => props.padding};
   background: ${colors.background.two};
+`;
+
+export const VaultStrategyBox  = styled(Box)`
+  border-radius: ${theme.border.radius};
+  border: ${theme.border.width} solid ${colors.background.two};
+  padding: ${props => props.padding};
+  background: ${colors.background.two};
+`;
+
+export const StrategyBox  = styled(Box)`
+  border-radius: ${theme.border.radius};
+  border: ${theme.border.width} solid ${colors.background.two};
+  padding: ${props => props.padding};
+  background: ${colors.background.one};
 `;

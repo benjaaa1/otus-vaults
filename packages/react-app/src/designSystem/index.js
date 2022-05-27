@@ -1,14 +1,9 @@
 import styled from "styled-components";
-import { Center, Square, Circle, Button, ButtonGroup } from '@chakra-ui/react'
+import { Button } from '@chakra-ui/react'
 import { Link } from "react-router-dom";
 import colors from "./colors";
 import theme from "./theme";
 
-export const BaseText = styled.span`
-  color: ${props => props.color };
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: ${props => props.size };
-`;
 
 export const BaseHeaderText = styled.span`
   color: ${props => props.color };
@@ -38,7 +33,6 @@ export const BaseButton = styled(Button)`
   background: ${props => props.bg };
   padding: ${props => props.ps};
   margin: ${props => props.ms};
-
 `;
 
 export const Container = styled.div`

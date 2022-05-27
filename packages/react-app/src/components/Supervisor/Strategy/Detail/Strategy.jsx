@@ -1,336 +1,185 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { parseUnits } from '@ethersproject/units';
+import React from "react";
 import { formatUnits } from "ethers/lib/utils";
-
-import useWeb3 from "../../../../hooks/useWeb3";
-import { getLyraMarket } from "../../../../helpers/lyra";
 
 import {
   Flex, 
   Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
+  Button,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  VStack,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure
 } from '@chakra-ui/react';
 
-import { BaseHeaderText } from "../../../../designSystem";
 import { Slider } from "../../../Common/Slider";
 import { Select } from "../../../Common/Select";
+import { AddButton, RemoveButton } from "../../../Common/Button";
+import { useStrategyContext } from "../../../../context/StrategyContext"
+import { strikeStrategy } from "../../../../reducer/strategyReducer";
 
-import Action from "./Action";
+export default function StrategyDetail() {
 
-const HOUR_SEC = 60 * 60;
-const DAY_SEC = 24 * HOUR_SEC;
-const WEEK_SEC = 7 * DAY_SEC;
-
-export default function StrategyDetail({ strategyAddress }) {
-  
-  const { vault } = useParams();
-
-  const { contracts, signer } = useWeb3({ OtusVault: vault, Strategy: strategyAddress } );
-
-  const otusVault = contracts ? contracts['OtusVault'] : "";
-
-  const strategy = contracts ? contracts['Strategy'] : "";
-
-  const [market,] = useState('eth'); 
-  const [lyraMarket, setLyraMarket] = useState(null);
-  const [liveBoards, setLiveBoards] = useState([]); 
-  const [boards, setBoards] = useState([]); 
-  const [board, setBoard] = useState(); 
-  const [strikes, setStrikes] = useState([]); 
-  const [strikeSelected, setStrikeSelected] = useState();
-  const [currentStrike, setCurrentStrike] = useState({ strikePrice: '' }); 
-  const [currentBoard, setCurrentBoard] = useState({ name: '' }); 
-
-  useEffect(async () => {
-    try {
-      const _market = await getLyraMarket(market); 
-      setLyraMarket(_market); 
-    } catch (error) {
-      console.log({ error })
-    }
-  }, []); 
-
-  useEffect(async () => {
-    if(lyraMarket) {
-      try {
-        const _liveBoards = await lyraMarket.liveBoards(); 
-        console.log({ _liveBoards }); 
-        console.log({ strikes: _liveBoards[0].strikes() })
-        setLiveBoards(_liveBoards);
-        setBoards(_liveBoards.filter(({ timeToExpiry }) => timeToExpiry > 0).map(board => {
-          let date = new Date(board.expiryTimestamp * 1000); 
-          return { ...board, name: date.toString() }
-        }));
-      } catch (error) {
-        console.log({error})
-      }
-    }
-  }, [lyraMarket])
-  
-  useEffect(async () => {
-    if(liveBoards.length) {
-      const response = await otusVault.boardId(); 
-      const currentBoardId = formatUnits(response);
-      console.log({ currentBoardId })
-      const response2 = await otusVault.strikeId(); 
-      const currentStrikeId = formatUnits(response2); 
-
-      const boardDetails = liveBoards.find(({ id }) => id == parseInt(currentBoardId));
-      console.log({ boardDetails })
-      if(boardDetails) {
-        const _currentStrike = boardDetails.strikes().find(({ id }) => id == parseInt(currentStrikeId));
-        setCurrentStrike(_currentStrike)
-        let date = new Date(boardDetails.expiryTimestamp * 1000); 
-        setCurrentBoard({ ...boardDetails, name: date.toLocaleDateString("en-US") }); 
-      }
-
-    }
-  }, [liveBoards]); 
-  
-  useEffect(() => {
-    if(board) {
-      const inDeltaRangeStrikes = board.strikes().filter(strike => strike.isDeltaInRange);
-      console.log({ board, inDeltaRangeStrikes }); 
-      setStrikes(
-        inDeltaRangeStrikes.map(strike => ({
-          name: `${formatUnits(strike.strikePrice)} - ${formatUnits(strike.iv)}`,
-          id: strike.id,
-          iv: formatUnits(strike.iv),
-          skew: formatUnits(strike.skew),
-          strikePrice: formatUnits(strike.strikePrice),
-          vega: formatUnits(strike.vega)
-        }))
-      );
-    }
-  }, [board]);
-
-  const selectBoard = (_id) => {
-    console.log({ _id, liveBoards })
-    const _parsedId = parseInt(_id); 
-    const board = liveBoards.find(({ id }) => id === _parsedId); 
-    console.log({ board }); 
-    setBoard(board); 
-  }; 
-
-  const selctStrike = (_id) => {
-    const _parsedId = parseInt(_id); 
-    const strike = strikes.find(({ id }) => id === _parsedId); 
-    setStrikeSelected(strike); 
-  }; 
-
-  const toBN = (val) => {
-    return parseUnits(val, 18);
-  }
-
-  const [strategyDetail, setStrategyDetail] = useState({
-    collatBuffer: 1.2, 
-    collatPercent: 1,
-    minTimeToExpiry: DAY_SEC,
-    maxTimeToExpiry: WEEK_SEC * 2,
-    targetDelta: .2,
-    maxDeltaGap: 0.05,
-    minVol: .8,
-    maxVol: 1.3,
-    size: 2,
-    minTradeInterval: 600,
-    maxVolVariance: .1,
-    gwavPeriod: 600,
-  });
-
-  const setStrategyDetailValues = (id, value) => {
-    setStrategyDetail(prevState => ({
-      ...prevState,
-      [id]: value
-    }))
-  }
-
-  const [hedgeDetail, setHedgeDetail] = useState({
-    hedgePercentage: 1.2,
-    maxHedgeAttempts: 5,
-    limitStrikePricePercent: .2,
-    leverageSize: 2,
-    stopLossLimit: .001
-  });
-
-  const setHedgeDetailValues = (id, value) => {
-    setHedgeDetail(prevState => ({
-      ...prevState,
-      [id]: value
-    }))
-  }
+  const { state, dispatch } = useStrategyContext();
 
   const {
-    collatBuffer, 
-    collatPercent,
-    minTimeToExpiry,
-    maxTimeToExpiry,
+    liveBoards,
+    liveStrikes,
+    currentStrikes,
+    activeCurrentStrikeIndex
+  } = state; 
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  return (
+    <Flex>
+
+      <VStack>
+        <Box >
+          <Select id='board' placeholder={'Select Round Expiry'} onChange={(e) => dispatch({ type: 'SET_SELECTED_BOARD', payload: e.target.value })}>
+          {
+            Object.values(liveBoards).map(({ name, id }) => (<option value={id}>{name}</option>))
+          }
+          </Select>
+        </Box>
+        <Box>
+          {
+            currentStrikes.map((cs, index) => {
+              return (
+                <Accordion allowToggle>
+                  <AccordionItem>
+                    <h2>
+                      <AccordionButton>
+                        <Box flex='1' textAlign='left'>
+                          { cs.strikePrice }
+                          <Button onClick={() => {
+                            onOpen();
+                            dispatch({ type: 'ACTIVE_CURRENT_STRIKE_INDEX', payload: index })
+                          }}>
+                            Set Strike Strategy
+                          </Button>
+                          <RemoveButton onClick={() => dispatch({ type: 'REMOVE_CURRENT_STRIKE', payload: index })} />
+                        </Box>
+                        <AccordionIcon />
+                      </AccordionButton>
+                    </h2>
+                    <AccordionPanel pb={4}>
+                      {
+                        liveStrikes.map(strike => {
+                          return <Box>
+                            ${ strike.name }
+                            <AddButton onClick={() => dispatch({ type: 'UPDATE_CURRENT_STRIKE', payload: { index, strike } })} />
+                          </Box>
+                        })
+                      }
+                    </AccordionPanel>
+                  </AccordionItem>
+                </Accordion>
+              )
+            })
+          }
+         
+        </Box>
+        <AddButton onClick={() => dispatch({ type: 'ADD_CURRENT_STRIKE' })} />
+
+      </VStack> 
+      <StrikeStrategyModal isOpen={isOpen} onClose={onClose} index={activeCurrentStrikeIndex} dispatch={dispatch} />
+    </Flex>
+  )
+
+}
+
+const StrikeStrategyModal = ({ isOpen, onClose }) => {
+
+  const { state, dispatch } = useStrategyContext();
+
+  const { activeCurrentStrikeIndex, currentStrikes } = state; 
+
+  const currentStrike = 
+    currentStrikes[activeCurrentStrikeIndex] || strikeStrategy;
+
+  const { 
     targetDelta,
     maxDeltaGap,
     minVol,
     maxVol,
-    size,
-    minTradeInterval,
     maxVolVariance,
-    gwavPeriod
-  } = strategyDetail;
+    optionType
+  } = currentStrike;
 
-  const {
-    hedgePercentage,
-    maxHedgeAttempts,
-    limitStrikePricePercent,
-    leverageSize,
-    stopLossLimit
-  } = hedgeDetail;
+  console.log({ 
+    targetDelta,
+    maxDeltaGap,
+    minVol,
+    maxVol,
+    maxVolVariance,
+    optionType
+  });
 
-  const setStrategy = async () => {
-    try {
-      console.log({ collatBuffer: collatBuffer.toString() })
-      const response = await strategy.connect(signer).setStrategy(
-        {
-          collatBuffer: toBN(collatBuffer.toString()), 
-          collatPercent: toBN(collatPercent.toString()),
-          minTimeToExpiry: DAY_SEC * minTimeToExpiry,
-          maxTimeToExpiry: WEEK_SEC * maxTimeToExpiry,
-          targetDelta: toBN(Math.abs(targetDelta).toString()).mul(-1),
-          maxDeltaGap: toBN(maxDeltaGap.toString()),
-          minVol: toBN(minVol.toString()),
-          maxVol: toBN(maxVol.toString()),
-          size: toBN(size.toString()),
-          minTradeInterval: 60 * minTradeInterval,
-          maxVolVariance: toBN(maxVolVariance.toString()),
-          gwavPeriod: 60 * gwavPeriod,
-        },
-        {
-          hedgePercentage: toBN(hedgePercentage.toString()),
-          maxHedgeAttempts: toBN(maxHedgeAttempts.toString()),
-          limitStrikePricePercent: toBN(limitStrikePricePercent.toString()),
-          leverageSize: toBN(leverageSize.toString()),
-          stopLossLimit: toBN(stopLossLimit.toString())
-        }
-      ); 
-      console.log({ response })
-    } catch (error) {
-      console.log({ error })
-    }
-  }
-  
-  const transformToBn = (id, v) => {
-    setStrategyDetailValues(id, v);
+  const setValue = (id, value) => {
+    dispatch({ type: 'UPDATE_CURRENT_STRIKE_STRATEGY', payload: { value, id, activeIndex: activeCurrentStrikeIndex } })
   }
 
-  return [
-      <Flex>
-        
-        <Box flex="1" sx={{ borderRight: "1px solid #ccc"}}>
+  return (
+    <>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Strategy</ModalHeader>
+          <ModalCloseButton />
 
-          <Flex>
-            <Box flex="1">
-              <BaseHeaderText>Strike Selection</BaseHeaderText>
-              <TableContainer>
-                <Table variant='simple'>
-                  <Thead>
-                    <Tr>
-                      <Th isNumeric>Current Expiry</Th>
-                      <Th isNumeric>Current Strike</Th>
-                      <Th>              
-                        <Select id='board' placeholder={'Select Next Round Expiry'} onChange={(e) => selectBoard(e.target.value)}>
-                        {
-                          boards.map(({ name, id }) => (<option value={id}>{name}</option>))
-                        }
-                        </Select>
-                      </Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    <Tr>
-                      <Td>{currentBoard.name ? currentBoard.name : ''}</Td>
-                      <Td>${ currentStrike.strikePrice ? formatUnits(currentStrike.strikePrice) : '' }</Td>
-                      <Td>
-                        <Select id='strike' placeholder={'Select Next Round Strike'} onChange={(e) => selctStrike(e.target.value)}>
-                        {
-                          strikes.map(({ name, id }) => (<option value={id}>{name}</option>))
-                        }
-                        </Select>
-                      </Td>
-                    </Tr>
-                  </Tbody>
-                </Table>
-              </TableContainer>
-            </Box>
-          </Flex>
-          
-          <Flex>
-            <Box p="4">
-              graph
-            </Box>
-          </Flex>
-
-        </Box>
-
-        <Box flex='1'>
-
-          <Box p="4">
-
-            <BaseHeaderText>Current Strategy</BaseHeaderText>
+          <ModalBody>
             <Flex>
               <Box flex='1'>
-                <Slider name={"Collateral Buffer"} step={.1} min={0} max={2} id={"collatBuffer"} setSliderValue={transformToBn} sliderValue={collatBuffer} label={'%'} />
-                <Slider name={"Collateral Percent"} step={.05} min={0} max={1} id={"collatPercent"} setSliderValue={transformToBn} sliderValue={collatPercent} label={'%'} />
-                <Slider name={"Min. Time to Expiry"} step={.5} min={0} max={7} id={"minTimeToExpiry"} setSliderValue={setStrategyDetailValues} sliderValue={minTimeToExpiry} label={' days'} />
-                <Slider name={"Max Time to Expiry"} step={1} min={0} max={100} id={"maxTimeToExpiry"} setSliderValue={setStrategyDetailValues} sliderValue={maxTimeToExpiry} label={' days'} />
-                <Slider name={"Target Delta"} step={.1} min={-1} max={1} id={"targetDelta"} setSliderValue={transformToBn} sliderValue={targetDelta} label={''} />    
-                <Slider name={"Max Delta Gap"} step={.05} min={0} max={.5} id={"maxDeltaGap"} setSliderValue={transformToBn} sliderValue={maxDeltaGap} label={''} />
-              </Box>
-
-              <Box flex='1'>
-                <Slider name={"Max Vol Variance"} step={.1} min={0} max={1} id={"maxVolVariance"} setSliderValue={transformToBn} sliderValue={maxVolVariance} label={''} />
-                <Slider name={"Min Vol"} step={.1} min={0} max={2} id={"minVol"} setSliderValue={transformToBn} sliderValue={minVol} label={''} />
-                <Slider name={"Max Vol"} step={.1} min={0} max={2} id={"maxVol"} setSliderValue={transformToBn} sliderValue={maxVol} label={''} />
-                <Slider name={"Min Trade Interval"} step={5} min={0} max={60} id={"minTradeInterval"} setSliderValue={setStrategyDetailValues} sliderValue={minTradeInterval} label={' minutes'} />
-                <Slider name={"Gwav Period"} step={5} min={0} max={60} id={"gwavPeriod"} setSliderValue={setStrategyDetailValues} sliderValue={gwavPeriod} label={' minutes'} />
-              </Box>
-            </Flex>
-
-          </Box>
-
-          <Box p="4">
-            <BaseHeaderText>Hedge Strategy</BaseHeaderText>
-
-            <Flex>
-              <Box flex='1'>
-                <Slider name={"Hedge Percentage"} step={5} min={0} max={50} id={"hedgePercentage"} setSliderValue={transformToBn} sliderValue={hedgePercentage} label={'%'} />
-                <Slider name={"Max Hedge Attempts"} step={1} min={0} max={5} id={"maxHedgeAttempts"} setSliderValue={transformToBn} sliderValue={maxHedgeAttempts} label={''} />
-                <Slider name={"Limit Strike Price Percent"} step={1} min={0} max={5} id={"limitStrikePricePercent"} setSliderValue={transformToBn} sliderValue={limitStrikePricePercent} label={'%'} />
-              </Box>
-
-              <Box flex='1'>
-                <Slider name={"Leverage Size"} step={.5} min={1} max={3} id={"leverageSize"} setSliderValue={transformToBn} sliderValue={leverageSize} label={'x'} />
-                <Slider name={"Stop Loss Limit"} step={1} min={0} max={10} id={"stopLossLimit"} setSliderValue={transformToBn} sliderValue={stopLossLimit} label={'%'} />
+                <Button onClick={() => console.log('Select Option Put')}>
+                  Select Option Put
+                </Button>
+                <Select id='optionType' value={optionType} placeholder={'Select Option Put'} onChange={(e) => setValue('optionType', e.target.value)}>
+                {
+                  [
+                    {
+                      id: 3,
+                      name: 'SHORT_CALL_QUOTE'
+                    },
+                    {
+                      id: 4,
+                      name: 'SHORT_PUT_QUOTE'
+                    }
+                  ].map(({ name, id }) => (<option value={id}>{name}</option>))
+                }
+                </Select>
+                <Slider name={"Target Delta"} step={.1} min={-1} max={1} id={"targetDelta"} setSliderValue={setValue} sliderValue={targetDelta} label={''} />    
+                <Slider name={"Max Delta Gap"} step={.05} min={0} max={.5} id={"maxDeltaGap"} setSliderValue={setValue} sliderValue={maxDeltaGap} label={''} />
+                <Slider name={"Max Vol Variance"} step={.1} min={0} max={1} id={"maxVolVariance"} setSliderValue={setValue} sliderValue={maxVolVariance} label={''} />
+                <Slider name={"Min Vol"} step={.1} min={0} max={2} id={"minVol"} setSliderValue={setValue} sliderValue={minVol} label={''} />
+                <Slider name={"Max Vol"} step={.1} min={0} max={2} id={"maxVol"} setSliderValue={setValue} sliderValue={maxVol} label={''} />
               </Box>
             </Flex>
+          </ModalBody>
 
-          </Box>
-
-        </Box>
-
-      </Flex>,
-
-      <Action 
-        otusVault={otusVault} 
-        strategy={strategy} 
-        signer={signer} 
-        board={board}
-        strikeSelected={strikeSelected}
-        setStrategy={setStrategy}
-      /> 
-
-  ];
-
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} onClick={() => {
+              dispatch({ type: 'RESET_CURRENT_STRIKE_STRATEGY', payload: { activeIndex: activeCurrentStrikeIndex } })
+              onClose()
+            }}>
+              Cancel
+            </Button>
+            <Button colorScheme='blue' mr={3} onClick={onClose}>
+              Save
+            </Button>
+            <Button variant='ghost'>Secondary Action</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  )
 }

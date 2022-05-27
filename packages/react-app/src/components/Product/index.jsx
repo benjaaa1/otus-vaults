@@ -37,7 +37,7 @@ const Product = () => {
           <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.md}>
             Join one of the many vaults or create your own and implement your own strategy, have your community join your vault and earn performance and management fees. 
           </BaseHeaderText>
-          <CTAButton onClick={() => history.push("/supervisors")}>
+          <CTAButton bg={colors.background.three} onClick={() => history.push("/supervisors")}>
             Become a Supervisor
           </CTAButton>
         </VStack>

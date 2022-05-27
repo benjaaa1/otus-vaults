@@ -137,15 +137,11 @@ export const Deposit = () => {
     }
   }
 
-  // 0x615a6784b419d914eD17c853e5E28F0910310d32 vault 
   return (
       <VStack>
-
-        { /** Need to approve allowance first check first then approve then deposit */}
-
         {
           parseInt(allowanceAmount) > 0 ? 
-          [
+          <>
             <InputGroup>
               <InputLeftElement
                 pointerEvents='none'
@@ -162,20 +158,20 @@ export const Deposit = () => {
             <BaseButton width={'100%'} onClick={depositFromL1}>
               Deposit From L1
             </BaseButton>
-          ] : 
+          </> : 
           <>
-          <BaseButton width={'100%'} onClick={depositFromL1}>
-          Deposit From L1
-        </BaseButton>
-        <BaseButton width={'100%'} onClick={approveFromL1}>
-          Approve From L1
-        </BaseButton>
-        <BaseButton width={'100%'} onClick={count}>
-          Get From L2
-        </BaseButton>
-          <BaseButton width={'100%'} onClick={approve}>
-            Approve
-          </BaseButton> 
+            <BaseButton width={'100%'} onClick={depositFromL1}>
+              Deposit From L1
+            </BaseButton>
+            <BaseButton width={'100%'} onClick={approveFromL1}>
+              Approve From L1
+            </BaseButton>
+            <BaseButton width={'100%'} onClick={count}>
+              Get From L2
+            </BaseButton>
+            <BaseButton width={'100%'} onClick={approve}>
+              Approve
+            </BaseButton> 
           </>
         }
 

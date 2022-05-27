@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
-import { ethers } from "ethers";
+import { useEffect, useState } from "react";
 import useInjectedProvider from "./useInjectedProvider";
 import { useContractLoader, useUserProviderAndSigner } from "eth-hooks";
 import useChainId from "./useChainId";
@@ -10,7 +9,6 @@ import useStaticJsonRPC from "./useStaticJsonRPC";
 
 export default function useWeb3(customAddresses, customAddressesL1) {
 
-  // const [customAddresses, setCustomAddresses] = useState({ OtusVault: vault }); 
   const[address, setAddress] = useState('');
 
   const [targetNetwork, blockExplorer] = useNetwork(); 
@@ -20,12 +18,12 @@ export default function useWeb3(customAddresses, customAddressesL1) {
   ]);
 
   const [injectedProvider, loadWeb3Modal, logoutOfWeb3Modal, web3CachedProvider] = useInjectedProvider(); 
-  console.log({ web3CachedProvider, injectedProvider })
+
   const userProviderAndSigner = useUserProviderAndSigner(injectedProvider, localProvider, false);
   const signer = userProviderAndSigner.signer;
   
   const chainId = useChainId(signer); 
-  console.log({chainId})
+
   const contractConfig = { deployedContracts: deployedContracts || {}, externalContracts: externalContracts || {} };
 
   const contracts = useContractLoader(signer,{ ...contractConfig, customAddresses }, 69);

@@ -7036,10 +7036,10 @@ bn.js@^5.0.0, bn.js@^5.1.1, bn.js@^5.1.2, bn.js@^5.1.3, bn.js@^5.2.0:
   resolved "https://registry.npmjs.org/bn.js/-/bn.js-5.2.0.tgz"
   integrity sha512-D7iWRBvnZE8ecXiLj/9wbxH7Tk79fAh8IHaTNq1RWRixsS02W+5qS+iE9yq6RYl0asXx5tw0bLhmT5pIfbSquw==
 
-bnc-notify@^1.5.0:
-  version "1.9.4"
-  resolved "https://registry.npmjs.org/bnc-notify/-/bnc-notify-1.9.4.tgz"
-  integrity sha512-gwzZ7yQUz+CvaNYepsRn8uWPxaLet+mtvUI0Rp7hdkzN4tIytbTdNXwCkJo6vXlBLWAPbS1zWzANrd8he11V2w==
+bnc-notify@^1.9.5:
+  version "1.9.5"
+  resolved "https://registry.yarnpkg.com/bnc-notify/-/bnc-notify-1.9.5.tgz#232cef2af1fbce294a08d6e185b890d281aadb08"
+  integrity sha512-pjXYrWafjnOGOY7e6Mb1fY+A6tQAgroBHR5pQxokq3jYr4TYQumv2TLhc0/idqYI+G9AwsBMQJSWcZQ2jZI5AQ==
   dependencies:
     bignumber.js "^9.0.0"
     bnc-sdk "4.1.0"
@@ -7989,7 +7989,7 @@ cloneable-readable@^1.0.0:
     process-nextick-args "^2.0.0"
     readable-stream "^2.3.5"
 
-clsx@^1.1.0:
+clsx@^1.1.0, clsx@^1.1.1:
   version "1.1.1"
   resolved "https://registry.npmjs.org/clsx/-/clsx-1.1.1.tgz"
   integrity sha512-6/bPho624p3S2pMyvP5kKBPXnI3ufHLObBFCfgx+LkeR5lg2XYy2hqZqUf45ypD8COn2bhgGJSUE+l5dhNBieA==
@@ -19645,6 +19645,13 @@ react-style-singleton@^2.1.0, react-style-singleton@^2.2.0:
     get-nonce "^1.0.0"
     invariant "^2.2.4"
     tslib "^2.0.0"
+
+react-toastify@^9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/react-toastify/-/react-toastify-9.0.1.tgz#2f3abd26a75efd55a82cb9c0a897c865218ea420"
+  integrity sha512-c2zeZHkCX+WXuItS/JRqQ/8CH8Qm/je+M0rt09xe9fnu5YPJigtNOdD8zX4fwLA093V2am3abkGfOowwpkrwOQ==
+  dependencies:
+    clsx "^1.1.1"
 
 react@^16.8.6:
   version "16.14.0"

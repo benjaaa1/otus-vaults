@@ -20,6 +20,7 @@ export const Slider = ({ name, id, min, max, step, setSliderValue, sliderValue, 
     <FormControl>
       <FormLabel fontSize={theme.fontSize.sm} fontFamily={theme.font.header} color={colors.text.gray} htmlFor={id}>{ name }</FormLabel>
         <Chakraslider
+          defaultValue={sliderValue}
           id={id}
           min={min}
           max={max}

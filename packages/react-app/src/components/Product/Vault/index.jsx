@@ -17,28 +17,28 @@ export const Vault = () => {
     <Flex>
       <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
 
-          <Tabs isFitted variant='enclosed'>
-            <TabList mb='2em'>
-              <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Strategy</Tab>
-              <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Performance</Tab>
-              <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Transaction</Tab>
-              <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Risks</Tab>
-            </TabList>
-            <TabPanels>
-              <TabPanel>
-                <Strategy />
-              </TabPanel>
-              <TabPanel>
-                <Performance />
-              </TabPanel>
-              <TabPanel>
-                <Transactions />
-              </TabPanel>
-              <TabPanel>
-                <Risks />
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+        <Tabs isFitted variant='enclosed'>
+          <TabList mb='2em'>
+            <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Strategy</Tab>
+            <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Performance</Tab>
+            <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Transaction</Tab>
+            <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Risks</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <Strategy />
+            </TabPanel>
+            <TabPanel>
+              <Performance />
+            </TabPanel>
+            <TabPanel>
+              <Transactions />
+            </TabPanel>
+            <TabPanel>
+              <Risks />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
 
       </BaseVaultBox>
       <BaseDepositBox flex="1" p="4" mt="4" ml="4" height={'400px'}>

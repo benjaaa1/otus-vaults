@@ -1,46 +1,33 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import useSupervisor from "../../../hooks/useSupervisor";
 
 import { Stack, Center, Text, Heading, Box  } from '@chakra-ui/react';
-import { Button } from "../../Common/Button"; 
+import { NextButton } from "../../Common/Button"; 
 import { BaseShadowBox } from "../../Common/Container";
 
-const SupervisorFlow = ({ otusCloneFactory, signer }) => {
+const SupervisorFlow = () => {
 
-  const history = useHistory();
-
-  const [supervisor, setSupervisor] = useState(); 
-
-  const createSupervisor = async () => {
-    try {
-      const response = await otusCloneFactory.connect(signer).cloneSupervisor(); 
-      console.log({ response }); 
-      history.push(`/supervisors/vault_flow`);
-
-      setSupervisor(response); 
-    } catch (e) {
-      console.log(e); 
-    }
-  };
+  const { loading, createSupervisor } = useSupervisor();
 
   return (
     <Center>
-      <Box w='474px'>
+      <Box w='474px' m="24">
         <BaseShadowBox>
           <Box bgImage="url('https://bit.ly/2Z4KKcF')">
-            <Heading>Become a Supervisor of your own Vault.</Heading>
+            <Heading p={'6'} pt={'12'} as='h4'>Become a Supervisor of your own Vault.</Heading>
           </Box>
-          <Stack spacing={6}>
-            <Text>
-              Create your own vault for many different assets supported, implement your own advanced strategy, short strangles, iron condors, put sellings and any other custom stratregies supported by Otus Finance. 
-            </Text>
-            <Text>
-              Have your community join your vault and earn performance and management fees. 
-            </Text>
-          </Stack>
-          <Button onClick={createSupervisor}>
-            Create Supervisor
-          </Button> 
+          <Box p={'6'}>
+            <Stack spacing={6}>
+              <Text fontSize='md' lineHeight={'xl'}>
+                Create your own vault for many different assets supported, implement your own advanced strategy, short strangles, iron condors, put sellings and any other custom stratregies supported by Otus Finance. 
+              </Text>
+              <Text fontSize='md' lineHeight={'xl'}>
+                Have your community join your vault and earn performance and management fees. 
+              </Text>
+              <NextButton isLoading={loading} onClick={createSupervisor} />
+            </Stack>
+          </Box>
+
         </BaseShadowBox>
       </Box>
     </Center>

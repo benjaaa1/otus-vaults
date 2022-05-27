@@ -5,7 +5,7 @@ export const INFURA_ID = "db5ea6f9972b495ab63d88beb08b8925";
 export const ETHERSCAN_KEY = "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
 
 // BLOCKNATIVE ID FOR Notify.js:
-export const BLOCKNATIVE_DAPPID = "0b58206a-f3c0-4701-a62f-73c7243e8c77";
+export const BLOCKNATIVE_DAPPID = "c100b16b-5c20-4cd3-9b2d-02587771fd99";
 
 export const ALCHEMY_KEY = "xn77lGCuY4cieske5xrNvDuT35Lj-2IX";
 

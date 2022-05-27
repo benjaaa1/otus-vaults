@@ -1,161 +1,174 @@
-import React, { useState, useEffect } from "react";
-import { ethers } from "ethers";
+import React, { useState } from "react";
 
-import { getLyraMarkets } from "../../../graphql";
-
-import { Heading, Text, FormControl, FormLabel, Slider, Switch, Box, Center  } from '@chakra-ui/react'
-import { Button } from "../../Common/Button"; 
+import { Flex, Spacer, Stack, Heading, Text, FormControl, FormLabel, Switch, Box, Center, Divider, Input } from '@chakra-ui/react'
+import { NextButton } from "../../Common/Button"; 
 import { Select } from "../../Common/Select"; 
+import { Slider } from "../../Common/Slider";
 import { BaseShadowBox } from "../../Common/Container";
+import useCreateVault from "../../../hooks/useCreateVault";
 
-const VaultFlow = ({ otusCloneFactory, signer }) => {
+const VaultFlow = () => {
 
-  const [vault, setVault] = useState(); 
-  const [markets, setMarkets] = useState([]); 
+  const {
+    loading, 
+    vaultDetails, 
+    vaultTypes, 
+    onSelectMarket, 
+    onSelectVaultType, 
+    onVaultNameChange,
+    createVaultWithStrategy, 
+    markets
+  } = useCreateVault();
 
-  const [vaultDetails, setVaultDetails] = useState({
-    _quoteAsset: '', 
-    _baseAsset: '', 
-    _tokenName: 'Otus', 
-    _tokenSymbol: 'OTV',
-    _isPublic: true, 
-    _vaultType: 4, 
-    _vaultParams: {
-      decimals: 18,
-      cap: ethers.utils.parseEther('500000'), // 500,000 usd cap
-      asset: '' // susd 
-    }
-  });
-
-  useEffect(async () => {
-    
-    if(otusCloneFactory) {
-      try {
-        const {markets} = await getLyraMarkets(); 
-        console.log({ markets }); 
-        setMarkets(markets);;
-      } catch (e) {
-        console.log(e)
-      }
-    }
-  }, []); 
-
-  const createVaultWithStrategy = async () => {
-
-    try {
-      const {
-        _optionMarket,
-        _baseAsset,
-        _tokenName,
-        _tokenSymbol,
-        _isPublic,
-        _vaultType,
-        _vaultParams
-      } = vaultDetails; 
-      const response = await otusCloneFactory.connect(signer).cloneVaultWithStrategy(
-        _optionMarket, 
-        _tokenName, 
-        _tokenSymbol,
-        _isPublic, 
-        _vaultType, 
-        _vaultParams
-      ); 
-      console.log({ response }); 
-      setVault(response); 
-    } catch (e) {
-      console.log(e); 
-    }
-  };
-
-  const onChangePublic = () => {
-
-  }
-
-  const onSelectMarket = (selectedId) => {
-    const { name, id, baseAddress, quoteAddress } = markets.find(({ id }) => id === selectedId);
-    console.log({ name, baseAddress, quoteAddress })
-    setVaultDetails({ 
-      ...vaultDetails,  
-      _vaultParams: { 
-        ...vaultDetails._vaultParams, 
-        asset: '0xD30a35282c2E2db07d9dAC69Bf3D45a975Bc85D1'// quoteAddress  // used qutoe address for short puts
-      }, 
-      _baseAsset: '0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D', //baseAddress, 
-      _optionMarket: '0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2', //_optionMarket,
-      _tokenName: `OTUS-${name}`,
-      _tokenSymbol: `OTV${name}`
-    }); 
-  }
-
-  const vaultTypes = ['Short Put', 'Short Call', 'Ape Bull', 'Ape Bear', 'Iron Condor', 'Short Straddle']; 
-
-  const onSelectVaultType = (vaultType) => {
-    setVaultDetails({ ...vaultDetails, _vaultType: vaultType })
-  }
+  const [hasPerformanceFee, setHasPerformanceFee] = useState(false);
+  const [hasManagementFee, setHasManagementFee] = useState(false);
 
   return (
     <Center>
-      <Box w='474px'>
-      <BaseShadowBox padding="14px">
-        <Box bgImage="url('https://bit.ly/2Z4KKcF')">
-          <Heading>Vault Create</Heading>
-        </Box>
+      <Box w='474px' m="24">
+        <BaseShadowBox>
+          <Box bgImage="url('https://bit.ly/2Z4KKcF')">
+            <Heading as='h4' p={'6'} pt={'12'}>Set Initial Vault Settings</Heading>
+          </Box>
 
-        <Box>
+          <Box  p={'6'}>
 
-          <FormControl>
-            <FormLabel htmlFor='market'>Market</FormLabel>
-            <Select id='market' placeHolder="Select Market" defaultValue="" onChange={e => onSelectMarket(e.target.value)}>
+            <Stack spacing={8}>
+
+              
+              <Flex>
+                <Box flex={1}>
+                  <FormControl>
+                    <FormLabel fontWeight={'700'} fontSize={'14px'} fontFamily={`'IBM Plex Mono', monospace`} color="#959595" htmlFor='market'>Vault Name</FormLabel>
+                    <Input placeholder='Vault Name' onChange={(e) => onVaultNameChange(e.target.value)} />
+                  </FormControl>
+                </Box>
+              </Flex>
+
+              <Flex>
+                <Box flex={1}>
+                  <FormControl>
+                    <FormLabel fontWeight={'700'} fontSize={'14px'} fontFamily={`'IBM Plex Mono', monospace`} color="#959595" htmlFor='market'>Market</FormLabel>
+                    <Select width="100%" id='market' placeholder="Select Market" onChange={e => onSelectMarket(e.target.value)}>
+                      {
+                        markets.map(({ id, name }) => (<option value={id}>{name}</option>))
+                      }
+                    </Select>
+                  </FormControl>
+                </Box>
+                <Box flex={1}>
+                  <FormControl>
+                    <FormLabel fontWeight={'700'} fontSize={'14px'} fontFamily={`'IBM Plex Mono', monospace`} color="#959595" htmlFor='vault'>Vault</FormLabel>
+                    <Select width="100%"  id='vault' placeholder="Select Vault Type" onChange={e => onSelectVaultType(e.target.value)}>
+                      {
+                        vaultTypes.map((name, index) => (<option value={index}>{name}</option>))
+                      }
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Flex>
+
+              <Divider />
+
+              <Flex>
+                <Box>
+                  <Text fontSize={'14'} fontFamily={`'IBM Plex Mono', monospace`} color={'#959595'}>
+                    Generated Vault Name
+                  </Text>
+                  <Text as='b' fontSize={'24'} fontFamily={`'IBM Plex Mono', monospace`} textTransform='uppercase' color={'#000'}>
+                    { vaultDetails._tokenName }
+                  </Text>
+                </Box>
+                <Spacer />
+                <Box>
+                  <Text fontSize={'14'} fontFamily={`'IBM Plex Mono', monospace`} color={'#959595'}>
+                    Generated Token Symbol
+                  </Text>
+                  <Text as='b' fontSize={'24'} fontFamily={`'IBM Plex Mono', monospace`} textTransform='uppercase' color={'#000'}>
+                    { vaultDetails._tokenSymbol }
+                  </Text>
+                </Box>
+              </Flex>
+
+              <Divider />
+
+              <Flex>
+                <Box>
+                  <FormControl>
+                    <FormLabel htmlFor='isPublic' fontWeight={'700'} fontSize={'14px'} fontFamily={`'IBM Plex Mono', monospace`} color="#959595">Is Public?</FormLabel>
+                    <Switch
+                      id='isPublic'
+                      name='isPublic'
+                      isChecked={vaultDetails._isPublic}
+                      onChange={(check) => onSelectVaultType(check)}
+                    />
+                  </FormControl>
+                </Box>
+                <Spacer />
+                <Box>
+                  <FormControl>
+                    <FormLabel htmlFor='hasPerformanceFee' fontWeight={'700'} fontSize={'14px'} fontFamily={`'IBM Plex Mono', monospace`} color="#959595">Performance Fee?</FormLabel>
+                    <Switch
+                      id='hasPerformanceFee'
+                      name='hasPerformanceFee'
+                      isChecked={hasPerformanceFee}
+                      onChange={(e) => {
+                        setHasPerformanceFee(e.target.checked)
+                      }}
+                    />
+                  </FormControl>
+                </Box>
+                <Spacer />
+                <Box>
+                  <FormControl>
+                    <FormLabel htmlFor='hasManagementFee' fontWeight={'700'} fontSize={'14px'} fontFamily={`'IBM Plex Mono', monospace`} color="#959595">Management Fee?</FormLabel>
+                    <Switch
+                      id='hasManagementFee'
+                      name='hasManagementFee'
+                      isChecked={hasManagementFee}
+                      onChange={(e) => setHasManagementFee(e.target.checked)}
+                    />
+                  </FormControl>
+                </Box>
+              </Flex>
+
+              <Divider />
+
+              <Flex>
+
               {
-                markets.map(({ id, name }) => (<option value={id}>{name}</option>))
+                hasPerformanceFee ?
+                <Box>
+                  <FormControl>
+                    <FormLabel htmlFor='performanceFee' fontWeight={'700'} fontSize={'14px'} fontFamily={`'IBM Plex Mono', monospace`}>Performance Fee</FormLabel>
+                    <Slider name={"Performance Fee"} step={0.1} min={0} max={10} id={"performanceFee"} label={'%'} />
+                  </FormControl>
+                </Box>
+                :
+                null
               }
-            </Select>
-          </FormControl>
 
-          <FormControl>
-            <FormLabel htmlFor='vault'>Vault</FormLabel>
-            <Select id='vault' placeHolder="Select Vault Type" defaultValue="" onChange={e => onSelectVaultType(e.target.value)}>
               {
-                vaultTypes.map((name, index) => (<option value={index}>{name}</option>))
-              }
-            </Select>
-          </FormControl>
+                hasManagementFee ?
+                <Box>
+                  <FormControl>
+                    <FormLabel htmlFor='managementFee' fontWeight={'700'} fontSize={'14px'} fontFamily={`'IBM Plex Mono', monospace`}>Management Fee</FormLabel>
+                    <Slider name={"Management Fee"} step={0.1} min={0} max={10} id={"managementFee"} label={'%'} />
+                  </FormControl>
+                </Box>
+                :
+                null
+              }     
 
-        </Box>
+              </Flex>   
 
-        <Box>
-          <Center p="4">
-            <Text as='i' p="4">
-              { vaultDetails._tokenName }
-            </Text>
-            <Text as='i' p="4">
-              { vaultDetails._tokenSymbol }
-            </Text>
-          </Center>
-          <FormControl>
-            <FormLabel htmlFor='isPublic'>Public</FormLabel>
-            <Switch
-                id='isPublic'
-                name='isPublic'
-                defaultValue={true}
-              />
-          </FormControl>
-          <FormControl>
-            <FormLabel htmlFor='performanceFee'>Performance Fee</FormLabel>
-            <Slider
-              id='performanceFee'
-              name='performanceFee'
-              defaultValue={0}
-            />
-          </FormControl>
-        </Box>
+              <NextButton isLoading={loading} onClick={createVaultWithStrategy} />
 
-        <Box>
-          <Button onClick={createVaultWithStrategy}>
-            Create Vault
-          </Button>
-        </Box>
-      </BaseShadowBox>
+            </Stack>
+
+          </Box>
+
+        </BaseShadowBox>
       </Box>
     </Center>
   )

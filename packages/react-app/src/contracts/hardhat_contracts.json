@@ -415,7 +415,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0xaC8470198cbc7a7fB8c31C3FAa0BB09C49e2C223",
+          "address": "0xd1c2d030c509d41320e4c41355e370e04d760fc3",
           "abi": [
             {
               "inputs": [],
@@ -1205,7 +1205,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x64a5E68AE3a02Fb13625ab1E78C591960A2296b8",
+          "address": "0x768c8C36edd43e1b5434B3Fc792Bb7A252EB6B34",
           "abi": [
             {
               "inputs": [
@@ -1409,6 +1409,11 @@
                   "internalType": "address",
                   "name": "_optionMarket",
                   "type": "address"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_vaultName",
+                  "type": "string"
                 },
                 {
                   "internalType": "string",
@@ -1879,7 +1884,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0x926fFE5110Ded75209Caf37b8de39Bb361e91621",
+          "address": "0x0a39E034DeD9270A00077b856fb0adE6547c336b",
           "abi": [
             {
               "inputs": [
@@ -2394,19 +2399,6 @@
             },
             {
               "inputs": [],
-              "name": "boardId",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
               "name": "closeHedge",
               "outputs": [],
               "stateMutability": "nonpayable",
@@ -2584,6 +2576,11 @@
                   "internalType": "address",
                   "name": "_supervisor",
                   "type": "address"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_vaultName",
+                  "type": "string"
                 },
                 {
                   "internalType": "string",
@@ -2914,19 +2911,6 @@
               "inputs": [
                 {
                   "internalType": "uint256",
-                  "name": "_boardId",
-                  "type": "uint256"
-                }
-              ],
-              "name": "setNextBoardId",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
                   "name": "newPerformanceFee",
                   "type": "uint256"
                 }
@@ -2993,23 +2977,16 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "startNextRound",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "strikeId",
-              "outputs": [
+              "inputs": [
                 {
                   "internalType": "uint256",
-                  "name": "",
+                  "name": "boardId",
                   "type": "uint256"
                 }
               ],
-              "stateMutability": "view",
+              "name": "startNextRound",
+              "outputs": [],
+              "stateMutability": "nonpayable",
               "type": "function"
             },
             {
@@ -3069,6 +3046,36 @@
                 {
                   "components": [
                     {
+                      "internalType": "int256",
+                      "name": "targetDelta",
+                      "type": "int256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxDeltaGap",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVolVariance",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "optionType",
+                      "type": "uint256"
+                    },
+                    {
                       "internalType": "uint256",
                       "name": "strikeId",
                       "type": "uint256"
@@ -3079,8 +3086,8 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct OtusVault.StrikeDetail[]",
-                  "name": "_strikeDetails",
+                  "internalType": "struct Strategy.StrikeStrategyDetail[]",
+                  "name": "_currentStrikeStrategies",
                   "type": "tuple[]"
                 }
               ],
@@ -3440,7 +3447,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0xF2A9E4b39E93c245275d77CD5194cd80E69Ddb4f",
+          "address": "0xd25854e9bBdB5BD0F55148C03e1E604D07817267",
           "abi": [
             {
               "inputs": [
@@ -3589,6 +3596,19 @@
             },
             {
               "inputs": [],
+              "name": "collateralAsset",
+              "outputs": [
+                {
+                  "internalType": "contract IERC20",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
               "name": "currentHedgeStrategy",
               "outputs": [
                 {
@@ -3710,6 +3730,16 @@
                   "internalType": "uint256",
                   "name": "optionType",
                   "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "strikeId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "size",
+                  "type": "uint256"
                 }
               ],
               "stateMutability": "view",
@@ -3719,6 +3749,36 @@
               "inputs": [
                 {
                   "components": [
+                    {
+                      "internalType": "int256",
+                      "name": "targetDelta",
+                      "type": "int256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxDeltaGap",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVolVariance",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "optionType",
+                      "type": "uint256"
+                    },
                     {
                       "internalType": "uint256",
                       "name": "strikeId",
@@ -3730,8 +3790,8 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct OtusVault.StrikeDetail[]",
-                  "name": "_strikeDetails",
+                  "internalType": "struct Strategy.StrikeStrategyDetail[]",
+                  "name": "_currentStrikeStrategies",
                   "type": "tuple[]"
                 }
               ],
@@ -4124,9 +4184,19 @@
                       "internalType": "uint256",
                       "name": "optionType",
                       "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "strikeId",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "size",
+                      "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.CurrentStrategyDetail",
+                  "internalType": "struct Strategy.StrikeStrategyDetail",
                   "name": "currentStrikeStrategy",
                   "type": "tuple"
                 }
@@ -4242,43 +4312,6 @@
                 {
                   "components": [
                     {
-                      "internalType": "int256",
-                      "name": "targetDelta",
-                      "type": "int256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxDeltaGap",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVolVariance",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "optionType",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct Strategy.CurrentStrategyDetail",
-                  "name": "_currentStrikeStrategy",
-                  "type": "tuple"
-                },
-                {
-                  "components": [
-                    {
                       "internalType": "uint256",
                       "name": "hedgePercentage",
                       "type": "uint256"
@@ -4309,52 +4342,7 @@
                   "type": "tuple"
                 }
               ],
-              "name": "setCurrentStrategy",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "components": [
-                    {
-                      "internalType": "int256",
-                      "name": "targetDelta",
-                      "type": "int256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxDeltaGap",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVolVariance",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "optionType",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct Strategy.CurrentStrategyDetail[]",
-                  "name": "_currentStrikeStrategies",
-                  "type": "tuple[]"
-                }
-              ],
-              "name": "setCurrentStrategy",
+              "name": "setHedgeStrategy",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"

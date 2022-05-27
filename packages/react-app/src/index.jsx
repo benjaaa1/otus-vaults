@@ -6,6 +6,10 @@ import "./index.css";
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
 const customTheme = extendTheme({
+  fonts: {
+    heading: `'IBM Plex Mono', monospace`,
+    body: `'IBM Plex Sans', sans-serif`
+  },
   styles: {
     global: {
       body: {
