@@ -47,8 +47,6 @@ contract OtusVault is BaseVault {
   uint public otusVaultType; 
   bool public isPublic;
 
-  uint public boardId; 
-  uint public strikeId; 
   /************************************************
    *  EVENTS
    ***********************************************/
@@ -152,18 +150,10 @@ contract OtusVault is BaseVault {
     emit RoundClosed(vaultState.round, lockAmount);
   }
 
-  // setNextBoardId(boardId, strikeId); users stll need to hit trade 
-  /**
-  * @notice Sets next rounds boardId strikeId - should be set before starting round
-  */
-  function setNextBoardId(uint _boardId) external onlyOwner {
-    boardId = _boardId; 
-  }
-
   /**
    * @notice Start the next/new round
    */
-  function startNextRound() external onlyOwner {
+  function startNextRound(uint boardId) external onlyOwner {
     //can't start next round before outstanding expired positions are settled. 
     require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
@@ -177,25 +167,18 @@ contract OtusVault is BaseVault {
     vaultState.roundInProgress = true;
 
     lastQueuedWithdrawAmount = uint128(queuedWithdrawAmount);
-    boardId = 0; 
 
     emit RoundStarted(vaultState.round, uint104(lockedBalance));
-  }
-
-  // function getBoard() external view returns (uint, uint, uint, uint, uint, bool) {
-  //   return _strategy._getBoard(boardId);
-  // }
-
-  struct StrikeDetail {
-    uint strikeId;
-    uint size; 
   }
 
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function trade(StrikeDetail[] memory _strikeDetails) external onlyOwner {
-    (uint[] memory positionId, uint[] memory premiumReceived, uint[] memory _collateralAdded) = _strategy.doTrades(_strikeDetails);
+  function trade(Strategy.StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
+    // can trade during round as long as lockedAmount is greater than 0
+    // round should be opened 
+    require(vaultState.roundInProgress, "round not opened");
+    (uint[] memory positionId, uint[] memory premiumReceived, uint[] memory _collateralAdded) = _strategy.doTrades(_currentStrikeStrategies);
     for(uint i = 0; i < premiumReceived.length; i++) {
       roundPremiumCollected += premiumReceived[i];
     }

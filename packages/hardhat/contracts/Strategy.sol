@@ -27,6 +27,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   using SignedSafeMath for int;
   using SignedSafeDecimalMath for int;
 
+  IERC20 public collateralAsset; 
+
   uint public activeExpiry;
   uint public activeBoardId;
 
@@ -42,6 +44,11 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   
   uint public currentStrikePrice;
 
+  // struct StrikeDetail {
+  //   uint strikeId;
+  //   uint size; 
+  // }
+
   // strategies can be updated by different strategizers
   struct StrategyDetail {
     uint collatBuffer; // slider - multiple of vaultAdapter.minCollateral(): 1.1 -> 110% * minCollat
@@ -53,13 +60,15 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     
   }
 
-  struct CurrentStrategyDetail {
+  struct StrikeStrategyDetail {
     int targetDelta; // slider
     uint maxDeltaGap; // slider
     uint minVol; // slider
     uint maxVol; // slider
     uint maxVolVariance; // slider
     uint optionType; 
+    uint strikeId;
+    uint size; 
   }
 
   struct HedgeDetail {
@@ -71,7 +80,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   }
 
   StrategyDetail public currentStrategy; // this wont change much 
-  CurrentStrategyDetail[] public currentStrikeStrategies; // this will change every week possibly
+  StrikeStrategyDetail[] public currentStrikeStrategies; // this will change every week possibly
   HedgeDetail public currentHedgeStrategy;
 
   /************************************************
@@ -129,6 +138,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
     vault = _vault;
     otusVault = OtusVault(_vault); 
+    collateralAsset = IERC20(marketAddresses[0]);
   }
 
   /************************************************
@@ -147,34 +157,28 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     currentStrategy = _currentStrategy;
   }
 
-  function setCurrentStrategy(
-      CurrentStrategyDetail memory _currentStrikeStrategy,
+  function setHedgeStrategy(
       HedgeDetail memory _hedgeStrategy
     ) external onlyOwner {
-      (, , , , , , , bool roundInProgress) = otusVault.vaultState();
-      require(!roundInProgress, "round opened");
-      currentStrikeStrategies[0] = _currentStrikeStrategy; 
-      currentHedgeStrategy = _hedgeStrategy; 
-
-    }
-
-  function setCurrentStrategy(CurrentStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
     (, , , , , , , bool roundInProgress) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
+    currentHedgeStrategy = _hedgeStrategy; 
+  }
+
+  function setStrikeStrategy(StrikeStrategyDetail[] memory _currentStrikeStrategies) private {
     // delete first previous first? 
     uint len = _currentStrikeStrategies.length; 
-    // currentStrikeStrategies = new CurrentStrategyDetail[](len);
-    // CurrentStrategyDetail memory _currentStrikeStrategy; 
 
     for(uint i = 0; i < len; i++) {
-      // _currentStrikeStrategy = _currentStrikeStrategies[i];
-      currentStrikeStrategies.push(CurrentStrategyDetail(
+      currentStrikeStrategies.push(StrikeStrategyDetail(
           _currentStrikeStrategies[i].targetDelta,
           _currentStrikeStrategies[i].maxDeltaGap,
           _currentStrikeStrategies[i].minVol,
           _currentStrikeStrategies[i].maxVol,
           _currentStrikeStrategies[i].maxVolVariance,
-          _currentStrikeStrategies[i].optionType
+          _currentStrikeStrategies[i].optionType,
+          _currentStrikeStrategies[i].strikeId,
+          _currentStrikeStrategies[i].size
       ));
     }
   }
@@ -195,11 +199,72 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     activeBoardId = boardId; 
   }
 
-  // function _getBoard(uint boardId) public view returns (uint, uint, uint, uint, uint, bool) {
-  //   Board memory board = getBoard(boardId); 
-  //   return (boardId, board.id, board.boardIv, block.timestamp, board.expiry, block.timestamp <= board.expiry);
-  // }
+  function doTrades(
+      StrikeStrategyDetail[] memory _currentStrikeStrategies
+    ) external onlyVault returns (
+      uint[] memory positionIds, 
+      uint[] memory premiumsReceived, 
+      uint[] memory collateralToAdd
+    ) {
+      setStrikeStrategy(_currentStrikeStrategies);
 
+      StrikeStrategyDetail memory strikeDetail;
+      uint len = _currentStrikeStrategies.length; 
+      uint strikeId; 
+      uint size; 
+      uint _positionId; 
+      uint _premiumReceived; 
+      uint _collateralToAdd;
+
+      for(uint i = 0; i < len; i++) {
+        strikeDetail = _currentStrikeStrategies[i];
+        strikeId = strikeDetail.strikeId; 
+        size = strikeDetail.size;
+
+        (_positionId, _premiumReceived, _collateralToAdd) = doTrade(strikeId, size, i);
+        positionIds[i] = _positionId;
+        premiumsReceived[i] = _premiumReceived;
+        collateralToAdd[i] = _collateralToAdd; 
+      }
+  }
+
+
+  /**
+  * @notice sell a fix aomunt of options and collect premium
+  * @dev the vault should pass in a strike id, and the strategy would verify if the strike is valid on-chain.
+  * @param strikeId lyra strikeId to trade
+  * @return positionId
+  * @return premiumReceived
+  */
+  function doTrade(uint strikeId, uint size, uint _currentStrikeStrategyIndex)
+    private returns (
+      uint positionId,
+      uint premiumReceived,
+      uint collateralToAdd
+    )
+  {
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_currentStrikeStrategyIndex];
+    // validate trade
+    require(
+      lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <= block.timestamp,
+      "min time interval not passed"
+    );
+    require(_isValidVolVariance(strikeId, currentStrikeStrategy), "vol variance exceeded");
+
+    Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
+    require(isValidStrike(strike, currentStrikeStrategy), "invalid strike");
+
+    uint setCollateralTo;
+    (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike, size, currentStrikeStrategy.optionType);
+
+    require(
+      collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
+      "collateral transfer from vault failed"
+    );
+
+    (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, _currentStrikeStrategyIndex);
+  }
+  
   /**
    * @dev convert premium in quote asset into collateral asset and send it back to the vault.
    */
@@ -207,7 +272,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
     uint quoteBal = quoteAsset.balanceOf(address(this));
 
-    CurrentStrategyDetail memory currentStrikeStrategy; 
+    StrikeStrategyDetail memory currentStrikeStrategy; 
 
     for(uint i = 0; i < currentStrikeStrategies.length; i++) {
       currentStrikeStrategy = currentStrikeStrategies[i]; 
@@ -231,70 +296,6 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     _clearAllActiveStrikes();
   }
 
-  function doTrades(OtusVault.StrikeDetail[] memory _strikeDetails) external onlyVault returns (
-      uint[] memory positionIds, 
-      uint[] memory premiumsReceived, 
-      uint[] memory collateralToAdd
-    ) {
-      OtusVault.StrikeDetail memory strikeDetail;
-      uint len = _strikeDetails.length; 
-      uint strikeId; 
-      uint size; 
-      uint _positionId; 
-      uint _premiumReceived; 
-      uint _collateralToAdd;
-
-      for(uint i = 0; i < len; i++) {
-        strikeDetail = _strikeDetails[i];
-        strikeId = strikeDetail.strikeId; 
-        size = strikeDetail.size;
-
-        (_positionId, _premiumReceived, _collateralToAdd) = doTrade(strikeId, size, i);
-        positionIds[i] = _positionId;
-        premiumsReceived[i] = _premiumReceived;
-        collateralToAdd[i] = _collateralToAdd; 
-      }
-  }
-
-
-    /**
-   * @notice sell a fix aomunt of options and collect premium
-   * @dev the vault should pass in a strike id, and the strategy would verify if the strike is valid on-chain.
-   * @param strikeId lyra strikeId to trade
-   * @return positionId
-   * @return premiumReceived
-   */
-  function doTrade(uint strikeId, uint size, uint _currentStrikeStrategyIndex)
-    private returns (
-      uint positionId,
-      uint premiumReceived,
-      uint collateralToAdd
-    )
-  {
-    CurrentStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_currentStrikeStrategyIndex];
-    // validate trade
-    require(
-      lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <= block.timestamp,
-      "min time interval not passed"
-    );
-    require(_isValidVolVariance(strikeId, currentStrikeStrategy), "vol variance exceeded");
-
-    Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
-    require(isValidStrike(strike, currentStrikeStrategy), "invalid strike");
-
-    uint setCollateralTo;
-    (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike, size, currentStrikeStrategy.optionType);
-
-    IERC20 collateralAsset = _isBaseCollat(currentStrikeStrategy.optionType) ? baseAsset : quoteAsset;
-
-    require(
-      collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
-      "collateral transfer from vault failed"
-    );
-
-    (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, _currentStrikeStrategyIndex);
-  }
-
   /**
   * @dev used for verifying collateral from front end  
   */
@@ -303,9 +304,6 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
 
     uint _currentStrikeStrategyIndex = strategyToStrikeId[strike.id];
-    CurrentStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_currentStrikeStrategyIndex];
-
-    IERC20 collateralAsset = _isBaseCollat(currentStrikeStrategy.optionType) ? baseAsset : quoteAsset;
 
     (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike, _size, _optionType);
     return (
@@ -374,7 +372,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint _currentStrikeStrategyIndex
   ) internal returns (uint, uint) {
     // get minimum expected premium based on minIv
-    CurrentStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_currentStrikeStrategyIndex]; 
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_currentStrikeStrategyIndex]; 
     uint minExpectedPremium = _getPremiumLimit(strike, _size, true, currentStrikeStrategy);
     // perform trade
 
@@ -422,7 +420,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     );
 
     uint currentStrikeStrategyIndex = strategyToStrikeId[position.strikeId];
-    CurrentStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeStrategyIndex]; 
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeStrategyIndex]; 
 
     // closes excess position with premium balance
     uint maxExpectedPremium = _getPremiumLimit(strike, size, false, currentStrikeStrategy);
@@ -547,7 +545,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    * @dev verify if the strike is valid for the strategy
    * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
    */
-  function isValidStrike(Strike memory strike, CurrentStrategyDetail memory currentStrikeStrategy) public view returns (bool isValid) {
+  function isValidStrike(Strike memory strike, StrikeStrategyDetail memory currentStrikeStrategy) public view returns (bool isValid) {
     if (activeExpiry != strike.expiry) {
       return false;
     }
@@ -564,7 +562,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   /**
    * @dev check if the vol variance for the given strike is within certain range
    */
-  function _isValidVolVariance(uint strikeId, CurrentStrategyDetail memory currentStrikeStrategy) internal view returns (bool isValid) {
+  function _isValidVolVariance(uint strikeId, StrikeStrategyDetail memory currentStrikeStrategy) internal view returns (bool isValid) {
     uint volGWAV = gwavOracle.volGWAV(strikeId, currentStrategy.gwavPeriod);
     uint volSpot = getVols(_toDynamic(strikeId))[0];
 
@@ -622,7 +620,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       Strike memory strike, 
       uint _size,
       bool isMin, 
-      CurrentStrategyDetail memory currentStrikeStrategy
+      StrikeStrategyDetail memory currentStrikeStrategy
     ) internal view returns (uint limitPremium) {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
     uint limitVol = isMin ? currentStrikeStrategy.minVol : currentStrikeStrategy.maxVol;
@@ -678,6 +676,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
         delete lastTradeTimestamp[i];
       }
       delete activeStrikeIds;
+      delete currentStrikeStrategies; 
     }
   }
 
