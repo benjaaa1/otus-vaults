@@ -14,7 +14,8 @@ import "@nomiclabs/hardhat-etherscan";
 
 import "@typechain/hardhat";
 import "hardhat-dependency-compiler";
-import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths'
+import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths';
+// import "@tenderly/hardhat-tenderly";
 
 dotenv.config();
 
@@ -36,6 +37,10 @@ function mnemonic() {
 }
 
 module.exports = {
+  tenderly: {
+    project: "otus-finance-vault-factory",
+    username: "0xbenjaaa",
+  },
   defaultNetwork,
   gasReporter: {
     currency: "USD",
@@ -78,6 +83,7 @@ module.exports = {
       },
     },
     kovanOptimism: {
+      chainId: 69,
       url: "https://optimism-kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925",
       ovm: true,
       timeout: 60000,

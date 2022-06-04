@@ -75,7 +75,7 @@ const tenderly = async () => {
         },
     ]
   
-    await hre.tenderly.persistArtifacts(...contracts);
+    // await hre.tenderly.persistArtifacts(...contracts);
     await hre.tenderly.verify(...contracts);
     
     return true;

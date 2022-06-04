@@ -42,6 +42,7 @@
     "postdeploy": "hardhat run scripts/publish.js",
     "mint": "hardhat run scripts/mint.js",
     "registry": "hardhat run scripts/registry.js",
+    "tenderly": "hardhat run scripts/tenderly.js",
     "createStrategy": "hardhat run scripts/create.js",
     "lyraDeploy": "hardhat run scripts/lyraLocalDeploy.ts",
     "watch": "node scripts/watch.js",
@@ -54,6 +55,7 @@
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "npm:@otusfinance/otus-hardhat-ethers",
+    "@tenderly/hardhat-tenderly": "^1.0.13",
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.1.0",
     "@types/node": "^17.0.23",

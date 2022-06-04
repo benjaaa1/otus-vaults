@@ -4,9 +4,9 @@ const WEEK_SEC = 7 * DAY_SEC;
 
 export const vaultStrategy = {
   collatBuffer: 1.2, 
-  collatPercent: 1,
+  collatPercent: .35,
   minTimeToExpiry: DAY_SEC,
-  maxTimeToExpiry: WEEK_SEC * 2,
+  maxTimeToExpiry: WEEK_SEC * 8,
   minTradeInterval: 600,
   gwavPeriod: 600,
 }
@@ -20,9 +20,9 @@ export const hedgeStrategy = {
 }
 
 export const strategyInitialState = {
-  hasStrategy: false,
   strategy: vaultStrategy,
   market: 'eth', 
+  needsQuotesUpdated: false,
   lyraMarket: null, 
   liveBoards: {},
   liveStrikes: [],
@@ -42,15 +42,14 @@ export const strikeStrategy = {
   optionType: 3,
   id: null,
   size: 1,
-  strikePrice: null
+  strikePrice: null,
+  collateralToAdd: 0,
+  setCollateralTo: 0,
 }
 
 export const strategyReducer = (state, action) => {
   console.log('in reducer', { state, action })
   switch (action.type) {
-    case 'UPDATE_VALUE': 
-      console.log({ action })
-      return { ...state, [action.id]: action.payload };
     case 'UPDATE_STRATEGY': 
       return { ...state, strategy: { ...state.strategy, [action.field]: action.payload }}
     case 'UPDATE_MARKET':
@@ -62,7 +61,7 @@ export const strategyReducer = (state, action) => {
     case 'UPDATE_STRIKES':
       return { ...state, strikes: action.payload };
     case 'SET_SELECTED_BOARD':
-      return { ...state, selectedBoard: state.liveBoards[action.payload], liveStrikes: state.liveBoards[action.payload].strikes };
+      return { ...state, selectedBoard: state.liveBoards[action.payload], liveStrikes: state.liveBoards[action.payload].strikes, needsQuotesUpdated: true };
     case 'ADD_CURRENT_STRIKE':
       return { ...state, currentStrikes: state.currentStrikes.concat(strikeStrategy) };
     case 'UPDATE_CURRENT_STRIKE':
@@ -81,13 +80,25 @@ export const strategyReducer = (state, action) => {
       return { ...state, currentStrikes: [ ...currentStrikes.slice(0, index), ...currentStrikes.slice(index + 1) ] }
     case 'ACTIVE_CURRENT_STRIKE_INDEX':
       return { ...state, activeCurrentStrikeIndex: action.payload };
+    case 'UPDATE_STRIKES_WITH_PREMIUMS':
+      const formattedStrikeQuotes = action.payload; 
+      const { liveStrikes } = state; 
+      const _liveStrikes = liveStrikes.map(strike => {
+        return { ...strike, ...formattedStrikeQuotes[strike.id] }
+      }) 
+      return { ...state, liveStrikes: _liveStrikes, needsQuotesUpdated: false  };
+    case 'SET_CURRENT_STRIKE_OPTION_TYPE': 
+      return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
+        if(action.payload.index == index) {
+          return { ...cs, optionType: parseInt(action.payload.value) + 1 }; 
+        }
+        return cs; 
+      }) };
     case 'UPDATE_CURRENT_STRIKE_STRATEGY':
       const { value, id, activeIndex } = action.payload; 
       return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
         if(activeIndex == index) {
-          const t = { ...cs, [id]: value }; 
-          console.log({ t })
-          return t;
+          return { ...cs, [id]: value }; 
         }
         return cs; 
       }) };

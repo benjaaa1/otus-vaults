@@ -120,7 +120,7 @@ contract VaultAdapter {
   ///////////////
 
   OptionToken internal optionToken;
-  OptionMarket internal optionMarket;
+  OptionMarket public optionMarket;
   LiquidityPool internal liquidityPool;
   ShortCollateral internal shortCollateral;
   SynthetixAdapter immutable internal synthetixAdapter;
@@ -263,7 +263,7 @@ contract VaultAdapter {
   }
 
   // get all strike related info (non GWAV)
-  function getStrikes(uint[] memory strikeIds) internal view returns (Strike[] memory allStrikes) {
+  function getStrikes(uint[] memory strikeIds) public view returns (Strike[] memory allStrikes) {
     allStrikes = new Strike[](strikeIds.length);
 
     for (uint i = 0; i < strikeIds.length; i++) {

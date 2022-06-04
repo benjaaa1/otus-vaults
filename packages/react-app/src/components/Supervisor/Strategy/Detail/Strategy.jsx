@@ -18,7 +18,17 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  useDisclosure
+  useDisclosure,
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+  Spacer
 } from '@chakra-ui/react';
 
 import { Slider } from "../../../Common/Slider";
@@ -26,14 +36,16 @@ import { Select } from "../../../Common/Select";
 import { AddButton, RemoveButton } from "../../../Common/Button";
 import { useStrategyContext } from "../../../../context/StrategyContext"
 import { strikeStrategy } from "../../../../reducer/strategyReducer";
+import { ArrowForwardIcon } from "@chakra-ui/icons";
 
 export default function StrategyDetail() {
 
-  const { state, dispatch } = useStrategyContext();
+  const { state, dispatch, setVaultStrategy } = useStrategyContext();
 
   const {
     liveBoards,
     liveStrikes,
+    needsQuotesUpdated,
     currentStrikes,
     activeCurrentStrikeIndex
   } = state; 
@@ -41,59 +53,98 @@ export default function StrategyDetail() {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
-    <Flex>
-
-      <VStack>
-        <Box >
-          <Select id='board' placeholder={'Select Round Expiry'} onChange={(e) => dispatch({ type: 'SET_SELECTED_BOARD', payload: e.target.value })}>
+    <>
+      <Flex bg="#333" minWidth='max-content' alignItems='center' p={'4'}>
+        <Box>
+          <Select bg={'white'} id='board' placeholder={'Select Round Expiry'} onChange={(e) => dispatch({ type: 'SET_SELECTED_BOARD', payload: e.target.value })}>
           {
             Object.values(liveBoards).map(({ name, id }) => (<option value={id}>{name}</option>))
           }
           </Select>
         </Box>
+        <Spacer />
+        <Button onClick={setVaultStrategy} rightIcon={<ArrowForwardIcon />}>Set Round Strategy</Button>
+      </Flex>
+      <Box>
         <Box>
-          {
-            currentStrikes.map((cs, index) => {
-              return (
-                <Accordion allowToggle>
-                  <AccordionItem>
-                    <h2>
+        {
+          currentStrikes.map((cs, index) => {
+            return (
+              <Accordion allowToggle>
+                <AccordionItem>
+                  <Flex minWidth='max-content' alignItems='center' p={'2'}>
+                    <Box flex='1'>
+                      <RemoveButton onClick={() => dispatch({ type: 'REMOVE_CURRENT_STRIKE', payload: index })} />
+                    </Box>
+                    <Spacer />
+                    <Box>
+                      <Select bg={'white'} id='board' onChange={(e) => dispatch({ type: 'SET_CURRENT_STRIKE_OPTION_TYPE', payload: { index, value: e.target.value} })}>
+                        {
+                          [
+                            'Buy Call', 'Buy Put', 'Sell Call', 'Sell Put'
+                          ].map((name, index) => (<option value={index}>{name}</option>))
+                        }
+                      </Select>
+                    </Box>
+                    <Spacer />
+                    <Box>
+                      <Button onClick={() => {
+                          onOpen();
+                          dispatch({ type: 'ACTIVE_CURRENT_STRIKE_INDEX', payload: index })
+                        }}>
+                          Set Strike Strategy
+                      </Button>
+                    </Box>
+                    <Spacer />
+                    <Box>
                       <AccordionButton>
-                        <Box flex='1' textAlign='left'>
-                          { cs.strikePrice }
-                          <Button onClick={() => {
-                            onOpen();
-                            dispatch({ type: 'ACTIVE_CURRENT_STRIKE_INDEX', payload: index })
-                          }}>
-                            Set Strike Strategy
-                          </Button>
-                          <RemoveButton onClick={() => dispatch({ type: 'REMOVE_CURRENT_STRIKE', payload: index })} />
-                        </Box>
                         <AccordionIcon />
                       </AccordionButton>
-                    </h2>
-                    <AccordionPanel pb={4}>
+                    </Box>
+                  </Flex>
+                <AccordionPanel pb={4}>
+                  <TableContainer>
+                    <Table size='sm'>
+                    <Thead>
+                      <Tr>
+                        <Th isNumeric>Strike</Th>
+                        <Th isNumeric>Implied Volatility</Th>
+                        <Th isNumeric>Price</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
                       {
-                        liveStrikes.map(strike => {
-                          return <Box>
-                            ${ strike.name }
-                            <AddButton onClick={() => dispatch({ type: 'UPDATE_CURRENT_STRIKE', payload: { index, strike } })} />
-                          </Box>
+                        liveStrikes.map((strike) => {
+                          const { id } = strike;
+                          const currentSelectedId = currentStrikes[index]['id']; 
+                          return <Tr>
+                            <Td isNumeric>${ strike.strikePrice }</Td>
+                            <Td isNumeric>{ strike.iv_formatted }</Td>
+                            <Td isNumeric>
+                              <Button colorScheme={ currentSelectedId == id ? 'teal' : 'gray'} size='sm' isLoading={needsQuotesUpdated} onClick={() => dispatch({ type: 'UPDATE_CURRENT_STRIKE', payload: { index, strike } })}>
+                                ${ strike.pricePerOption }
+                              </Button>
+                            </Td>
+                          </Tr>
                         })
                       }
-                    </AccordionPanel>
-                  </AccordionItem>
-                </Accordion>
-              )
-            })
-          }
-         
+                    </Tbody>
+                    </Table>
+                  </TableContainer>
+                </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
+            )
+          })
+        }
         </Box>
+      </Box>
+      <Flex minWidth='max-content' alignItems='flex-end' gap='2' p={'4'}>
         <AddButton onClick={() => dispatch({ type: 'ADD_CURRENT_STRIKE' })} />
+      </Flex>
 
-      </VStack> 
       <StrikeStrategyModal isOpen={isOpen} onClose={onClose} index={activeCurrentStrikeIndex} dispatch={dispatch} />
-    </Flex>
+    </>
   )
 
 }
@@ -140,23 +191,6 @@ const StrikeStrategyModal = ({ isOpen, onClose }) => {
           <ModalBody>
             <Flex>
               <Box flex='1'>
-                <Button onClick={() => console.log('Select Option Put')}>
-                  Select Option Put
-                </Button>
-                <Select id='optionType' value={optionType} placeholder={'Select Option Put'} onChange={(e) => setValue('optionType', e.target.value)}>
-                {
-                  [
-                    {
-                      id: 3,
-                      name: 'SHORT_CALL_QUOTE'
-                    },
-                    {
-                      id: 4,
-                      name: 'SHORT_PUT_QUOTE'
-                    }
-                  ].map(({ name, id }) => (<option value={id}>{name}</option>))
-                }
-                </Select>
                 <Slider name={"Target Delta"} step={.1} min={-1} max={1} id={"targetDelta"} setSliderValue={setValue} sliderValue={targetDelta} label={''} />    
                 <Slider name={"Max Delta Gap"} step={.05} min={0} max={.5} id={"maxDeltaGap"} setSliderValue={setValue} sliderValue={maxDeltaGap} label={''} />
                 <Slider name={"Max Vol Variance"} step={.1} min={0} max={1} id={"maxVolVariance"} setSliderValue={setValue} sliderValue={maxVolVariance} label={''} />
@@ -176,7 +210,6 @@ const StrikeStrategyModal = ({ isOpen, onClose }) => {
             <Button colorScheme='blue' mr={3} onClick={onClose}>
               Save
             </Button>
-            <Button variant='ghost'>Secondary Action</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

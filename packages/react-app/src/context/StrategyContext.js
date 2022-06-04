@@ -1,12 +1,13 @@
-import { createContext, useContext, useEffect, useReducer } from "react";
+import { createContext, useContext, useEffect, useReducer, useState } from "react";
 import { useParams } from "react-router-dom";
-import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { formatEther, formatUnits, parseUnits } from "ethers/lib/utils";
 
-import { getLyraMarket } from "../helpers/lyra";
+import { getLyraMarket, getQuoteBoard, getStrikeQuotes } from "../helpers/lyra";
 import useWeb3 from "../hooks/useWeb3";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { strategyInitialState, strategyReducer } from "../reducer/strategyReducer";
 import { MESSAGE, Notifier, TYPE } from "../notifcations";
+import { useEventListener } from 'eth-hooks';
 
 const StrategyContext = createContext();
 
@@ -20,6 +21,8 @@ export const StrategyProvider = ({ children }) => {
 
   const strategyContract = contracts ? contracts['Strategy'] : "";
 
+  // const events = useEventListener(strategyContract, eventFilter, startBlock, toBlock?, options?): THookResult<GTypedEvent[]>
+
   const [state, dispatch] = useReducer(strategyReducer, strategyInitialState);
 
   const {
@@ -27,6 +30,7 @@ export const StrategyProvider = ({ children }) => {
     selectedBoard,
     market, 
     lyraMarket,
+    needsQuotesUpdated,
     currentStrikes
   } = state;
 
@@ -52,9 +56,10 @@ export const StrategyProvider = ({ children }) => {
             .filter(strike => strike.isDeltaInRange)
             .map((strike) => {
               return {
-                name: `${formatUnits(strike.strikePrice)} - ${formatUnits(strike.iv)}`,
+                name: `${formatUnits(strike.strikePrice)}`,
                 id: strike.id,
                 iv: formatUnits(strike.iv),
+                iv_formatted: `${formatUnits(strike.iv)}`,
                 skew: formatUnits(strike.skew),
                 strikePrice: formatUnits(strike.strikePrice),
                 vega: formatUnits(strike.vega)
@@ -66,6 +71,7 @@ export const StrategyProvider = ({ children }) => {
         .reduce((a, v) => {
           return { ...a, [v.id]: v }
         }, {}); 
+
         dispatch({ type: 'SET_LIVE_BOARDS', payload: liveBoards });
       } catch (error) {
         console.log({error})
@@ -74,20 +80,100 @@ export const StrategyProvider = ({ children }) => {
   }, [lyraMarket]);
 
   useEffect(async () => {
+    if(selectedBoard && needsQuotesUpdated) {
+      const strikeQuotes = await getQuoteBoard('eth', selectedBoard.id); 
+      const formattedStrikeQuotes = strikeQuotes.map(({ strikeId, premium, pricePerOption }) => {
+        return {
+          strikeId,
+          premium: formatUnits(premium), 
+          pricePerOption: formatUnits(pricePerOption)
+        }
+      }).reduce((acc, strike)  => {
+        const { strikeId, premium, pricePerOption } = strike;
+        return { ...acc, [strikeId]: { premium, pricePerOption } }
+      }, {});
+
+      console.log({ formattedStrikeQuotes})
+      
+      dispatch({ type: 'UPDATE_STRIKES_WITH_PREMIUMS', payload: formattedStrikeQuotes })
+    }
+  }, [selectedBoard, needsQuotesUpdated])
+
+  const [strategyValue, setStrategyValue] = useState({
+    hasStrategy: false, 
+    vaultState: { 
+      round: 0,
+      lockedAmount: 0,
+      roundInProgress: false
+    },
+    vaultParams: {
+      cap: 0,
+      asset: ''
+    },
+    activeBoardId: 0,
+  })
+
+  const updateValue = (id, value) => {
+    setStrategyValue(prevState => ({ ...prevState, [id]: value }))
+  }
+
+  const isValidStrategyAddress = async () => {
+    const _strategy = await otusVaultContract._strategy(); 
+    console.log({ _strategy })
+    console.log(ethers.constants.AddressZero)
+    const isValid = _strategy != ethers.constants.AddressZero ? true : false; 
+    console.log({ isValid })
+    return isValid; 
+  }
+
+  useEffect(async () => {
     if(otusVaultContract) {
       console.log({ otusVaultContract  })
       try {
-        const _strategy = await otusVaultContract._strategy(); 
-        console.log({ _strategy })
-        const _hasStrategy = _strategy != ethers.constants.AddressZero ? true : false; 
-        dispatch({ type: 'UPDATE_VALUE', id: 'hasStrategy', payload: _hasStrategy }); 
+
+        const _hasStrategy = await isValidStrategyAddress(); 
+        updateValue('hasStrategy', _hasStrategy); 
+
       } catch (error) {
         console.log({ error })
       }
     }
-  }, [otusVaultContract])
+  }, [otusVaultContract]);
 
-  // vault strategy set once 
+  useEffect(async () => {
+    if(strategyValue.hasStrategy) {
+      console.log({ otusVaultContract  })
+      try {
+        const vaultState = await otusVaultContract.vaultState(); 
+        const vaultParams = await otusVaultContract.vaultParams(); 
+        const activeBoardId = await strategyContract.activeBoardId();
+        const activeStrikeIds = await strategyContract.getActiveStrikeIds();
+
+        console.log({ activeStrikeIds, vaultState, vaultParams, activeBoardId })
+
+
+        const strikeToPositionIds = await Promise.all(activeStrikeIds.map(async (strikeId) => {
+          const formattedStrikeId = Math.round(parseFloat(formatUnits(strikeId)) * (10 ** 18));
+          const positionId = await strategyContract.strikeToPositionId(strikeId)
+          const formattedPositionId = Math.round(parseFloat(formatUnits(positionId)) * (10 ** 18))
+          const strategyIndex = await strategyContract.strategyToStrikeId(strikeId)
+          return { formattedStrikeId, formattedPositionId, strategyIndex: formatUnits(strategyIndex) }
+        }));
+
+        console.log({ strikeToPositionIds })
+
+        updateValue('vaultState', vaultState); 
+        updateValue('vaultParams', vaultParams);
+        updateValue('activeBoardId', activeBoardId); 
+
+        const currentStrikeStrategies = await strategyContract.currentStrikeStrategies(0); 
+        console.log({ currentStrikeStrategies }); 
+ 
+      } catch (error) {
+        console.log({ error })
+      }
+    }
+  }, [strategyValue.hasStrategy]);
 
   const setStrategyOnVault = async () => {
     try {
@@ -95,6 +181,8 @@ export const StrategyProvider = ({ children }) => {
       const response = await otusVaultContract.connect(signer).setStrategy(strategyAddress); 
       const receipt = response.wait(); 
       console.log({ receipt })
+      const _hasStrategy = isValidStrategyAddress(); 
+      updateValue('hasStrategy', _hasStrategy); 
       Notifier(MESSAGE.SETVAULT.SUCCESS, TYPE.SUCCESS)
 
     } catch (error) {
@@ -122,6 +210,10 @@ export const StrategyProvider = ({ children }) => {
         minTradeInterval: minTradeInterval,
         gwavPeriod: gwavPeriod,
       }
+
+      const optionMarket = await strategyContract.optionMarket(); 
+
+      console.log({ optionMarket })
 
       const response = await strategyContract.connect(signer).setStrategy(formattedStrategy); 
       const receipt = response.wait(); 
@@ -166,48 +258,27 @@ export const StrategyProvider = ({ children }) => {
     }
   }
 
-  const _trade = async () => {
-    try {
-      const strikeStrategies = currentStrikes.map(({ 
-        targetDelta,
-        maxDeltaGap,
-        minVol,
-        maxVol,
-        maxVolVariance,
-        optionType,
-        size,
-        id
-      }) => {
-        return {
-          targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(optionType == 3 ? 1 : -1),
-          maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
-          minVol: parseUnits(minVol.toString(), 18),
-          maxVol: parseUnits(maxVol.toString(), 18),
-          maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
-          optionType: parseInt(optionType),
-          size: parseUnits(size.toString(), 18),
-          strikeId: id
-        }
-      });
-      console.log({ strikeStrategies });
-
-      // const response = await otusVaultContract.connect(signer).trade(strikeStrategies);
-      // const receipt = response.wait();  
-      // console.log({ receipt })
-      // Notifier(MESSAGE.TRADE.SUCCESS, TYPE.SUCCESS)
-
-    } catch (error) {
-      console.log({ error })
-      Notifier(MESSAGE.TRADE.ERROR, TYPE.ERROR)
-    }
-  }
-
   const trade = async () => {
     try {
-      const owner = await strategyContract.owner();
-      console.log({ owner })
-      const owner1 = await otusVaultContract.owner();
-      console.log({ owner1, signer: await signer.getAddress() })
+
+      const strikes = await strategyContract.getStrikes(currentStrikes.map(strike => strike.id)); 
+
+      console.log({ currentStrikes, strikes }); 
+
+      const collaterals = await Promise.all(strikes.map(async (strike, index) => {
+        const currentStrike = currentStrikes[index]; 
+        console.log({ 
+          strikePrice: formatUnits(strike.strikePrice), 
+          id: formatUnits(strike.id), 
+          strikeId: currentStrike.id, 
+          optionType: currentStrike.optionType  
+        })
+        return await strategyContract.getRequiredCollateral(strike, parseUnits(currentStrike.size.toString()), currentStrike.optionType)
+      }));
+
+      collaterals.map(collateral => {
+        console.log({ collateralToAdd: formatEther(collateral.collateralToAdd), setCollateralTo: formatEther(collateral.setCollateralTo) })
+      })
 
       const strikeStrategies = currentStrikes.map(({ 
         targetDelta,
@@ -220,19 +291,36 @@ export const StrategyProvider = ({ children }) => {
         id
       }) => {
         return {
-          targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(optionType == 3 ? 1 : -1),
+          targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(parseInt(optionType) == 3 ? 1 : -1),
           maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
           minVol: parseUnits(minVol.toString(), 18),
           maxVol: parseUnits(maxVol.toString(), 18),
           maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
           optionType: parseInt(optionType),
-          size: parseUnits(size.toString(), 18),
-          strikeId: id
+          size: parseUnits(size.toString()),
+          strikeId: id,
+          collateralToAdd: collaterals[0].collateralToAdd, 
+          setCollateralTo: collaterals[0].setCollateralTo
         }
       });
-      console.log({ strikeStrategies });
+
+      console.log({ st12:strikes[0], strikeStrategies })
+
+      // const col = await strategyContract.getCollateral(
+      //   strikeStrategies[0].strikeId,
+      //   strikeStrategies[0].size, 
+      //   strikeStrategies[0].optionType);
+      // console.log({ collateralToAdd: formatUnits(col[0]), setCollateralTo: formatUnits(col[1]), asset: formatUnits(col[2]) })
+
+      const _getPremiumLimit = await strategyContract._getPremiumLimit2(
+        strikes[0],
+        true, 
+        strikeStrategies[0]);
+      console.log({ limitPremium: formatUnits(_getPremiumLimit[0]), spotPrice: formatUnits(_getPremiumLimit[1])  })
+
 
       const response = await otusVaultContract.connect(signer).trade(strikeStrategies);
+
       const receipt = response.wait();  
       console.log({ receipt })
       Notifier(MESSAGE.TRADE.SUCCESS, TYPE.SUCCESS)
@@ -246,6 +334,7 @@ export const StrategyProvider = ({ children }) => {
   const value = { 
     state, 
     dispatch, 
+    strategyValue,
     setStrategyOnVault,
     setVaultStrategy,
     startRound,

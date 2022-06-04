@@ -34,9 +34,7 @@ export default function Account() {
     displayAddress = ens;
   } 
 
-  return <Box flex="1">
-      {
-        !address ?
+  return !address ?
         <Button onClick={() => loadWeb3Modal()} rightIcon={<ChevronRightIcon />}>
           Connect
         </Button> :
@@ -53,6 +51,4 @@ export default function Account() {
             </MenuItem>
           </MenuList>
         </Menu>
-      }
-    </Box>
 }

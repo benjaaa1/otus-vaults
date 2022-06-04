@@ -3920,7 +3920,7 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@tenderly/hardhat-tenderly@^1.0.10":
+"@tenderly/hardhat-tenderly@^1.0.13":
   version "1.0.13"
   resolved "https://registry.yarnpkg.com/@tenderly/hardhat-tenderly/-/hardhat-tenderly-1.0.13.tgz#6182a2d32bf12d110622f0b24263dc964ed7aa6d"
   integrity sha512-XsrF2QIUh8YmzCcWHmPnSNQjZNBQkyrHER8bcrWsFIgL7ub49hmPbpGVB2Isb6gUV/IGBpBm7R69jpmoTvJ17g==
@@ -7036,26 +7036,6 @@ bn.js@^5.0.0, bn.js@^5.1.1, bn.js@^5.1.2, bn.js@^5.1.3, bn.js@^5.2.0:
   resolved "https://registry.npmjs.org/bn.js/-/bn.js-5.2.0.tgz"
   integrity sha512-D7iWRBvnZE8ecXiLj/9wbxH7Tk79fAh8IHaTNq1RWRixsS02W+5qS+iE9yq6RYl0asXx5tw0bLhmT5pIfbSquw==
 
-bnc-notify@^1.9.5:
-  version "1.9.5"
-  resolved "https://registry.yarnpkg.com/bnc-notify/-/bnc-notify-1.9.5.tgz#232cef2af1fbce294a08d6e185b890d281aadb08"
-  integrity sha512-pjXYrWafjnOGOY7e6Mb1fY+A6tQAgroBHR5pQxokq3jYr4TYQumv2TLhc0/idqYI+G9AwsBMQJSWcZQ2jZI5AQ==
-  dependencies:
-    bignumber.js "^9.0.0"
-    bnc-sdk "4.1.0"
-    lodash.debounce "^4.0.8"
-    regenerator-runtime "^0.13.3"
-    uuid "^3.3.3"
-
-bnc-sdk@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.npmjs.org/bnc-sdk/-/bnc-sdk-4.1.0.tgz"
-  integrity sha512-gbW5wRLPB7HDzXof5VrkFSDoyfuD2O9K8dOTRQl2OE/HAj3/epKyccQDtWNLNih7t234VM/sv9t6nxqRnNRJmQ==
-  dependencies:
-    crypto-es "^1.2.2"
-    rxjs "^6.6.3"
-    sturdy-websocket "^0.1.12"
-
 body-parser@1.19.2, body-parser@^1.16.0:
   version "1.19.2"
   resolved "https://registry.npmjs.org/body-parser/-/body-parser-1.19.2.tgz"
@@ -8552,11 +8532,6 @@ crypto-browserify@3.12.0, crypto-browserify@^3.11.0:
     public-encrypt "^4.0.0"
     randombytes "^2.0.0"
     randomfill "^1.0.3"
-
-crypto-es@^1.2.2:
-  version "1.2.7"
-  resolved "https://registry.npmjs.org/crypto-es/-/crypto-es-1.2.7.tgz"
-  integrity sha512-UUqiVJ2gUuZFmbFsKmud3uuLcNP2+Opt+5ysmljycFCyhA0+T16XJmo1ev/t5kMChMqWh7IEvURNCqsg+SjZGQ==
 
 crypto-js@^3.1.9-1:
   version "3.3.0"
@@ -15576,7 +15551,7 @@ lodash.debounce@^4.0.8:
   resolved "https://registry.npmjs.org/lodash.debounce/-/lodash.debounce-4.0.8.tgz"
   integrity sha1-gteb/zCmfEAF/9XiUVMArZyk168=
 
-lodash.defaults@^4.0.1, lodash.defaults@^4.2.0:
+lodash.defaults@^4.0.1:
   version "4.2.0"
   resolved "https://registry.npmjs.org/lodash.defaults/-/lodash.defaults-4.2.0.tgz"
   integrity sha1-0JF4cW/+pN3p5ft7N/bwgCJ0WAw=
@@ -19872,7 +19847,7 @@ regenerator-runtime@^0.11.0:
   resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz"
   integrity sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==
 
-regenerator-runtime@^0.13.3, regenerator-runtime@^0.13.4, regenerator-runtime@^0.13.7:
+regenerator-runtime@^0.13.4, regenerator-runtime@^0.13.7:
   version "0.13.9"
   resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.13.9.tgz"
   integrity sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==
@@ -21642,13 +21617,6 @@ strip-json-comments@3.1.1, strip-json-comments@^3.1.0, strip-json-comments@^3.1.
   resolved "https://registry.npmjs.org/strip-json-comments/-/strip-json-comments-3.1.1.tgz"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
 
-sturdy-websocket@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.npmjs.org/sturdy-websocket/-/sturdy-websocket-0.1.12.tgz"
-  integrity sha512-PA7h8LdjaMoIlC5HAwLVzae4raGWgyroscV4oUpEiTtEFINcNa47/CKYT3e98o+FfsJgrclI2pYpaJrz0aaoew==
-  dependencies:
-    lodash.defaults "^4.2.0"
-
 style-loader@1.3.0:
   version "1.3.0"
   resolved "https://registry.npmjs.org/style-loader/-/style-loader-1.3.0.tgz"
@@ -23151,7 +23119,7 @@ uuid@7.0.2:
   resolved "https://registry.npmjs.org/uuid/-/uuid-7.0.2.tgz"
   integrity sha512-vy9V/+pKG+5ZTYKf+VcphF5Oc6EFiu3W8Nv3P3zIh0EqVI80ZxOzuPfe9EHjkFNvf8+xuTHVeei4Drydlx4zjw==
 
-uuid@^3.3.2, uuid@^3.3.3, uuid@^3.4.0:
+uuid@^3.3.2, uuid@^3.4.0:
   version "3.4.0"
   resolved "https://registry.npmjs.org/uuid/-/uuid-3.4.0.tgz"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==

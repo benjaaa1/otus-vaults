@@ -8,9 +8,11 @@ const registerMarkets = async () => {
     
     const registry = await ethers.getContract("OtusCloneFactory");
 
-    await registry.setFuturesMarkets("0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D", "0x7345544800000000000000000000000000000000000000000000000000000000")
+    const futures = await registry.setFuturesMarkets("0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D", "0x7345544800000000000000000000000000000000000000000000000000000000")
+    const futuresReceipt = futures.wait(); 
 
-    await registry.setOptionMarketDetails("0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2"); 
+    const optionMarkets = await registry.setOptionMarketDetails("0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2"); 
+    const optionMarketsReceipt = optionMarkets.wait(); 
 
     const market = await registry.getOptionMarketDetails("0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2"); 
     console.log({ market })

@@ -158,6 +158,7 @@ contract OtusCloneFactory is OtusRegistry {
 			_vault,  
 			marketAddresses,
 			address(0x806b9d822013B8F82cC8763DCC556674853905d5)  // marketAddress.gwavOracle
+			// address(0x4A679253410272dd5232B3Ff7cF5dbB88f295319)
 		);
 
 		emit NewStrategyClone(strategyClone, msg.sender);

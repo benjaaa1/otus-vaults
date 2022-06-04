@@ -14,6 +14,7 @@ const customTheme = extendTheme({
     global: {
       body: {
         background: "linear-gradient(180deg, #84FFC4 0%, rgba(101, 255, 144, 0.56) 100%) no-repeat", 
+        minHeight: "100%"
       }
     }
   }

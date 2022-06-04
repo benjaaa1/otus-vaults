@@ -25,10 +25,11 @@ export default function useSupervisor() {
         setLoading(true)
         const details = await otusCloneFactory.connect(signer).getUserManagerDetails();
         setUserDetails(details); 
+        setLoading(false);
       } catch (error) {
         console.log({ error })
+        setLoading(false);
       }
-      setLoading(false)
     }
   }, [otusCloneFactory])
 

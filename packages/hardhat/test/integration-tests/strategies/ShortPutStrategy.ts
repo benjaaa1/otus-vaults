@@ -22,19 +22,35 @@ import {
 } from '../../../typechain-types';
 import { LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
 
-const defaultStrategyDetail: Strategy.DetailStruct = {
-  collatBuffer: toBN('1.2'),
-  collatPercent: toBN('1'),
-  maxVolVariance: toBN('0.1'),
+const defaultStrategyDetail: Strategy.StrategyDetailStruct = {
+  collatBuffer: toBN('1.5'),
+  collatPercent: toBN('.35'),
   gwavPeriod: 600,
   minTimeToExpiry: lyraConstants.DAY_SEC,
   maxTimeToExpiry: lyraConstants.WEEK_SEC * 4,
+  minTradeInterval: 600,
+};
+
+const defaultStrikeStrategyDetailCall: Strategy.StrikeStrategyDetailStruct = {
+  maxVolVariance: toBN('0.1'),
+  targetDelta: toBN('0.4'),
+  maxDeltaGap: toBN('0.5'), // accept delta from 0.1~0.3
+  minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
+  maxVol: toBN('1.3'), // max vol to sell.
+  size: toBN('7.5'),
+  strikeId: 0,
+  optionType: 3
+};
+
+const defaultStrikeStrategyDetail: Strategy.StrikeStrategyDetailStruct = {
+  maxVolVariance: toBN('0.1'),
   targetDelta: toBN('0.2').mul(-1),
   maxDeltaGap: toBN('0.1'), // accept delta from 0.1~0.3
   minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
   maxVol: toBN('1.3'), // max vol to sell.
-  size: toBN('15'),
-  minTradeInterval: 600,
+  size: toBN('7.5'),
+  strikeId: 0,
+  optionType: 4
 };
 
 const defaultHedgeDetail: Strategy.HedgeDetailStruct = {
@@ -124,11 +140,9 @@ describe('Strategy integration test', async () => {
     // set boardId
     // await TestSystem.marketActions.createBoard(lyraTestSystem, boardParameter);
     const boards = await lyraTestSystem.optionMarket.getLiveBoards();
-    console.log({ boards }); 
     boardId = boards[0];
     // await lyraTestSystem.optionMarket.addStrikeToBoard(boardId, toBN('1900'), toBN('1.1'));
     const details = await lyraTestSystem.optionMarket.getBoardAndStrikeDetails(boardId);
-    console.log({ details })
 
     await lyraTestSystem.optionGreekCache.updateBoardCachedGreeks(boardId);
 
@@ -181,6 +195,7 @@ describe('Strategy integration test', async () => {
       supervisor.address,
       vault.address,
       strategy.address,
+      ethers.constants.AddressZero,
       lyraTestSystem.lyraRegistry.address,
       futureMarketManager.address // futuresmarketmanager
     )) as OtusCloneFactory;
@@ -216,7 +231,6 @@ describe('Strategy integration test', async () => {
   before('setup option market details', async () => {
     await otusCloneFactory.connect(deployer).setOptionMarketDetails(lyraMarket.OptionMarket.address);
     const addresses = await otusCloneFactory.getOptionMarketDetails(lyraMarket.OptionMarket.address);
-    console.log({addresses});
   })
 
   before('initialize vault and strategy with supervisor', async () => {
@@ -225,11 +239,11 @@ describe('Strategy integration test', async () => {
 
     await otusCloneFactory.connect(manager).cloneVaultWithStrategy(
       lyraMarket.OptionMarket.address,
+      'New Vault',
       'OtusVault Share', 
       'Otus VS', 
       true, 
       4, 
-      lyraMarket.GWAVOracle.address,
       {
         decimals,
         cap, 
@@ -260,10 +274,6 @@ describe('Strategy integration test', async () => {
       expect(await managersStrategy.vault()).to.be.eq(managersVault.address);
     });
 
-    it('deploys with correct optionType - default', async () => {
-      expect(await managersStrategy.optionType()).to.be.eq(TestSystem.OptionType.SHORT_PUT_QUOTE);
-    });
-
     it('deploys with correct gwavOracle', async () => {
       expect(await managersStrategy.gwavOracle()).to.be.eq(lyraTestSystem.GWAVOracle.address);
     });
@@ -275,33 +285,19 @@ describe('Strategy integration test', async () => {
       const owner = await managersStrategy.owner();
 
       await managersStrategy.connect(manager).setStrategy(
-        defaultStrategyDetail, 
-        defaultHedgeDetail,
+        defaultStrategyDetail
       );
 
       const newStrategy = await managersStrategy.connect(manager).currentStrategy();
       expect(newStrategy.minTimeToExpiry).to.be.eq(defaultStrategyDetail.minTimeToExpiry);
       expect(newStrategy.maxTimeToExpiry).to.be.eq(defaultStrategyDetail.maxTimeToExpiry);
-      expect(newStrategy.targetDelta).to.be.eq(defaultStrategyDetail.targetDelta);
-      expect(newStrategy.maxDeltaGap).to.be.eq(defaultStrategyDetail.maxDeltaGap);
-      expect(newStrategy.minVol).to.be.eq(defaultStrategyDetail.minVol);
-      expect(newStrategy.maxVol).to.be.eq(defaultStrategyDetail.maxVol);
-      expect(newStrategy.size).to.be.eq(defaultStrategyDetail.size);
       expect(newStrategy.minTradeInterval).to.be.eq(defaultStrategyDetail.minTradeInterval);
-
-      const newHedgeStrategy = await managersStrategy.connect(manager).currentHedgeStrategy();
-      expect(newHedgeStrategy.hedgePercentage).to.be.eq(defaultHedgeDetail.hedgePercentage);
-      expect(newHedgeStrategy.maxHedgeAttempts).to.be.eq(defaultHedgeDetail.maxHedgeAttempts);
-      expect(newHedgeStrategy.limitStrikePricePercent).to.be.eq(defaultHedgeDetail.limitStrikePricePercent);
-      expect(newHedgeStrategy.leverageSize).to.be.eq(defaultHedgeDetail.leverageSize);
-      expect(newHedgeStrategy.stopLossLimit).to.be.eq(defaultHedgeDetail.stopLossLimit);
 
     });
 
     it('should revert if setStrategy is not called by owner', async () => {
       await expect(strategy.connect(randomUser).setStrategy(
-          defaultStrategyDetail, 
-          defaultHedgeDetail
+          defaultStrategyDetail
         )).to.be.revertedWith(
         'Ownable: caller is not the owner',
       );
@@ -319,7 +315,6 @@ describe('Strategy integration test', async () => {
 
     before('set strikes array', async () => {
       strikes = await lyraTestSystem.optionMarket.getBoardStrikes(boardId);
-      console.log({ strikes })
     });
 
     before('check strikeIds', async() => {
@@ -329,7 +324,8 @@ describe('Strategy integration test', async () => {
         return strikeObj;
       }))
 
-      console.log({ results });
+      console.log({ results })
+
     })   
 
     it('user should be able to deposit through vault', async () => {
@@ -345,61 +341,81 @@ describe('Strategy integration test', async () => {
     });
 
     it('manager can start round 1', async () => {
-      console.log({ boardId, strikes: strikes[1] })
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikes[0])
-      await managersVault.connect(manager).startNextRound();
-      const sharesBalance = managersVault.connect(manager).balanceOf(randomUser2.address);
-      console.log({ sharesBalance })
+      await managersVault.connect(manager).startNextRound(boardId);
+      const sharesBalance = await managersVault.connect(manager).balanceOf(randomUser2.address);
     });
 
     it('will not trade when delta is out of range0', async () => {
       // 2500, 2600, 2800 are bad strike based on delta
-      console.log(" strikes[0]", strikes[0])
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikes[0])
-      await expect(managersVault.connect(manager).trade()).to.be.revertedWith('invalid strike');      
+      const strikeStrategy = {
+        ...defaultStrikeStrategyDetail,
+        strikeId: strikes[0]
+      }
+
+      const currentStrikeStrategies = await managersStrategy.getCurrentStrikeStrategies(); 
+
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('invalid strike');      
     });
 
     it('will not trade when delta is out of range1', async () => {
       // 2500, 2600, 2800 are bad strike based on delta
-      console.log(" strikes[1]", strikes[1])
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikes[1])
-      await expect(managersVault.connect(manager).trade()).to.be.revertedWith('TradeDeltaOutOfRange');
+      const strikeStrategy = {
+        ...defaultStrikeStrategyDetail,
+        strikeId: strikes[1]
+      }
+
+      const currentStrikeStrategies1 = await managersStrategy.getCurrentStrikeStrategies(); 
+
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TradeDeltaOutOfRange');
       
     });
 
     it('will not trade when delta is out of range4', async () => {
       // 2500, 2600, 2800 are bad strike based on delta
-      console.log(" strikes[4]", strikes[4])
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikes[4])
-      await expect(managersVault.connect(manager).trade()).to.be.revertedWith('invalid strike');
+      const strikeStrategy = {
+        ...defaultStrikeStrategyDetail,
+        strikeId: strikes[4]
+      }
+
+      const currentStrikeStrategies2 = await managersStrategy.getCurrentStrikeStrategies(); 
+
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('invalid strike');
       
     });
 
     it('should revert when min premium < premium calculated with min vol', async () => {
       // 2550 is good strike with reasonable delta, but won't go through because premium will be too low.
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikes[3])
-      await expect(managersVault.connect(manager).trade()).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
+      const strikeStrategy = {
+        ...defaultStrikeStrategyDetail,
+        strikeId: strikes[3]
+      }
+
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
 
     });
 
     it('should trade when delta and vol are within range', async () => {
       const strikeObj = await strikeIdToDetail(lyraTestSystem.optionMarket, strikes[2]);
-      const [collateralToAdd] = await managersStrategy.connect(manager).getRequiredCollateral(strikeObj);
-
+      const strikeStrategy = {
+        ...defaultStrikeStrategyDetail,
+        strikeId: strikes[2]
+      }
+      const strikeStrategyCall = {
+        ...defaultStrikeStrategyDetailCall,
+        strikeId: strikes[6]
+      }
+      const [collateralToAdd] = await managersStrategy.connect(manager).getRequiredCollateral(strikeObj, strikeStrategy.size, strikeStrategy.optionType);
+      
       const vaultStateBefore = await managersVault.connect(manager).vaultState();
       const strategySUSDBalance = await susd.balanceOf(managersStrategy.address);
-      console.log({ vaultStateBefore, strategySUSDBalance })
 
       // 3400 is a good strike
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikeObj.id);
-      await managersVault.connect(manager).trade();
+      await managersVault.connect(manager).trade([strikeStrategy, strikeStrategyCall]);
 
       const strategyBalance = await seth.balanceOf(managersStrategy.address);
       const vaultStateAfter = await managersVault.connect(manager).vaultState();
-      console.log({ strategyBalance, vaultStateAfter });
 
       const strategySUDCBalanceAfter = await susd.balanceOf(managersStrategy.address);
-      console.log({ strategySUDCBalanceAfter, strategySUSDBalance })
 
       // strategy shouldn't hold any seth
       expect(strategyBalance.isZero()).to.be.true;
@@ -416,21 +432,19 @@ describe('Strategy integration test', async () => {
       const positionId = await managersStrategy.strikeToPositionId(storedStrikeId);
       const [position] = await lyraTestSystem.optionToken.getOptionPositions([positionId]);
 
-      expect(position.amount.eq(defaultStrategyDetail.size)).to.be.true;
+      expect(position.amount.eq(defaultStrikeStrategyDetail.size)).to.be.true;
       expect(position.collateral.eq(collateralToAdd)).to.be.true;
-    });
-
-    it('should revert when user try to trigger another trade during cooldown', async () => {
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikes[2]);
-      await expect(managersVault.connect(manager).trade()).to.be.revertedWith('min time interval not passed');
     });
 
     it('should be able to trade a higher strike if spot price goes up', async () => {
       await TestSystem.marketActions.mockPrice(lyraTestSystem, toBN('3200'), 'sETH');
 
       // triger with new strike (2900)
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikes[4]);
-      await managersVault.connect(manager).trade();
+      const strikeStrategy = {
+        ...defaultStrikeStrategyDetail,
+        strikeId: strikes[4]
+      }
+      await managersVault.connect(manager).trade([strikeStrategy]);
 
       // check that active strikes are updated
       const storedStrikeId = await managersStrategy.activeStrikeIds(1);
@@ -438,13 +452,7 @@ describe('Strategy integration test', async () => {
       const positionId = await managersStrategy.strikeToPositionId(storedStrikeId);
       const [position] = await lyraTestSystem.optionToken.getOptionPositions([positionId]);
 
-      expect(position.amount.eq(defaultStrategyDetail.size)).to.be.true;
-    });
-
-    it('should revert when trying to trade the old strike', async () => {
-      await lyraEvm.fastForward(600);
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikes[3]);
-      await expect(managersVault.connect(manager).trade()).to.be.revertedWith('invalid strike');
+      expect(position.amount.eq(defaultStrikeStrategyDetail.size)).to.be.true;
     });
 
     const additionalDepositAmount = toBN('25000');
@@ -461,6 +469,7 @@ describe('Strategy integration test', async () => {
     });
 
     it('should revert when closeRound is called before options are settled', async () => {
+      const currentStrikeStrategies = await managersStrategy.getCurrentStrikeStrategies(); 
       await expect(managersVault.closeRound()).to.be.revertedWith('cannot clear active position');
     });
 
@@ -494,10 +503,8 @@ describe('Strategy integration test', async () => {
 
       // initiate withdraw for later test
       const balance2 = await managersVault.connect(randomUser2).shareBalances(randomUser2.address);
-      console.log({ balance2 })
       await managersVault.connect(randomUser2).initiateWithdraw(toBN('50000'));
       const vs = await managersVault.connect(randomUser2).vaultState();
-      console.log({ currentRound: vs.round });
     });
 
     before('create new board', async () => {
@@ -510,10 +517,9 @@ describe('Strategy integration test', async () => {
 
     before('start the next round', async () => {
       await lyraEvm.fastForward(lyraConstants.DAY_SEC);
-      await managersVault.connect(manager).setNextBoardStrikeId(boardId, strikes[2]);
-      await managersVault.connect(manager).startNextRound();
+
+      await managersVault.connect(manager).startNextRound(boardId);
       const vs2 = await managersVault.connect(randomUser2).vaultState();
-      console.log({ vs2: vs2.round });
     });
 
     before('should be able to complete the withdraw', async () => {
@@ -530,7 +536,12 @@ describe('Strategy integration test', async () => {
       snapshot = await lyraEvm.takeSnapshot();
 
       strategySUSDBalanceBefore = await susd.balanceOf(managersStrategy.address);
-      await managersVault.connect(manager).trade();
+
+      const strikeStrategy = {
+        ...defaultStrikeStrategyDetail,
+        strikeId: strikes[2]
+      }
+      await managersVault.connect(manager).trade([strikeStrategy]);
 
       [strikePrice, expiry] = await lyraTestSystem.optionMarket.getStrikeAndExpiry(strikes[2]);
       positionId = await managersStrategy.strikeToPositionId(strikes[2]);
@@ -547,7 +558,7 @@ describe('Strategy integration test', async () => {
     });
 
     it('should revert when trying to reduce a safe position', async () => {
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry);
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry, position.optionType);
       expect(fullCloseAmount).to.be.eq(0);
       await expect(managersVault.connect(keeper).reducePosition(positionId, toBN('10000'))).to.be.revertedWith(
         'amount exceeds allowed close amount',
@@ -560,9 +571,9 @@ describe('Strategy integration test', async () => {
       const positionId = await managersStrategy.strikeToPositionId(strikes[2]); // 2700 strike
       const preReduceBal = await susd.balanceOf(managersStrategy.address);
 
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10)); //account for time passing
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10), position.optionType); //account for time passing
       expect(fullCloseAmount).to.be.gt(0);
-      await managersVault.connect(randomUser).reducePosition(positionId, fullCloseAmount);
+      await managersVault.connect(keeper).reducePosition(positionId, fullCloseAmount);
       const postReduceBal = await susd.balanceOf(managersStrategy.address);
       expect(postReduceBal).to.be.lt(preReduceBal);
     });
@@ -571,18 +582,18 @@ describe('Strategy integration test', async () => {
       await TestSystem.marketActions.mockPrice(lyraTestSystem, toBN('2600'), 'sETH');
       const preReduceBal = await susd.balanceOf(managersStrategy.address);
 
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10)); //account for time passing
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10), position.optionType); //account for time passing
       expect(fullCloseAmount).to.be.gt(0);
-      await managersVault.connect(randomUser).reducePosition(positionId, fullCloseAmount.div(2));
+      await managersVault.connect(keeper).reducePosition(positionId, fullCloseAmount.div(2));
       const postReduceBal = await susd.balanceOf(managersStrategy.address);
       expect(postReduceBal).to.be.lt(preReduceBal);
     });
 
     it('revert reduce position if unsafe position + close amount too large', async () => {
       await TestSystem.marketActions.mockPrice(lyraTestSystem, toBN('2250'), 'sETH');
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10)); //account for time passing
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10), position.optionType); //account for time passing
       expect(fullCloseAmount).to.be.gt(0);
-      await expect(managersVault.connect(randomUser).reducePosition(positionId, fullCloseAmount.mul(2))).to.be.revertedWith(
+      await expect(managersVault.connect(keeper).reducePosition(positionId, fullCloseAmount.mul(2))).to.be.revertedWith(
         'amount exceeds allowed close amount',
       );
     });
@@ -592,13 +603,13 @@ describe('Strategy integration test', async () => {
 
       const [positionBefore] = await lyraTestSystem.optionToken.getOptionPositions([positionId]);
 
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10)); //account for time passing
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10), position.optionType); //account for time passing
       expect(fullCloseAmount).to.be.gt(0);
 
       // send strategy some usdc so they can successfully reduce position
       await susd.mint(managersStrategy.address, toBN('50000'));
 
-      await managersVault.connect(randomUser).reducePosition(positionId, fullCloseAmount.div(2));
+      await managersVault.connect(keeper).reducePosition(positionId, fullCloseAmount.div(2));
       const [positionAfter] = await lyraTestSystem.optionToken.getOptionPositions([positionId]);
 
       expect(positionBefore.amount.sub(positionAfter.amount)).to.be.gt(0);
@@ -609,13 +620,6 @@ describe('Strategy integration test', async () => {
 
 async function strikeIdToDetail(optionMarket: OptionMarket, strikeId: BigNumber) {
   const [strike, board] = await optionMarket.getStrikeAndBoard(strikeId);
-  console.log({
-    id: strike.id,
-    expiry: board.expiry,
-    strikePrice: strike.strikePrice,
-    skew: strike.skew,
-    boardIv: board.iv,
-  })
   return {
     id: strike.id,
     expiry: board.expiry,

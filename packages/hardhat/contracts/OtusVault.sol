@@ -1,9 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-// Hardhat
-import "hardhat/console.sol";
-
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -27,10 +24,8 @@ contract OtusVault is BaseVault {
   string public vaultName; 
   // Amount locked for scheduled withdrawals last week;
   uint128 public lastQueuedWithdrawAmount;
-  uint256 public currentExpiry; 
   uint256 public roundHedgeAttempts; 
   uint public roundPremiumCollected; 
-  uint256 public roundExpiry; 
   bool public activeShort; 
 
   IERC20 collateralAsset; 
@@ -195,8 +190,8 @@ contract OtusVault is BaseVault {
 
   /// @dev anyone close part of the position with premium made by the strategy if a position is dangerous
   /// @param positionId the positiion to close
-  function reducePosition(uint positionId, uint size, uint closeAmount) external onlyKeeper {
-    _strategy.reducePosition(positionId, size, closeAmount);
+  function reducePosition(uint positionId, uint closeAmount) external onlyKeeper {
+    _strategy.reducePosition(positionId, closeAmount);
   }
 
   /************************************************

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-import "hardhat/console.sol";
-
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -192,10 +190,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     require(amount > 0, "!amount");
 
     _depositFor(amount, msg.sender);
-    console.log("vaultParams.asset", vaultParams.asset);
     // An approve() by the msg.sender is required beforehand
-    console.log("deposit", msg.sender, address(this), amount);
-
     IERC20(vaultParams.asset).safeTransferFrom(msg.sender, address(this), amount);
   }
 
@@ -223,7 +218,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   function _depositFor(uint amount, address creditor) private {
     uint currentRound = vaultState.round;
     uint totalWithDepositedAmount = totalBalance().add(amount);
-    console.log("totalWithDepositedAmount", totalWithDepositedAmount); 
 
     require(totalWithDepositedAmount <= vaultParams.cap, "Exceed cap");
 
@@ -237,7 +231,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
       roundPricePerShare[depositReceipt.round],
       vaultParams.decimals
     );
-    console.log("unredeemedShares", unredeemedShares); 
+
     uint depositAmount = amount;
 
     // If we have a pending deposit in the current round, we add on to the pending deposit
@@ -256,7 +250,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     uint newTotalPending = uint(vaultState.totalPending).add(amount);
     ShareMath.assertUint128(newTotalPending);
-    console.log("unredeemedShares", newTotalPending); 
 
     vaultState.totalPending = uint128(newTotalPending);
   }
@@ -270,9 +263,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     // We do a max redeem before initiating a withdrawal
     // But we check if they must first have unredeemed shares
-    console.log("depositReceipts[msg.sender].amount", depositReceipts[msg.sender].amount); 
-    console.log("depositReceipts[msg.sender].unredeemedShares", depositReceipts[msg.sender].unredeemedShares); 
-
     if (depositReceipts[msg.sender].amount > 0 || depositReceipts[msg.sender].unredeemedShares > 0) {
       _redeem(0, true);
     }
@@ -282,8 +272,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     Vault.Withdrawal storage withdrawal = withdrawals[msg.sender];
 
     bool withdrawalIsSameRound = withdrawal.round == currentRound;
-
-    console.log("InitiateWithdraw", currentRound); 
 
     emit InitiateWithdraw(msg.sender, numShares, currentRound);
 
@@ -305,9 +293,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     ShareMath.assertUint128(newQueuedWithdrawShares);
     vaultState.queuedWithdrawShares = uint128(newQueuedWithdrawShares);
 
-    console.log("_transfer", msg.sender, address(this), numShares);
-    uint balance = balanceOf(msg.sender); 
-    console.log("initiate withdraw balance of sender", balance); 
     _transfer(msg.sender, address(this), numShares);
   }
 
@@ -322,7 +307,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     // This checks if there is a withdrawal
     require(withdrawalShares > 0, "Not initiated");
-    console.log("withdrawalRound", withdrawalRound, vaultState.round); 
     require(withdrawalRound < vaultState.round, "Round in progress");
 
     // We leave the round number as non-zero to save on gas for subsequent writes
@@ -428,7 +412,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     uint withdrawAmountDiff = queuedWithdrawAmount > lastQueuedWithdrawAmount
       ? queuedWithdrawAmount.sub(lastQueuedWithdrawAmount)
       : 0;
-    console.log("lockedBalance", lockedBalance); 
     // Take management / performance fee from previous round and deduct
     lockedBalance = lockedBalance.sub(_collectVaultFees(lockedBalance.add(withdrawAmountDiff)));
     // take fees from premium collected here / profit made in week
@@ -440,10 +423,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     vaultState.totalPending = 0;
     vaultState.round = uint16(currentRound + 1);
 
-    console.log("vaultState.round", vaultState.round); 
-    console.log("mintShares", mintShares); 
     _mint(address(this), mintShares);
-    console.log("after minting", balanceOf(address(this)));
     return (lockedBalance, queuedWithdrawAmount);
   }
 
@@ -537,13 +517,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    * @return total balance of the vault, including the amounts locked in third party protocols
    */
   function totalBalance() public view returns (uint) {
-    console.log("vaultParams.asset", vaultParams.asset); 
-    console.log("address(this)", address(this)); 
-    console.log(
-      "(IERC20(vaultParams.asset).balanceOf(address(msg.sender)", 
-      IERC20(vaultParams.asset).balanceOf(address(msg.sender))
-    ); 
-
     return uint(vaultState.lockedAmount).add(IERC20(vaultParams.asset).balanceOf(address(this)));
   }
 
