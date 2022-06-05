@@ -41,7 +41,7 @@ export const strikeStrategy = {
   maxVolVariance: .1,
   optionType: 3,
   id: null,
-  size: 1,
+  size: 2,
   strikePrice: null,
   collateralToAdd: 0,
   setCollateralTo: 0,

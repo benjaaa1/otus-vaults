@@ -15,8 +15,7 @@ export default function VaultDetail() {
     dispatch, 
     setStrategyOnVault,
     startRound,
-    closeRound,
-    trade
+    closeRound
   } = useStrategyContext();
   
   const history = useHistory();
@@ -75,7 +74,6 @@ export default function VaultDetail() {
               <Button onClick={closeRound} rightIcon={<ArrowForwardIcon />}>Close Round</Button> :
               <Button onClick={startRound} rightIcon={<ArrowForwardIcon />}>Start Round</Button>
             }
-          <Button onClick={trade} rightIcon={<ArrowForwardIcon />}>Trade</Button>
           </> :
           <>
           <Button onClick={setStrategyOnVault} rightIcon={<ArrowForwardIcon />}>Set Strategy on Vault</Button>

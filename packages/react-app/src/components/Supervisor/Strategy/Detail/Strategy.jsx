@@ -40,7 +40,7 @@ import { ArrowForwardIcon } from "@chakra-ui/icons";
 
 export default function StrategyDetail() {
 
-  const { state, dispatch, setVaultStrategy } = useStrategyContext();
+  const { state, dispatch, setVaultStrategy, trade } = useStrategyContext();
 
   const {
     liveBoards,
@@ -75,6 +75,9 @@ export default function StrategyDetail() {
                   <Flex minWidth='max-content' alignItems='center' p={'2'}>
                     <Box flex='1'>
                       <RemoveButton onClick={() => dispatch({ type: 'REMOVE_CURRENT_STRIKE', payload: index })} />
+                    </Box>
+                    <Box>
+                      <Button onClick={() => trade(index)} rightIcon={<ArrowForwardIcon />}>Trade</Button>
                     </Box>
                     <Spacer />
                     <Box>

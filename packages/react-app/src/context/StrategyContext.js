@@ -258,15 +258,17 @@ export const StrategyProvider = ({ children }) => {
     }
   }
 
-  const trade = async () => {
+  const trade = async (index) => {
     try {
 
-      const strikes = await strategyContract.getStrikes(currentStrikes.map(strike => strike.id)); 
+      const currentActiveStrike = currentStrikes.filter((strike, _index) => index == _index); 
 
-      console.log({ currentStrikes, strikes }); 
+      const strikes = await strategyContract.getStrikes(currentActiveStrike.map(strike => strike.id)); 
+
+      console.log({ currentActiveStrike, strikes }); 
 
       const collaterals = await Promise.all(strikes.map(async (strike, index) => {
-        const currentStrike = currentStrikes[index]; 
+        const currentStrike = currentActiveStrike[index]; 
         console.log({ 
           strikePrice: formatUnits(strike.strikePrice), 
           id: formatUnits(strike.id), 
@@ -280,7 +282,7 @@ export const StrategyProvider = ({ children }) => {
         console.log({ collateralToAdd: formatEther(collateral.collateralToAdd), setCollateralTo: formatEther(collateral.setCollateralTo) })
       })
 
-      const strikeStrategies = currentStrikes.map(({ 
+      const strikeStrategies = currentActiveStrike.map(({ 
         targetDelta,
         maxDeltaGap,
         minVol,
@@ -317,7 +319,6 @@ export const StrategyProvider = ({ children }) => {
         true, 
         strikeStrategies[0]);
       console.log({ limitPremium: formatUnits(_getPremiumLimit[0]), spotPrice: formatUnits(_getPremiumLimit[1])  })
-
 
       const response = await otusVaultContract.connect(signer).trade(strikeStrategies);
 
