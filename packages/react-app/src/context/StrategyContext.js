@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useReducer, useState } from "reac
 import { useParams } from "react-router-dom";
 import { formatEther, formatUnits, parseUnits } from "ethers/lib/utils";
 
-import { getLyraMarket, getQuoteBoard, getStrikeQuotes } from "../helpers/lyra";
+import { getLyraMarket, getQuoteBoard } from "../helpers/lyra";
 import useWeb3 from "../hooks/useWeb3";
 import { BigNumber, ethers } from "ethers";
 import { strategyInitialState, strategyReducer } from "../reducer/strategyReducer";
@@ -35,10 +35,11 @@ export const StrategyProvider = ({ children }) => {
   } = state;
 
   useEffect(async () => {
-    console.log({ state })
     if(market) {
       try {
+        console.log({ getLyraMarket, market })
         const _lyraMarket = await getLyraMarket(market); 
+        console.log({ _lyraMarket })
         dispatch({ type: 'UPDATE_LYRA_MARKET', payload: _lyraMarket }); 
       } catch (error) {
         console.log({ error })
@@ -71,7 +72,7 @@ export const StrategyProvider = ({ children }) => {
         .reduce((a, v) => {
           return { ...a, [v.id]: v }
         }, {}); 
-
+        console.log({ liveBoards })
         dispatch({ type: 'SET_LIVE_BOARDS', payload: liveBoards });
       } catch (error) {
         console.log({error})
@@ -151,7 +152,6 @@ export const StrategyProvider = ({ children }) => {
 
         console.log({ activeStrikeIds, vaultState, vaultParams, activeBoardId })
 
-
         const strikeToPositionIds = await Promise.all(activeStrikeIds.map(async (strikeId) => {
           const formattedStrikeId = Math.round(parseFloat(formatUnits(strikeId)) * (10 ** 18));
           const positionId = await strategyContract.strikeToPositionId(strikeId)
@@ -166,9 +166,18 @@ export const StrategyProvider = ({ children }) => {
         updateValue('vaultParams', vaultParams);
         updateValue('activeBoardId', activeBoardId); 
 
-        const currentStrikeStrategies = await strategyContract.currentStrikeStrategies(0); 
-        console.log({ currentStrikeStrategies }); 
+        // const currentStrikeStrategies = await strategyContract.currentStrikeStrategies(0); 
+        // console.log({ currentStrikeStrategies }); 
  
+        // const currentStrikeStrategies = await Promise.all(activeStrikeIds.map(async (strikeId) => {
+        //   const formattedStrikeId = Math.round(parseFloat(formatUnits(strikeId)) * (10 ** 18));
+        //   const positionId = await strategyContract.strikeToPositionId(strikeId)
+        //   const formattedPositionId = Math.round(parseFloat(formatUnits(positionId)) * (10 ** 18))
+        //   const strategyIndex = await strategyContract.strategyToStrikeId(strikeId)
+        //   return { formattedStrikeId, formattedPositionId, strategyIndex: formatUnits(strategyIndex) }
+        // }));
+
+
       } catch (error) {
         console.log({ error })
       }
@@ -261,52 +270,60 @@ export const StrategyProvider = ({ children }) => {
   const trade = async (index) => {
     try {
 
-      const currentActiveStrike = currentStrikes.filter((strike, _index) => index == _index); 
+      const currentActiveStrike = currentStrikes.find((strike, _index) => index == _index); 
 
-      const strikes = await strategyContract.getStrikes(currentActiveStrike.map(strike => strike.id)); 
+      // const strikes = await strategyContract.getStrikes(currentActiveStrike.map(strike => strike.id)); 
 
-      console.log({ currentActiveStrike, strikes }); 
-
-      // const collaterals = await Promise.all(strikes.map(async (strike, index) => {
-      //   const currentStrike = currentActiveStrike[index]; 
-      //   console.log({ 
-      //     strikePrice: formatUnits(strike.strikePrice), 
-      //     id: formatUnits(strike.id), 
-      //     strikeId: currentStrike.id, 
-      //     optionType: currentStrike.optionType  
-      //   })
-      //   return await strategyContract.getRequiredCollateral(strike, parseUnits(currentStrike.size.toString()), currentStrike.optionType)
-      // }));
-
-      // collaterals.map(collateral => {
-      //   console.log({ collateralToAdd: formatEther(collateral.collateralToAdd), setCollateralTo: formatEther(collateral.setCollateralTo) })
-      // })
-
-      const strikeStrategies = currentActiveStrike.map(({ 
+      const {
         targetDelta,
+        optionType,
+        id,
         maxDeltaGap,
         minVol,
         maxVol,
         maxVolVariance,
-        optionType,
-        size,
-        id
-      }) => {
-        return {
-          targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(parseInt(optionType) == 3 ? 1 : -1),
-          maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
-          minVol: parseUnits(minVol.toString(), 18),
-          maxVol: parseUnits(maxVol.toString(), 18),
-          maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
-          optionType: parseInt(optionType),
-          size: parseUnits(size.toString()),
-          strikeId: id,
-          // collateralToAdd: collaterals[0].collateralToAdd, 
-          // setCollateralTo: collaterals[0].setCollateralTo
-        }
-      });
+        size
+      } = currentActiveStrike; 
 
-      console.log({ st12:strikes[0], strikeStrategies })
+      const strikeStrategy = { 
+        ...currentActiveStrike, 
+        targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(parseInt(optionType) == 3 ? 1 : -1),
+        maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
+        minVol: parseUnits(minVol.toString(), 18),
+        maxVol: parseUnits(maxVol.toString(), 18),
+        maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
+        optionType: parseInt(optionType),
+        size: parseUnits(size.toString()),
+        strikeId: id,
+      }
+
+      // console.log({ currentActiveStrike, strikes }); 
+
+      // const strikeStrategies = currentActiveStrike.map(({ 
+      //   targetDelta,
+      //   maxDeltaGap,
+      //   minVol,
+      //   maxVol,
+      //   maxVolVariance,
+      //   optionType,
+      //   size,
+      //   id
+      // }) => {
+      //   return {
+      //     targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(parseInt(optionType) == 3 ? 1 : -1),
+      //     maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
+      //     minVol: parseUnits(minVol.toString(), 18),
+      //     maxVol: parseUnits(maxVol.toString(), 18),
+      //     maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
+      //     optionType: parseInt(optionType),
+      //     size: parseUnits(size.toString()),
+      //     strikeId: id,
+      //     // collateralToAdd: collaterals[0].collateralToAdd, 
+      //     // setCollateralTo: collaterals[0].setCollateralTo
+      //   }
+      // });
+
+      // console.log({ st12:strikes[0], strikeStrategies })
 
       // const col = await strategyContract.getCollateral(
       //   strikeStrategies[0].strikeId,
@@ -320,7 +337,7 @@ export const StrategyProvider = ({ children }) => {
       //   strikeStrategies[0]);
       // console.log({ limitPremium: formatUnits(_getPremiumLimit[0]), spotPrice: formatUnits(_getPremiumLimit[1])  })
 
-      const response = await otusVaultContract.connect(signer).trade(strikeStrategies);
+      const response = await otusVaultContract.connect(signer).trade(strikeStrategy);
 
       const receipt = response.wait();  
       console.log({ receipt })

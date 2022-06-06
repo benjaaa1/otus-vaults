@@ -47,7 +47,7 @@ contract OtusVault is BaseVault {
 
   event StrategyUpdated(address strategy);
 
-  event Trade(address user, uint[] positionId, uint16 roundId, uint[] premium);
+  event Trade(address user, uint positionId, uint16 roundId, uint premium);
 
   event RoundStarted(uint16 roundId, uint104 lockAmount);
 
@@ -167,19 +167,14 @@ contract OtusVault is BaseVault {
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function trade(Strategy.StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
+  function trade(Strategy.StrikeStrategyDetail memory _currentStrikeStrategy) external onlyOwner {
     // can trade during round as long as lockedAmount is greater than 0
     // round should be opened 
     require(vaultState.roundInProgress, "round not opened");
-    (uint[] memory positionId, uint[] memory premiumReceived, uint[] memory _collateralAdded) = _strategy.doTrades(_currentStrikeStrategies);
-    for(uint i = 0; i < premiumReceived.length; i++) {
-      roundPremiumCollected += premiumReceived[i];
-    }
+    (uint positionId, uint premiumReceived, uint collateralAdded) = _strategy.doTrade(_currentStrikeStrategy);
+    
+    roundPremiumCollected += premiumReceived;
     // update the remaining locked amount
-    uint collateralAdded; 
-    for(uint i = 0; i < _collateralAdded.length; i++) {
-      collateralAdded += _collateralAdded[i];
-    }
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - collateralAdded;
     emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
   }
@@ -205,9 +200,9 @@ contract OtusVault is BaseVault {
     activeShort = _strategy._closeKwentaPosition();
   }
 
-    /************************************************
-   *  Hedge Actions - Kwenta 
-   ***********************************************/
+  /************************************************
+  *  Hedge Actions - Kwenta 
+  ***********************************************/
   function _hedge() internal {}
 
 

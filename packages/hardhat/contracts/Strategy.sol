@@ -178,52 +178,50 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     activeBoardId = boardId; 
   }
 
-  function doTrades(
-      StrikeStrategyDetail[] memory _currentStrikeStrategies
-    ) external onlyVault returns (
-      uint[] memory, 
-      uint[] memory, 
-      uint[] memory
-    ) {
-      StrikeStrategyDetail memory strikeDetail;
-      uint len = _currentStrikeStrategies.length; 
+  // function doTrade(
+  //     StrikeStrategyDetail memory _currentStrikeStrategy
+  //   ) external onlyVault returns (
+  //     uint[] memory, 
+  //     uint[] memory, 
+  //     uint[] memory
+  //   ) {
+  //     StrikeStrategyDetail memory strikeDetail;
+  //     uint len = _currentStrikeStrategies.length; 
 
-      uint[] memory positionIds = new uint[](len);
-      uint[] memory premiumsReceived = new uint[](len);
-      uint[] memory collateralToAdd = new uint[](len);
+  //     uint positionId;
+  //     uint premiumsReceived;
+  //     uint collateralToAdd;
 
-      uint strikeId; 
-      uint size; 
-      uint _positionId; 
-      uint _premiumReceived; 
-      uint _collateralToAdd;
+  //     uint strikeId; 
+  //     uint size; 
+  //     uint _positionId; 
+  //     uint _premiumReceived; 
+  //     uint _collateralToAdd;
 
-      for(uint i = 0; i < len; i++) {
-        strikeDetail = _currentStrikeStrategies[i];
-        strikeId = strikeDetail.strikeId; 
-        size = strikeDetail.size;
+  //     strikeDetail = _currentStrikeStrategy;
+  //     strikeId = strikeDetail.strikeId; 
+  //     size = strikeDetail.size;
 
-        (_positionId, _premiumReceived, _collateralToAdd) = doTrade(strikeDetail, i);
-        positionIds[i] = _positionId;
-        premiumsReceived[i] = _premiumReceived;
-        collateralToAdd[i] = _collateralToAdd; 
-        
-        currentStrikeStrategies.push(StrikeStrategyDetail(
-          strikeDetail.targetDelta,
-          strikeDetail.maxDeltaGap,
-          strikeDetail.minVol,
-          strikeDetail.maxVol,
-          strikeDetail.maxVolVariance,
-          strikeDetail.optionType,
-          strikeDetail.strikeId,
-          strikeDetail.size
-          // strikeDetail.collateralToAdd,
-          // strikeDetail.setCollateralTo
-        ));
-      }
+  //     (_positionId, _premiumReceived, _collateralToAdd) = doTrade(strikeDetail, i);
+  //     positionIds[i] = _positionId;
+  //     premiumsReceived[i] = _premiumReceived;
+  //     collateralToAdd[i] = _collateralToAdd; 
+      
+  //     currentStrikeStrategies.push(StrikeStrategyDetail(
+  //       strikeDetail.targetDelta,
+  //       strikeDetail.maxDeltaGap,
+  //       strikeDetail.minVol,
+  //       strikeDetail.maxVol,
+  //       strikeDetail.maxVolVariance,
+  //       strikeDetail.optionType,
+  //       strikeDetail.strikeId,
+  //       strikeDetail.size
+  //       // strikeDetail.collateralToAdd,
+  //       // strikeDetail.setCollateralTo
+  //     ));
 
-      return (positionIds, premiumsReceived, collateralToAdd); 
-  }
+  //     return (positionIds, premiumsReceived); 
+  // }
 
   function validateTimeIntervalByOptionType(uint strikeId, uint _optionType) internal view returns (bool) {
 
@@ -247,13 +245,13 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   * @return premiumReceived
   * @return collateralToAdd
   */
-  function doTrade(StrikeStrategyDetail memory currentStrikeStrategy, uint index)
-    private returns (
+  function doTrade(StrikeStrategyDetail memory currentStrikeStrategy) external onlyVault returns (
       uint positionId,
       uint premiumReceived,
       uint collateralToAdd
     )
   {
+    uint index = activeStrikeIds.length; 
     uint strikeId = currentStrikeStrategy.strikeId;
     uint size = currentStrikeStrategy.size;
     uint optionType = currentStrikeStrategy.optionType;

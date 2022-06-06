@@ -5,7 +5,7 @@ const WEEK_SEC = 7 * DAY_SEC;
 export const vaultStrategy = {
   collatBuffer: 1.2, 
   collatPercent: .35,
-  minTimeToExpiry: DAY_SEC,
+  minTimeToExpiry: 0,
   maxTimeToExpiry: WEEK_SEC * 8,
   minTradeInterval: 600,
   gwavPeriod: 600,

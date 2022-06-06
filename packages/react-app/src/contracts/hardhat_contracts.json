@@ -293,7 +293,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0x8946D6013a891cdc6A062396ecA378252357E80f",
+          "address": "0xFB14b64b415ed15D61E69aDbEB2738a60A9d6af8",
           "abi": [
             {
               "inputs": [],
@@ -455,7 +455,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0xfE1bE95D2cc5654083AAd4B26852B35411EFd345",
+          "address": "0xba34Bd5063513318c5636EdFb2666E3915b48e48",
           "abi": [
             {
               "inputs": [
@@ -1134,7 +1134,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0xff03d3e6213AF3693af2b338224c4133C1A408e8",
+          "address": "0xe1dfe7cd85052cF346AAe874388678101758b938",
           "abi": [
             {
               "inputs": [
@@ -1465,9 +1465,9 @@
                 },
                 {
                   "indexed": false,
-                  "internalType": "uint256[]",
+                  "internalType": "uint256",
                   "name": "positionId",
-                  "type": "uint256[]"
+                  "type": "uint256"
                 },
                 {
                   "indexed": false,
@@ -1477,9 +1477,9 @@
                 },
                 {
                   "indexed": false,
-                  "internalType": "uint256[]",
+                  "internalType": "uint256",
                   "name": "premium",
-                  "type": "uint256[]"
+                  "type": "uint256"
                 }
               ],
               "name": "Trade",
@@ -2303,21 +2303,11 @@
                       "internalType": "uint256",
                       "name": "size",
                       "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collateralToAdd",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "setCollateralTo",
-                      "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.StrikeStrategyDetail[]",
-                  "name": "_currentStrikeStrategies",
-                  "type": "tuple[]"
+                  "internalType": "struct Strategy.StrikeStrategyDetail",
+                  "name": "_currentStrikeStrategy",
+                  "type": "tuple"
                 }
               ],
               "name": "trade",
@@ -2676,7 +2666,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0xe41729Ff49bF7e1fAdd6fca13A3eE13586C30D6e",
+          "address": "0x78F293e377c90aba39B288D3974F081fFe57F97a",
           "abi": [
             {
               "inputs": [
@@ -2846,16 +2836,6 @@
                       "internalType": "uint256",
                       "name": "size",
                       "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collateralToAdd",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "setCollateralTo",
-                      "type": "uint256"
                     }
                   ],
                   "internalType": "struct Strategy.StrikeStrategyDetail",
@@ -2868,119 +2848,6 @@
                 {
                   "internalType": "uint256",
                   "name": "limitPremium",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "id",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "expiry",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "strikePrice",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "skew",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "boardIv",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct VaultAdapter.Strike",
-                  "name": "strike",
-                  "type": "tuple"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "isMin",
-                  "type": "bool"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "int256",
-                      "name": "targetDelta",
-                      "type": "int256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxDeltaGap",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVolVariance",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "optionType",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "strikeId",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "size",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collateralToAdd",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "setCollateralTo",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct Strategy.StrikeStrategyDetail",
-                  "name": "currentStrikeStrategy",
-                  "type": "tuple"
-                }
-              ],
-              "name": "_getPremiumLimit2",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "limitPremium",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "spotPrice",
                   "type": "uint256"
                 }
               ],
@@ -3184,16 +3051,6 @@
                   "internalType": "uint256",
                   "name": "size",
                   "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "collateralToAdd",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "setCollateralTo",
-                  "type": "uint256"
                 }
               ],
               "stateMutability": "view",
@@ -3242,39 +3099,29 @@
                       "internalType": "uint256",
                       "name": "size",
                       "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collateralToAdd",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "setCollateralTo",
-                      "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.StrikeStrategyDetail[]",
-                  "name": "_currentStrikeStrategies",
-                  "type": "tuple[]"
+                  "internalType": "struct Strategy.StrikeStrategyDetail",
+                  "name": "currentStrikeStrategy",
+                  "type": "tuple"
                 }
               ],
-              "name": "doTrades",
+              "name": "doTrade",
               "outputs": [
                 {
-                  "internalType": "uint256[]",
-                  "name": "",
-                  "type": "uint256[]"
+                  "internalType": "uint256",
+                  "name": "positionId",
+                  "type": "uint256"
                 },
                 {
-                  "internalType": "uint256[]",
-                  "name": "",
-                  "type": "uint256[]"
+                  "internalType": "uint256",
+                  "name": "premiumReceived",
+                  "type": "uint256"
                 },
                 {
-                  "internalType": "uint256[]",
-                  "name": "",
-                  "type": "uint256[]"
+                  "internalType": "uint256",
+                  "name": "collateralToAdd",
+                  "type": "uint256"
                 }
               ],
               "stateMutability": "nonpayable",
@@ -3360,45 +3207,6 @@
               "type": "function"
             },
             {
-              "inputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "strikeId",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "_size",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "_optionType",
-                  "type": "uint256"
-                }
-              ],
-              "name": "getCollateral",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
               "inputs": [],
               "name": "getCurrentStrikeStrategies",
               "outputs": [
@@ -3442,16 +3250,6 @@
                     {
                       "internalType": "uint256",
                       "name": "size",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collateralToAdd",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "setCollateralTo",
                       "type": "uint256"
                     }
                   ],
@@ -3781,16 +3579,6 @@
                     {
                       "internalType": "uint256",
                       "name": "size",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collateralToAdd",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "setCollateralTo",
                       "type": "uint256"
                     }
                   ],
