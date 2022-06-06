@@ -60,8 +60,8 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint optionType; 
     uint strikeId;
     uint size; 
-    uint collateralToAdd; // added for testing from ui
-    uint setCollateralTo; // added for testing from ui
+    // uint collateralToAdd; // added for testing from ui
+    // uint setCollateralTo; // added for testing from ui
   }
 
   struct HedgeDetail {
@@ -216,9 +216,9 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
           strikeDetail.maxVolVariance,
           strikeDetail.optionType,
           strikeDetail.strikeId,
-          strikeDetail.size,
-          strikeDetail.collateralToAdd,
-          strikeDetail.setCollateralTo
+          strikeDetail.size
+          // strikeDetail.collateralToAdd,
+          // strikeDetail.setCollateralTo
         ));
       }
 
@@ -267,11 +267,11 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
     require(isValidStrike(strike, currentStrikeStrategy), "invalid strike");
 
-    // uint setCollateralTo;
-    // (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike, size, optionType);
+    uint setCollateralTo;
+    (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike, size, optionType);
 
-    collateralToAdd = currentStrikeStrategy.collateralToAdd;
-    uint setCollateralTo = currentStrikeStrategy.setCollateralTo;
+    // collateralToAdd = currentStrikeStrategy.collateralToAdd;
+    // uint setCollateralTo = currentStrikeStrategy.setCollateralTo;
 
     require(
       collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
@@ -322,23 +322,6 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     }
 
     _clearAllActiveStrikes();
-  }
-
-  /**
-  * @dev used for verifying collateral from front end  
-  */
-  function getCollateral(uint strikeId, uint _size, uint _optionType) public view returns (uint, uint, uint) {
-    
-    Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
-
-    (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike, _size, _optionType);
-
-    return (
-      collateralToAdd, 
-      setCollateralTo, 
-      collateralAsset.balanceOf(address(vault))
-    ); 
-
   }
 
   /**
@@ -627,29 +610,6 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
     return _min(minCollatWithBuffer, fullCollat);
 
-  }
-
-  /**
-   * @dev get minimum premium that the vault should receive.
-   * param listingId lyra option listing id
-   * param size size of trade in Lyra standard sizes
-   */
-  function _getPremiumLimit2(
-      Strike memory strike, 
-      bool isMin, 
-      StrikeStrategyDetail memory currentStrikeStrategy
-    ) public view returns (uint limitPremium, uint spotPrice) {
-    ExchangeRateParams memory exchangeParams = getExchangeParams();
-    uint limitVol = isMin ? currentStrikeStrategy.minVol : currentStrikeStrategy.maxVol;
-    (uint minCallPremium, uint minPutPremium) = getPurePremium(
-      _getSecondsToExpiry(strike.expiry),
-      limitVol,
-      exchangeParams.spotPrice,
-      strike.strikePrice
-    );
-
-    limitPremium = minPutPremium.multiplyDecimal(currentStrikeStrategy.size);
-    spotPrice = exchangeParams.spotPrice; 
   }
 
   function _getPremiumLimit(

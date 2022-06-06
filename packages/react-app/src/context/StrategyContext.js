@@ -267,20 +267,20 @@ export const StrategyProvider = ({ children }) => {
 
       console.log({ currentActiveStrike, strikes }); 
 
-      const collaterals = await Promise.all(strikes.map(async (strike, index) => {
-        const currentStrike = currentActiveStrike[index]; 
-        console.log({ 
-          strikePrice: formatUnits(strike.strikePrice), 
-          id: formatUnits(strike.id), 
-          strikeId: currentStrike.id, 
-          optionType: currentStrike.optionType  
-        })
-        return await strategyContract.getRequiredCollateral(strike, parseUnits(currentStrike.size.toString()), currentStrike.optionType)
-      }));
+      // const collaterals = await Promise.all(strikes.map(async (strike, index) => {
+      //   const currentStrike = currentActiveStrike[index]; 
+      //   console.log({ 
+      //     strikePrice: formatUnits(strike.strikePrice), 
+      //     id: formatUnits(strike.id), 
+      //     strikeId: currentStrike.id, 
+      //     optionType: currentStrike.optionType  
+      //   })
+      //   return await strategyContract.getRequiredCollateral(strike, parseUnits(currentStrike.size.toString()), currentStrike.optionType)
+      // }));
 
-      collaterals.map(collateral => {
-        console.log({ collateralToAdd: formatEther(collateral.collateralToAdd), setCollateralTo: formatEther(collateral.setCollateralTo) })
-      })
+      // collaterals.map(collateral => {
+      //   console.log({ collateralToAdd: formatEther(collateral.collateralToAdd), setCollateralTo: formatEther(collateral.setCollateralTo) })
+      // })
 
       const strikeStrategies = currentActiveStrike.map(({ 
         targetDelta,
@@ -301,8 +301,8 @@ export const StrategyProvider = ({ children }) => {
           optionType: parseInt(optionType),
           size: parseUnits(size.toString()),
           strikeId: id,
-          collateralToAdd: collaterals[0].collateralToAdd, 
-          setCollateralTo: collaterals[0].setCollateralTo
+          // collateralToAdd: collaterals[0].collateralToAdd, 
+          // setCollateralTo: collaterals[0].setCollateralTo
         }
       });
 
@@ -314,11 +314,11 @@ export const StrategyProvider = ({ children }) => {
       //   strikeStrategies[0].optionType);
       // console.log({ collateralToAdd: formatUnits(col[0]), setCollateralTo: formatUnits(col[1]), asset: formatUnits(col[2]) })
 
-      const _getPremiumLimit = await strategyContract._getPremiumLimit2(
-        strikes[0],
-        true, 
-        strikeStrategies[0]);
-      console.log({ limitPremium: formatUnits(_getPremiumLimit[0]), spotPrice: formatUnits(_getPremiumLimit[1])  })
+      // const _getPremiumLimit = await strategyContract._getPremiumLimit2(
+      //   strikes[0],
+      //   true, 
+      //   strikeStrategies[0]);
+      // console.log({ limitPremium: formatUnits(_getPremiumLimit[0]), spotPrice: formatUnits(_getPremiumLimit[1])  })
 
       const response = await otusVaultContract.connect(signer).trade(strikeStrategies);
 

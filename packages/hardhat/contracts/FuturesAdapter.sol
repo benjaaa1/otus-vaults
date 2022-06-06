@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /**
  * @title FuturesAdapter 
  * @author Otus
- * @dev Provides helpful functions for the vault to integrate with Synthetix FuturesMarkets
+ * @dev Provides helpful functions for the vault to integrate with Synthetix FuturesMarket / Perp V2
  */
 
 contract FuturesAdapter {

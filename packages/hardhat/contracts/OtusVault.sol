@@ -10,7 +10,6 @@ import {BaseVault} from "./BaseVault.sol";
 import {Vault} from "./libraries/Vault.sol";
 import {Strategy} from "./Strategy.sol";
 
-/// @notice LyraVault help users run option-selling strategies on Lyra AMM.
 contract OtusVault is BaseVault {
   using SafeMath for uint;
 
@@ -119,7 +118,6 @@ contract OtusVault is BaseVault {
     _strategy = Strategy(__strategy);
     collateralAsset = IERC20(vaultParams.asset);
     collateralAsset.approve(__strategy, type(uint).max);
-    // collateralAsset.approve(futuresMarket, type(uint).max);
     emit StrategyUpdated(__strategy);
   }
 
@@ -186,8 +184,6 @@ contract OtusVault is BaseVault {
     emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
   }
 
-  function _hedge() internal {}
-
   /// @dev anyone close part of the position with premium made by the strategy if a position is dangerous
   /// @param positionId the positiion to close
   function reducePosition(uint positionId, uint closeAmount) external onlyKeeper {
@@ -195,23 +191,24 @@ contract OtusVault is BaseVault {
   }
 
   /************************************************
-   *  KEEPER ACTIONS
-   ***********************************************/
+  *  Hedge Actions - Kwenta 
+  ***********************************************/
 
-  /**
+    /**
    * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
   //  */
   // function openHedgePosition() external onlyKeeper {
   //   require(vaultState.roundInProgress, "Round closed");
   //   activeShort = _strategy._openKwentaPosition(roundHedgeAttempts);
   // }
-
-  /**\
-  * @dev called by keeper 
-  * update vault collateral, call 
-  */
   function closeHedge() external onlyKeeper {
     activeShort = _strategy._closeKwentaPosition();
   }
+
+    /************************************************
+   *  Hedge Actions - Kwenta 
+   ***********************************************/
+  function _hedge() internal {}
+
 
 }
