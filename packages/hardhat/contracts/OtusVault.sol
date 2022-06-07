@@ -173,11 +173,11 @@ contract OtusVault is BaseVault {
     // can trade during round as long as lockedAmount is greater than 0
     // round should be opened 
     require(vaultState.roundInProgress, "round not opened");
-    (uint positionId, uint premiumReceived, uint collateralAdded) = _strategy.doTrade(_currentStrikeStrategy);
+    (uint positionId, uint premiumReceived, uint capitalUsed) = _strategy.doTrade(_currentStrikeStrategy);
     
     roundPremiumCollected += premiumReceived;
     // update the remaining locked amount -- lockedAmountLeft can be used for hedge
-    vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - collateralAdded;
+    vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - capitalUsed;
     emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
   }
 
@@ -196,11 +196,14 @@ contract OtusVault is BaseVault {
   //  */
   function _hedge() external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
-    activeShort = _strategy._hedge(vaultState.lockedAmountLeft, roundHedgeAttempts);
+    _strategy._hedge(activeShort, vaultState.lockedAmountLeft, roundHedgeAttempts);
+    activeShort = true; 
+    roundHedgeAttempts += 1; 
   }
 
   function _closeHedge() external onlyKeeper {
-    activeShort = _strategy._closeHedge();
+    _strategy._closeHedge(activeShort);
+    activeShort = false; 
   }
 
 }

@@ -293,7 +293,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0x892812D5B36C1e1d5B42CF768b93B3f4e5Be39eb",
+          "address": "0xF3ed73D96D50880Ed5F693B3622103527E21Ae96",
           "abi": [
             {
               "inputs": [],
@@ -455,7 +455,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0xcABBD0613Fa31C353Df3110E13449C448eF92496",
+          "address": "0x4f9ad0FA86C4d3ca338eB2Cb9fa8b862414106Fe",
           "abi": [
             {
               "inputs": [
@@ -1134,7 +1134,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0x42bB9Ebd19Fa0150F97F48BE01b165dEB09c3889",
+          "address": "0xe175B406A5ED93F30A86d2DDed942F50Cd3EfbFD",
           "abi": [
             {
               "inputs": [
@@ -2693,7 +2693,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0x5C5E543E9bFb881F461b3B8545aFec77B3b4aF77",
+          "address": "0x2DD83BFE124EE64886844d605c9eEC351c26be54",
           "abi": [
             {
               "inputs": [
@@ -2771,15 +2771,15 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "_closeHedge",
-              "outputs": [
+              "inputs": [
                 {
                   "internalType": "bool",
                   "name": "activeShort",
                   "type": "bool"
                 }
               ],
+              "name": "_closeHedge",
+              "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
             },
@@ -2884,6 +2884,11 @@
             {
               "inputs": [
                 {
+                  "internalType": "bool",
+                  "name": "activeShort",
+                  "type": "bool"
+                },
+                {
                   "internalType": "uint256",
                   "name": "lockedAmountLeft",
                   "type": "uint256"
@@ -2895,13 +2900,7 @@
                 }
               ],
               "name": "_hedge",
-              "outputs": [
-                {
-                  "internalType": "bool",
-                  "name": "activeShort",
-                  "type": "bool"
-                }
-              ],
+              "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
             },
@@ -2918,6 +2917,25 @@
                 {
                   "internalType": "bool",
                   "name": "isCall",
+                  "type": "bool"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_optionType",
+                  "type": "uint256"
+                }
+              ],
+              "name": "_isLong",
+              "outputs": [
+                {
+                  "internalType": "bool",
+                  "name": "isLong",
                   "type": "bool"
                 }
               ],
@@ -3178,7 +3196,7 @@
                 },
                 {
                   "internalType": "uint256",
-                  "name": "collateralToAdd",
+                  "name": "capitalUsed",
                   "type": "uint256"
                 }
               ],

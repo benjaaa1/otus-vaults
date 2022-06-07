@@ -11,6 +11,14 @@ export const vaultStrategy = {
   gwavPeriod: 600,
 }
 
+export const currentHedgeStrategy = {
+  hedgePercentage: .2, 
+  maxHedgeAttempts: 4,
+  limitStrikePricePercent: .0005,
+  leverageSize: 2,
+  stopLossLimit: .001,
+}
+
 export const hedgeStrategy = {
   hedgePercentage: 1.2,
   maxHedgeAttempts: 5,
@@ -21,6 +29,7 @@ export const hedgeStrategy = {
 
 export const strategyInitialState = {
   strategy: vaultStrategy,
+  hedgeStrategy: currentHedgeStrategy,
   market: 'eth', 
   needsQuotesUpdated: false,
   lyraMarket: null, 
@@ -39,7 +48,7 @@ export const strikeStrategy = {
   minVol: .8,
   maxVol: 1.3,
   maxVolVariance: .1,
-  optionType: 3,
+  optionType: 0,
   id: null,
   size: 2,
   strikePrice: null
@@ -50,6 +59,8 @@ export const strategyReducer = (state, action) => {
   switch (action.type) {
     case 'UPDATE_STRATEGY': 
       return { ...state, strategy: { ...state.strategy, [action.field]: action.payload }}
+    case 'UPDATE_HEDGE_STRATEGY': 
+      return { ...state, hedgeStrategy: { ...state.hedgeStrategy, [action.field]: action.payload }}
     case 'UPDATE_MARKET':
       return { ...state, market: action.payload };
     case 'UPDATE_LYRA_MARKET':
@@ -90,7 +101,7 @@ export const strategyReducer = (state, action) => {
     case 'SET_CURRENT_STRIKE_OPTION_TYPE': 
       return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
         if(action.payload.index == index) {
-          return { ...cs, optionType: parseInt(action.payload.value) + 1 }; 
+          return { ...cs, optionType: parseInt(action.payload.value) }; 
         }
         return cs; 
       }) };

@@ -27,6 +27,7 @@ export const StrategyProvider = ({ children }) => {
 
   const {
     strategy,
+    hedgeStrategy,
     selectedBoard,
     market, 
     lyraMarket,
@@ -160,7 +161,7 @@ export const StrategyProvider = ({ children }) => {
           const strategyIndex = await strategyContract.strategyToStrikeId(strikeId)
           return { formattedStrikeId, formattedPositionId, strategyIndex: formatUnits(strategyIndex) }
         }));
-
+        console.log({ strikeToPositionIds })
         updateValue('vaultState', vaultState); 
         updateValue('vaultParams', vaultParams);
         const formattedActiveBoardId = Math.round(parseFloat(formatUnits(activeBoardId)) * (10 ** 18)); 
@@ -231,10 +232,6 @@ export const StrategyProvider = ({ children }) => {
         gwavPeriod: gwavPeriod,
       }
 
-      const optionMarket = await strategyContract.optionMarket(); 
-
-      console.log({ optionMarket })
-
       const response = await strategyContract.connect(signer).setStrategy(formattedStrategy); 
       const receipt = response.wait(); 
       console.log({ receipt })
@@ -247,7 +244,52 @@ export const StrategyProvider = ({ children }) => {
     }
   }
 
+  const setHedgeStrategy = async () => {
+    try {
+
+      const {
+        hedgePercentage,
+        maxHedgeAttempts,
+        limitStrikePricePercent,
+        leverageSize,
+        stopLossLimit
+      } = hedgeStrategy; 
+
+      const formattedStrategy = {
+        hedgePercentage: parseUnits(hedgePercentage.toString(), 18), 
+        maxHedgeAttempts: parseUnits(maxHedgeAttempts.toString(), 18),
+        limitStrikePricePercent: parseUnits(limitStrikePricePercent.toString(), 18), 
+        leverageSize: parseUnits(leverageSize.toString(), 18),
+        stopLossLimit: parseUnits(stopLossLimit.toString(), 18)
+      }
+
+      const response = await strategyContract.connect(signer).setHedgeStrategy(formattedStrategy); 
+      const receipt = response.wait(); 
+      console.log({ receipt })
+      Notifier(MESSAGE.VAULTSTRATEGY.SUCCESS, TYPE.SUCCESS)
+
+    } catch (error) {
+      console.log({ error })
+      Notifier(MESSAGE.VAULTSTRATEGY.ERROR, TYPE.ERROR)
+
+    }
+  }
+
   // weekly buttons
+  const reducePosition = async () => {
+    try {
+      const positionId = 264;
+      const size = parseUnits('2'); 
+      const response = await otusVaultContract.connect(signer).reducePosition(positionId, size); 
+      const receipt = response.wait(); 
+      console.log({ receipt })
+
+    } catch (error) {
+      Notifier(MESSAGE.STARTROUND.ERROR, TYPE.ERROR)
+
+      console.log({ error })
+    }
+  }
 
   const startRound = async () => {
     try {
@@ -305,7 +347,7 @@ export const StrategyProvider = ({ children }) => {
         size: parseUnits(size.toString()),
         strikeId: id,
       }
-
+      console.log({ strikeStrategy })
       const response = await otusVaultContract.connect(signer).trade(strikeStrategy);
 
       const receipt = response.wait();  
@@ -318,6 +360,19 @@ export const StrategyProvider = ({ children }) => {
     }
   }
 
+  const _hedge = async () => {
+    try {
+      const response = await otusVaultContract.connect(signer)._hedge();
+      const receipt = response.wait();  
+      console.log({ receipt })
+      Notifier(MESSAGE.TRADE.SUCCESS, TYPE.SUCCESS)
+    } catch (error) {
+      console.log({ error })
+      Notifier(MESSAGE.TRADE.ERROR, TYPE.ERROR)
+
+    }
+  }
+
   const value = { 
     state, 
     dispatch, 
@@ -326,7 +381,10 @@ export const StrategyProvider = ({ children }) => {
     setVaultStrategy,
     startRound,
     closeRound,
-    trade
+    trade,
+    _hedge,
+    setHedgeStrategy,
+    reducePosition
   };
 
   return <StrategyContext.Provider value={value}>{children}</StrategyContext.Provider>;

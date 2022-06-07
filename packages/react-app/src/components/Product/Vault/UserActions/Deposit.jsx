@@ -26,6 +26,7 @@ export const Deposit = () => {
   const [amount, setAmount] = useState(590); 
   const [amount2, setAmount2] = useState(590); 
   const [allowanceAmount, setAllowanceAmount] = useState(0); 
+  const [allowanceAmount2, setAllowanceAmount2] = useState(0); 
 
   const onChange = async (val) => {
     const vaultParams = await otusVaultContract.vaultParams(); 
@@ -60,6 +61,10 @@ export const Deposit = () => {
         const allowanceStatus = await susdContract.allowance(address, vault); 
         console.log({ allowanceStatus:  ethers.utils.formatEther(allowanceStatus) }); 
         setAllowanceAmount( ethers.utils.formatEther(allowanceStatus) );
+
+        const allowanceStatus2 = await susdSNXContract.allowance(address, vault); 
+        console.log({ allowanceStatus:  ethers.utils.formatEther(allowanceStatus2) }); 
+        setAllowanceAmount2( ethers.utils.formatEther(allowanceStatus2) );
 
         const accountVaultBalance = await otusVaultContract.accountVaultBalance(address); 
         console.log({ accountVaultBalance:  ethers.utils.formatEther(accountVaultBalance) }); 
@@ -143,7 +148,7 @@ export const Deposit = () => {
     try {
       // need to check erc20 address
       const balance = await susdContract.balanceOf(address); 
-      const balance2 = await susdContract.balanceOf(address); 
+      const balance2 = await susdSNXContract.balanceOf(address); 
 
       console.log({ balance: ethers.utils.formatEther(balance), balance2: ethers.utils.formatEther(balance2) })
       const formattedBalance = ethers.utils.formatEther(balance);
@@ -162,7 +167,7 @@ export const Deposit = () => {
   return (
       <VStack>
         {
-          parseInt(allowanceAmount) > 0 ? 
+          (parseInt(allowanceAmount) > 0 || parseInt(allowanceAmount2) > 0) ? 
           <>
             <InputGroup>
               <InputLeftElement

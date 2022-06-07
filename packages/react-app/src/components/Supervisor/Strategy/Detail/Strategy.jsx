@@ -86,8 +86,8 @@ export default function StrategyDetail() {
                       <Select bg={'white'} id='board' onChange={(e) => dispatch({ type: 'SET_CURRENT_STRIKE_OPTION_TYPE', payload: { index, value: e.target.value} })}>
                         {
                           [
-                            'Buy Call', 'Buy Put', 'Sell Call', 'Sell Put'
-                          ].map((name, index) => (<option value={index}>{name}</option>))
+                            { name: 'Buy Call', id: 0 }, { name: 'Buy Put', id: 1 }, { name: 'Sell Call', id: 3 }, { name: 'Sell Put', id: 4 }
+                          ].map(({name, id}) => (<option value={id}>{name}</option>))
                         }
                       </Select>
                     </Box>

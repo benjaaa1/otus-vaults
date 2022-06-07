@@ -33,7 +33,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   mapping(uint => uint) public strikeToPositionId;
   mapping(uint => uint) public strategyToStrikeId;
   mapping(uint => uint) public lastTradeTimestamp;
-  mapping(uint => uint) public lastTradeOptionType;
+  mapping(uint => OptionType) public lastTradeOptionType;
 
   address public vault;
 
@@ -60,16 +60,14 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint optionType; 
     uint strikeId;
     uint size; 
-    // uint collateralToAdd; // added for testing from ui
-    // uint setCollateralTo; // added for testing from ui
   }
 
   struct HedgeDetail {
     uint hedgePercentage; // 20% + collatPercent == 100%
-    uint maxHedgeAttempts; // 
-    uint limitStrikePricePercent; // ex. strike price of 3100 2% ~ 3030
+    uint maxHedgeAttempts; // ~6 dependent on fees mostly 
+    uint limitStrikePricePercent; // .0005 = ex. strike price of 1750 .5% ~ 1758.75
     uint leverageSize; // 150% ~ 1.5x 200% 2x 
-    uint stopLossLimit; 
+    uint stopLossLimit; // .001 1%
   }
 
   StrategyDetail public currentStrategy; // this wont change much 
@@ -179,12 +177,14 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   }
 
   function validateTimeIntervalByOptionType(uint strikeId, uint _optionType) internal view returns (bool) {
+    
+    OptionType op = OptionType(_optionType); 
 
     bool valid = true; 
 
     if (
       lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <= block.timestamp && 
-      lastTradeOptionType[strikeId] == _optionType) { 
+      lastTradeOptionType[strikeId] == op) { 
         valid = false; 
     }
 
@@ -198,12 +198,12 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   * @param currentStrikeStrategy lyra strikeId to trade
   * @return positionId
   * @return premiumReceived
-  * @return collateralToAdd
+  * @return capitalUsed
   */
   function doTrade(StrikeStrategyDetail memory currentStrikeStrategy) external onlyVault returns (
       uint positionId,
       uint premiumReceived,
-      uint collateralToAdd
+      uint capitalUsed
     )
   {
     uint index = activeStrikeIds.length; 
@@ -220,15 +220,29 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
     require(isValidStrike(strike, currentStrikeStrategy), "invalid strike");
 
-    uint setCollateralTo;
-    (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike, size, optionType);
+    if(_isLong(currentStrikeStrategy.optionType)) {
+      uint maxPremium = _getPremiumLimit(strike, false, currentStrikeStrategy);
 
-    require(
-      collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
-      "collateral transfer from vault failed"
-    );
+      require(
+        collateralAsset.transferFrom(address(vault), address(this), maxPremium),
+        "collateral transfer from vault failed"
+      );
 
-    (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, index);
+      (positionId, premiumReceived) = _buyStrike(strike, size, currentStrikeStrategy, index, maxPremium);
+
+      capitalUsed = maxPremium; 
+    } else {
+      (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike, size, optionType);
+
+      require(
+        collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
+        "collateral transfer from vault failed"
+      );
+
+      (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, index);
+
+      capitalUsed = collateralToAdd;
+    }
 
     currentStrikeStrategies.push(StrikeStrategyDetail(
       currentStrikeStrategy.targetDelta,
@@ -364,7 +378,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       })
     );
     lastTradeTimestamp[strike.id] = block.timestamp;
-    lastTradeOptionType[strike.id] = currentStrikeStrategy.optionType;
+    lastTradeOptionType[strike.id] = optionType;
 
     // update active strikes
     _addActiveStrike(strike.id, result.positionId, strategyIndex);
@@ -373,6 +387,49 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
     return (result.positionId, result.totalCost);
   }
+
+  //   /**
+  //  * @dev perform the trade
+  //  * @param strike strike detail
+  //  * @param maxPremium max premium willing to spend for this trade
+  //  * @param lyraRewardRecipient address to receive lyra trading reward
+  //  * @return positionId
+  //  * @return premiumReceived
+  //  */
+  function _buyStrike(
+    Strike memory strike,
+    uint _size, 
+    StrikeStrategyDetail memory currentStrikeStrategy,
+    uint strategyIndex,
+    uint maxPremium
+  ) internal returns (uint, uint) {
+
+    OptionType optionType = OptionType(currentStrikeStrategy.optionType);
+    // perform trade to long
+    TradeResult memory result = openPosition(
+      TradeInputParameters({
+        strikeId: strike.id,
+        positionId: strikeToPositionId[strike.id],
+        iterations: 1,
+        optionType: optionType,
+        amount: _size,
+        setCollateralTo: 0,
+        minTotalCost: 0,
+        maxTotalCost: maxPremium,
+        rewardRecipient: address(0) // set to zero address if don't want to wait for whitelist
+      })
+    );
+    lastTradeTimestamp[strike.id] = block.timestamp;
+    lastTradeOptionType[strike.id] = optionType;
+
+    // update active strikes
+    _addActiveStrike(strike.id, result.positionId, strategyIndex);
+
+    require(result.totalCost <= maxPremium, "premium too high");
+
+    return (result.positionId, result.totalCost);
+  }
+
 
   /**
    * @dev use premium in strategy to reduce position size if collateral ratio is out of range
@@ -449,15 +506,15 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
    *  KEEPER ACTIONS -  HEDGE
    ***********************************************/
 
-  function _hedge(uint lockedAmountLeft, uint roundHedgeAttempts) public returns (bool activeShort) {
+  function _hedge(bool activeShort, uint lockedAmountLeft, uint roundHedgeAttempts) external onlyVault  {
     require(!activeShort, "Active futures hedge");
     require(currentHedgeStrategy.maxHedgeAttempts <= roundHedgeAttempts); 
     // through kwenta
     if(roundHedgeAttempts == 0) { // first time hedging
       require(
         // need to use kwenta / synthetix susd collateralAssetTest
-        collateralAsset.transferFrom(address(vault), address(this), lockedAmountLeft),
-        "collateral transfer from vault failed"
+        IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(vault), address(this), lockedAmountLeft),
+        "susd transfer to from vault failed"
       );
 
       _transferMargin(int(lockedAmountLeft)); 
@@ -471,10 +528,9 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint size = (marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize)).divideDecimal(spotPrice);
 
     _modifyPosition(-int(size)); 
-    activeShort = true; 
   } 
 
-  function _closeHedge() public returns (bool activeShort) {
+  function _closeHedge(bool activeShort) external onlyVault  {
     require(activeShort, "No active futures hedge");
     (,, uint128 margin, uint128 lastPrice, int128 size) = _positions(); 
     _closePosition();
@@ -646,6 +702,12 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
   function _isCall(uint _optionType) public view returns (bool isCall) {
     isCall = (OptionType(_optionType) == OptionType.SHORT_PUT_QUOTE) ? false : true;
+  }
+
+  function _isLong(uint _optionType) public view returns (bool isLong) {
+    if(OptionType(_optionType) == OptionType.LONG_CALL ||  OptionType(_optionType) == OptionType.LONG_PUT) {
+      isLong = true; 
+    }
   }
 
   function _getSecondsToExpiry(uint expiry) internal view returns (uint) {
