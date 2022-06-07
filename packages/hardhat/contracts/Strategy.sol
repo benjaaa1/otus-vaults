@@ -178,51 +178,6 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     activeBoardId = boardId; 
   }
 
-  // function doTrade(
-  //     StrikeStrategyDetail memory _currentStrikeStrategy
-  //   ) external onlyVault returns (
-  //     uint[] memory, 
-  //     uint[] memory, 
-  //     uint[] memory
-  //   ) {
-  //     StrikeStrategyDetail memory strikeDetail;
-  //     uint len = _currentStrikeStrategies.length; 
-
-  //     uint positionId;
-  //     uint premiumsReceived;
-  //     uint collateralToAdd;
-
-  //     uint strikeId; 
-  //     uint size; 
-  //     uint _positionId; 
-  //     uint _premiumReceived; 
-  //     uint _collateralToAdd;
-
-  //     strikeDetail = _currentStrikeStrategy;
-  //     strikeId = strikeDetail.strikeId; 
-  //     size = strikeDetail.size;
-
-  //     (_positionId, _premiumReceived, _collateralToAdd) = doTrade(strikeDetail, i);
-  //     positionIds[i] = _positionId;
-  //     premiumsReceived[i] = _premiumReceived;
-  //     collateralToAdd[i] = _collateralToAdd; 
-      
-  //     currentStrikeStrategies.push(StrikeStrategyDetail(
-  //       strikeDetail.targetDelta,
-  //       strikeDetail.maxDeltaGap,
-  //       strikeDetail.minVol,
-  //       strikeDetail.maxVol,
-  //       strikeDetail.maxVolVariance,
-  //       strikeDetail.optionType,
-  //       strikeDetail.strikeId,
-  //       strikeDetail.size
-  //       // strikeDetail.collateralToAdd,
-  //       // strikeDetail.setCollateralTo
-  //     ));
-
-  //     return (positionIds, premiumsReceived); 
-  // }
-
   function validateTimeIntervalByOptionType(uint strikeId, uint _optionType) internal view returns (bool) {
 
     bool valid = true; 
@@ -268,15 +223,23 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
     uint setCollateralTo;
     (collateralToAdd, setCollateralTo) = getRequiredCollateral(strike, size, optionType);
 
-    // collateralToAdd = currentStrikeStrategy.collateralToAdd;
-    // uint setCollateralTo = currentStrikeStrategy.setCollateralTo;
-
     require(
       collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
       "collateral transfer from vault failed"
     );
 
     (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, index);
+
+    currentStrikeStrategies.push(StrikeStrategyDetail(
+      currentStrikeStrategy.targetDelta,
+      currentStrikeStrategy.maxDeltaGap,
+      currentStrikeStrategy.minVol,
+      currentStrikeStrategy.maxVol,
+      currentStrikeStrategy.maxVolVariance,
+      currentStrikeStrategy.optionType,
+      currentStrikeStrategy.strikeId,
+      currentStrikeStrategy.size
+    ));
   }
 
   
@@ -483,61 +446,44 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   }
 
   /************************************************
-   *  KEEPER ACTIONS - KWENTA HEDGE
+   *  KEEPER ACTIONS -  HEDGE
    ***********************************************/
 
-  /**
-   * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
-   */
-  // function _openKwentaPosition(uint hedgeAttempts) public onlyVault returns (bool activeShort) {
-  //   require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts); 
-  //   require(!activeShort, "Active futures hedge");
-  //   // uint marginDelta; // 1 - (collateral * .85) * leverage required uint "-" is for shorts
-  //   uint marginDelta = calculateHedgePositionSize();
-  //   _modifyPosition(int(marginDelta));
-  //   hedgeAttempts += 1; 
-  //   activeShort = true; 
-  //   emit HedgeModifyPosition(msg.sender, marginDelta, hedgeAttempts);
-  // }
+  function _hedge(uint lockedAmountLeft, uint roundHedgeAttempts) public returns (bool activeShort) {
+    require(!activeShort, "Active futures hedge");
+    require(currentHedgeStrategy.maxHedgeAttempts <= roundHedgeAttempts); 
+    // through kwenta
+    if(roundHedgeAttempts == 0) { // first time hedging
+      require(
+        // need to use kwenta / synthetix susd collateralAssetTest
+        collateralAsset.transferFrom(address(vault), address(this), lockedAmountLeft),
+        "collateral transfer from vault failed"
+      );
 
-  /**
-  * @dev called by keeper 
-  * update vault collateral, call 
-  */
-  function _closeKwentaPosition() public onlyVault returns (bool activeShort) {
-    require(activeShort, "No current position");
-    _closePosition();
-    _withdrawAllMargin();
-    // transfer all funds back to vault state
+      _transferMargin(int(lockedAmountLeft)); 
+    }
+
+    // check current hedge balance in synthetix 
     (uint marginRemaining, bool invalid) = _remainingMargin(); 
-    require(!invalid, "remaining margin negative"); 
-    quoteAsset.transfer(address(vault), marginRemaining);
+    require(marginRemaining > 0, "Remaining margin is 0");
 
+    uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
+    uint size = (marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize)).divideDecimal(spotPrice);
+
+    _modifyPosition(-int(size)); 
+    activeShort = true; 
+  } 
+
+  function _closeHedge() public returns (bool activeShort) {
+    require(activeShort, "No active futures hedge");
+    (,, uint128 margin, uint128 lastPrice, int128 size) = _positions(); 
+    _closePosition();
     activeShort = false; 
-    emit HedgeClosePosition(msg.sender);
   }
 
-  // /**
-  // * @dev update the strategy for the new round.
-  // * strategy should be updated weekly after previous round ends 
-  // */
-  // function calculateReducePositionPrice() internal view returns (uint strikeLimitPrice) {
-  //   strikeLimitPrice = currentHedgeStrategy.limitStrikePricePercent.multiplyDecimal(currentStrikePrice);
-  // }
-
-  // function calculateHedgePositionSize() internal view returns (uint totalHedgeSizeAfterFees) {
-  //   // for now we do a full hedge - hedge only available for sell puts
-  //   uint hedgeCollat = _getFullCollateral(currentStrikePrice, currentStrategy.size, 0)
-  //     .multiplyDecimal(1 - currentStrategy.collatPercent).multiplyDecimal(currentHedgeStrategy.leverageSize);
-
-  //   (uint fee, ) = _orderFee(int(hedgeCollat));
-
-  //   totalHedgeSizeAfterFees = hedgeCollat - fee; 
-  // }
-
-  ////////////////
-  // Validation //
-  ////////////////
+  function closeHedgeEndOfRound() public {
+    _withdrawAllMargin(); 
+  }
 
   /**
    * @dev verify if the strike is valid for the strategy

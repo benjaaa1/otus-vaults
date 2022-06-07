@@ -40,7 +40,7 @@ import { ArrowForwardIcon } from "@chakra-ui/icons";
 
 export default function StrategyDetail() {
 
-  const { state, dispatch, setVaultStrategy, trade } = useStrategyContext();
+  const { state, dispatch, strategyValue, setVaultStrategy, trade } = useStrategyContext();
 
   const {
     liveBoards,
@@ -50,15 +50,17 @@ export default function StrategyDetail() {
     activeCurrentStrikeIndex
   } = state; 
 
+  const { activeBoardId } = strategyValue;
+  console.log({ activeBoardId })
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
     <>
       <Flex bg="#333" minWidth='max-content' alignItems='center' p={'4'}>
         <Box>
-          <Select bg={'white'} id='board' placeholder={'Select Round Expiry'} onChange={(e) => dispatch({ type: 'SET_SELECTED_BOARD', payload: e.target.value })}>
+          <Select bg={'white'} isDisabled={activeBoardId > 0} id='board' placeholder={'Select Round Expiry'} onChange={(e) => dispatch({ type: 'SET_SELECTED_BOARD', payload: e.target.value })}>
           {
-            Object.values(liveBoards).map(({ name, id }) => (<option value={id}>{name}</option>))
+            Object.values(liveBoards).map(({ name, id }) => (<option selected={id == activeBoardId} value={id}>{name}</option>))
           }
           </Select>
         </Box>

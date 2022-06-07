@@ -229,6 +229,10 @@ module.exports = {
         address: "0xd30a35282c2e2db07d9dac69bf3d45a975bc85d1",
         abi: ERC20ABI,
       },
+      SUSDSNX: {
+        address: "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
+        abi: ERC20ABI,
+      },
       USDC: {
         address: "0x3b8e53B3aB8E01Fb57D0c9E893bC4d655AA67d84",
         abi: ERC20ABI,

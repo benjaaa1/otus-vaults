@@ -140,6 +140,8 @@ contract OtusVault is BaseVault {
     // won't be able to close if positions are not settled
     _strategy.returnFundsAndClearStrikes();
 
+    // withdraw all margin from futures market 
+    _strategy.closeHedgeEndOfRound();
     emit RoundClosed(vaultState.round, lockAmount);
   }
 
@@ -174,7 +176,7 @@ contract OtusVault is BaseVault {
     (uint positionId, uint premiumReceived, uint collateralAdded) = _strategy.doTrade(_currentStrikeStrategy);
     
     roundPremiumCollected += premiumReceived;
-    // update the remaining locked amount
+    // update the remaining locked amount -- lockedAmountLeft can be used for hedge
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - collateralAdded;
     emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
   }
@@ -192,18 +194,13 @@ contract OtusVault is BaseVault {
     /**
    * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
   //  */
-  // function openHedgePosition() external onlyKeeper {
-  //   require(vaultState.roundInProgress, "Round closed");
-  //   activeShort = _strategy._openKwentaPosition(roundHedgeAttempts);
-  // }
-  function closeHedge() external onlyKeeper {
-    activeShort = _strategy._closeKwentaPosition();
+  function _hedge() external onlyKeeper {
+    require(vaultState.roundInProgress, "Round closed");
+    activeShort = _strategy._hedge(vaultState.lockedAmountLeft, roundHedgeAttempts);
   }
 
-  /************************************************
-  *  Hedge Actions - Kwenta 
-  ***********************************************/
-  function _hedge() internal {}
-
+  function _closeHedge() external onlyKeeper {
+    activeShort = _strategy._closeHedge();
+  }
 
 }

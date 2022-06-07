@@ -183,6 +183,22 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    ***********************************************/
 
   /**
+  * TEST METHODS
+  */
+
+  function depositSNXSUSD(uint amount) external nonReentrant {
+    // uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(msg.sender);
+    // IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).approve(address(this), balance);
+    IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).safeTransferFrom(msg.sender, address(this), amount);
+  }
+
+  function withdrawSNXSUSD() external nonReentrant {
+    uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
+    IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).safeTransferFrom(address(this), msg.sender, balance);
+  }
+
+
+  /**
    * @notice Deposits the `asset` from msg.sender.
    * @param amount is the amount of `asset` to deposit
    */

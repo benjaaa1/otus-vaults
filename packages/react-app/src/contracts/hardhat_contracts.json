@@ -293,7 +293,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0xFB14b64b415ed15D61E69aDbEB2738a60A9d6af8",
+          "address": "0x892812D5B36C1e1d5B42CF768b93B3f4e5Be39eb",
           "abi": [
             {
               "inputs": [],
@@ -455,7 +455,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0xba34Bd5063513318c5636EdFb2666E3915b48e48",
+          "address": "0xcABBD0613Fa31C353Df3110E13449C448eF92496",
           "abi": [
             {
               "inputs": [
@@ -1134,7 +1134,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0xe1dfe7cd85052cF346AAe874388678101758b938",
+          "address": "0x42bB9Ebd19Fa0150F97F48BE01b165dEB09c3889",
           "abi": [
             {
               "inputs": [
@@ -1537,6 +1537,20 @@
             },
             {
               "inputs": [],
+              "name": "_closeHedge",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "_hedge",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
               "name": "_strategy",
               "outputs": [
                 {
@@ -1649,13 +1663,6 @@
             },
             {
               "inputs": [],
-              "name": "closeHedge",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
               "name": "closeRound",
               "outputs": [],
               "stateMutability": "nonpayable",
@@ -1763,6 +1770,19 @@
                 }
               ],
               "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                }
+              ],
+              "name": "depositSNXSUSD",
+              "outputs": [],
+              "stateMutability": "nonpayable",
               "type": "function"
             },
             {
@@ -2466,6 +2486,13 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "withdrawSNXSUSD",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "address",
@@ -2666,7 +2693,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0x78F293e377c90aba39B288D3974F081fFe57F97a",
+          "address": "0x5C5E543E9bFb881F461b3B8545aFec77B3b4aF77",
           "abi": [
             {
               "inputs": [
@@ -2745,7 +2772,7 @@
             },
             {
               "inputs": [],
-              "name": "_closeKwentaPosition",
+              "name": "_closeHedge",
               "outputs": [
                 {
                   "internalType": "bool",
@@ -2858,6 +2885,30 @@
               "inputs": [
                 {
                   "internalType": "uint256",
+                  "name": "lockedAmountLeft",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "roundHedgeAttempts",
+                  "type": "uint256"
+                }
+              ],
+              "name": "_hedge",
+              "outputs": [
+                {
+                  "internalType": "bool",
+                  "name": "activeShort",
+                  "type": "bool"
+                }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
                   "name": "_optionType",
                   "type": "uint256"
                 }
@@ -2916,6 +2967,13 @@
                 }
               ],
               "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "closeHedgeEndOfRound",
+              "outputs": [],
+              "stateMutability": "nonpayable",
               "type": "function"
             },
             {

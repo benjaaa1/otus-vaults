@@ -42,9 +42,7 @@ export const strikeStrategy = {
   optionType: 3,
   id: null,
   size: 2,
-  strikePrice: null,
-  collateralToAdd: 0,
-  setCollateralTo: 0,
+  strikePrice: null
 }
 
 export const strategyReducer = (state, action) => {
@@ -58,6 +56,8 @@ export const strategyReducer = (state, action) => {
       return { ...state, lyraMarket: action.payload };
     case 'SET_LIVE_BOARDS':
       return { ...state, liveBoards: action.payload };
+    case 'SET_LIVE_STRIKES':
+      return { ...state, selectedBoard: state.liveBoards[action.payload], liveStrikes: state.liveBoards[action.payload].strikes };
     case 'UPDATE_STRIKES':
       return { ...state, strikes: action.payload };
     case 'SET_SELECTED_BOARD':

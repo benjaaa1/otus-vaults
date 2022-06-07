@@ -62,6 +62,8 @@ contract TokenAdapter is OwnableUpgradeable {
 
     quoteAsset.approve(_futuresMarket, type(uint).max);
     baseAsset.approve(_futuresMarket, type(uint).max);
+    // susd test on synthetix different than lyra
+    IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).approve(_futuresMarket, type(uint).max);
   }
 
 }

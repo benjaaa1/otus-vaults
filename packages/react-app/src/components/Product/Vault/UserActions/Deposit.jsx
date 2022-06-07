@@ -18,11 +18,13 @@ export const Deposit = () => {
   const l2DepositMover = contracts ? contracts['L2DepositMover'] : "";
   const otusVaultContract = contracts ? contracts['OtusVault'] : "";
   const susdContract = contracts ? contracts['SUSD'] : "";
+  const susdSNXContract = contracts ? contracts['SUSDSNX'] : "";
   const usdcContract2 = contracts ? contracts['USDC'] : "";
   const usdcContract = contractsL1 ? contractsL1['USDC'] : "";
   const l1bridge = contractsL1 ? contractsL1['L1Bridge'] : "";
 
   const [amount, setAmount] = useState(590); 
+  const [amount2, setAmount2] = useState(590); 
   const [allowanceAmount, setAllowanceAmount] = useState(0); 
 
   const onChange = async (val) => {
@@ -30,6 +32,13 @@ export const Deposit = () => {
     console.log({ vaultParams })
     console.log({ val })
     setAmount(val); 
+  }
+
+  const onChange2 = async (val) => {
+    const vaultParams = await otusVaultContract.vaultParams(); 
+    console.log({ vaultParams })
+    console.log({ val })
+    setAmount2(val); 
   }
 
   useEffect(async () => {
@@ -113,8 +122,6 @@ export const Deposit = () => {
 
   const deposit = async () => {
     try {
-      // const roundPremiumSUSD = parseUnits('50');
-      // console.log({ roundPremiumSUSD })
       console.log({ amount })
       const success = await otusVaultContract.connect(signer).deposit(parseUnits(amount.toString())); 
       console.log({ success })
@@ -123,15 +130,30 @@ export const Deposit = () => {
     }
   }
 
+  const depositSNX = async () => {
+    try {
+      const success = await otusVaultContract.connect(signer).depositSNXSUSD(parseUnits(amount2.toString())); 
+      console.log({ success })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  
   const approve = async () => {
     try {
       // need to check erc20 address
       const balance = await susdContract.balanceOf(address); 
-      console.log({ balance: ethers.utils.formatEther(balance) })
+      const balance2 = await susdContract.balanceOf(address); 
+
+      console.log({ balance: ethers.utils.formatEther(balance), balance2: ethers.utils.formatEther(balance2) })
       const formattedBalance = ethers.utils.formatEther(balance);
+      const formattedBalance2 = ethers.utils.formatEther(balance2);
+
       console.log({ formattedBalance: formattedBalance })
       const success = await susdContract.connect(signer).approve(vault, ethers.utils.parseEther(formattedBalance)); 
       console.log({ success })
+      const success2 = await susdSNXContract.connect(signer).approve(vault, ethers.utils.parseEther(formattedBalance2)); 
+      console.log({ success2 })
     } catch (error) {
       console.log(error)
     }
@@ -151,7 +173,18 @@ export const Deposit = () => {
               />
                 <Input color='white' placeholder='Enter amount' onChange={(event) => onChange(event.target.value)} />
               <InputRightElement children={<CheckIcon color='green.500' />} />
+              <InputLeftElement
+                pointerEvents='none'
+                color='gray.300'
+                fontSize='1.2em'
+                children='$'
+              />
+                <Input color='white' placeholder='Enter amount2' onChange={(event) => onChange2(event.target.value)} />
+              <InputRightElement children={<CheckIcon color='green.500' />} />
             </InputGroup>,
+            <BaseButton width={'100%'} onClick={depositSNX}>
+              Deposit SNX
+            </BaseButton>,
             <BaseButton width={'100%'} onClick={deposit}>
               Deposit
             </BaseButton>,

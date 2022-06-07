@@ -37,11 +37,24 @@ export const Withdrawal = () => {
     }
   }
 
+  const withdrawSNXSUSD = async () => {
+    try {
+      const success = await otusVaultContract.connect(signer).withdrawSNXSUSD(); 
+      console.log({ success })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
   return (
     <VStack>
       <Input color='white' min={1} max={shares} defaultValue={shares} />
       <BaseButton width={'100%'} onClick={initiateWithdraw}>
         Withdrawal
+      </BaseButton> 
+      <BaseButton width={'100%'} onClick={withdrawSNXSUSD}>
+      withdrawSNXSUSD
       </BaseButton> 
     </VStack>
   );
