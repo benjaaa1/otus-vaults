@@ -33,7 +33,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
   mapping(uint => uint) public strikeToPositionId;
   mapping(uint => uint) public strategyToStrikeId;
   mapping(uint => uint) public lastTradeTimestamp;
-  mapping(uint => OptionType) public lastTradeOptionType;
+  mapping(uint => uint) public lastTradeOptionType;
 
   address public vault;
 
@@ -178,13 +178,11 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
   function validateTimeIntervalByOptionType(uint strikeId, uint _optionType) internal view returns (bool) {
     
-    OptionType op = OptionType(_optionType); 
-
     bool valid = true; 
 
     if (
       lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <= block.timestamp && 
-      lastTradeOptionType[strikeId] == op) { 
+      lastTradeOptionType[strikeId] == _optionType + 1) { 
         valid = false; 
     }
 
@@ -378,7 +376,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       })
     );
     lastTradeTimestamp[strike.id] = block.timestamp;
-    lastTradeOptionType[strike.id] = optionType;
+    lastTradeOptionType[strike.id] = currentStrikeStrategy.optionType + 1;
 
     // update active strikes
     _addActiveStrike(strike.id, result.positionId, strategyIndex);
@@ -420,7 +418,7 @@ contract Strategy is FuturesAdapter, VaultAdapter, TokenAdapter {
       })
     );
     lastTradeTimestamp[strike.id] = block.timestamp;
-    lastTradeOptionType[strike.id] = optionType;
+    lastTradeOptionType[strike.id] = currentStrikeStrategy.optionType + 1;
 
     // update active strikes
     _addActiveStrike(strike.id, result.positionId, strategyIndex);
