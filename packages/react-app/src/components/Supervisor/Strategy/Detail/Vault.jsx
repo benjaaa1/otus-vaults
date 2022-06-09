@@ -13,9 +13,17 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
-  Flex 
+  Flex ,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuItemOption,
+  MenuGroup,
+  MenuOptionGroup,
+  MenuDivider,
 } from '@chakra-ui/react';
-import { ArrowForwardIcon } from "@chakra-ui/icons";
+import { ArrowForwardIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { Slider } from "../../../Common/Slider";
 
 import { Button } from "../../../Common/Button";
@@ -28,7 +36,6 @@ export default function VaultDetail() {
     strategyValue,
     state, 
     dispatch, 
-    setStrategyOnVault,
     startRound,
     closeRound,
     reducePosition,
@@ -84,24 +91,48 @@ export default function VaultDetail() {
   return (
     <Box p='4'>
       <VStack>
-        <Button onClick={() => history.push(`/vault/${vault}`)}>View Vault Page</Button>
+        {/* <Button onClick={() => history.push(`/vault/${vault}`)}>View Vault Page</Button>
         <Button onClick={reducePosition}>Reduce Position</Button>
         <Button onClick={() => {  onOpen() }}>Set Hedge Strategy</Button>
-        <Button onClick={_hedge}>Hedge</Button>
+        <Button onClick={_hedge}>Hedge</Button> */}
 
         {
           strategyValue.hasStrategy ? 
           <>
-            {
-              strategyValue.vaultState.roundInProgress ? 
-              <Button onClick={closeRound} rightIcon={<ArrowForwardIcon />}>Close Round</Button> :
-              <Button onClick={startRound} rightIcon={<ArrowForwardIcon />}>Start Round</Button>
-            }
-          </> :
-          <>
-          <Button onClick={setStrategyOnVault} rightIcon={<ArrowForwardIcon />}>Set Strategy on Vault</Button>
-          </>
+            <Menu>
+              <MenuButton
+                px={4}
+                py={2}
+                transition='all 0.2s'
+                borderRadius='md'
+                borderWidth='1px'
+                _hover={{ bg: 'gray.400' }}
+                _expanded={{ bg: 'blue.400' }}
+                _focus={{ boxShadow: 'outline' }}
+              >
+                Vault Actions <ChevronDownIcon />
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={() => history.push(`/vault/${vault}`)}>View Vault Page</MenuItem>
 
+                {
+                  strategyValue.vaultState.roundInProgress ? 
+                  <MenuItem onClick={closeRound}>Close Round</MenuItem> :
+                  <MenuItem onClick={startRound}>Start Round</MenuItem>
+                }
+
+                <>             
+                  <MenuDivider />
+                  <MenuGroup title='Test Actions'>
+                    <MenuItem onClick={reducePosition}>Reduce Position</MenuItem>
+                    <MenuItem onClick={() => {  onOpen() }}>Set Hedge Strategy</MenuItem>
+                    <MenuItem onClick={_hedge}>Hedge</MenuItem>
+                  </MenuGroup>
+                </>
+
+              </MenuList>
+            </Menu>
+          </> : null
         }
         
       </VStack> 

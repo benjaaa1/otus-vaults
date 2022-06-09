@@ -51,7 +51,7 @@ export const VaultStrategyBox  = styled(Box)`
   border-radius: ${theme.border.radius};
   border: ${theme.border.width} solid ${colors.background.two};
   padding: ${props => props.padding};
-  background: ${colors.background.two};
+  background: ${colors.background.one};
 `;
 
 export const StrategyBox  = styled(Box)`

@@ -196,21 +196,6 @@ export const StrategyProvider = ({ children }) => {
     }
   }, [strategyValue.hasStrategy, liveBoards]);
 
-  const setStrategyOnVault = async () => {
-    try {
-      console.log({ strategyAddress })
-      const response = await otusVaultContract.connect(signer).setStrategy(strategyAddress); 
-      const receipt = response.wait(); 
-      console.log({ receipt })
-      const _hasStrategy = isValidStrategyAddress(); 
-      updateValue('hasStrategy', _hasStrategy); 
-      Notifier(MESSAGE.SETVAULT.SUCCESS, TYPE.SUCCESS)
-
-    } catch (error) {
-      console.log({ error })
-    }
-  }
-
   const setVaultStrategy = async () => {
     try {
 
@@ -377,7 +362,6 @@ export const StrategyProvider = ({ children }) => {
     state, 
     dispatch, 
     strategyValue,
-    setStrategyOnVault,
     setVaultStrategy,
     startRound,
     closeRound,
