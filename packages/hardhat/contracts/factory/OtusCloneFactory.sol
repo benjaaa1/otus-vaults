@@ -20,12 +20,10 @@ interface IOtusVault {
 	function initialize(
 		address _owner,
 		address _feeRecipient,
-		string memory _vaultName,
-		string memory _tokenName,
-		string memory _tokenSymbol,
+		string[] memory _vaultInfo,
 		bool isPublic, 
-		uint _vaultType,
-		Vault.VaultParams memory _vaultParams
+		Vault.VaultParams memory _vaultParams,
+		address __strategy
 	) external; 
 
 	function setStrategy(address _strategy) external; 
@@ -104,64 +102,69 @@ contract OtusCloneFactory is OtusRegistry {
   */
 	function cloneVaultWithStrategy(
 		address _optionMarket,
-		string memory _vaultName, 
-		string memory _tokenName,
-		string memory _tokenSymbol,
-		bool isPublic, 
-		uint _vaultType,
+		string[] memory _vaultInfo,
+		bool isPublic,
 		Vault.VaultParams memory _vaultParams
 	) external {
+
 		address userSupervisor = _getSupervisor(); 
 		require(userSupervisor != address(0), "Has no supervisor"); 
+
 		address otusVaultClone = Clones.clone(otusVault);
 		vaults[userSupervisor] = otusVaultClone;
 
-		IOtusVault(otusVaultClone).initialize(
-			msg.sender,
-			supervisors[msg.sender], 
-			_vaultName,
-			_tokenName, 
-			_tokenSymbol,
-			isPublic, 
-			_vaultType,
-			_vaultParams
-		);
-
+		require(otusVaultClone != address(0), "Vault not created"); 
 		// register new vault 
 		_addVault(otusVaultClone);
 
-		emit NewVaultClone(otusVaultClone, msg.sender);
+		address	strategyClone = Clones.clone(strategy);
+		strategies[otusVaultClone] = strategyClone;
 
-		address strategyClone =	_cloneStrategy(
+		require(strategyClone != address(0), "Strategy not created"); 
+		console.log("_vaultParams.asset clone", _vaultParams.asset);
+		IOtusVault(otusVaultClone).initialize(
+			msg.sender,
+			userSupervisor, 
+			_vaultInfo,
+			isPublic, 
+			_vaultParams,
+			strategyClone
+		);
+
+		_initializeClonedStrategy(
 			otusVaultClone,
-			_optionMarket
+			_optionMarket,
+			strategyClone
 		);
 		
-		require(strategyClone != address(0), "Strategy not created"); 
+		emit NewVaultClone(otusVaultClone, msg.sender);
+
+		// (bool success, bytes memory result) = otusVaultClone.delegatecall(abi.encodeWithSelector(OtusVault.setVars.setStrategy, strategyClone)));
+
+		// require(success, "Strategy not set"); 
 	}
 
   /**
    * @notice Clones strategy contract if supervisor has a vault created
    */
-	function _cloneStrategy(
+	function _initializeClonedStrategy(
 		address _vault, 
-		address _optionMarket
-	 ) internal returns (address strategyClone) {
-		strategyClone = Clones.clone(strategy);
-		strategies[_vault] = strategyClone;
+		address _optionMarket,
+		address _strategy
+	 ) internal {
 
 		address[] memory marketAddresses = getOptionMarketDetails(_optionMarket); 
 		require(marketAddresses[0] != address(0), "Failed to get quote asset");
 
-		IStrategy(strategyClone).initialize(
+		IStrategy(_strategy).initialize(
 			msg.sender,
 			_vault,  
 			marketAddresses,
 			address(0x806b9d822013B8F82cC8763DCC556674853905d5)  // marketAddress.gwavOracle
-			// address(0x4A679253410272dd5232B3Ff7cF5dbB88f295319)
+			//address(0x4A679253410272dd5232B3Ff7cF5dbB88f295319)
 		);
 
-		emit NewStrategyClone(strategyClone, msg.sender);
+		emit NewStrategyClone(_strategy, msg.sender);
 	}
 
 	function _cloneL2DepositMover(address _vault) external {

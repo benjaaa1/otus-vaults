@@ -29,7 +29,7 @@ import {OptionMarketPricer} from '@lyrafinance/protocol/contracts/OptionMarketPr
  * @dev LyraAdapter but inherits from OwnerUpgradable - Provides helpful functions for the vault adapter
  */
 
-contract VaultAdapter {
+contract VaultAdapter is OwnableUpgradeable {
   using DecimalMath for uint;
 
   ///////////////////////
@@ -135,9 +135,7 @@ contract VaultAdapter {
    * @dev _greekCache greekCache address
    * @dev _feeCounter Fee counter address
  */
-  constructor(
-    address _synthetixAdapter
-  ) {
+  constructor(address _synthetixAdapter) {
     synthetixAdapter = SynthetixAdapter(_synthetixAdapter);
   }
 
@@ -149,19 +147,23 @@ contract VaultAdapter {
    * @param _shortCollateral ShortCollateral address
   */
   function optionInitialize (
+    address _owner,
     address _optionToken,
     address _optionMarket,
     address _liquidityPool,
     address _shortCollateral,
     address _optionPricer,
     address _greekCache
-  ) internal {
+  ) internal initializer {
     optionToken = OptionToken(_optionToken); // option token will be different 
     optionMarket = OptionMarket(_optionMarket); // option market will be different 
     liquidityPool = LiquidityPool(_liquidityPool); // liquidity pool will be different
     shortCollateral = ShortCollateral(_shortCollateral); // short collateral will be different
     optionPricer = OptionMarketPricer(_optionPricer);
     greekCache = OptionGreekCache(_greekCache);
+
+    __Ownable_init();
+    transferOwnership(_owner);
   }
 
   ////////////////////

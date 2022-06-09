@@ -293,7 +293,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0xF3ed73D96D50880Ed5F693B3622103527E21Ae96",
+          "address": "0xcB81d290c5ae3183bcEeC2c12b94b8689dD56C57",
           "abi": [
             {
               "inputs": [],
@@ -455,7 +455,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x4f9ad0FA86C4d3ca338eB2Cb9fa8b862414106Fe",
+          "address": "0x3e6A3bDDa59475266447A9714a560fE2Bc230edD",
           "abi": [
             {
               "inputs": [
@@ -661,29 +661,14 @@
                   "type": "address"
                 },
                 {
-                  "internalType": "string",
-                  "name": "_vaultName",
-                  "type": "string"
-                },
-                {
-                  "internalType": "string",
-                  "name": "_tokenName",
-                  "type": "string"
-                },
-                {
-                  "internalType": "string",
-                  "name": "_tokenSymbol",
-                  "type": "string"
+                  "internalType": "string[]",
+                  "name": "_vaultInfo",
+                  "type": "string[]"
                 },
                 {
                   "internalType": "bool",
                   "name": "isPublic",
                   "type": "bool"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "_vaultType",
-                  "type": "uint256"
                 },
                 {
                   "components": [
@@ -1134,7 +1119,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0xe175B406A5ED93F30A86d2DDed942F50Cd3EfbFD",
+          "address": "0x827E9CaB9A546d6a4C3b91Eed0f7cCA7FE3fD1aB",
           "abi": [
             {
               "inputs": [
@@ -1835,29 +1820,14 @@
                   "type": "address"
                 },
                 {
-                  "internalType": "string",
-                  "name": "_vaultName",
-                  "type": "string"
-                },
-                {
-                  "internalType": "string",
-                  "name": "_tokenName",
-                  "type": "string"
-                },
-                {
-                  "internalType": "string",
-                  "name": "_tokenSymbol",
-                  "type": "string"
+                  "internalType": "string[]",
+                  "name": "_vaultInfo",
+                  "type": "string[]"
                 },
                 {
                   "internalType": "bool",
                   "name": "_isPublic",
                   "type": "bool"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "_otusVaultType",
-                  "type": "uint256"
                 },
                 {
                   "components": [
@@ -1880,6 +1850,11 @@
                   "internalType": "struct Vault.VaultParams",
                   "name": "_vaultParams",
                   "type": "tuple"
+                },
+                {
+                  "internalType": "address",
+                  "name": "__strategy",
+                  "type": "address"
                 }
               ],
               "name": "initialize",
@@ -1967,19 +1942,6 @@
                   "internalType": "string",
                   "name": "",
                   "type": "string"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "otusVaultType",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
                 }
               ],
               "stateMutability": "view",
@@ -2325,7 +2287,7 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.StrikeStrategyDetail",
+                  "internalType": "struct StrategyBase.StrikeStrategyDetail",
                   "name": "_currentStrikeStrategy",
                   "type": "tuple"
                 }
@@ -2693,7 +2655,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0x2DD83BFE124EE64886844d605c9eEC351c26be54",
+          "address": "0x41bE257E0F0b44B47c203248b56D3459E90Ebc34",
           "abi": [
             {
               "inputs": [
@@ -2865,7 +2827,7 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.StrikeStrategyDetail",
+                  "internalType": "struct StrategyBase.StrikeStrategyDetail",
                   "name": "currentStrikeStrategy",
                   "type": "tuple"
                 }
@@ -3177,7 +3139,7 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.StrikeStrategyDetail",
+                  "internalType": "struct StrategyBase.StrikeStrategyDetail",
                   "name": "currentStrikeStrategy",
                   "type": "tuple"
                 }
@@ -3329,7 +3291,7 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.StrikeStrategyDetail[]",
+                  "internalType": "struct StrategyBase.StrikeStrategyDetail[]",
                   "name": "",
                   "type": "tuple[]"
                 }
@@ -3658,7 +3620,7 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.StrikeStrategyDetail",
+                  "internalType": "struct StrategyBase.StrikeStrategyDetail",
                   "name": "currentStrikeStrategy",
                   "type": "tuple"
                 }
@@ -3826,7 +3788,7 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.HedgeDetail",
+                  "internalType": "struct StrategyBase.HedgeDetail",
                   "name": "_hedgeStrategy",
                   "type": "tuple"
                 }
@@ -3871,7 +3833,7 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct Strategy.StrategyDetail",
+                  "internalType": "struct StrategyBase.StrategyDetail",
                   "name": "_currentStrategy",
                   "type": "tuple"
                 }

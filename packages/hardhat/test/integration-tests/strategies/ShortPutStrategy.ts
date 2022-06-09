@@ -12,7 +12,8 @@ import {
   OtusCloneFactory, 
   Supervisor, 
   OtusVault, 
-  Strategy, 
+  Strategy,
+  StrategyBase,
   MockOptionToken,
   MockERC20, 
   Supervisor__factory, 
@@ -22,7 +23,7 @@ import {
 } from '../../../typechain-types';
 import { LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
 
-const defaultStrategyDetail: Strategy.StrategyDetailStruct = {
+const defaultStrategyDetail: StrategyBase.StrategyDetailStruct = {
   collatBuffer: toBN('1.5'),
   collatPercent: toBN('.35'),
   gwavPeriod: 600,
@@ -31,7 +32,7 @@ const defaultStrategyDetail: Strategy.StrategyDetailStruct = {
   minTradeInterval: 600,
 };
 
-const defaultStrikeStrategyDetailCall: Strategy.StrikeStrategyDetailStruct = {
+const defaultStrikeStrategyDetailCall: StrategyBase.StrikeStrategyDetailStruct = {
   maxVolVariance: toBN('0.1'),
   targetDelta: toBN('0.4'),
   maxDeltaGap: toBN('0.5'), // accept delta from 0.1~0.3
@@ -42,7 +43,7 @@ const defaultStrikeStrategyDetailCall: Strategy.StrikeStrategyDetailStruct = {
   optionType: 3
 };
 
-const defaultStrikeStrategyDetail: Strategy.StrikeStrategyDetailStruct = {
+const defaultStrikeStrategyDetail: StrategyBase.StrikeStrategyDetailStruct = {
   maxVolVariance: toBN('0.1'),
   targetDelta: toBN('0.2').mul(-1),
   maxDeltaGap: toBN('0.1'), // accept delta from 0.1~0.3
@@ -53,7 +54,7 @@ const defaultStrikeStrategyDetail: Strategy.StrikeStrategyDetailStruct = {
   optionType: 4
 };
 
-const defaultHedgeDetail: Strategy.HedgeDetailStruct = {
+const defaultHedgeDetail: StrategyBase.HedgeDetailStruct = {
   hedgePercentage: toBN('1.2'), // 20% + collatPercent == 100%
   maxHedgeAttempts: toBN('5'),
   limitStrikePricePercent: toBN('0.2'),  // ex. strike price of 3100 2% ~ 3030 // Maybe change the name to currentPriceLimitPercent 
@@ -107,6 +108,7 @@ describe('Strategy integration test', async () => {
 
   before('assign roles', async () => {
     const addresses = await ethers.getSigners();
+    console.log({ addresses })
     deployer = addresses[0]; 
     manager = addresses[1]; // supervisor
     treasury = addresses[2];
@@ -239,11 +241,12 @@ describe('Strategy integration test', async () => {
 
     await otusCloneFactory.connect(manager).cloneVaultWithStrategy(
       lyraMarket.OptionMarket.address,
-      'New Vault',
-      'OtusVault Share', 
-      'Otus VS', 
+      [
+        'New Vault',
+        'OtusVault Share', 
+        'Otus VS'
+      ],
       true, 
-      4, 
       {
         decimals,
         cap, 
@@ -257,11 +260,13 @@ describe('Strategy integration test', async () => {
     const strategyCloneAddress = await otusCloneFactory.connect(manager)._getStrategy(managersVault.address);
     managersStrategy = await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress) as Strategy; 
     expect(managersStrategy.address).to.not.be.eq(ZERO_ADDRESS);
+    console.log(managersVault._strategy())
+    expect(await managersVault._strategy()).to.be.eq(managersStrategy.address);
   });
 
-  before('link strategy to vault', async () => {
-    await managersVault.connect(manager).setStrategy(managersStrategy.address)
-  });
+  // before('link strategy to vault', async () => {
+  //   await managersVault.connect(manager).setStrategy(managersStrategy.address)
+  // });
 
   describe('check strategy setup', async () => {
 
@@ -283,6 +288,7 @@ describe('Strategy integration test', async () => {
     it('setting strategy should correctly update strategy variables', async () => {
 
       const owner = await managersStrategy.owner();
+      console.log({ owner, manager });
 
       await managersStrategy.connect(manager).setStrategy(
         defaultStrategyDetail
@@ -324,8 +330,6 @@ describe('Strategy integration test', async () => {
         return strikeObj;
       }))
 
-      console.log({ results })
-
     })   
 
     it('user should be able to deposit through vault', async () => {
@@ -354,7 +358,7 @@ describe('Strategy integration test', async () => {
 
       const currentStrikeStrategies = await managersStrategy.getCurrentStrikeStrategies(); 
 
-      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('invalid strike');      
+      await expect(managersVault.connect(manager).trade(strikeStrategy)).to.be.revertedWith('invalid strike');      
     });
 
     it('will not trade when delta is out of range1', async () => {
@@ -366,7 +370,7 @@ describe('Strategy integration test', async () => {
 
       const currentStrikeStrategies1 = await managersStrategy.getCurrentStrikeStrategies(); 
 
-      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TradeDeltaOutOfRange');
+      await expect(managersVault.connect(manager).trade(strikeStrategy)).to.be.revertedWith('TradeDeltaOutOfRange');
       
     });
 
@@ -379,7 +383,7 @@ describe('Strategy integration test', async () => {
 
       const currentStrikeStrategies2 = await managersStrategy.getCurrentStrikeStrategies(); 
 
-      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('invalid strike');
+      await expect(managersVault.connect(manager).trade(strikeStrategy)).to.be.revertedWith('invalid strike');
       
     });
 
@@ -390,7 +394,7 @@ describe('Strategy integration test', async () => {
         strikeId: strikes[3]
       }
 
-      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
+      await expect(managersVault.connect(manager).trade(strikeStrategy)).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
 
     });
 
@@ -410,7 +414,8 @@ describe('Strategy integration test', async () => {
       const strategySUSDBalance = await susd.balanceOf(managersStrategy.address);
 
       // 3400 is a good strike
-      await managersVault.connect(manager).trade([strikeStrategy, strikeStrategyCall]);
+      await managersVault.connect(manager).trade(strikeStrategy);
+      await managersVault.connect(manager).trade(strikeStrategyCall);
 
       const strategyBalance = await seth.balanceOf(managersStrategy.address);
       const vaultStateAfter = await managersVault.connect(manager).vaultState();
@@ -444,7 +449,7 @@ describe('Strategy integration test', async () => {
         ...defaultStrikeStrategyDetail,
         strikeId: strikes[4]
       }
-      await managersVault.connect(manager).trade([strikeStrategy]);
+      await managersVault.connect(manager).trade(strikeStrategy);
 
       // check that active strikes are updated
       const storedStrikeId = await managersStrategy.activeStrikeIds(1);
@@ -541,7 +546,7 @@ describe('Strategy integration test', async () => {
         ...defaultStrikeStrategyDetail,
         strikeId: strikes[2]
       }
-      await managersVault.connect(manager).trade([strikeStrategy]);
+      await managersVault.connect(manager).trade(strikeStrategy);
 
       [strikePrice, expiry] = await lyraTestSystem.optionMarket.getStrikeAndExpiry(strikes[2]);
       positionId = await managersStrategy.strikeToPositionId(strikes[2]);

@@ -6,9 +6,7 @@ import "hardhat/console.sol";
 
 import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
 import {IERC20Detailed} from "../interfaces/IERC20Detailed.sol";
-import {VaultAdapter} from "../VaultAdapter.sol";
-import {FuturesAdapter} from "../FuturesAdapter.sol";
-import {TokenAdapter} from "../TokenAdapter.sol";
+import {StrategyBase} from "../StrategyBase.sol";
 
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -16,8 +14,7 @@ import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath
 import "../interfaces/IFuturesMarket.sol";
 import "./MockOtusVault.sol";
 
-contract MockStrategy is FuturesAdapter, VaultAdapter, TokenAdapter {
-  GWAVOracle public gwavOracle;
+contract MockStrategy is StrategyBase {
 
   IERC20Detailed public collateral;
   IERC20Detailed public premium;
@@ -32,40 +29,22 @@ contract MockStrategy is FuturesAdapter, VaultAdapter, TokenAdapter {
 
   constructor(
     address _synthetixAdapter
-  ) FuturesAdapter() VaultAdapter( _synthetixAdapter) {}
+  ) StrategyBase( _synthetixAdapter) {}
 
   function initialize(
     address _owner, 
     address _vault, 
-    address _optionToken,
-    address _optionMarket,
-    address _liquidityPool,
-    address _shortCollateral,
-    address _optionPricer,
-    address _greekCache,
-    address _futuresMarket,
-    address _quoteAsset, 
-    address _baseAsset
+    address[] memory marketAddresses
   ) external {    
     
-    optionInitialize(
-      _optionToken,
-      _optionMarket,
-      _liquidityPool,
-      _shortCollateral,
-      _optionPricer,
-      _greekCache
-    );
-
-    futuresInitialize(_futuresMarket);
+    address _quoteAsset = marketAddresses[0];  // quote asset
+    address _baseAsset = marketAddresses[1];
 
     baseInitialize(
       _owner, 
       _vault,
-      _futuresMarket, 
-      _optionMarket, 
-      _quoteAsset, 
-      _baseAsset
+      marketAddresses,
+      address(0)
     );
 
     vault = _vault;

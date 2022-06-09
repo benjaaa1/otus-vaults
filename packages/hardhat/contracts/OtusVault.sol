@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
+import "hardhat/console.sol";
+
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -16,9 +18,9 @@ contract OtusVault is BaseVault {
   /************************************************
   *  IMMUTABLES & CONSTANTS
   ***********************************************/
+  Strategy public _strategy;
   address public immutable keeper; 
 
-  Strategy public _strategy;
   address public supervisor; 
   string public vaultName; 
   // Amount locked for scheduled withdrawals last week;
@@ -38,7 +40,6 @@ contract OtusVault is BaseVault {
   }
 
   // add details for for vault type ~
-  uint public otusVaultType; 
   bool public isPublic;
 
   /************************************************
@@ -85,22 +86,29 @@ contract OtusVault is BaseVault {
   function initialize(
     address _owner,
     address _supervisor, 
-    string memory _vaultName,
-    string memory _tokenName,
-    string memory _tokenSymbol,
+    string[] memory _vaultInfo,
     bool _isPublic, 
-    uint _otusVaultType,
-    Vault.VaultParams memory _vaultParams
+    Vault.VaultParams memory _vaultParams,
+    address __strategy
   ) external {
+
     supervisor = _supervisor; 
-    vaultName = _vaultName; 
+    vaultName = _vaultInfo[0]; 
     isPublic = _isPublic; 
-    otusVaultType = _otusVaultType; 
+    
+    console.log("__strategy", __strategy);
+    _strategy = Strategy(__strategy);
+    console.log("vaultParams.asset", _vaultParams.asset);
+
+    collateralAsset = IERC20(_vaultParams.asset);
+    uint max = type(uint).max;
+    collateralAsset.approve(__strategy, max);
+
     baseInitialize(
       _owner,
       _supervisor, 
-      _tokenName, 
-      _tokenSymbol, 
+      _vaultInfo[1], 
+      _vaultInfo[2], 
       _vaultParams
     ); 
 
@@ -114,7 +122,7 @@ contract OtusVault is BaseVault {
   * @notice Sets the strategy contract
   * @param __strategy is the address of the strategy contract
   */
-  function setStrategy(address __strategy) public onlyOwner {
+  function setStrategy(address __strategy) public onlyKeeper { 
     _strategy = Strategy(__strategy);
     collateralAsset = IERC20(vaultParams.asset);
     collateralAsset.approve(__strategy, type(uint).max);
@@ -141,7 +149,7 @@ contract OtusVault is BaseVault {
     _strategy.returnFundsAndClearStrikes();
 
     // withdraw all margin from futures market 
-    _strategy.closeHedgeEndOfRound();
+    // _strategy.closeHedgeEndOfRound();
     emit RoundClosed(vaultState.round, lockAmount);
   }
 

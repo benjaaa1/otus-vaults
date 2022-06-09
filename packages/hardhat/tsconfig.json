@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es2015",
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
@@ -8,7 +8,7 @@
     "resolveJsonModule": true
   },
   "exclude": ["dist", "node_modules"],
-  "include": ["./scripts", "./test", "./typechain-types"],
+  "include": ["./scripts", "./test/integration-tests", "./typechain-types"],
   "files": ["./hardhat.config.ts"]
 }
 

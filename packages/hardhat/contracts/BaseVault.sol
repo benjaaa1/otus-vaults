@@ -108,7 +108,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   ) internal initializer {
 
     __ReentrancyGuard_init();
-
     __ERC20_init(_tokenName, _tokenSymbol);
     __Ownable_init();
     transferOwnership(_owner);

@@ -88,11 +88,10 @@ export default function useCreateVault() {
       } = vaultDetails; 
       const response = await otusCloneFactory.connect(signer).cloneVaultWithStrategy(
         _optionMarket, 
-        _vaultName,
+        [_vaultName,
         _tokenName, 
-        _tokenSymbol,
+        _tokenSymbol],
         _isPublic, 
-        _vaultType, 
         { ..._vaultParams, cap: ethers.utils.parseEther(_vaultParams.cap.toString()) }
       ); 
       console.log({ response }); 
