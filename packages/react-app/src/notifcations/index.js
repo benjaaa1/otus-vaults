@@ -59,7 +59,6 @@ export const Notifier = (message, type, _toastId) => {
 
   }
 
-
   if(type == TYPE.ERROR) {
     toast.error(message, {
       position: "top-right",

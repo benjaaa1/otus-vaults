@@ -22,8 +22,9 @@ export const getLyraMarket = async (market) => {
 
 export const getQuoteBoard = async (marketName, boardId) => {
   const quotes = await lyra.quoteBoard(marketName, boardId, BigNumber.from(1)); 
-  return quotes.map(({ ask, option }) => {
+  return quotes.map(({ ask, bid, option }) => {
     const { __strike: { id } } = option; 
+    console.log({ bid });
     const { premium, pricePerOption } = ask; 
     return {
       strikeId: id, 

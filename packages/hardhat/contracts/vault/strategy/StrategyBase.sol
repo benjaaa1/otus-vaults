@@ -7,7 +7,7 @@ import "hardhat/console.sol";
 import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
 import {SignedDecimalMath} from "@lyrafinance/protocol/contracts/synthetix/SignedDecimalMath.sol";
 import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
-import './synthetix/SafeDecimalMath.sol';
+import '../../synthetix/SafeDecimalMath.sol';
 
 // Inherited
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";

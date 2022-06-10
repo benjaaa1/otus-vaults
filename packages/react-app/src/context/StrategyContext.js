@@ -340,8 +340,8 @@ export const StrategyProvider = ({ children }) => {
       Notifier(MESSAGE.TRADE.SUCCESS, TYPE.SUCCESS)
 
     } catch (error) {
-      console.log({ error })
-      Notifier(MESSAGE.TRADE.ERROR, TYPE.ERROR)
+      const { data } = error; 
+      Notifier(data.message, TYPE.ERROR)
     }
   }
 
@@ -353,7 +353,8 @@ export const StrategyProvider = ({ children }) => {
       Notifier(MESSAGE.TRADE.SUCCESS, TYPE.SUCCESS)
     } catch (error) {
       console.log({ error })
-      Notifier(MESSAGE.TRADE.ERROR, TYPE.ERROR)
+      const { data } = error; 
+      Notifier(data.message, TYPE.ERROR)
 
     }
   }
