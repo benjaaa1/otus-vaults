@@ -23,40 +23,29 @@ export const HeaderContainer = styled(Center)``;
 
 export const BaseShadowBox  = styled(BaseBox)`
   background: ${colors.background.one};
-  -webkit-box-shadow: -5px -5px 0px 2px ${colors.background.two}; 
-  box-shadow: -5px -5px 0px 2px ${colors.background.two};
   width: ${props => props.width};
   height: ${props => props.height};
   min-width: 100%; 
-  border-radius: ${theme.border.radius};
-  border: ${theme.border.width} solid ${colors.background.two};
   padding: ${props => props.padding};
+  margin-top: 20px; 
 `;
 
 export const BaseVaultBox  = styled(Box)`
-  border-radius: ${theme.border.radius};
-  border: ${theme.border.width} solid ${colors.background.two};
   padding: ${props => props.padding};
   background: ${colors.background.one};
 `;
 
 export const BaseDepositBox  = styled(Box)`
-  border-radius: ${theme.border.radius};
-  border: ${theme.border.width} solid ${colors.background.two};
   padding: ${props => props.padding};
   background: ${colors.background.two};
 `;
 
 export const VaultStrategyBox  = styled(Box)`
-  border-radius: ${theme.border.radius};
-  border: ${theme.border.width} solid ${colors.background.two};
   padding: ${props => props.padding};
   background: ${colors.background.one};
 `;
 
 export const StrategyBox  = styled(Box)`
-  border-radius: ${theme.border.radius};
-  border: ${theme.border.width} solid ${colors.background.two};
   padding: ${props => props.padding};
   background: ${colors.background.one};
 `;

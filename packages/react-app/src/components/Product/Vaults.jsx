@@ -14,7 +14,7 @@ export const Vaults = ({ vaults }) => {
   return <Grid templateColumns='repeat(3, 1fr)' gap={6}>
     {
       vaults.map(vault => 
-        <GridItem w='100%' h='10' mb='10'>
+        <GridItem w='100%' h='100%' mb='2'>
           <VaultSummary vault={vault} />
         </GridItem>
       )
@@ -81,7 +81,7 @@ const VaultSummary = ({ vault }) => {
       </Box>
 
       <Box>
-      <Button onClick={() =>  history.push(`/vault/${vault}`)}>{vault}</Button>
+      <Button onClick={() =>  history.push(`/vault/${vault}`)}>{vault.substring(0, 8)}...</Button>
       </Box>
     </BaseShadowBox>
   )

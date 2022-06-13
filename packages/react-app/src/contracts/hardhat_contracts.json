@@ -293,7 +293,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0xcB81d290c5ae3183bcEeC2c12b94b8689dD56C57",
+          "address": "0x086fd06edad1CD5d1Ce2E4b6A6571455da41517D",
           "abi": [
             {
               "inputs": [],
@@ -455,7 +455,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x3e6A3bDDa59475266447A9714a560fE2Bc230edD",
+          "address": "0xf1E951fa06dB2978c5a4994554FE1ff76484Bc85",
           "abi": [
             {
               "inputs": [
@@ -1119,7 +1119,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0x827E9CaB9A546d6a4C3b91Eed0f7cCA7FE3fD1aB",
+          "address": "0xb7C4b4A663D152d66E22328Bd17c5F93Cd0d13A8",
           "abi": [
             {
               "inputs": [
@@ -2655,7 +2655,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0x41bE257E0F0b44B47c203248b56D3459E90Ebc34",
+          "address": "0xdBEFAC8973156CCa590f0aac7a91c6871B3c21ba",
           "abi": [
             {
               "inputs": [
