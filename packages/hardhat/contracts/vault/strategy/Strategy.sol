@@ -82,7 +82,7 @@ contract Strategy is StrategyBase {
   * quoteAsset usually USD baseAsset usually ETH
   */
   function setStrategy(StrategyDetail memory _currentStrategy) external onlyOwner {
-    (, , , , , , , bool roundInProgress) = otusVault.vaultState();
+    (, , , , , , , bool roundInProgress,) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
     
     currentStrategy = _currentStrategy;
@@ -91,7 +91,7 @@ contract Strategy is StrategyBase {
   function setHedgeStrategy(
       HedgeDetail memory _hedgeStrategy
     ) external onlyOwner {
-    (, , , , , , , bool roundInProgress) = otusVault.vaultState();
+    (, , , , , , , bool roundInProgress,) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
     currentHedgeStrategy = _hedgeStrategy; 
   }

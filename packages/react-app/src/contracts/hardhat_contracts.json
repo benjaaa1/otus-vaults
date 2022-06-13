@@ -293,7 +293,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0x086fd06edad1CD5d1Ce2E4b6A6571455da41517D",
+          "address": "0x6444AB66cce4Cafe495502e7b72bbA701Ad0A3FF",
           "abi": [
             {
               "inputs": [],
@@ -455,7 +455,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0xf1E951fa06dB2978c5a4994554FE1ff76484Bc85",
+          "address": "0xeE873165D1B50dFb39EEE6a84428b703FD03961D",
           "abi": [
             {
               "inputs": [
@@ -1119,7 +1119,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0xb7C4b4A663D152d66E22328Bd17c5F93Cd0d13A8",
+          "address": "0x62948a609C2642c42708C1898b073Ee4FA28dDA7",
           "abi": [
             {
               "inputs": [
@@ -2287,9 +2287,9 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct StrategyBase.StrikeStrategyDetail",
-                  "name": "_currentStrikeStrategy",
-                  "type": "tuple"
+                  "internalType": "struct StrategyBase.StrikeStrategyDetail[]",
+                  "name": "_currentStrikeStrategies",
+                  "type": "tuple[]"
                 }
               ],
               "name": "trade",
@@ -2441,6 +2441,11 @@
                 {
                   "internalType": "bool",
                   "name": "roundInProgress",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "tradesExecuted",
                   "type": "bool"
                 }
               ],
@@ -2655,7 +2660,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0xdBEFAC8973156CCa590f0aac7a91c6871B3c21ba",
+          "address": "0x30E33d246f3CF345d1AE3384932cbBea86474A2A",
           "abi": [
             {
               "inputs": [
@@ -3997,11 +4002,11 @@
           ]
         },
         "Vault": {
-          "address": "0x05357d3228869f46b26F715B409353F3459A71c0",
+          "address": "0xc408b2a7D7FA71B902Bd7671855499521123D333",
           "abi": []
         },
         "VaultLifeCycle": {
-          "address": "0x551D9d4121B334B7BbfdaFbd5E67c1E05795c4F7",
+          "address": "0x6f76D35f097fcdd14Df1e3647870c172fd48C39f",
           "abi": []
         }
       }

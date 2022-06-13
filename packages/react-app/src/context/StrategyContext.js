@@ -305,35 +305,50 @@ export const StrategyProvider = ({ children }) => {
     }
   }
 
-  const trade = async (index) => {
+  const trade = async () => {
     try {
 
-      const currentActiveStrike = currentStrikes.find((strike, _index) => index == _index); 
+      // const currentActiveStrike = currentStrikes.find((strike, _index) => index == _index); 
 
-      const {
-        targetDelta,
-        optionType,
-        id,
-        maxDeltaGap,
-        minVol,
-        maxVol,
-        maxVolVariance,
-        size
-      } = currentActiveStrike; 
+      const strikeStrategies = currentStrikes.map((currentActiveStrike, index) => {
 
-      const strikeStrategy = { 
-        ...currentActiveStrike, 
-        targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(parseInt(optionType) == 3 ? 1 : -1),
-        maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
-        minVol: parseUnits(minVol.toString(), 18),
-        maxVol: parseUnits(maxVol.toString(), 18),
-        maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
-        optionType: parseInt(optionType),
-        size: parseUnits(size.toString()),
-        strikeId: id,
-      }
-      console.log({ strikeStrategy })
-      const response = await otusVaultContract.connect(signer).trade(strikeStrategy);
+        const {
+          targetDelta,
+          optionType,
+          id,
+          maxDeltaGap,
+          minVol,
+          maxVol,
+          maxVolVariance,
+          size
+        } = currentActiveStrike; 
+
+        return {
+          ...currentActiveStrike, 
+          targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(parseInt(optionType) == 3 ? 1 : -1),
+          maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
+          minVol: parseUnits(minVol.toString(), 18),
+          maxVol: parseUnits(maxVol.toString(), 18),
+          maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
+          optionType: parseInt(optionType),
+          size: parseUnits(size.toString()),
+          strikeId: id,
+        }
+      })
+
+      // const strikeStrategy = { 
+      //   ...currentActiveStrike, 
+      //   targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(parseInt(optionType) == 3 ? 1 : -1),
+      //   maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
+      //   minVol: parseUnits(minVol.toString(), 18),
+      //   maxVol: parseUnits(maxVol.toString(), 18),
+      //   maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
+      //   optionType: parseInt(optionType),
+      //   size: parseUnits(size.toString()),
+      //   strikeId: id,
+      // }
+      console.log({ strikeStrategies })
+      const response = await otusVaultContract.connect(signer).trade(strikeStrategies);
 
       const receipt = response.wait();  
       console.log({ receipt })

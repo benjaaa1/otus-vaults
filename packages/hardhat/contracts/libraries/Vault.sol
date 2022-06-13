@@ -21,7 +21,6 @@ library Vault {
 
   }
 
-  // FIX THIS TOO MANY VARIABLES IN STRUCT
   struct VaultState {
     // 32 byte slot 1
     //  Current round number. `round` represents the number of `period`s elapsed.
@@ -43,6 +42,8 @@ library Vault {
     uint nextRoundReadyTimestamp;
     // true if the current round is in progress, false if the round is idle
     bool roundInProgress;
+    // true if the current round has set trades, false if the round has not traded is idle
+    bool tradesExecuted;
   } 
 
   struct DepositReceipt {

@@ -36,6 +36,7 @@ export default function VaultDetail() {
     strategyValue,
     state, 
     dispatch, 
+    trade,
     startRound,
     closeRound,
     reducePosition,
@@ -117,7 +118,10 @@ export default function VaultDetail() {
 
                 {
                   strategyValue.vaultState.roundInProgress ? 
-                  <MenuItem onClick={closeRound}>Close Round</MenuItem> :
+                  <>
+                    <MenuItem onClick={closeRound}>Close Round</MenuItem>
+                    <MenuItem onClick={trade}>Trade</MenuItem> 
+                  </> :
                   <MenuItem onClick={startRound}>Start Round</MenuItem>
                 }
 

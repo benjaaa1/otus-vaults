@@ -79,7 +79,7 @@ export default function StrategyDetail() {
                       <RemoveButton onClick={() => dispatch({ type: 'REMOVE_CURRENT_STRIKE', payload: index })} />
                     </Box>
                     <Box>
-                      <Button onClick={() => trade(index)} rightIcon={<ArrowForwardIcon />}>Trade</Button>
+                      {/* <Button onClick={() => trade(index)} rightIcon={<ArrowForwardIcon />}>Trade</Button> */}
                     </Box>
                     <Spacer />
                     <Box>

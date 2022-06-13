@@ -144,6 +144,7 @@ contract OtusVault is BaseVault {
     vaultState.lockedAmount = 0;
     vaultState.nextRoundReadyTimestamp = block.timestamp + Vault.ROUND_DELAY;
     vaultState.roundInProgress = false;
+    vaultState.tradesExecuted = false;
     roundHedgeAttempts = 0; 
 
     // won't be able to close if positions are not settled
@@ -178,15 +179,27 @@ contract OtusVault is BaseVault {
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function trade(StrategyBase.StrikeStrategyDetail memory _currentStrikeStrategy) external onlyOwner {
+  function trade(StrategyBase.StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
     // can trade during round as long as lockedAmount is greater than 0
     // round should be opened 
     require(vaultState.roundInProgress, "round not opened");
-    (uint positionId, uint premiumReceived, uint capitalUsed) = _strategy.doTrade(_currentStrikeStrategy);
+    require(!vaultState.tradesExecuted, "trades executed for round");
+
+    uint allCapitalUsed; 
+    uint positionId;
+    uint premiumReceived;
+    uint capitalUsed;
+    for(uint i = 0; i < _currentStrikeStrategies.length; i++) { 
+      StrategyBase.StrikeStrategyDetail memory _currentStrikeStrategy = _currentStrikeStrategies[i]; 
+      (positionId, premiumReceived, capitalUsed) = _strategy.doTrade(_currentStrikeStrategy);
+      roundPremiumCollected += premiumReceived;
+      allCapitalUsed += capitalUsed; 
+    }
     
-    roundPremiumCollected += premiumReceived;
     // update the remaining locked amount -- lockedAmountLeft can be used for hedge
-    vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - capitalUsed;
+    vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
+    vaultState.tradesExecuted = true;
+
     emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
   }
 
