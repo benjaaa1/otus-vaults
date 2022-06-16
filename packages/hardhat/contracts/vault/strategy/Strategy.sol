@@ -57,14 +57,16 @@ contract Strategy is StrategyBase {
     address _owner, 
     address _vault, 
     address[] memory marketAddresses,
-    address _gwavOracle
+    address _gwavOracle,
+    StrategyDetail memory _currentStrategy
   ) external { 
 
     baseInitialize(
       _owner, 
       _vault,
       marketAddresses,
-      _gwavOracle
+      _gwavOracle, 
+      _currentStrategy
     ); 
 
     vault = _vault;
@@ -84,7 +86,6 @@ contract Strategy is StrategyBase {
   function setStrategy(StrategyDetail memory _currentStrategy) external onlyOwner {
     (, , , , , , , bool roundInProgress,) = otusVault.vaultState();
     require(!roundInProgress, "round opened");
-    
     currentStrategy = _currentStrategy;
   }
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import { Flex, Spacer, Stack, Heading, Text, FormControl, FormLabel, Switch, Box, Center, Divider, Input } from '@chakra-ui/react'
-import { NextButton } from "../../Common/Button"; 
+import { NextButtonIcon } from "../../Common/Button"; 
 import { Select } from "../../Common/Select"; 
 import { Slider } from "../../Common/Slider";
 import { BaseShadowBox } from "../../Common/Container";
@@ -162,7 +162,7 @@ const VaultFlow = () => {
 
               </Flex>   
 
-              <NextButton isLoading={loading} onClick={createVaultWithStrategy} />
+              <NextButtonIcon isLoading={loading} onClick={createVaultWithStrategy} />
 
             </Stack>
 

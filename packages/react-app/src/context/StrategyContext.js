@@ -1,17 +1,18 @@
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
-import { useParams } from "react-router-dom";
-import { formatEther, formatUnits, parseUnits } from "ethers/lib/utils";
-
+import { useParams, useHistory } from "react-router-dom";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { ethers } from "ethers";
 import { getLyraMarket, getQuoteBoard } from "../helpers/lyra";
 import useWeb3 from "../hooks/useWeb3";
-import { BigNumber, ethers } from "ethers";
 import { strategyInitialState, strategyReducer } from "../reducer/strategyReducer";
 import { MESSAGE, Notifier, TYPE } from "../notifcations";
-import { useEventListener } from 'eth-hooks';
+import { formatBoards, formatStrikeQuotes } from "../helpers/strategy";
 
 const StrategyContext = createContext();
 
 export const StrategyProvider = ({ children }) => {
+
+  const history = useHistory();
 
   const { vault, strategy: strategyAddress } = useParams();
 
@@ -20,8 +21,6 @@ export const StrategyProvider = ({ children }) => {
   const otusVaultContract = contracts ? contracts['OtusVault'] : "";
 
   const strategyContract = contracts ? contracts['Strategy'] : "";
-
-  // const events = useEventListener(strategyContract, eventFilter, startBlock, toBlock?, options?): THookResult<GTypedEvent[]>
 
   const [state, dispatch] = useReducer(strategyReducer, strategyInitialState);
 
@@ -39,9 +38,7 @@ export const StrategyProvider = ({ children }) => {
   useEffect(async () => {
     if(market) {
       try {
-        console.log({ getLyraMarket, market })
         const _lyraMarket = await getLyraMarket(market); 
-        console.log({ _lyraMarket })
         dispatch({ type: 'UPDATE_LYRA_MARKET', payload: _lyraMarket }); 
       } catch (error) {
         console.log({ error })
@@ -49,31 +46,11 @@ export const StrategyProvider = ({ children }) => {
     }
   }, [market]); 
 
+
   useEffect(async () => {
     if(lyraMarket) {
       try {
-        const _liveBoards = await lyraMarket.liveBoards(); 
-        const liveBoards = _liveBoards.filter(({ timeToExpiry }) => timeToExpiry > 0)
-        .map(board => {
-          const boardStrikes = board.strikes()
-            .filter(strike => strike.isDeltaInRange)
-            .map((strike) => {
-              return {
-                name: `${formatUnits(strike.strikePrice)}`,
-                id: strike.id,
-                iv: formatUnits(strike.iv),
-                iv_formatted: `${formatUnits(strike.iv)}`,
-                skew: formatUnits(strike.skew),
-                strikePrice: formatUnits(strike.strikePrice),
-                vega: formatUnits(strike.vega)
-              }
-            }); 
-          const date = new Date(board.expiryTimestamp * 1000); 
-          return { ...board, name: date.toString(), strikes: boardStrikes };
-        })
-        .reduce((a, v) => {
-          return { ...a, [v.id]: v }
-        }, {}); 
+        const liveBoards = await formatBoards(lyraMarket); 
         console.log({ liveBoards })
         dispatch({ type: 'SET_LIVE_BOARDS', payload: liveBoards });
       } catch (error) {
@@ -84,20 +61,8 @@ export const StrategyProvider = ({ children }) => {
 
   useEffect(async () => {
     if(selectedBoard && needsQuotesUpdated) {
-      const strikeQuotes = await getQuoteBoard('eth', selectedBoard.id); 
-      const formattedStrikeQuotes = strikeQuotes.map(({ strikeId, premium, pricePerOption }) => {
-        return {
-          strikeId,
-          premium: formatUnits(premium), 
-          pricePerOption: formatUnits(pricePerOption)
-        }
-      }).reduce((acc, strike)  => {
-        const { strikeId, premium, pricePerOption } = strike;
-        return { ...acc, [strikeId]: { premium, pricePerOption } }
-      }, {});
-
-      console.log({ formattedStrikeQuotes})
-      
+      const formattedStrikeQuotes = await formatStrikeQuotes(selectedBoard.id); 
+      console.log({ formattedStrikeQuotes});
       dispatch({ type: 'UPDATE_STRIKES_WITH_PREMIUMS', payload: formattedStrikeQuotes })
     }
   }, [selectedBoard, needsQuotesUpdated])
@@ -121,17 +86,16 @@ export const StrategyProvider = ({ children }) => {
   }
 
   const isValidStrategyAddress = async () => {
-    const _strategy = await otusVaultContract._strategy(); 
-    console.log({ _strategy })
-    console.log(ethers.constants.AddressZero)
-    const isValid = _strategy != ethers.constants.AddressZero ? true : false; 
-    console.log({ isValid })
+    const strategy = await otusVaultContract.strategy(); 
+
+    const isValid = strategy != ethers.constants.AddressZero ? true : false; 
+
     return isValid; 
   }
 
   useEffect(async () => {
     if(otusVaultContract) {
-      console.log({ otusVaultContract  })
+
       try {
 
         const _hasStrategy = await isValidStrategyAddress(); 
@@ -161,7 +125,7 @@ export const StrategyProvider = ({ children }) => {
           const strategyIndex = await strategyContract.strategyToStrikeId(strikeId)
           return { formattedStrikeId, formattedPositionId, strategyIndex: formatUnits(strategyIndex) }
         }));
-        console.log({ strikeToPositionIds })
+
         updateValue('vaultState', vaultState); 
         updateValue('vaultParams', vaultParams);
         const formattedActiveBoardId = Math.round(parseFloat(formatUnits(activeBoardId)) * (10 ** 18)); 
@@ -308,8 +272,6 @@ export const StrategyProvider = ({ children }) => {
   const trade = async () => {
     try {
 
-      // const currentActiveStrike = currentStrikes.find((strike, _index) => index == _index); 
-
       const strikeStrategies = currentStrikes.map((currentActiveStrike, index) => {
 
         const {
@@ -336,17 +298,6 @@ export const StrategyProvider = ({ children }) => {
         }
       })
 
-      // const strikeStrategy = { 
-      //   ...currentActiveStrike, 
-      //   targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(parseInt(optionType) == 3 ? 1 : -1),
-      //   maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
-      //   minVol: parseUnits(minVol.toString(), 18),
-      //   maxVol: parseUnits(maxVol.toString(), 18),
-      //   maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
-      //   optionType: parseInt(optionType),
-      //   size: parseUnits(size.toString()),
-      //   strikeId: id,
-      // }
       console.log({ strikeStrategies })
       const response = await otusVaultContract.connect(signer).trade(strikeStrategies);
 
@@ -374,6 +325,8 @@ export const StrategyProvider = ({ children }) => {
     }
   }
 
+  const viewVault = () => history.push(`/vault/${vault}`);
+
   const value = { 
     state, 
     dispatch, 
@@ -384,7 +337,8 @@ export const StrategyProvider = ({ children }) => {
     trade,
     _hedge,
     setHedgeStrategy,
-    reducePosition
+    reducePosition,
+    viewVault
   };
 
   return <StrategyContext.Provider value={value}>{children}</StrategyContext.Provider>;

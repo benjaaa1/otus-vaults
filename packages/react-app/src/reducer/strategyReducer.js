@@ -72,6 +72,7 @@ export const strategyReducer = (state, action) => {
     case 'UPDATE_STRIKES':
       return { ...state, strikes: action.payload };
     case 'SET_SELECTED_BOARD':
+      console.log({selectedboard: state.liveBoards[action.payload].strikes})
       return { ...state, selectedBoard: state.liveBoards[action.payload], liveStrikes: state.liveBoards[action.payload].strikes, needsQuotesUpdated: true };
     case 'ADD_CURRENT_STRIKE':
       return { ...state, currentStrikes: state.currentStrikes.concat(strikeStrategy) };

@@ -1,10 +1,10 @@
 import React from "react";
 
-export const Strategy = () => {
+export const StrategyVault = () => {
 
   return (
     <div>
-      Strategy
+      Strategy Vault
     </div>
   );
 }

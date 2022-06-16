@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
 import useWeb3 from "../../hooks/useWeb3";
 
-import { VStack } from '@chakra-ui/react';
+import {
+  VStack,
+  useDisclosure,
+} from '@chakra-ui/react';
 
 import theme from "../../designSystem/theme";
 import colors from "../../designSystem/colors";
@@ -10,26 +12,28 @@ import { HeaderContainer, PageContainer } from "../Common/Container";
 import { BaseHeaderText } from "../../designSystem";
 import { CTAButton } from "../Common/Button";
 import { Vaults } from "./Vaults"; 
+import { CreateVaultModal } from "../MyVaults/Flow/CreateModal";
 
 const Product = () => {
 
-  const history = useHistory(); 
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
   const [vaults, setVaults] = useState([]); 
 
   const { contracts } = useWeb3({});
 
-  const otusCloneFactory = contracts ? contracts['OtusCloneFactory'] : "";
+  const otusController = contracts ? contracts['OtusController'] : "";
 
   useEffect(async () => {
-    if(otusCloneFactory) {
+    if(otusController) {
       try {
-        const _vaults = await otusCloneFactory.getActiveVaults();  
+        const _vaults = await otusController.getActiveVaults();  
         setVaults(_vaults);  
       } catch (error) {
         console.log({ error })
       }
     }
-  }, [otusCloneFactory])
+  }, [otusController])
 
   return <PageContainer>
       <HeaderContainer p="10">
@@ -37,12 +41,15 @@ const Product = () => {
           <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.md}>
             Join one of the many vaults or create your own and implement your own strategy, have your community join your vault and earn performance and management fees. 
           </BaseHeaderText>
-          <CTAButton bg={colors.background.three} onClick={() => history.push("/supervisors")}>
-            Become a Supervisor
+          <CTAButton bg={colors.background.three} onClick={onOpen}>
+            Create a Vault
           </CTAButton>
         </VStack>
       </HeaderContainer>
       <Vaults vaults={vaults} />
+
+      <CreateVaultModal isOpen={isOpen} onClose={onClose} />
+
     </PageContainer>
   
 }

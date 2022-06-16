@@ -40,12 +40,12 @@ contract MockStrategy is StrategyBase {
     address _quoteAsset = marketAddresses[0];  // quote asset
     address _baseAsset = marketAddresses[1];
 
-    baseInitialize(
-      _owner, 
-      _vault,
-      marketAddresses,
-      address(0)
-    );
+    // baseInitialize(
+    //   _owner, 
+    //   _vault,
+    //   marketAddresses,
+    //   address(0)
+    // );
 
     vault = _vault;
     otusVault = MockOtusVault(_vault); 

@@ -7,9 +7,11 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import '../interfaces/IFuturesMarket.sol';
+import {IStrategy} from "../interfaces/IStrategy.sol";
 
 import {BaseVault} from "./BaseVault.sol";
 import {Vault} from "../libraries/Vault.sol";
+
 import {Strategy} from "./strategy/Strategy.sol";
 import {StrategyBase} from "./strategy/StrategyBase.sol";
 
@@ -19,11 +21,11 @@ contract OtusVault is BaseVault {
   /************************************************
   *  IMMUTABLES & CONSTANTS
   ***********************************************/
-  Strategy public _strategy;
+  address public strategy;
   address public immutable keeper; 
 
-  address public supervisor; 
   string public vaultName; 
+  string public vaultDescription; 
   // Amount locked for scheduled withdrawals last week;
   uint128 public lastQueuedWithdrawAmount;
   uint256 public roundHedgeAttempts; 
@@ -82,34 +84,29 @@ contract OtusVault is BaseVault {
   /**
   * @notice Initializes contract on clone
   * @dev Should only be called by owner and only once
-  * add checks that supervisor is valid
   */
   function initialize(
     address _owner,
-    address _supervisor, 
-    string[] memory _vaultInfo,
-    bool _isPublic, 
+    Vault.VaultInformation memory _vaultInfo, 
     Vault.VaultParams memory _vaultParams,
-    address __strategy
+    address _strategy
   ) external {
 
-    supervisor = _supervisor; 
-    vaultName = _vaultInfo[0]; 
-    isPublic = _isPublic; 
+    vaultName = _vaultInfo.name; 
+    vaultDescription = _vaultInfo.description; 
+    isPublic = _vaultInfo.isPublic; 
     
-    console.log("__strategy", __strategy);
-    _strategy = Strategy(__strategy);
-    console.log("vaultParams.asset", _vaultParams.asset);
+    strategy = _strategy;
 
     collateralAsset = IERC20(_vaultParams.asset);
-    uint max = type(uint).max;
-    collateralAsset.approve(__strategy, max);
+    collateralAsset.approve(_strategy, type(uint).max);
 
     baseInitialize(
       _owner,
-      _supervisor, 
-      _vaultInfo[1], 
-      _vaultInfo[2], 
+      _vaultInfo.tokenName, 
+      _vaultInfo.tokenSymbol,
+      _vaultInfo.performanceFee,
+      _vaultInfo.managementFee,
       _vaultParams
     ); 
 
@@ -121,13 +118,12 @@ contract OtusVault is BaseVault {
 
   /**
   * @notice Sets the strategy contract
-  * @param __strategy is the address of the strategy contract
+  * @param _strategy is the address of the strategy contract
   */
-  function setStrategy(address __strategy) public onlyKeeper { 
-    _strategy = Strategy(__strategy);
+  function setStrategy(address _strategy) public onlyKeeper { 
     collateralAsset = IERC20(vaultParams.asset);
-    collateralAsset.approve(__strategy, type(uint).max);
-    emit StrategyUpdated(__strategy);
+    collateralAsset.approve(_strategy, type(uint).max);
+    emit StrategyUpdated(_strategy);
   }
 
   /************************************************
@@ -148,7 +144,7 @@ contract OtusVault is BaseVault {
     roundHedgeAttempts = 0; 
 
     // won't be able to close if positions are not settled
-    _strategy.returnFundsAndClearStrikes();
+    IStrategy(strategy).returnFundsAndClearStrikes();
 
     // withdraw all margin from futures market 
     // _strategy.closeHedgeEndOfRound();
@@ -162,8 +158,8 @@ contract OtusVault is BaseVault {
     //can't start next round before outstanding expired positions are settled. 
     require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
-    require(address(_strategy) != address(0), "Strategy not set");
-    _strategy.setBoard(boardId);
+    require(address(strategy) != address(0), "Strategy not set");
+    IStrategy(strategy).setBoard(boardId);
 
     (uint lockedBalance, uint queuedWithdrawAmount) = _rollToNextRound(uint(lastQueuedWithdrawAmount));
 
@@ -191,7 +187,7 @@ contract OtusVault is BaseVault {
     uint capitalUsed;
     for(uint i = 0; i < _currentStrikeStrategies.length; i++) { 
       StrategyBase.StrikeStrategyDetail memory _currentStrikeStrategy = _currentStrikeStrategies[i]; 
-      (positionId, premiumReceived, capitalUsed) = _strategy.doTrade(_currentStrikeStrategy);
+      (positionId, premiumReceived, capitalUsed) = IStrategy(strategy).doTrade(_currentStrikeStrategy);
       roundPremiumCollected += premiumReceived;
       allCapitalUsed += capitalUsed; 
     }
@@ -206,7 +202,7 @@ contract OtusVault is BaseVault {
   /// @dev anyone close part of the position with premium made by the strategy if a position is dangerous
   /// @param positionId the positiion to close
   function reducePosition(uint positionId, uint closeAmount) external onlyKeeper {
-    _strategy.reducePosition(positionId, closeAmount);
+    IStrategy(strategy).reducePosition(positionId, closeAmount);
   }
 
   /************************************************
@@ -218,13 +214,13 @@ contract OtusVault is BaseVault {
   //  */
   function _hedge() external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
-    _strategy._hedge(activeShort, vaultState.lockedAmountLeft, roundHedgeAttempts);
+    IStrategy(strategy)._hedge(activeShort, vaultState.lockedAmountLeft, roundHedgeAttempts);
     activeShort = true; 
     roundHedgeAttempts += 1; 
   }
 
   function _closeHedge() external onlyKeeper {
-    _strategy._closeHedge(activeShort);
+    IStrategy(strategy)._closeHedge(activeShort);
     activeShort = false; 
   }
 

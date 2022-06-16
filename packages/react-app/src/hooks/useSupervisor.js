@@ -7,80 +7,42 @@ import { MESSAGE, TYPE, Notifier } from "../notifcations";
 
 export default function useSupervisor() {
 
-  const history = useHistory();
+  const history = useHistory(); 
 
   const { contracts, signer } = useWeb3({});
 
-  const [supervisor, setSupervisor] = useState(); 
-
   const [loading, setLoading] = useState(false); 
 
-  const [userDetails, setUserDetails] = useState(); 
+  const [userVaults, setUserVaults] = useState([]); 
 
-  const otusCloneFactory = contracts ? contracts['OtusCloneFactory'] : "";
+  const otusController = contracts ? contracts['OtusController'] : "";
 
   useEffect(async () => {
-    if(otusCloneFactory && !userDetails) {
+    if(otusController) {
       try {
         setLoading(true)
-        const details = await otusCloneFactory.connect(signer).getUserManagerDetails();
-        setUserDetails(details); 
+        const { userVaults, userStrategies } = await otusController.connect(signer).getUserManagerDetails();
+        console.log({ userVaults, userStrategies })
+
+        const userVaultInformation = userVaults.map((vault, index) => {
+          const strategy = userStrategies[index];
+          return { vault, strategy }
+        })
+        console.log({ userVaultInformation })
+        setUserVaults(userVaultInformation)
+
         setLoading(false);
       } catch (error) {
         console.log({ error })
         setLoading(false);
       }
     }
-  }, [otusCloneFactory])
+  }, [otusController])
 
-  useEffect(() => {
-    if(userDetails) {
-      console.log({ userDetails })
-      if(
-        userDetails['userSupervisor'] != ethers.constants.AddressZero && 
-        userDetails['userVault'] != ethers.constants.AddressZero &&
-        userDetails['userStrategy'] != ethers.constants.AddressZero
-        ) {
-        history.push(`/supervisors/${userDetails['userVault']}/${userDetails['userStrategy']}`);
-      }
+  const viewMyVault = (vault, strategy) => {
+    history.push(`/my-vault/${vault}/${strategy}`);
+  }
 
-      if(
-        userDetails['userSupervisor'] != ethers.constants.AddressZero && 
-        userDetails['userVault'] == ethers.constants.AddressZero &&
-        userDetails['userStrategy'] == ethers.constants.AddressZero
-        ) {
-        history.push(`/supervisors/vault_flow`);
-      }
-
-      if(
-        userDetails['userSupervisor'] == ethers.constants.AddressZero && 
-        userDetails['userVault'] == ethers.constants.AddressZero &&
-        userDetails['userStrategy'] == ethers.constants.AddressZero
-        ) {
-        history.push(`/supervisors/flow`);
-      }
-
-    }
-  }, [userDetails])
-
-  const createSupervisor = async () => {
-    try {
-      setLoading(true);
-      const response = await otusCloneFactory.connect(signer).cloneSupervisor(); 
-      const receipt = await response.wait();
-
-      setLoading(false);
-      Notifier(MESSAGE.SUPERVISOR_CREATE.SUCCESS, TYPE.SUCCESS);
-      history.push(`/supervisors/vault_flow`);
-
-      setSupervisor(response); 
-    } catch (e) {
-      console.log(e); 
-      Notifier(MESSAGE.SUPERVISOR_CREATE.ERROR, TYPE.ERROR);
-      setLoading(false);
-    }
-  };
-
-  return { loading, createSupervisor }
+  return { loading, userVaults, viewMyVault }
 
 }

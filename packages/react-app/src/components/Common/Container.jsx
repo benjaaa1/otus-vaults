@@ -9,14 +9,13 @@ export const NavContainer = styled(Container)`
   max-width: ${sizes.xxl}px;
   margin-top: ${theme.margin.md};
   margin-bottom: ${theme.margin.md};
-  border: 2px solid ${colors.borderGray};
-  border-radius: ${theme.border.radius};
+  border: 1px solid ${colors.borderGray};
   background: ${colors.background.one};
+  padding: 14px; 
 `;
 
 export const PageContainer = styled(Container)`
-  max-width: ${sizes.xxl}px;
-  padding: 8px; 
+  max-width: ${sizes.xxl}px; 
 `;
 
 export const HeaderContainer = styled(Center)``;
@@ -28,6 +27,7 @@ export const BaseShadowBox  = styled(BaseBox)`
   min-width: 100%; 
   padding: ${props => props.padding};
   margin-top: 20px; 
+  border: 1px solid ${colors.borderGray};
 `;
 
 export const BaseVaultBox  = styled(Box)`
@@ -48,4 +48,5 @@ export const VaultStrategyBox  = styled(Box)`
 export const StrategyBox  = styled(Box)`
   padding: ${props => props.padding};
   background: ${colors.background.one};
+  border: 1px solid ${colors.borderGray};
 `;

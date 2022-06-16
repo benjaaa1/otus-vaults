@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import useSupervisor from "../../../hooks/useSupervisor";
 
 import { Stack, Center, Text, Heading, Box  } from '@chakra-ui/react';
-import { NextButton } from "../../Common/Button"; 
+import { NextButtonIcon } from "../../Common/Button"; 
 import { BaseShadowBox } from "../../Common/Container";
 
 const SupervisorFlow = () => {
@@ -24,7 +24,7 @@ const SupervisorFlow = () => {
               <Text fontSize='md' lineHeight={'xl'}>
                 Have your community join your vault and earn performance and management fees. 
               </Text>
-              <NextButton isLoading={loading} onClick={createSupervisor} />
+              <NextButtonIcon isLoading={loading} onClick={createSupervisor} />
             </Stack>
           </Box>
 

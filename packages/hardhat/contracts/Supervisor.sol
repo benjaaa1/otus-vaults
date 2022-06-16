@@ -46,21 +46,4 @@ contract Supervisor is ReentrancyGuardUpgradeable {
 		supervisor = msg.sender;
 	}
 
-	// function stake(uint _amount) external nonReentrant {
-	// 	require(_amount > 0, "!amount");
-	// 	deposits[msg.sender] += _amount; 
-	// 	otusAsset.safeTransferFrom(msg.sender, address(this), _amount);
-	// 	isActive = true; 
-	// 	emit NewSupervisorStake(msg.sender, _amount);
-	// }
-
-	// function unstake() external nonReentrant {
-	// 	require(deposits[msg.sender] > 0, "No deposits by user.");
-	// 	uint256 _amount = deposits[msg.sender];
-	// 	deposits[msg.sender] -= _amount; 
-	// 	otusAsset.safeTransferFrom(address(this), msg.sender, _amount);
-	// 	isActive = false; 
-	// 	emit NewSupervisorUnStake(msg.sender, _amount);
-	// }
-
 }

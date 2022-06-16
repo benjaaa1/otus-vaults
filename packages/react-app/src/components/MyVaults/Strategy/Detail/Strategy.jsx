@@ -28,19 +28,21 @@ import {
   Td,
   TableCaption,
   TableContainer,
-  Spacer
+  Spacer,
+  background
 } from '@chakra-ui/react';
 
 import { Slider } from "../../../Common/Slider";
 import { Select } from "../../../Common/Select";
-import { AddButton, RemoveButton } from "../../../Common/Button";
+import { AddButton, RemoveButton, ViewLinkButton } from "../../../Common/Button";
 import { useStrategyContext } from "../../../../context/StrategyContext"
 import { strikeStrategy } from "../../../../reducer/strategyReducer";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
+import colors from "../../../../designSystem/colors";
 
 export default function StrategyDetail() {
 
-  const { state, dispatch, strategyValue, setVaultStrategy, trade } = useStrategyContext();
+  const { state, dispatch, strategyValue, viewVault } = useStrategyContext();
 
   const {
     liveBoards,
@@ -56,23 +58,23 @@ export default function StrategyDetail() {
 
   return (
     <>
-      <Flex bg="#333" minWidth='max-content' alignItems='center' p={'4'}>
+      <Flex border={'1px solid #333'} minWidth='max-content' alignItems='center' p={4}>
         <Box>
-          <Select bg={'white'} isDisabled={activeBoardId > 0} id='board' placeholder={'Select Round Expiry'} onChange={(e) => dispatch({ type: 'SET_SELECTED_BOARD', payload: e.target.value })}>
+          <Select width="100%" id='market' isDisabled={activeBoardId > 0} id='board' placeholder={'Select Round Expiry'} onChange={(e) => dispatch({ type: 'SET_SELECTED_BOARD', payload: e.target.value })}>
           {
             Object.values(liveBoards).map(({ name, id }) => (<option selected={id == activeBoardId} value={id}>{name}</option>))
           }
           </Select>
         </Box>
         <Spacer />
-        <Button onClick={setVaultStrategy} rightIcon={<ArrowForwardIcon />}>Set Round Strategy</Button>
+        <ViewLinkButton onClick={viewVault} />
       </Flex>
-      <Box>
-        <Box>
+      <Box mt='4'>
+        <Box allowToggle>
         {
           currentStrikes.map((cs, index) => {
             return (
-              <Accordion allowToggle>
+              <Accordion>
                 <AccordionItem>
                   <Flex minWidth='max-content' alignItems='center' p={'2'}>
                     <Box flex='1'>
@@ -109,7 +111,7 @@ export default function StrategyDetail() {
                   </Flex>
                 <AccordionPanel pb={4}>
                   <TableContainer>
-                    <Table size='sm'>
+                    <Table size='sm' variant='striped' colorScheme={'#f5f5f5'}>
                     <Thead>
                       <Tr>
                         <Th isNumeric>Strike</Th>
@@ -123,11 +125,11 @@ export default function StrategyDetail() {
                           const { id } = strike;
                           const currentSelectedId = currentStrikes[index]['id']; 
                           return <Tr>
-                            <Td isNumeric>${ strike.strikePrice }</Td>
+                            <Td isNumeric>${ strike.strikePrice  }</Td>
                             <Td isNumeric>{ strike.iv_formatted }</Td>
                             <Td isNumeric>
                               <Button colorScheme={ currentSelectedId == id ? 'teal' : 'gray'} size='sm' isLoading={needsQuotesUpdated} onClick={() => dispatch({ type: 'UPDATE_CURRENT_STRIKE', payload: { index, strike } })}>
-                                ${ strike.pricePerOption }
+                                ${ cs.optionType == 1 || cs.optionType == 3 ?  strike.ask_pricePerOption : strike.bid_pricePerOption }
                               </Button>
                             </Td>
                           </Tr>
@@ -187,10 +189,10 @@ const StrikeStrategyModal = ({ isOpen, onClose }) => {
 
   return (
     <>
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
+      <Modal borderRadius={'none'} closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Strategy</ModalHeader>
+        <ModalContent borderRadius={'none'} background={colors.background.two} color={colors.text.light}>
+          <ModalHeader>Strike Strategy</ModalHeader>
           <ModalCloseButton />
 
           <ModalBody>

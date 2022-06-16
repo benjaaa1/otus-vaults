@@ -6,7 +6,7 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import {OtusRegistry} from "../OtusRegistry.sol"; 
+import {OtusController} from "../OtusController.sol"; 
 
 interface IOtusVault {
 	function reducePosition(uint positionId, uint closeAmount) external; 
@@ -15,7 +15,7 @@ interface IOtusVault {
 contract Keeper is Ownable {
   using Address for address;
 
-  OtusRegistry immutable public otusRegistry;
+  OtusController immutable public otusController;
 
   struct Position {
     address otusVault;
@@ -29,8 +29,8 @@ contract Keeper is Ownable {
     uint amount;
   }
 
-  constructor(address _otusRegistry) Ownable() {
-    otusRegistry = OtusRegistry(_otusRegistry);
+  constructor(address _otusController) Ownable() {
+    otusController = OtusController(_otusController);
   }
 
   function reducePosition(Position[] memory vaultPositions) external onlyOwner {

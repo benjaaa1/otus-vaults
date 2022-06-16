@@ -8,7 +8,8 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
-import { 
+import {
+  OtusController, 
   OtusCloneFactory, 
   Supervisor, 
   OtusVault, 
@@ -75,6 +76,7 @@ describe('Strategy integration test', async () => {
   let optionToken: MockOptionToken;
 
   // primary contracts
+  let otusController: OtusController;
   let otusCloneFactory: OtusCloneFactory;
   let supervisor: Supervisor; 
   let vault: OtusVault;
@@ -108,7 +110,6 @@ describe('Strategy integration test', async () => {
 
   before('assign roles', async () => {
     const addresses = await ethers.getSigners();
-    console.log({ addresses })
     deployer = addresses[0]; 
     manager = addresses[1]; // supervisor
     treasury = addresses[2];
@@ -192,25 +193,23 @@ describe('Strategy integration test', async () => {
 
     strategy = (await StrategyFactory.connect(otusMultiSig).deploy(lyraTestSystem.synthetixAdapter.address)) as Strategy;
 
-    const OtusCloneFactory = await ethers.getContractFactory('OtusCloneFactory');
-    otusCloneFactory = (await OtusCloneFactory.connect(otusMultiSig).deploy(
-      supervisor.address,
-      vault.address,
-      strategy.address,
-      ethers.constants.AddressZero,
+    const OtusController = await ethers.getContractFactory('OtusController');
+    otusController = (await OtusController.connect(otusMultiSig).deploy(
       lyraTestSystem.lyraRegistry.address,
       futureMarketManager.address // futuresmarketmanager
+    )) as OtusController;
+
+    const OtusCloneFactory = await ethers.getContractFactory('OtusCloneFactory');
+    otusCloneFactory = (await OtusCloneFactory.connect(otusMultiSig).deploy(
+      vault.address, 
+			strategy.address, 
+		  strategy.address, // l2DepositMover.address,
+			otusController.address
     )) as OtusCloneFactory;
 
-    await otusCloneFactory.connect(deployer).setFuturesMarkets(seth.address, "0x7345544800000000000000000000000000000000000000000000000000000000");
-  });
+    await otusController.connect(otusMultiSig).setOtusCloneFactory(otusCloneFactory.address);
 
-  before('initialize supervisor with a manager', async () => {
-    await otusCloneFactory.connect(manager).cloneSupervisor(); 
-    const supervisorCloneAddress = await otusCloneFactory.supervisors(manager.address);
-    managersSupervisor = await ethers.getContractAt(Supervisor__factory.abi, supervisorCloneAddress) as Supervisor; 
-    expect(managersSupervisor.address).to.not.be.eq(ZERO_ADDRESS);
-    expect(managersSupervisor.address).to.not.be.eq(supervisor.address);
+    await otusController.connect(otusMultiSig).setFuturesMarkets(seth.address, "0x7345544800000000000000000000000000000000000000000000000000000000");
   });
 
   before('set lyra market - eth', async () => {
@@ -231,42 +230,41 @@ describe('Strategy integration test', async () => {
   })
 
   before('setup option market details', async () => {
-    await otusCloneFactory.connect(deployer).setOptionMarketDetails(lyraMarket.OptionMarket.address);
-    const addresses = await otusCloneFactory.getOptionMarketDetails(lyraMarket.OptionMarket.address);
+    await otusController.connect(deployer).setOptionMarketDetails(lyraMarket.OptionMarket.address);
+    const addresses = await otusController.getOptionMarketDetails(lyraMarket.OptionMarket.address);
   })
 
   before('initialize vault and strategy with supervisor', async () => {
     const cap = ethers.utils.parseEther('5000000'); // 5m USD as cap
     const decimals = 18;
 
-    await otusCloneFactory.connect(manager).cloneVaultWithStrategy(
+    await otusController.connect(manager).createVault(
       lyraMarket.OptionMarket.address,
-      [
-        'New Vault',
-        'OtusVault Share', 
-        'Otus VS'
-      ],
-      true, 
+      {
+        name: 'New Vault',
+        tokenName: 'OtusVault Share', 
+        tokenSymbol: 'Otus VS',
+        description: '',
+        isPublic: true,
+        performanceFee: 0,
+        managementFee: 0
+      },
       {
         decimals,
         cap, 
         asset: susd.address
-      }
+      }, 
+      defaultStrategyDetail
     ); 
 
-    const vaultCloneAddress = await otusCloneFactory.vaults(managersSupervisor.address);
+    const vaultCloneAddress = await otusController.vaults(manager.address, 0);
     managersVault = await ethers.getContractAt(OtusVault__factory.abi, vaultCloneAddress) as OtusVault; 
     expect(managersVault.address).to.not.be.eq(ZERO_ADDRESS);
-    const strategyCloneAddress = await otusCloneFactory.connect(manager)._getStrategy(managersVault.address);
-    managersStrategy = await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress) as Strategy; 
+    const strategyCloneAddress = await otusController.connect(manager)._getStrategies([managersVault.address]);
+    managersStrategy = await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress[0]) as Strategy; 
     expect(managersStrategy.address).to.not.be.eq(ZERO_ADDRESS);
-    console.log(managersVault._strategy())
     expect(await managersVault._strategy()).to.be.eq(managersStrategy.address);
   });
-
-  // before('link strategy to vault', async () => {
-  //   await managersVault.connect(manager).setStrategy(managersStrategy.address)
-  // });
 
   describe('check strategy setup', async () => {
 
@@ -288,7 +286,6 @@ describe('Strategy integration test', async () => {
     it('setting strategy should correctly update strategy variables', async () => {
 
       const owner = await managersStrategy.owner();
-      console.log({ owner, manager });
 
       await managersStrategy.connect(manager).setStrategy(
         defaultStrategyDetail
@@ -358,7 +355,7 @@ describe('Strategy integration test', async () => {
 
       const currentStrikeStrategies = await managersStrategy.getCurrentStrikeStrategies(); 
 
-      await expect(managersVault.connect(manager).trade(strikeStrategy)).to.be.revertedWith('invalid strike');      
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('invalid strike');      
     });
 
     it('will not trade when delta is out of range1', async () => {
@@ -370,7 +367,7 @@ describe('Strategy integration test', async () => {
 
       const currentStrikeStrategies1 = await managersStrategy.getCurrentStrikeStrategies(); 
 
-      await expect(managersVault.connect(manager).trade(strikeStrategy)).to.be.revertedWith('TradeDeltaOutOfRange');
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TradeDeltaOutOfRange');
       
     });
 
@@ -383,7 +380,7 @@ describe('Strategy integration test', async () => {
 
       const currentStrikeStrategies2 = await managersStrategy.getCurrentStrikeStrategies(); 
 
-      await expect(managersVault.connect(manager).trade(strikeStrategy)).to.be.revertedWith('invalid strike');
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('invalid strike');
       
     });
 
@@ -394,7 +391,7 @@ describe('Strategy integration test', async () => {
         strikeId: strikes[3]
       }
 
-      await expect(managersVault.connect(manager).trade(strikeStrategy)).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
 
     });
 
@@ -414,8 +411,7 @@ describe('Strategy integration test', async () => {
       const strategySUSDBalance = await susd.balanceOf(managersStrategy.address);
 
       // 3400 is a good strike
-      await managersVault.connect(manager).trade(strikeStrategy);
-      await managersVault.connect(manager).trade(strikeStrategyCall);
+      await managersVault.connect(manager).trade([strikeStrategy, strikeStrategyCall]);
 
       const strategyBalance = await seth.balanceOf(managersStrategy.address);
       const vaultStateAfter = await managersVault.connect(manager).vaultState();
@@ -449,7 +445,7 @@ describe('Strategy integration test', async () => {
         ...defaultStrikeStrategyDetail,
         strikeId: strikes[4]
       }
-      await managersVault.connect(manager).trade(strikeStrategy);
+      await managersVault.connect(manager).trade([strikeStrategy]);
 
       // check that active strikes are updated
       const storedStrikeId = await managersStrategy.activeStrikeIds(1);
@@ -546,7 +542,7 @@ describe('Strategy integration test', async () => {
         ...defaultStrikeStrategyDetail,
         strikeId: strikes[2]
       }
-      await managersVault.connect(manager).trade(strikeStrategy);
+      await managersVault.connect(manager).trade([strikeStrategy]);
 
       [strikePrice, expiry] = await lyraTestSystem.optionMarket.getStrikeAndExpiry(strikes[2]);
       positionId = await managersStrategy.strikeToPositionId(strikes[2]);

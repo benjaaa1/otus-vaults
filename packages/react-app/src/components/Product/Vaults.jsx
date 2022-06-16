@@ -4,18 +4,22 @@ import useWeb3 from "../../hooks/useWeb3";
 import { formatUnits } from "ethers/lib/utils";
 
 import theme from "../../designSystem/theme";
-import { Grid, GridItem, Box } from '@chakra-ui/react';
+import { Grid, GridItem, Box, Stack, Flex, Text } from '@chakra-ui/react';
 import { BaseShadowBox } from "../Common/Container";
 import { AssetTag, ProductTag } from "../Common/Tags";
-import { Button } from "../Common/Button"; 
+import { VaultButton } from "../Common/Button"; 
 
 export const Vaults = ({ vaults }) => {
+  const history = useHistory();
 
+  const viewVault = (vault) => {
+    history.push(`/vault/${vault}`);
+  }
   return <Grid templateColumns='repeat(3, 1fr)' gap={6}>
     {
       vaults.map(vault => 
         <GridItem w='100%' h='100%' mb='2'>
-          <VaultSummary vault={vault} />
+          <VaultSummary vault={vault} viewVault={() => viewVault(vault)} />
         </GridItem>
       )
     }
@@ -23,9 +27,7 @@ export const Vaults = ({ vaults }) => {
   
 }
 
-const VaultSummary = ({ vault }) => {
-
-  const history = useHistory();
+export const VaultSummary = ({ vault, viewVault }) => {
 
   const { contracts } = useWeb3({ OtusVault: vault });
 
@@ -61,28 +63,36 @@ const VaultSummary = ({ vault }) => {
 
   return (
     <BaseShadowBox padding={theme.padding.lg}>
-      <Box>
-        <ProductTag>
+      <Stack spacing={4}>
+        <Box>
+          <ProductTag>
 
-        </ProductTag>
-        <AssetTag>
+          </ProductTag>
+          <AssetTag>
+            
+          </AssetTag>
+        </Box>
+
+        
+        <Box>
+          <Text fontSize='xs'>Current Projected Yield</Text>
+          <Text fontSize='xxl'>{currentAPR}%</Text>
+        </Box>
+
+
+        <Flex>
+          <Box flex={1}>
+          <Text fontSize='xs'>Strike Prices </Text>
+          </Box>
+          <Box flex={1}>
+            <Text fontSize='xs'>Current Projected Yield</Text>
+          </Box>
+        </Flex>
           
-        </AssetTag>
-      </Box>
-      <Box>
-        
-      </Box>
-      
-      <Box>
-        APR: {currentAPR}%
-      </Box>
-      <Box>
-        
-      </Box>
-
-      <Box>
-      <Button onClick={() =>  history.push(`/vault/${vault}`)}>{vault.substring(0, 8)}...</Button>
-      </Box>
+        <Box>
+          <VaultButton onClick={viewVault}>{vault.substring(0, 8)}...</VaultButton>
+        </Box>
+      </Stack>
     </BaseShadowBox>
   )
 }

@@ -88,10 +88,12 @@ contract StrategyBase is FuturesAdapter, VaultAdapter {
     address _owner,
     address _vault,
     address[] memory marketAddresses,
-    address _gwavOracle
+    address _gwavOracle,
+    StrategyDetail memory _currentStrategy
   ) internal {
 
     gwavOracle = GWAVOracle(_gwavOracle);
+    currentStrategy = _currentStrategy;
 
     address _futuresMarket = marketAddresses[8]; 
     address _optionMarket = marketAddresses[3];	// marketAddress.optionMarket, 
@@ -119,6 +121,7 @@ contract StrategyBase is FuturesAdapter, VaultAdapter {
 
     quoteAsset.approve(_futuresMarket, type(uint).max);
     baseAsset.approve(_futuresMarket, type(uint).max);
+    
     // susd test on synthetix different than lyra
     // IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).approve(_futuresMarket, type(uint).max);
 

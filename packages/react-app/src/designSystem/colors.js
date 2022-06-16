@@ -1,15 +1,17 @@
 const colors = {
   background: {
     one: "#ffffff",
-    two: "#373737",
+    one_hover: "#ffffff",
+    two: "#1c1c1c",
+    two_hover: "#333",
     three: "#84FFC4"
   },
-  borderDark: "#000000", 
-  borderGray: "#E8E8E8", 
+  borderDark: "#333", 
+  borderGray: "#333", 
   borderLight: "#FFFFFF", 
   text: {
     light: "#ffffff",
-    dark: "#373737",
+    dark: "#333",
     gray: '#959595'
   },
   products: {
@@ -18,11 +20,11 @@ const colors = {
     maxCapacity: "#434343",
   },
   buttons: {
-    primary: "#373737",
-    secondaryText: "#373737", 
+    primary: "#333",
+    secondaryText: "#333", 
     error: "rgba(252, 10,   84, 0.16)",
     secondaryBackground: "#87FCBD",
-    secondaryText: "#373737",
+    secondaryText: "#333",
     actionButton: "#A7C9E8",
   },
   tags: {

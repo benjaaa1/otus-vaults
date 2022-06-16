@@ -6,6 +6,46 @@ import "./index.css";
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
 const customTheme = extendTheme({
+
+  components: {
+    Select: {
+      sizes: {
+        md: {
+          field: {
+            fontSize: '14px',
+            borderRadius: 'none',
+            color: '#333'
+          },
+        },
+      },
+    },
+    Input: {
+      sizes: {
+        md: {
+          field: {
+            fontSize: '14px',
+            borderRadius: 'none',
+          },
+        },
+      },
+    },
+    Textarea: {
+      sizes: {
+        md: {
+          field: {
+            fontSize: '14px',
+            borderRadius: 'none',
+          },
+        },
+      },
+    },
+    Button: {
+			baseStyle: {
+				rounded: 'none'
+			}
+		},
+  },
+  initialColorMode: 'dark',
   fonts: {
     heading: `'IBM Plex Mono', monospace`,
     body: `'IBM Plex Sans', sans-serif`
@@ -13,7 +53,6 @@ const customTheme = extendTheme({
   styles: {
     global: {
       body: {
-        background: "linear-gradient(180deg, #84FFC4 0%, rgba(101, 255, 144, 0.56) 100%) no-repeat", 
         minHeight: "100%"
       }
     }

@@ -2,7 +2,7 @@ import { Flex, Box } from "@chakra-ui/react";
 import React from "react";
 import { useParams } from "react-router-dom";
 import { BaseDepositBox, BaseShadowBox, BaseVaultBox } from "../../Common/Container";
-import { Strategy } from "./Strategy";
+import { StrategyVault } from "./StrategyVault";
 import { Performance } from "./Performance";
 import { Risks } from "./Risks";
 import { Transactions } from "./Transactions";
@@ -26,7 +26,7 @@ export const Vault = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <Strategy />
+              <StrategyVault />
             </TabPanel>
             <TabPanel>
               <Performance />

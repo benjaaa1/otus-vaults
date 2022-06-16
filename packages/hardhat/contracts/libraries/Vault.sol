@@ -11,6 +11,24 @@ library Vault {
 
   uint internal constant ROUND_DELAY = 12 hours;
 
+  struct VaultInformation {
+
+    string name; 
+
+    string tokenName; 
+
+    string tokenSymbol; 
+
+    string description; 
+
+    bool isPublic;
+
+    uint performanceFee;
+
+    uint managementFee; 
+    
+  }
+
   struct VaultParams {
     // Token decimals for vault shares
     uint8 decimals;

@@ -48,12 +48,9 @@ library VaultLifeCycle {
       uint mintShares
     )
   {
-    console.log("asset", asset); 
-    console.log("address(this)", address(this)); 
+
     uint currentBalance = IERC20(asset).balanceOf(address(this));
-    console.log("currentBalance", currentBalance); 
     newPricePerShare = ShareMath.pricePerShare(currentShareSupply, currentBalance, pendingAmount, decimals);
-    console.log("newPricePerShare", newPricePerShare); 
 
     // After closing the short, if the options expire in-the-money
     // vault pricePerShare would go down because vault's asset balance decreased.
@@ -63,7 +60,6 @@ library VaultLifeCycle {
     uint newSupply = currentShareSupply.add(_mintShares);
 
     uint queuedWithdraw = newSupply > 0 ? ShareMath.sharesToAsset(queuedWithdrawShares, newPricePerShare, decimals) : 0;
-    console.log("currentBalance.sub(queuedWithdraw)", currentBalance.sub(queuedWithdraw)); 
     return (currentBalance, currentBalance.sub(queuedWithdraw), queuedWithdraw, newPricePerShare, _mintShares);
   }
 
