@@ -42,7 +42,7 @@ import colors from "../../../../designSystem/colors";
 
 export default function StrategyDetail() {
 
-  const { state, dispatch, strategyValue, viewVault } = useStrategyContext();
+  const { state, dispatch, strategyValue, viewVault, setSelectedBoard } = useStrategyContext();
 
   const {
     liveBoards,
@@ -60,9 +60,9 @@ export default function StrategyDetail() {
     <>
       <Flex border={'1px solid #333'} minWidth='max-content' alignItems='center' p={4}>
         <Box>
-          <Select width="100%" id='market' isDisabled={activeBoardId > 0} id='board' placeholder={'Select Round Expiry'} onChange={(e) => dispatch({ type: 'SET_SELECTED_BOARD', payload: e.target.value })}>
+          <Select width="100%" id='market' isDisabled={activeBoardId > 0} id='board' placeholder={'Select Round Expiry'} onChange={(e) => setSelectedBoard(e.target.value)}>
           {
-            Object.values(liveBoards).map(({ name, id }) => (<option selected={id == activeBoardId} value={id}>{name}</option>))
+            Object.values(liveBoards).map(({ name, id }) => (<option value={id}>{name}</option>))
           }
           </Select>
         </Box>

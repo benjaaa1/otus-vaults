@@ -1,12 +1,6 @@
 import { formatUnits } from "ethers/lib/utils";
-import { BigNumber } from '@ethersproject/bignumber'
 import { getQuoteBoard } from "./lyra";
-
-export const ZERO_BN = BigNumber.from(0)
-export const UNIT = BigNumber.from(10).pow(18)
-export const ONE_BN = BigNumber.from(1).mul(UNIT)
-export const MAX_BN = BigNumber.from(2).pow(256).sub(1)
-export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+import { ONE_BN } from "../constants/bn";
 
 export const formatBoards = async (lyraMarket) => {
 
@@ -19,7 +13,7 @@ export const formatBoards = async (lyraMarket) => {
             .map(async (strike) => {
 
               // iscall isbuy
-              const quote = await strike.quote(false, false, BigNumber.from(1).mul(UNIT))
+              const quote = await strike.quote(false, false, ONE_BN)
 
               const { feeComponents } = quote; 
               const { optionPriceFee, spotPriceFee, varianceFee, vegaUtilFee } = feeComponents; 

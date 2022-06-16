@@ -7,6 +7,7 @@ import useWeb3 from "../hooks/useWeb3";
 import { strategyInitialState, strategyReducer } from "../reducer/strategyReducer";
 import { MESSAGE, Notifier, TYPE } from "../notifcations";
 import { formatBoards, formatStrikeQuotes } from "../helpers/strategy";
+import { ONE_BN } from "../constants/bn";
 
 const StrategyContext = createContext();
 
@@ -59,13 +60,13 @@ export const StrategyProvider = ({ children }) => {
     }
   }, [lyraMarket]);
 
-  useEffect(async () => {
-    if(selectedBoard && needsQuotesUpdated) {
-      const formattedStrikeQuotes = await formatStrikeQuotes(selectedBoard.id); 
-      console.log({ formattedStrikeQuotes});
-      dispatch({ type: 'UPDATE_STRIKES_WITH_PREMIUMS', payload: formattedStrikeQuotes })
-    }
-  }, [selectedBoard, needsQuotesUpdated])
+  // useEffect(async () => {
+  //   if(selectedBoard && needsQuotesUpdated) {
+  //     const formattedStrikeQuotes = await formatStrikeQuotes(selectedBoard.id); 
+  //     console.log({ formattedStrikeQuotes});
+  //     dispatch({ type: 'UPDATE_STRIKES_WITH_PREMIUMS', payload: formattedStrikeQuotes })
+  //   }
+  // }, [selectedBoard, needsQuotesUpdated])
 
   const [strategyValue, setStrategyValue] = useState({
     hasStrategy: false, 
@@ -327,6 +328,17 @@ export const StrategyProvider = ({ children }) => {
 
   const viewVault = () => history.push(`/vault/${vault}`);
 
+  const setSelectedBoard = async (id) => {
+    const { liveBoards } = state; 
+    const selectedBoard = liveBoards[id];
+
+    const liveStrikes = await Promise.all(selectedBoard.strikes).then((values) => {
+      return values; 
+    });
+    
+    dispatch({ type: 'SET_SELECTED_BOARD', payload: { selectedBoard, liveStrikes }})
+  }
+
   const value = { 
     state, 
     dispatch, 
@@ -338,7 +350,8 @@ export const StrategyProvider = ({ children }) => {
     _hedge,
     setHedgeStrategy,
     reducePosition,
-    viewVault
+    viewVault,
+    setSelectedBoard
   };
 
   return <StrategyContext.Provider value={value}>{children}</StrategyContext.Provider>;

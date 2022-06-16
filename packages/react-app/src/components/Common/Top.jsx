@@ -19,7 +19,7 @@ export const Top = () => {
           <Box flex='1' p='2' minWidth='max-content' alignItems='center'>
             <HStack
               as={'nav'}
-              spacing={4}
+              spacing={6}
               display={{ base: 'none', md: 'flex' }}
             >
               <NavigationLink to="/">Products</NavigationLink>
@@ -30,7 +30,7 @@ export const Top = () => {
 
           <Spacer />
 
-          <Box p='2'>
+          <Box flex='1' p='2' alignContent={'end'}>
             <Account />
           </Box >
 

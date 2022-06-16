@@ -1,3 +1,5 @@
+import { ONE_BN } from "../constants/bn";
+
 const HOUR_SEC = 60 * 60;
 const DAY_SEC = 24 * HOUR_SEC;
 const WEEK_SEC = 7 * DAY_SEC;
@@ -48,10 +50,11 @@ export const strikeStrategy = {
   minVol: .8,
   maxVol: 1.3,
   maxVolVariance: .1,
-  optionType: 0,
-  id: null,
-  size: 2,
-  strikePrice: null
+  optionType: 0, 
+  isCall: true, 
+  isBuy: true,
+  size: ONE_BN,
+  _strike: null
 }
 
 export const strategyReducer = (state, action) => {
@@ -72,16 +75,15 @@ export const strategyReducer = (state, action) => {
     case 'UPDATE_STRIKES':
       return { ...state, strikes: action.payload };
     case 'SET_SELECTED_BOARD':
-      console.log({selectedboard: state.liveBoards[action.payload].strikes})
-      return { ...state, selectedBoard: state.liveBoards[action.payload], liveStrikes: state.liveBoards[action.payload].strikes, needsQuotesUpdated: true };
+      return { ...state, selectedBoard: action.payload.selectedBoard, liveStrikes: action.payload.liveStrikes }; //, needsQuotesUpdated: true
     case 'ADD_CURRENT_STRIKE':
       return { ...state, currentStrikes: state.currentStrikes.concat(strikeStrategy) };
     case 'UPDATE_CURRENT_STRIKE':
-      const strikeSelected = action.payload.strike; 
+      const _strike = action.payload.strike; 
       return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
           if(index == action.payload.index) {
-            const { id, strikePrice } = strikeSelected; 
-            return { ...cs, id, strikePrice }
+            console.log({ _strike })
+            return { ...cs, _strike }
           }
           return cs; 
         })
@@ -102,7 +104,11 @@ export const strategyReducer = (state, action) => {
     case 'SET_CURRENT_STRIKE_OPTION_TYPE': 
       return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
         if(action.payload.index == index) {
-          return { ...cs, optionType: parseInt(action.payload.value) }; 
+          const { strike } = cs; 
+          const optionType = parseInt(action.payload.value); 
+          const isBuy = optionType == 0 || optionType == 1 ? true : false; 
+          const isCall = optionType == 0 || optionType == 1 ? true : false; 
+          return { ...cs, optionType, isBuy, isCall }; 
         }
         return cs; 
       }) };
@@ -118,3 +124,4 @@ export const strategyReducer = (state, action) => {
       return { ...state }  
   }
 }
+

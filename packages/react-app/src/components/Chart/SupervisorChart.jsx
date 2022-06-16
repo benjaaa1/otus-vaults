@@ -50,152 +50,8 @@ import {
   ReferenceDot
 } from "recharts";
 
-const data = [
-  {
-    name: -3,
-    asset_price: 2700,
-    expected_payoff0: -300, // from sell put
-    expected_payoff1: 200, // from sell call
-    combo_payoff: -100, // from sell call
-    amt: 2400
-  },
-  {
-    name: -2,
-    asset_price: 2750,
-    expected_payoff0: -200, // from sell put
-    expected_payoff1: 200, // from sell call
-    combo_payoff: 0, // from sell call
-    amt: 2400
-  },
-  {
-    name: -1,
-    asset_price: 2800,
-    expected_payoff0: 0, // from sell put
-    expected_payoff1: 200, // from sell call
-    combo_payoff: 200, // from sell call
-    amt: 2400
-  },
-  {
-    name: 0,
-    asset_price: 2850,
-    expected_payoff0: 200, // from sell put
-    expected_payoff1: 200, // from sell call
-    combo_payoff: 400, // from sell call
-    amt: 2400
-  },
-  {
-    name: 1,
-    asset_price: 2900,
-    expected_payoff0: 200, // from sell put
-    expected_payoff1: 200, // from sell call
-    combo_payoff: 400, // from sell call
-    amt: 2400
-  },
-  {
-    name: 2,
-    asset_price: 2950,
-    expected_payoff0: 200, // from sell put
-    expected_payoff1: 200, // from sell call
-    combo_payoff: 400, // from sell call
-    amt: 2400
-  },
-  {
-    name: 3,
-    asset_price: 3000,
-    expected_payoff0: 200, // from sell put
-    expected_payoff1: 0, // from sell call
-    combo_payoff: 200, // from sell call
-    amt: 2400
-  },
-  {
-    name: 4,
-    asset_price: 3050,
-    expected_payoff0: 200,
-    expected_payoff1: -200,
-    combo_payoff: 0, // from sell call
-    amt: 2210
-  },
-  {
-    name: 5,
-    asset_price: 3100,
-    expected_payoff0: 200,
-    expected_payoff1: -300,
-    combo_payoff: -100, // from sell call
-    amt: 2210
-  },
-  {
-    name: 6,
-    asset_price: 3150,
-    expected_payoff0: 200,
-    expected_payoff1: -400,
-    combo_payoff: -200, // from sell call
-    amt: 2210
-  }
-];
-
-const priceOfAsset = 1050; 
-
-const getTicks = () => {
-  const ticks = [];
-
-  let currentTick = priceOfAsset / 2; 
-  let upperBoundOfPrice = priceOfAsset * 2; 
-
-  while(currentTick < upperBoundOfPrice) {
-    currentTick = currentTick + 1; 
-    ticks.push(currentTick); 
-  };
-
-  return ticks; 
-}
-
-const calculateProfit = (tick) => { // get lyra from sdk 
-  
-}
-
-// const calculateFees = async (strikes) => {
-
-//   const results = await Promise.all(strikes.map(async strike => {
-//     const quote = await strike.quote(true, false, ONE_BN.div(100));
-//     return quote; 
-//   }))
-
-//   console.log({ results }); 
-
-// }
-
-// const calculateCombo = (tick) => {
-  
-// }
-
-const data1 = getTicks().map((tick, index) => {
-  return {
-    name: index,
-    asset_price: tick,
-    expected_payoff0: 200, 
-    expected_payoff1: -400,
-    combo_payoff: -200, // from sell call
-  }
-}) 
-
-// console.log({ data1 }); 
-// how to produce this data 
-
-// get current price - draw reference point (reference line)
-// decide range of pricing to show on x axis
-// -200% +200%
-
-// for each tick decided -> 
-// calculate profit (sum of)
-// calculate fees (sum of)
-// calculate profit after fees for each tick
-
-// if using collatPercent
-// calculate liquidation prices if multiple strikes 
-
-export const SupervisorChart = () => {
-
-  console.log({ data1: data1 })
+export const SupervisorChart = ({ data }) => {
+  console.log({ data })
   return (
     <LineChart
       width={400}
@@ -215,13 +71,13 @@ export const SupervisorChart = () => {
       {/**
        * x is liquidation spots
        */}
-      <ReferenceLine x={2750} stroke="red" />
-      <ReferenceLine x={3050} stroke="red" />
+      {/* <ReferenceLine x={2750} stroke="red" />
+      <ReferenceLine x={3050} stroke="red" /> */}
 
-      <ReferenceLine y={400} stroke="red" />
+      <ReferenceLine x={1050} stroke="red" />
       <ReferenceLine y={0} stroke="red" />
 
-      <ReferenceDot key={'1'} x={-2} y={2} />
+      {/* <ReferenceDot key={'1'} x={-2} y={2} /> */}
 
       <Line type="monotone" dataKey="combo_payoff" stroke="#8884d8" />
 
@@ -229,22 +85,6 @@ export const SupervisorChart = () => {
     </LineChart>
   );
 }
-
-
-// const data1 = [
-//   {
-//     name: 20,
-//     asset_price: 3000,
-//     expected_payoff: 20,
-//     amt: 2400,
-//   },
-//   {
-//     name: 20,
-//     asset_price: 3000,
-//     expected_payoff: -1398,
-//     amt: 2210,
-//   }
-// ]
 
 // referenceLinesProps = []
 // referenceLinesProp = {

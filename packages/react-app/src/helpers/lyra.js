@@ -7,7 +7,7 @@ const LyraConfig = {
   chainId: 69
 };
 
-const lyra = new Lyra(LyraConfig);
+export const lyra = new Lyra(LyraConfig);
 
 export const getLyraMarkets = async () => await lyra.markets();
 
@@ -34,7 +34,7 @@ export const getQuoteBoard = async (marketName, boardId, sizeSelected) => {
   // })
 
 
-  const quotes = await lyra.quoteBoard(marketName, boardId, BigNumber.from(1)); 
+  const quotes = await lyra.quoteBoard(marketName, boardId, sizeSelected); 
   return quotes.map(({ ask, bid, option }) => {
     const { __strike: { id } } = option; 
 

@@ -43,6 +43,7 @@ export const BaseDepositBox  = styled(Box)`
 export const VaultStrategyBox  = styled(Box)`
   padding: ${props => props.padding};
   background: ${colors.background.one};
+  border: 1px solid ${colors.borderGray};
 `;
 
 export const StrategyBox  = styled(Box)`

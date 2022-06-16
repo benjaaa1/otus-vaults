@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { 
   Box, 
@@ -29,6 +29,7 @@ import { CancelButton, SaveButton, VaultActionButton } from "../../../Common/But
 import { useStrategyContext } from "../../../../context/StrategyContext";
 import { SupervisorChart } from "../../../Chart/SupervisorChart";
 import { VaultStrategyBox } from "../../../Common/Container";
+import { data } from "../../../../utils/pnlChart";
 
 export default function VaultDetail() {
 
@@ -43,32 +44,46 @@ export default function VaultDetail() {
     _hedge,
     setVaultStrategy
   } = useStrategyContext();
-  
+
+  const { currentStrikes } = state; 
+
+  const [chartData, setChartData] = useState([]);
+
+  useEffect(async () => {
+    if(currentStrikes.length > 0) {
+      const cd = await data(currentStrikes); 
+      console.log({ cd })
+      setChartData(cd); 
+
+      // const cd2 = await Promise.resolve()
+    }
+  }, [currentStrikes])
+
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
     <Box>
       <VStack>
 
-            {
-              strategyValue.vaultState.roundInProgress ? 
-              <>
-                <VaultActionButton onClick={closeRound}>Close Round</VaultActionButton>
-                <VaultActionButton onClick={trade}>Trade</VaultActionButton> 
-              </> :
-              <>
-                <VaultActionButton onClick={setVaultStrategy}>Set Round Strategy</VaultActionButton>
-                <VaultActionButton onClick={startRound}>Start Round</VaultActionButton>
-              </>
-            }
+        {
+          strategyValue.vaultState.roundInProgress ? 
+          <>
+            <VaultActionButton onClick={closeRound}>Close Round</VaultActionButton>
+            <VaultActionButton onClick={trade}>Trade</VaultActionButton> 
+          </> :
+          <>
+            <VaultActionButton onClick={setVaultStrategy}>Set Round Strategy</VaultActionButton>
+            <VaultActionButton onClick={startRound}>Start Round</VaultActionButton>
+          </>
+        }
 
-            {/* <MenuItem onClick={reducePosition}>Reduce Position</MenuItem>
-                    <MenuItem onClick={() => {  onOpen() }}>Set Hedge Strategy</MenuItem>
-                    <MenuItem onClick={_hedge}>Hedge</MenuItem> */}
+        {/* <MenuItem onClick={reducePosition}>Reduce Position</MenuItem>
+                <MenuItem onClick={() => {  onOpen() }}>Set Hedge Strategy</MenuItem>
+                <MenuItem onClick={_hedge}>Hedge</MenuItem> */}
 
-            <VaultStrategyBox>
-              <SupervisorChart />
-            </VaultStrategyBox>
+        <VaultStrategyBox>
+          {/* <SupervisorChart data={chartData} /> */}
+        </VaultStrategyBox>
         
       </VStack> 
 
