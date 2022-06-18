@@ -17,12 +17,12 @@ export const Vault = () => {
     <Flex>
       <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
 
-        <Tabs isFitted variant='enclosed'>
+        <Tabs isFitted>
           <TabList mb='2em'>
-            <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Strategy</Tab>
-            <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Performance</Tab>
-            <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Transaction</Tab>
-            <Tab color={colors.text.dark} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Risks</Tab>
+            <Tab color={colors.text.dark} sx={{ fontWeight: '700', fontFamily: theme.font.header, textDecoration: 'none' }}>Strategy</Tab>
+            <Tab color={colors.text.dark} sx={{ fontWeight: '700', fontFamily: theme.font.header, textDecoration: 'none' }}>Performance</Tab>
+            <Tab color={colors.text.dark} sx={{ fontWeight: '700', fontFamily: theme.font.header, textDecoration: 'none' }}>Transaction</Tab>
+            <Tab color={colors.text.dark} sx={{ fontWeight: '700', fontFamily: theme.font.header, textDecoration: 'none' }}>Risks</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>

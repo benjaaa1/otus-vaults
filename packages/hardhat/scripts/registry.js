@@ -13,13 +13,13 @@ const registerMarkets = async () => {
     const txSetFactory = await outsController.setOtusCloneFactory(otusCloneFactory.address); 
     const txSetFactoryReceipt = txSetFactory.wait(); 
 
-    const futures = await outsController.setFuturesMarkets("0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D", "0x7345544800000000000000000000000000000000000000000000000000000000")
+    const futures = await outsController.setFuturesMarkets("0xae3e748cF9b12720192912EE6c67e42E80b6ba4F", "0x7345544800000000000000000000000000000000000000000000000000000000")
     const futuresReceipt = futures.wait(); 
 
-    const optionMarkets = await outsController.setOptionMarketDetails("0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2"); 
+    const optionMarkets = await outsController.setOptionMarketDetails("0x01DFc64625e121035235a83A0979a6A1831aA93b"); 
     const optionMarketsReceipt = optionMarkets.wait(); 
 
-    const market = await outsController.getOptionMarketDetails("0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2"); 
+    const market = await outsController.getOptionMarketDetails("0x01DFc64625e121035235a83A0979a6A1831aA93b"); 
     console.log({ market })
 
     return true;

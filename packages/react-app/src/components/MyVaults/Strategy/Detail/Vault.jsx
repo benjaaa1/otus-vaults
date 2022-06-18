@@ -30,6 +30,8 @@ import { useStrategyContext } from "../../../../context/StrategyContext";
 import { SupervisorChart } from "../../../Chart/SupervisorChart";
 import { VaultStrategyBox } from "../../../Common/Container";
 import { data } from "../../../../utils/pnlChart";
+import { StrikesSelected } from "./StrikesSelected";
+import { TradeDetails } from "./TradeDetails";
 
 export default function VaultDetail() {
 
@@ -45,19 +47,18 @@ export default function VaultDetail() {
     setVaultStrategy
   } = useStrategyContext();
 
-  const { currentStrikes } = state; 
+  const { currentStrikes, size } = state; 
 
   const [chartData, setChartData] = useState([]);
 
   useEffect(async () => {
     if(currentStrikes.length > 0) {
-      const cd = await data(currentStrikes); 
+      const cd = await data(currentStrikes, size); 
       console.log({ cd })
       setChartData(cd); 
-
       // const cd2 = await Promise.resolve()
     }
-  }, [currentStrikes])
+  }, [currentStrikes, size])
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -69,7 +70,6 @@ export default function VaultDetail() {
           strategyValue.vaultState.roundInProgress ? 
           <>
             <VaultActionButton onClick={closeRound}>Close Round</VaultActionButton>
-            <VaultActionButton onClick={trade}>Trade</VaultActionButton> 
           </> :
           <>
             <VaultActionButton onClick={setVaultStrategy}>Set Round Strategy</VaultActionButton>
@@ -82,8 +82,13 @@ export default function VaultDetail() {
                 <MenuItem onClick={_hedge}>Hedge</MenuItem> */}
 
         <VaultStrategyBox>
-          {/* <SupervisorChart data={chartData} /> */}
+          <StrikesSelected />
+          <TradeDetails />
+          {/* <CollateralDetails /> */}
+          <SupervisorChart data={chartData} />
         </VaultStrategyBox>
+
+        <VaultActionButton onClick={trade}>Trade</VaultActionButton> 
         
       </VStack> 
 

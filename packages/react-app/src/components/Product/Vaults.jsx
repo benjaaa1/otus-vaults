@@ -62,7 +62,7 @@ export const VaultSummary = ({ vault, viewVault }) => {
   }, [otusVault])
 
   return (
-    <BaseShadowBox padding={theme.padding.lg}>
+    <BaseShadowBox onClick={viewVault} padding={theme.padding.lg} _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
       <Stack spacing={4}>
         <Box>
           <ProductTag>
@@ -71,26 +71,43 @@ export const VaultSummary = ({ vault, viewVault }) => {
           <AssetTag>
             
           </AssetTag>
+
+          <Text fontSize='xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>Test Vault</Text>
+
         </Box>
 
+        <Box borderBottom={'1px solid #333'}>
+          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>T2ST-ETH</Text>
+        </Box>
         
-        <Box>
-          <Text fontSize='xs'>Current Projected Yield</Text>
-          <Text fontSize='xxl'>{currentAPR}%</Text>
+        <Box borderBottom={'1px solid #333'}>
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Projected Yield</Text>
+          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{currentAPR}%</Text>
         </Box>
 
 
-        <Flex>
-          <Box flex={1}>
-          <Text fontSize='xs'>Strike Prices </Text>
-          </Box>
-          <Box flex={1}>
-            <Text fontSize='xs'>Current Projected Yield</Text>
-          </Box>
-        </Flex>
+        <Box>
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Strike Prices</Text>
+          <Flex>
+          {
+            ['1400', '1500', '1000', '900'].map(strike => {
+              return <Box flex={'1'}>
+                <Text fontWeight={'700'} fontSize='xs' fontFamily={`'IBM Plex Mono', monospace`}>{ strike }</Text>
+              </Box>
+            })
+          }
+          </Flex>
+        </Box>
+
+        <Box>
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Price</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>$1200</Text>
+        </Box>
           
         <Box>
-          <VaultButton onClick={viewVault}>{vault.substring(0, 8)}...</VaultButton>
+          {/* <VaultButton onClick={viewVault}>{vault.substring(0, 8)}...</VaultButton> */}
+
+          max capacity 
         </Box>
       </Stack>
     </BaseShadowBox>

@@ -273,21 +273,21 @@ export const StrategyProvider = ({ children }) => {
   const trade = async () => {
     try {
 
+      const { size } = state; 
+
       const strikeStrategies = currentStrikes.map((currentActiveStrike, index) => {
 
         const {
           targetDelta,
           optionType,
-          id,
+          _strike,
           maxDeltaGap,
           minVol,
           maxVol,
-          maxVolVariance,
-          size
+          maxVolVariance
         } = currentActiveStrike; 
 
         return {
-          ...currentActiveStrike, 
           targetDelta: parseUnits(Math.abs(targetDelta).toString()).mul(parseInt(optionType) == 3 ? 1 : -1),
           maxDeltaGap: parseUnits(maxDeltaGap.toString(), 18),
           minVol: parseUnits(minVol.toString(), 18),
@@ -295,12 +295,12 @@ export const StrategyProvider = ({ children }) => {
           maxVolVariance: parseUnits(maxVolVariance.toString(), 18),
           optionType: parseInt(optionType),
           size: parseUnits(size.toString()),
-          strikeId: id,
+          strikeId: _strike.id,
         }
       })
 
       console.log({ strikeStrategies })
-      const response = await otusVaultContract.connect(signer).trade(strikeStrategies);
+      const response = await otusVaultContract.connect(signer).trade(strikeStrategies, { gasLimit: 75000 });
 
       const receipt = response.wait();  
       console.log({ receipt })

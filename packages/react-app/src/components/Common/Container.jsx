@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Center, Box } from "@chakra-ui/react";
-import { BaseBox, Container } from "../../designSystem";
+import { Container } from "../../designSystem";
 import colors from "../../designSystem/colors";
 import sizes from "../../designSystem/sizes";
 import theme from "../../designSystem/theme";
@@ -20,7 +20,7 @@ export const PageContainer = styled(Container)`
 
 export const HeaderContainer = styled(Center)``;
 
-export const BaseShadowBox  = styled(BaseBox)`
+export const BaseShadowBox  = styled(Box)`
   background: ${colors.background.one};
   width: ${props => props.width};
   height: ${props => props.height};
@@ -28,6 +28,7 @@ export const BaseShadowBox  = styled(BaseBox)`
   padding: ${props => props.padding};
   margin-top: 20px; 
   border: 1px solid ${colors.borderGray};
+  cursor: pointer;
 `;
 
 export const BaseVaultBox  = styled(Box)`

@@ -455,7 +455,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0xbA022a9f263e943757D2e5f8860a6CcA78787C28",
+          "address": "0x58f696c1e9179b8950a9B4b58F2Da36A38C5Ccbf",
           "abi": [
             {
               "inputs": [
@@ -754,13 +754,13 @@
           ]
         },
         "OtusController": {
-          "address": "0x9FF6A9025533a08FFf7c4AC3b39474780C1c8DDa",
+          "address": "0xe8839FD5722ca830aD827E9AB7e0BE677F4a666a",
           "abi": [
             {
               "inputs": [
                 {
                   "internalType": "address",
-                  "name": "_lyraRegistry",
+                  "name": "_optionMarketViewer",
                   "type": "address"
                 },
                 {
@@ -1071,19 +1071,6 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "lyraRegistry",
-              "outputs": [
-                {
-                  "internalType": "contract LyraRegistry",
-                  "name": "",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
               "inputs": [
                 {
                   "internalType": "address",
@@ -1100,6 +1087,19 @@
               "outputs": [
                 {
                   "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "optionMarketViewer",
+              "outputs": [
+                {
+                  "internalType": "contract OptionMarketViewer",
                   "name": "",
                   "type": "address"
                 }

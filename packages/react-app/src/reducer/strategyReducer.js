@@ -41,7 +41,8 @@ export const strategyInitialState = {
   selectedStrike: null, 
   currentBoard: null,
   currentStrikes: [],
-  activeCurrentStrikeIndex: null
+  activeCurrentStrikeIndex: null,
+  size: ONE_BN,
 }
 
 export const strikeStrategy = {
@@ -53,7 +54,6 @@ export const strikeStrategy = {
   optionType: 0, 
   isCall: true, 
   isBuy: true,
-  size: ONE_BN,
   _strike: null
 }
 
@@ -107,7 +107,7 @@ export const strategyReducer = (state, action) => {
           const { strike } = cs; 
           const optionType = parseInt(action.payload.value); 
           const isBuy = optionType == 0 || optionType == 1 ? true : false; 
-          const isCall = optionType == 0 || optionType == 1 ? true : false; 
+          const isCall = optionType == 0 || optionType == 3 ? true : false; 
           return { ...cs, optionType, isBuy, isCall }; 
         }
         return cs; 
@@ -120,6 +120,9 @@ export const strategyReducer = (state, action) => {
         }
         return cs; 
       }) };
+    case 'UPDATE_SIZE':
+      const { size } = action.payload; 
+      return { ...state, size };
     default: 
       return { ...state }  
   }

@@ -4,22 +4,22 @@ import { Tab, Tabs, TabList, TabPanels, TabPanel } from "@chakra-ui/react";
 import colors from "../../../../designSystem/colors";
 import theme from "../../../../designSystem/theme";
 import { Deposit } from "./Deposit";
-import { Withdrawal } from "./Withdrawal";
+import { Withdraw } from "./Withdraw";
 
 export const UserActions = () => {
 
   return (
-    <Tabs isFitted variant='enclosed'>
+    <Tabs isFitted>
       <TabList mb='2em'>
-        <Tab color={colors.text.light} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Deposit</Tab>
-        <Tab color={colors.text.light} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none' }}>Withdrawal</Tab>
+        <Tab color={colors.text.light} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none', fontWeight: '700' }}>Deposit</Tab>
+        <Tab color={colors.text.light} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none', fontWeight: '700' }}>Withdraw</Tab>
       </TabList>
       <TabPanels>
         <TabPanel>
           <Deposit />
         </TabPanel>
         <TabPanel>
-          <Withdrawal />
+          <Withdraw />
         </TabPanel>
       </TabPanels>
     </Tabs>

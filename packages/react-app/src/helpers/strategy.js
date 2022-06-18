@@ -5,7 +5,7 @@ import { ONE_BN } from "../constants/bn";
 export const formatBoards = async (lyraMarket) => {
 
   const _liveBoards = await lyraMarket.liveBoards(); 
-
+  console.log({ _liveBoards })
   const liveBoards = _liveBoards.filter(({ timeToExpiry }) => timeToExpiry > 0)
         .map(board => {
           const boardStrikes = board.strikes()

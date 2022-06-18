@@ -5,7 +5,7 @@ export const WEEK_SEC = 7 * DAY_SEC;
 export const createVaultInitialState = {
   markets: [],
   market_id: null,
-  optionMarket: '0x4A3f1D1bdb5eD10a813f032FE906C73BAF0bc5A2', 
+  optionMarket: '0x01DFc64625e121035235a83A0979a6A1831aA93b', 
   vaultStrategy: {
     collatBuffer: 1.2, 
     collatPercent: .35,
@@ -26,7 +26,7 @@ export const createVaultInitialState = {
   vaultParams: {
     decimals: 18,
     cap: 50000, // 50,000 usd cap
-    asset: '0xD30a35282c2E2db07d9dAC69Bf3D45a975Bc85D1' // susd 
+    asset: '0xBc8B64B2B32F32C6c4F14FfCd2CC2005272541CD' // susd 
   }
 }
 

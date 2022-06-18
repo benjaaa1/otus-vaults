@@ -10,7 +10,7 @@ import {StrategyBase} from "./vault/strategy/StrategyBase.sol";
 
 import {IOtusCloneFactory} from "./interfaces/IOtusCloneFactory.sol"; 
 import {IFuturesMarketManager} from "./interfaces/IFuturesMarketManager.sol"; 
-import {LyraRegistry} from "@lyrafinance/protocol/contracts/periphery/LyraRegistry.sol";
+import {OptionMarketViewer} from "@lyrafinance/protocol/contracts/periphery/OptionMarketViewer.sol";
 import {LiquidityPool} from "@lyrafinance/protocol/contracts/LiquidityPool.sol";
 import {OptionGreekCache} from "@lyrafinance/protocol/contracts/OptionGreekCache.sol";
 import {OptionMarketPricer} from "@lyrafinance/protocol/contracts/OptionMarketPricer.sol";
@@ -24,20 +24,8 @@ import {Vault} from "./libraries/Vault.sol";
 
 contract OtusController is Ownable {
   
-  struct OptionMarketAddresses {
-    address futuresMarket;
-    address optionMarket; 
-    address liquidityPool;
-    address greekCache;
-    address optionMarketPricer;
-    address optionToken;
-    address shortCollateral;
-    address quoteAsset;
-    address baseAsset; 
-  }
-
   IFuturesMarketManager immutable public futuresMarketManager;
-  LyraRegistry public lyraRegistry; 
+  OptionMarketViewer public optionMarketViewer; 
 
   address public keeper;  
   address public otusCloneFactory;  
@@ -54,8 +42,8 @@ contract OtusController is Ownable {
   mapping(address => bool) public vaultsStatus;
   address[] public vaultsList; 
 
-  constructor(address _lyraRegistry, address _futuresMarketManager) Ownable() {
-    lyraRegistry = LyraRegistry(_lyraRegistry);
+  constructor(address _optionMarketViewer, address _futuresMarketManager) Ownable() {
+    optionMarketViewer = OptionMarketViewer(_optionMarketViewer);
     futuresMarketManager = IFuturesMarketManager(_futuresMarketManager);
   }
 
@@ -81,7 +69,7 @@ contract OtusController is Ownable {
     uint len = _vaults.length; 
     console.log("len", len); 
     require(len <= 3, "Max 3 vaults created"); 
-    // vaults[msg.sender][len] = vault; 
+
     vaults[msg.sender].push(vault);
 		require(vault != address(0), "Vault not created"); 
 
@@ -100,7 +88,7 @@ contract OtusController is Ownable {
     ); 
 
     // initialize strategy 
- 		address[] memory marketAddresses = getOptionMarketDetails(_optionMarket); 
+ 		address[] memory marketAddresses = getOptionMarketDetails(address(0x01DFc64625e121035235a83A0979a6A1831aA93b)); 
 
     IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(
       msg.sender,
@@ -138,7 +126,7 @@ contract OtusController is Ownable {
     IERC20 quoteAsset;
     IERC20 baseAsset; 
 
-    (liquidityPool,,greekCache,,optionMarketPricer,optionToken,,shortCollateral,quoteAsset,baseAsset) = lyraRegistry.marketAddresses(OptionMarket(_optionMarket)); 
+    (liquidityPool,,greekCache,,optionMarketPricer,optionToken,shortCollateral,,quoteAsset,baseAsset) = optionMarketViewer.marketAddresses(OptionMarket(_optionMarket)); 
 
     address[] memory marketAddresses = new address[](9); 
     marketAddresses[0] = address(quoteAsset);

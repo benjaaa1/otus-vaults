@@ -49,37 +49,37 @@ import {
   ReferenceLine,
   ReferenceDot
 } from "recharts";
+import colors from "../../designSystem/colors";
 
 export const SupervisorChart = ({ data }) => {
   console.log({ data })
   return (
     <LineChart
-      width={400}
-      height={300}
+      width={340}
+      height={220}
       data={data}
       margin={{
         top: 20,
-        right: 50,
+        right: 20,
         left: 20,
-        bottom: 5
+        bottom: 20
       }}
     >
       <XAxis hide={true} dataKey="asset_price" />
       <YAxis hide={true} label="profit" />
       <Tooltip />
-      <Legend />
       {/**
        * x is liquidation spots
        */}
       {/* <ReferenceLine x={2750} stroke="red" />
       <ReferenceLine x={3050} stroke="red" /> */}
 
-      <ReferenceLine x={1050} stroke="red" />
-      <ReferenceLine y={0} stroke="red" />
+      <ReferenceLine x={1050} stroke={colors.background.three} />
+      <ReferenceLine y={0} stroke={colors.background.three} />
 
       {/* <ReferenceDot key={'1'} x={-2} y={2} /> */}
 
-      <Line type="monotone" dataKey="combo_payoff" stroke="#8884d8" />
+      <Line type="monotone" dataKey="combo_payoff" stroke={colors.borderGray} dot={false} />
 
       {/* <Line type="monotone" dataKey="asset_price" stroke="#8884d8" /> */}
     </LineChart>

@@ -1,7 +1,9 @@
+import { BigNumber } from "ethers";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { UNIT } from "../constants/bn";
 import { getLyraMarket, getQuoteBoard, lyra } from "../helpers/lyra";
 
-const priceOfAsset = 1050; 
+const priceOfAsset = 1150; 
 
 const getTicks = () => {
   const ticks = [];
@@ -24,7 +26,8 @@ const ticks = getTicks();
 const calculateFees = async (strike, isCall, isBuy, size) => {
   const quote = await strike.quote(isCall, isBuy, size);
   const { feeComponents: { optionPriceFee, spotPriceFee, varianceFee, vegaUtilFee }, pricePerOption } = quote; 
-
+  const calculateFees = parseFloat(pricePerOption / (10 ** 18));
+  console.log({ calculateFees })
   return { 
     optionPriceFee, spotPriceFee, varianceFee, vegaUtilFee, pricePerOption
   }
@@ -40,11 +43,12 @@ const sumOfCost = (fee) => {
     pricePerOption 
   } = fee; 
 
-  const sum = optionPriceFee
-    .add(spotPriceFee)
-    .add(varianceFee)
-    .add(vegaUtilFee)
-    .add(pricePerOption)
+  const sum = pricePerOption // optionPriceFee;
+
+    // .add(spotPriceFee)
+    // .add(varianceFee)
+    // .add(vegaUtilFee)
+    // .add(pricePerOption)
 
   return -sum; 
 }
@@ -57,13 +61,14 @@ const sumOfMinReceived = (fee) => {
     vegaUtilFee, 
     pricePerOption 
   } = fee; 
+  console.log({ sumOfMinReceived: fee })
+  const sum = pricePerOption;
 
-  const sum = pricePerOption
-    .sub(optionPriceFee)
-    .sub(spotPriceFee)
-    .sub(varianceFee)
-    .sub(vegaUtilFee)
-    .sub(pricePerOption)
+    // .sub(optionPriceFee)
+    // .sub(spotPriceFee)
+    // .sub(varianceFee)
+    // .sub(vegaUtilFee)
+  console.log({ sumOfMinReceivedsum: sum  })
 
   return sum; 
 
@@ -72,7 +77,7 @@ const sumOfMinReceived = (fee) => {
 const calculateProfitAtTick = (_totalSumOfFees, _strikePrice, tick, isCall, isBuy) => {
 
   const totalSumOfFees = Math.round(parseFloat(_totalSumOfFees / (10 ** 18)));
-
+  console.log({ totalSumOfFees })
   const strikePrice = Math.round(parseFloat(formatUnits(_strikePrice)));
 
   let profitAtTick; 
@@ -80,12 +85,10 @@ const calculateProfitAtTick = (_totalSumOfFees, _strikePrice, tick, isCall, isBu
 
   if(isBuy) {
     if(isCall) {
-      console.log({ tick, strikePrice }); 
       // tick at 1000 - need strike price ex. 1200 - cost for buy call $20 if tick < strike price fixed loss if tick > strike price profit after cost
       if(tick < strikePrice) {
         profitAtTick = totalSumOfFees; 
       } else {
-        console.log({ tick, strikePrice, totalSumOfFees })
         profitAtTick = tick - (strikePrice - (totalSumOfFees));
       }
 
@@ -102,19 +105,35 @@ const calculateProfitAtTick = (_totalSumOfFees, _strikePrice, tick, isCall, isBu
   // is sell
   if(!isBuy) {
     if(isCall) {
+      console.log({ type: 'sell call',  tick, strikePrice, totalSumOfFees })
+
       // tick at 1000 - need strike price ex. 1400 - profit for strike sell call $100 
       if(tick < strikePrice) {
         profitAtTick = totalSumOfFees; 
       } else {
-        profitAtTick = strikePrice + (totalSumOfFees) - tick; 
+        // tick 1001 strike price 1000 premium is 50
+        // 1000 + 50 - 1001
+
+        // tick 1500 strike price 1000 premium is 50
+        // 1000 + 50 - 1500 // -450
+        profitAtTick = (strikePrice + totalSumOfFees) - tick; 
       }
 
     } else {
+      console.log({ type: 'sell put', tick, strikePrice, totalSumOfFees })
+
       // tick at 900 - need strike price ex. 1050 - profit for strike sell put $100 
       if(tick < strikePrice) {
-        profitAtTick = tick - strikePrice - (totalSumOfFees); 
+        // 999 strike is 1000 premium is 50 
+        // profit would be 49
+        // 998 48
+        // 990 40
+        // 950 0
+
+        profitAtTick = tick - strikePrice + (totalSumOfFees); 
+        console.log({ profitAtTick, the_actual_amount: tick - strikePrice - (totalSumOfFees) })
       } else {
-        profitAtTick = totalSumOfFees; 
+        profitAtTick = totalSumOfFees;
       }
     }
   }
@@ -126,14 +145,16 @@ const calculateProfitAtTick = (_totalSumOfFees, _strikePrice, tick, isCall, isBu
 // get sum of fees outside of calcualteCombo to avoid o(n)
 const calculateCombo = (tick, strikes) => {
 
+  if(tick > 1500) debugger; 
+
   return strikes.reduce((accum, strike) => {
 
     const { isCall, isBuy, strikePrice } = strike; 
 
     const totalSumOfFees = isBuy ? sumOfCost(strike) : sumOfMinReceived(strike);
-  
+    console.log({ totalSumOfFees, strikePrice, tick, isCall, isBuy })
     const profitAtTick = calculateProfitAtTick(totalSumOfFees, strikePrice, tick, isCall, isBuy) // can be negative or positive dependent on option type
-  
+    console.log({ accum, profitAtTick, sum: accum + profitAtTick })
     accum = accum + profitAtTick; 
 
     return accum; 
@@ -142,7 +163,7 @@ const calculateCombo = (tick, strikes) => {
 
 }
 
-export const data = async (strikesSelected) => {
+export const data = async (strikesSelected, _size) => {
 
   if(strikesSelected.length == 0) {
     return [];
@@ -154,12 +175,11 @@ export const data = async (strikesSelected) => {
     return []; 
   }
 
-  const strikesWithFees =  await Promise.all(
-      strikesSelected.filter(({_strike}) => _strike != null)
-      .map(async ({_strike, isCall, isBuy, size}
-    ) => {
+  const strikesWithFees =  await Promise.all(strikesSelected.filter(({_strike}) => _strike != null).map(async ({_strike, isCall, isBuy}) => {
+
+    const size = BigNumber.from(_size).mul(UNIT);
     const strike = await lyra.strike('eth', _strike.id);
-    const { optionPriceFee, spotPriceFee, varianceFee, vegaUtilFee, pricePerOption } = await calculateFees(strike, isCall, isBuy, size); 
+    const { optionPriceFee, spotPriceFee, varianceFee, vegaUtilFee, pricePerOption } = await calculateFees(strike, isCall, isBuy, size ); 
 
     return {
       strikePrice: strike.strikePrice,

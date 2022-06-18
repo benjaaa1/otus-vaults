@@ -60,7 +60,8 @@ export default function StrategyDetail() {
     <>
       <Flex border={'1px solid #333'} minWidth='max-content' alignItems='center' p={4}>
         <Box>
-          <Select width="100%" id='market' isDisabled={activeBoardId > 0} id='board' placeholder={'Select Round Expiry'} onChange={(e) => setSelectedBoard(e.target.value)}>
+        {/* isDisabled={activeBoardId > 0} only disable if trades occurred */}
+          <Select width="100%" id='market' id='board' placeholder={'Select Round Expiry'} onChange={(e) => setSelectedBoard(e.target.value)}>
           {
             Object.values(liveBoards).map(({ name, id }) => (<option value={id}>{name}</option>))
           }
@@ -70,15 +71,15 @@ export default function StrategyDetail() {
         <ViewLinkButton onClick={viewVault} />
       </Flex>
       <Box mt='4'>
-        <Box allowToggle>
+        <Box>
         {
           currentStrikes.map((cs, index) => {
             return (
-              <Accordion>
+              <Accordion allowMultiple allowToggle>
                 <AccordionItem>
                   <Flex minWidth='max-content' alignItems='center' p={'2'}>
                     <Box flex='1'>
-                      <RemoveButton onClick={() => dispatch({ type: 'REMOVE_CURRENT_STRIKE', payload: index })} />
+                      <RemoveButton bg={colors.background.two} color={colors.text.light} onClick={() => dispatch({ type: 'REMOVE_CURRENT_STRIKE', payload: index })} />
                     </Box>
                     <Box>
                       {/* <Button onClick={() => trade(index)} rightIcon={<ArrowForwardIcon />}>Trade</Button> */}
@@ -111,7 +112,7 @@ export default function StrategyDetail() {
                   </Flex>
                 <AccordionPanel pb={4}>
                   <TableContainer>
-                    <Table size='sm' variant='striped' colorScheme={'#f5f5f5'}>
+                    <Table variant={'simple'} size='sm' colorScheme={'#f5f5f5'}>
                     <Thead>
                       <Tr>
                         <Th isNumeric>Strike</Th>
@@ -125,9 +126,9 @@ export default function StrategyDetail() {
                           const { id } = strike;
                           const currentSelectedId = currentStrikes[index]['id']; 
                           return <Tr>
-                            <Td isNumeric>${ strike.strikePrice  }</Td>
-                            <Td isNumeric>{ strike.iv_formatted }</Td>
-                            <Td isNumeric>
+                            <Td border={'none'} isNumeric>${ strike.strikePrice  }</Td>
+                            <Td border={'none'} isNumeric>{ strike.iv_formatted }</Td>
+                            <Td border={'none'} isNumeric>
                               <Button colorScheme={ currentSelectedId == id ? 'teal' : 'gray'} size='sm' isLoading={needsQuotesUpdated} onClick={() => dispatch({ type: 'UPDATE_CURRENT_STRIKE', payload: { index, strike } })}>
                                 ${ cs.optionType == 1 || cs.optionType == 3 ?  strike.ask_pricePerOption : strike.bid_pricePerOption }
                               </Button>
