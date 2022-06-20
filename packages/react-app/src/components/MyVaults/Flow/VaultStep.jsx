@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 
 import { Flex, Spacer, Stack, Heading, Text, FormControl, FormLabel, Switch, Box, Center, Divider, Input } from '@chakra-ui/react'
-import { NextButtonIcon } from "../../Common/Button"; 
 import { Select } from "../../Common/Select"; 
 import { Slider } from "../../Common/Slider";
-import { BaseShadowBox } from "../../Common/Container";
-import useCreateVault from "../../../hooks/useCreateVault";
 import { useCreateVaultContext } from "../../../context/CreateVaultContext";
 
 const VaulStep = () => {

@@ -9,7 +9,8 @@ export const BaseHeaderText = styled.span`
   color: ${props => props.color };
   font-family: 'IBM Plex Mono', monospace;
   font-size: ${props => props.size };
-  font-weight: 700; 
+  font-weight: 400; 
+  text-align: center;
   margin: 0 auto; 
   padding: ${theme.padding.sm}
 `;

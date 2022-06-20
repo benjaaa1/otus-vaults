@@ -88,11 +88,10 @@ contract StrategyBase is FuturesAdapter, VaultAdapter {
     address _owner,
     address _vault,
     address[] memory marketAddresses,
-    address _gwavOracle,
     StrategyDetail memory _currentStrategy
   ) internal {
 
-    gwavOracle = GWAVOracle(_gwavOracle);
+    gwavOracle = GWAVOracle( marketAddresses[9]);
     currentStrategy = _currentStrategy;
 
     address _futuresMarket = marketAddresses[8]; 
@@ -305,6 +304,29 @@ contract StrategyBase is FuturesAdapter, VaultAdapter {
     return callDelta > (int(DecimalMath.UNIT) - marketParams.deltaCutOff) || callDelta < marketParams.deltaCutOff;
   }
 
+  //////////
+  // View //
+  //////////
+
+  function getStrikeOptionTypes() external view returns (uint[] memory strikes, uint[] memory optionTypes, uint[] memory positionIds) {
+    uint len = activeStrikeIds.length; 
+    strikes = new uint[](len); 
+    optionTypes = new uint[](len); 
+    positionIds = new uint[](len); 
+
+    for(uint i = 0; i < len; i++) {
+      uint strikeId = activeStrikeIds[i];
+      strikes[i] = strikeId;
+      uint optionType = lastTradeOptionType[strikeId];
+      optionTypes[i] = optionType; 
+      uint positionId = strikeToPositionId[strikeId];
+      positionIds[i] = positionId;
+    }
+
+    return (strikes, optionTypes, positionIds); 
+  }
+
+  
   //////////
   // Misc //
   //////////

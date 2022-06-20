@@ -4,10 +4,11 @@ import useWeb3 from "../../hooks/useWeb3";
 import { formatUnits } from "ethers/lib/utils";
 
 import theme from "../../designSystem/theme";
-import { Grid, GridItem, Box, Stack, Flex, Text } from '@chakra-ui/react';
+import { Grid, GridItem, Box, Stack, Flex, Text, Center, HStack } from '@chakra-ui/react';
 import { BaseShadowBox } from "../Common/Container";
 import { AssetTag, ProductTag } from "../Common/Tags";
-import { VaultButton } from "../Common/Button"; 
+import { VaultButton, ViewLinkButton } from "../Common/Button"; 
+import useVaultStrategyState from "../../hooks/useVaultsStrategyState";
 
 export const Vaults = ({ vaults }) => {
   const history = useHistory();
@@ -29,42 +30,12 @@ export const Vaults = ({ vaults }) => {
 
 export const VaultSummary = ({ vault, viewVault }) => {
 
-  const { contracts } = useWeb3({ OtusVault: vault });
-
-  const otusVault = contracts ? contracts['OtusVault'] : "";
-
-  const [currentAPR, setCurrentAPR] = useState('')
-
-  useEffect(async() => {
-    if(otusVault) {
-      try {
-        const vaultParams = await otusVault.vaultParams(); 
-        console.log({ vaultParams })
-
-        const vaultState = await otusVault.vaultState(); 
-        console.log({
-          round: formatUnits(vaultState.round, 6),
-          lockedAmount: formatUnits(vaultState.lockedAmount),
-          lastLockedAmount: formatUnits(vaultState.lastLockedAmount),
-          totalPending: formatUnits(vaultState.totalPending),
-          queuedWithdrawShares: formatUnits(vaultState.queuedWithdrawShares),
-          nextRoundReadyTimestamp: formatUnits(vaultState.nextRoundReadyTimestamp),
-          roundInProgress: vaultState.roundInProgress
-        });
-
-        const roundPremiumCollected = await otusVault.roundPremiumCollected();
-        const _currentAPR =  formatUnits(roundPremiumCollected) * 52 / formatUnits(vaultState.lockedAmount) * 100; 
-        setCurrentAPR(_currentAPR); 
-      } catch (error) {
-        console.log({ error })
-      }
-    }
-  }, [otusVault])
+  const { vaultInfo } = useVaultStrategyState(vault); 
 
   return (
-    <BaseShadowBox onClick={viewVault} padding={theme.padding.lg} _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
+    <BaseShadowBox padding={theme.padding.lg} _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
       <Stack spacing={4}>
-        <Box>
+        <Box onClick={viewVault} >
           <ProductTag>
 
           </ProductTag>
@@ -72,44 +43,73 @@ export const VaultSummary = ({ vault, viewVault }) => {
             
           </AssetTag>
 
-          <Text fontSize='xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>Test Vault</Text>
+          <Text fontSize='xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ vaultInfo.name }</Text>
 
         </Box>
 
-        <Box borderBottom={'1px solid #333'}>
-          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>T2ST-ETH</Text>
+        <Box onClick={viewVault}  borderBottom={'1px solid #333'}>
+          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ vaultInfo.tokenName }</Text>
         </Box>
         
-        <Box borderBottom={'1px solid #333'}>
+        <Box onClick={viewVault}  borderBottom={'1px solid #333'}>
           <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Projected Yield</Text>
-          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{currentAPR}%</Text>
+          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{vaultInfo.currentAPR}%</Text>
         </Box>
 
 
         <Box>
-          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Strike Prices</Text>
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Strikes</Text>
           <Flex>
           {
-            ['1400', '1500', '1000', '900'].map(strike => {
+            vaultInfo.strikes.map(strike => {
               return <Box flex={'1'}>
-                <Text fontWeight={'700'} fontSize='xs' fontFamily={`'IBM Plex Mono', monospace`}>{ strike }</Text>
+                <Text fontWeight={'700'} fontSize='xs' fontFamily={`'IBM Plex Mono', monospace`}>${ strike.strikePrice }</Text>
+
+                <HStack>
+
+                  <Center w='16px' h='16px' bg={getOptionType( strike.optionType )[1]} color='white'>
+                    <Box as='span' fontWeight='bold' fontSize='xs'>
+                    { getOptionType( strike.optionType )[0] }
+                    </Box>
+                  </Center>
+
+                  <ViewLinkButton size='xs' onClick={() => window.location.href = `https://avalon.app.lyra.finance/position/eth/${strike.positionId}` } />
+
+                </HStack>
+
               </Box>
             })
           }
           </Flex>
         </Box>
 
-        <Box>
+        <Box onClick={viewVault} >
           <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Price</Text>
           <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>$1200</Text>
         </Box>
           
-        <Box>
+        <Box onClick={viewVault} >
           {/* <VaultButton onClick={viewVault}>{vault.substring(0, 8)}...</VaultButton> */}
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Locked Amount / Max Cap.</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{`${vaultInfo.vaultState.lockedAmount} / ${vaultInfo.vaultParams.cap}`}</Text>
 
-          max capacity 
         </Box>
       </Stack>
     </BaseShadowBox>
   )
+}
+
+const getOptionType = (id) => {
+  switch (id) {
+    case 1:
+      return ['BC', '#000']
+    case 2:
+      return ['BP', '#000']
+    case 4:
+      return ['SC', '#000']
+    case 5:
+      return ['SP', '#000']
+    default:
+      return ['', '']
+  }
 }

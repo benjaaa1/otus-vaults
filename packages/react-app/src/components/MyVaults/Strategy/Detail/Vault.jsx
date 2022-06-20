@@ -13,15 +13,7 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
-  Flex ,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuItemOption,
-  MenuGroup,
-  MenuOptionGroup,
-  MenuDivider,
+  Flex
 } from '@chakra-ui/react';
 import { Slider } from "../../../Common/Slider";
 
@@ -32,6 +24,7 @@ import { VaultStrategyBox } from "../../../Common/Container";
 import { data } from "../../../../utils/pnlChart";
 import { StrikesSelected } from "./StrikesSelected";
 import { TradeDetails } from "./TradeDetails";
+import { CostDetails } from "./CostDetails";
 
 export default function VaultDetail() {
 
@@ -42,22 +35,26 @@ export default function VaultDetail() {
     trade,
     startRound,
     closeRound,
-    reducePosition,
-    _hedge,
     setVaultStrategy
   } = useStrategyContext();
 
   const { currentStrikes, size } = state; 
 
   const [chartData, setChartData] = useState([]);
+  const [transactionData, setTransactionData] = useState({
+    maxCost: 0,
+    minReceived: 0,
+    maxLoss: 0,
+    breakEvent: 0,
+    total: 0
+  });
 
   useEffect(async () => {
-    if(currentStrikes.length > 0) {
-      const cd = await data(currentStrikes, size); 
-      console.log({ cd })
-      setChartData(cd); 
-      // const cd2 = await Promise.resolve()
-    }
+    console.log({ size })
+    const [_chartData, _transactionData] = await data(currentStrikes, parseInt(size)); 
+    setChartData(_chartData); 
+    setTransactionData(_transactionData); 
+
   }, [currentStrikes, size])
 
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -86,6 +83,7 @@ export default function VaultDetail() {
           <TradeDetails />
           {/* <CollateralDetails /> */}
           <SupervisorChart data={chartData} />
+          <CostDetails transactionData={transactionData} />
         </VaultStrategyBox>
 
         <VaultActionButton onClick={trade}>Trade</VaultActionButton> 
@@ -97,7 +95,6 @@ export default function VaultDetail() {
     </Box> 
   );
 }
-
 
 const HedgeStrategyModal = ({ isOpen, onClose }) => {
 

@@ -12,7 +12,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     from: deployer,
     log: true,
     libraries: {
-      BlackScholes: '0x60B99483Cf4DbE25Bad03f329446435c0Ffe1a21'// lyraGlobal.BlackScholes.address
+      BlackScholes: '0xEAB60138D1C2160062bbcD881D153961865aA510'// lyraGlobal.BlackScholes.address
     }
   });
 

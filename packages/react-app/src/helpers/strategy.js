@@ -1,6 +1,7 @@
-import { formatUnits } from "ethers/lib/utils";
-import { getQuoteBoard } from "./lyra";
-import { ONE_BN } from "../constants/bn";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { getQuoteBoard, lyra } from "./lyra";
+import { ONE_BN, UNIT } from "../constants/bn";
+import { BigNumber } from "ethers";
 
 export const formatBoards = async (lyraMarket) => {
 
@@ -15,20 +16,6 @@ export const formatBoards = async (lyraMarket) => {
               // iscall isbuy
               const quote = await strike.quote(false, false, ONE_BN)
 
-              const { feeComponents } = quote; 
-              const { optionPriceFee, spotPriceFee, varianceFee, vegaUtilFee } = feeComponents; 
-              
-              console.log({
-                quote: quote,
-                size: formatUnits(quote.size),
-                pricePerOption: formatUnits(quote.pricePerOption),
-                premium: formatUnits(quote.premium),
-                fee: formatUnits(quote.premium),
-                optionPriceFee: formatUnits(optionPriceFee), 
-                spotPriceFee: formatUnits(spotPriceFee), 
-                varianceFee: formatUnits(varianceFee), 
-                vegaUtilFee: formatUnits(vegaUtilFee)
-              })
               return {
                 name: `${formatUnits(strike.strikePrice)}`,
                 id: strike.id,
@@ -51,44 +38,37 @@ export const formatBoards = async (lyraMarket) => {
 
 }
 
-export const formatStrikeQuotes = async (selectBoardId) => {
+export const formatStrikeQuotes = async (liveStrikes, isCall, isBuy, _size) => {
+  const size = BigNumber.from(_size).mul(UNIT);
 
-  const sizeSelected = 1; 
-  
-  const strikeQuotes = await getQuoteBoard('eth', selectBoardId, sizeSelected); 
-  
-  const formattedStrikeQuotes = strikeQuotes.map(({ strikeId, ask, bid }) => {
+  const strikesWithFees =  await Promise.all(liveStrikes.map(async (_strike) => {
+
+    const strike = await lyra.strike('eth', _strike.id);
+    console.log({ strike })
+
+    // split these two to only query for strike once 
+
+    const quote = await strike.quote(isCall, isBuy, size); //isCall, isBuy
+    const { feeComponents: { optionPriceFee, spotPriceFee, varianceFee, vegaUtilFee }, pricePerOption } = quote; 
+    console.log({ optionPriceFee, spotPriceFee, varianceFee, vegaUtilFee, pricePerOption })
+
     return {
-      strikeId,
-      ask_premium: formatUnits(ask.premium), 
-      ask_pricePerOption: formatUnits(ask.pricePerOption),
-      ask_fee: formatUnits(ask.fee),
-      bid_premium: formatUnits(bid.premium), 
-      bid_pricePerOption: formatUnits(bid.pricePerOption),
-      bid_fee: formatUnits(bid.fee),
+      ..._strike,
+      strikePrice: parseFloat(formatUnits(strike.strikePrice)),
+      id: strike.id, 
+      isCall, 
+      isBuy,
+      optionPriceFee: parseFloat(formatUnits(optionPriceFee)), 
+      spotPriceFee: parseFloat(formatUnits(spotPriceFee)), 
+      varianceFee: parseFloat(formatUnits(varianceFee)),
+      vegaUtilFee: parseFloat(formatUnits(vegaUtilFee)),
+      pricePerOption: parseFloat(formatUnits(pricePerOption)), 
     }
-  }).reduce((acc, strike)  => {
-    const { 
-      strikeId, 
-      ask_premium, 
-      ask_pricePerOption,
-      ask_fee,
-      bid_premium, 
-      bid_pricePerOption,
-      bid_fee,
-    } = strike;
-    return { ...acc, [strikeId]: { 
-      ask_premium, 
-      ask_pricePerOption,
-      ask_fee,
-      bid_premium, 
-      bid_pricePerOption,
-      bid_fee,
-      } }
-  }, {});
+  })).then(values => {
+    return values; 
+  });
 
-  return formattedStrikeQuotes;
-
+  return strikesWithFees;
 }
 
 const isValidValidStrategy = () => {}

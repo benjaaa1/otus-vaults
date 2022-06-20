@@ -29,7 +29,6 @@ interface IStrategy {
     address _owner, 
     address _vault, 
 		address[] memory marketAddressess,
-    address _gwavOracle,
 		StrategyBase.StrategyDetail memory _currentStrategy
 	) external; 
 }
@@ -123,9 +122,7 @@ contract OtusCloneFactory {
 			_owner,
 			_vault,  
 			marketAddresses,
-			address(0x806b9d822013B8F82cC8763DCC556674853905d5), // marketAddress.gwavOracle 0x806b9d822013B8F82cC8763DCC556674853905d5
-			_currentStrategy 
-			//address(0x4A679253410272dd5232B3Ff7cF5dbB88f295319)
+			_currentStrategy
 		);
 
 		emit NewStrategyClone(_strategy, msg.sender);

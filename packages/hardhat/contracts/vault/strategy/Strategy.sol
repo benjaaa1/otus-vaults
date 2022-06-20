@@ -57,7 +57,6 @@ contract Strategy is StrategyBase {
     address _owner, 
     address _vault, 
     address[] memory marketAddresses,
-    address _gwavOracle,
     StrategyDetail memory _currentStrategy
   ) external { 
 
@@ -65,7 +64,6 @@ contract Strategy is StrategyBase {
       _owner, 
       _vault,
       marketAddresses,
-      _gwavOracle, 
       _currentStrategy
     ); 
 

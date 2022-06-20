@@ -26,7 +26,7 @@ export const createVaultInitialState = {
   vaultParams: {
     decimals: 18,
     cap: 50000, // 50,000 usd cap
-    asset: '0xBc8B64B2B32F32C6c4F14FfCd2CC2005272541CD' // susd 
+    asset: '0xbc8b64b2b32f32c6c4f14ffcd2cc2005272541cd' // susd 
   }
 }
 
@@ -38,7 +38,7 @@ export const createVaultReducer = (state, action) => {
     case 'SET_SELECTED_MARKET': 
       const {vaultInformation} = state;
       const { tokenName, tokenSymbol } = vaultInformation;
-      return { ...state, market_id: action.payload.id, vaultInformation: { ...vaultInformation,  tokenName: `${tokenName}-${action.payload.name}`, tokenSymbol: `${tokenSymbol}-${action.payload.name}` } }
+      return { ...state, optionMarket: action.payload.address, market_id: action.payload.id, vaultInformation: { ...vaultInformation,  tokenName: `${tokenName}-${action.payload.name}`, tokenSymbol: `${tokenSymbol}-${action.payload.name}` } }
     case 'UPDATE_VAULT_STRATEGY': 
       return { ...state, vaultStrategy: { ...state.vaultStrategy, [action.payload.field]: action.payload.value } }
     case 'UPDATE_VAULT_INFORMATION': 

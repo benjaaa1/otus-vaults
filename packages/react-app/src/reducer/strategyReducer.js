@@ -36,13 +36,14 @@ export const strategyInitialState = {
   needsQuotesUpdated: false,
   lyraMarket: null, 
   liveBoards: {},
-  liveStrikes: [],
+  liveBoardStrikes: [],
+  liveStrikes: {},
   selectedBoard: null,
   selectedStrike: null, 
   currentBoard: null,
   currentStrikes: [],
   activeCurrentStrikeIndex: null,
-  size: ONE_BN,
+  size: 1,
 }
 
 export const strikeStrategy = {
@@ -70,20 +71,23 @@ export const strategyReducer = (state, action) => {
       return { ...state, lyraMarket: action.payload };
     case 'SET_LIVE_BOARDS':
       return { ...state, liveBoards: action.payload };
-    case 'SET_LIVE_STRIKES':
-      return { ...state, selectedBoard: state.liveBoards[action.payload], liveStrikes: state.liveBoards[action.payload].strikes };
+    // case 'SET_LIVE_STRIKES':
+    //   return { ...state, selectedBoard: state.liveBoards[action.payload], liveStrikes: {} };
     case 'UPDATE_STRIKES':
       return { ...state, strikes: action.payload };
     case 'SET_SELECTED_BOARD':
-      return { ...state, selectedBoard: action.payload.selectedBoard, liveStrikes: action.payload.liveStrikes }; //, needsQuotesUpdated: true
+      return { ...state, selectedBoard: action.payload.selectedBoard, currentStrikes: [], liveBoardStrikes: action.payload.liveBoardStrikes }; //, needsQuotesUpdated: true
     case 'ADD_CURRENT_STRIKE':
       return { ...state, currentStrikes: state.currentStrikes.concat(strikeStrategy) };
     case 'UPDATE_CURRENT_STRIKE':
       const _strike = action.payload.strike; 
+      const optionType = parseInt(action.payload.optionType); 
+      const isBuy = optionType == 0 || optionType == 1 ? true : false; 
+      const isCall = optionType == 0 || optionType == 3 ? true : false; 
       return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
           if(index == action.payload.index) {
             console.log({ _strike })
-            return { ...cs, _strike }
+            return { ...cs, _strike, optionType, isBuy, isCall }
           }
           return cs; 
         })
@@ -94,24 +98,20 @@ export const strategyReducer = (state, action) => {
       return { ...state, currentStrikes: [ ...currentStrikes.slice(0, index), ...currentStrikes.slice(index + 1) ] }
     case 'ACTIVE_CURRENT_STRIKE_INDEX':
       return { ...state, activeCurrentStrikeIndex: action.payload };
-    case 'UPDATE_STRIKES_WITH_PREMIUMS':
-      const formattedStrikeQuotes = action.payload; 
-      const { liveStrikes } = state; 
-      const _liveStrikes = liveStrikes.map(strike => {
-        return { ...strike, ...formattedStrikeQuotes[strike.id] }
-      }) 
-      return { ...state, liveStrikes: _liveStrikes, needsQuotesUpdated: false  };
-    case 'SET_CURRENT_STRIKE_OPTION_TYPE': 
-      return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
-        if(action.payload.index == index) {
-          const { strike } = cs; 
-          const optionType = parseInt(action.payload.value); 
-          const isBuy = optionType == 0 || optionType == 1 ? true : false; 
-          const isCall = optionType == 0 || optionType == 3 ? true : false; 
-          return { ...cs, optionType, isBuy, isCall }; 
-        }
-        return cs; 
-      }) };
+    case 'UPDATE_STRIKES_WITH_PRICING':
+      const { _index, _liveStrikesWithFees } = action.payload; 
+      return { ...state, liveStrikes: { ...state.liveStrikes, [_index]: _liveStrikesWithFees } };
+    // case 'SET_CURRENT_STRIKE_OPTION_TYPE': 
+    //   return { ...state, activeCurrentStrikeIndex: action.payload.index, currentStrikes: state.currentStrikes.map((cs, index) => {
+    //     if(action.payload.index == index) {
+    //       const { strike } = cs; 
+    //       const optionType = parseInt(action.payload.value); 
+    //       const isBuy = optionType == 0 || optionType == 1 ? true : false; 
+    //       const isCall = optionType == 0 || optionType == 3 ? true : false; 
+    //       return { ...cs, optionType, isBuy, isCall }; 
+    //     }
+    //     return cs; 
+    //   }) };
     case 'UPDATE_CURRENT_STRIKE_STRATEGY':
       const { value, id, activeIndex } = action.payload; 
       return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {

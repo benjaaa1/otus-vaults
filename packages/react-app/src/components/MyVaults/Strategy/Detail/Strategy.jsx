@@ -4,47 +4,33 @@ import { formatUnits } from "ethers/lib/utils";
 import {
   Flex, 
   Box,
-  Button,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
-  VStack,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
   useDisclosure,
-  Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
-  TableContainer,
   Spacer,
-  background
+  Grid, 
+  GridItem,
+  Stack,
+  Text,
+  Center
 } from '@chakra-ui/react';
 
 import { Slider } from "../../../Common/Slider";
 import { Select } from "../../../Common/Select";
-import { AddButton, RemoveButton, ViewLinkButton } from "../../../Common/Button";
+import { AddButton, RemoveButton, SelectStrikeButton, SelectStrikeStrategyButton, ViewLinkButton } from "../../../Common/Button";
 import { useStrategyContext } from "../../../../context/StrategyContext"
 import { strikeStrategy } from "../../../../reducer/strategyReducer";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 import colors from "../../../../designSystem/colors";
+import { BaseShadowBox } from "../../../Common/Container";
+import theme from "../../../../designSystem/theme";
+import { StrikeStrategyModal } from "./StrikeStrategyModal";
+import StrikesModal from "./StrikesModal";
 
 export default function StrategyDetail() {
 
   const { state, dispatch, strategyValue, viewVault, setSelectedBoard } = useStrategyContext();
 
   const {
+    selectedBoard,
     liveBoards,
     liveStrikes,
     needsQuotesUpdated,
@@ -54,12 +40,18 @@ export default function StrategyDetail() {
 
   const { activeBoardId } = strategyValue;
   console.log({ activeBoardId })
-  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const { isOpen: isStrikeSelectModalOpen , onOpen: onStrikeSelectOpen, onClose: onStrikeSelectModalClose } = useDisclosure()
+  const { isOpen: isStrikeStrategyModalOpen , onOpen: onStrikeStrategyOpen, onClose: onStrikeStrategyModalClose } = useDisclosure()
+
 
   return (
     <>
       <Flex border={'1px solid #333'} minWidth='max-content' alignItems='center' p={4}>
-        <Box>
+        <Box flex={1} p={2}>
+          <ViewLinkButton onClick={viewVault} />
+        </Box>
+        <Box flex={2} p={2}>
         {/* isDisabled={activeBoardId > 0} only disable if trades occurred */}
           <Select width="100%" id='market' id='board' placeholder={'Select Round Expiry'} onChange={(e) => setSelectedBoard(e.target.value)}>
           {
@@ -67,160 +59,119 @@ export default function StrategyDetail() {
           }
           </Select>
         </Box>
-        <Spacer />
-        <ViewLinkButton onClick={viewVault} />
+        <Box flex={1} p={2}>
+          <AddButton disabled={selectedBoard == null} width={'100%'} onClick={() => dispatch({ type: 'ADD_CURRENT_STRIKE' })}>Add Strike</AddButton>
+        </Box>
       </Flex>
-      <Box mt='4'>
-        <Box>
+
+      <Grid templateColumns='repeat(4, 1fr)' gap={6}>
         {
           currentStrikes.map((cs, index) => {
             return (
-              <Accordion allowMultiple allowToggle>
-                <AccordionItem>
-                  <Flex minWidth='max-content' alignItems='center' p={'2'}>
-                    <Box flex='1'>
-                      <RemoveButton bg={colors.background.two} color={colors.text.light} onClick={() => dispatch({ type: 'REMOVE_CURRENT_STRIKE', payload: index })} />
-                    </Box>
-                    <Box>
-                      {/* <Button onClick={() => trade(index)} rightIcon={<ArrowForwardIcon />}>Trade</Button> */}
-                    </Box>
-                    <Spacer />
-                    <Box>
-                      <Select bg={'white'} id='board' onChange={(e) => dispatch({ type: 'SET_CURRENT_STRIKE_OPTION_TYPE', payload: { index, value: e.target.value} })}>
-                        {
-                          [
-                            { name: 'Buy Call', id: 0 }, { name: 'Buy Put', id: 1 }, { name: 'Sell Call', id: 3 }, { name: 'Sell Put', id: 4 }
-                          ].map(({name, id}) => (<option value={id}>{name}</option>))
-                        }
-                      </Select>
-                    </Box>
-                    <Spacer />
-                    <Box>
-                      <Button onClick={() => {
-                          onOpen();
-                          dispatch({ type: 'ACTIVE_CURRENT_STRIKE_INDEX', payload: index })
-                        }}>
-                          Set Strike Strategy
-                      </Button>
-                    </Box>
-                    <Spacer />
-                    <Box>
-                      <AccordionButton>
-                        <AccordionIcon />
-                      </AccordionButton>
-                    </Box>
-                  </Flex>
-                <AccordionPanel pb={4}>
-                  <TableContainer>
-                    <Table variant={'simple'} size='sm' colorScheme={'#f5f5f5'}>
-                    <Thead>
-                      <Tr>
-                        <Th isNumeric>Strike</Th>
-                        <Th isNumeric>Implied Volatility</Th>
-                        <Th isNumeric>Price</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {
-                        liveStrikes.map((strike) => {
-                          const { id } = strike;
-                          const currentSelectedId = currentStrikes[index]['id']; 
-                          return <Tr>
-                            <Td border={'none'} isNumeric>${ strike.strikePrice  }</Td>
-                            <Td border={'none'} isNumeric>{ strike.iv_formatted }</Td>
-                            <Td border={'none'} isNumeric>
-                              <Button colorScheme={ currentSelectedId == id ? 'teal' : 'gray'} size='sm' isLoading={needsQuotesUpdated} onClick={() => dispatch({ type: 'UPDATE_CURRENT_STRIKE', payload: { index, strike } })}>
-                                ${ cs.optionType == 1 || cs.optionType == 3 ?  strike.ask_pricePerOption : strike.bid_pricePerOption }
-                              </Button>
-                            </Td>
-                          </Tr>
-                        })
-                      }
-                    </Tbody>
-                    </Table>
-                  </TableContainer>
-                </AccordionPanel>
-                </AccordionItem>
-              </Accordion>
+              <GridItem w='100%' h='100%' mb='2'>
+                <StrikeSummary 
+                  cs={cs} 
+                  index={index} 
+                  dispatch={dispatch} 
+                  onStrikeSelectOpen={onStrikeSelectOpen}
+                  onStrikeSelectModalClose={onStrikeSelectModalClose}
+                  onStrikeStrategyOpen={onStrikeStrategyOpen}
+                  onStrikeStrategyModalClose={onStrikeStrategyModalClose}
+                />
+              </GridItem>
             )
           })
         }
-        </Box>
-      </Box>
-      <Flex minWidth='max-content' alignItems='flex-end' gap='2' p={'4'}>
-        <AddButton onClick={() => dispatch({ type: 'ADD_CURRENT_STRIKE' })} />
-      </Flex>
+      </Grid>
 
-      <StrikeStrategyModal isOpen={isOpen} onClose={onClose} index={activeCurrentStrikeIndex} dispatch={dispatch} />
+      <StrikesModal isOpen={isStrikeSelectModalOpen} onClose={onStrikeSelectModalClose} />
+      <StrikeStrategyModal isOpen={isStrikeStrategyModalOpen} onClose={onStrikeStrategyModalClose} />
     </>
   )
 
 }
 
-const StrikeStrategyModal = ({ isOpen, onClose }) => {
-
-  const { state, dispatch } = useStrategyContext();
-
-  const { activeCurrentStrikeIndex, currentStrikes } = state; 
-
-  const currentStrike = 
-    currentStrikes[activeCurrentStrikeIndex] || strikeStrategy;
-
-  const { 
-    targetDelta,
-    maxDeltaGap,
-    minVol,
-    maxVol,
-    maxVolVariance,
-    optionType
-  } = currentStrike;
-
-  console.log({ 
-    targetDelta,
-    maxDeltaGap,
-    minVol,
-    maxVol,
-    maxVolVariance,
-    optionType
-  });
-
-  const setValue = (id, value) => {
-    dispatch({ type: 'UPDATE_CURRENT_STRIKE_STRATEGY', payload: { value, id, activeIndex: activeCurrentStrikeIndex } })
-  }
+const StrikeSummary = ({ 
+    cs, 
+    index, 
+    dispatch,
+    onStrikeSelectOpen,
+    onStrikeSelectModalClose,
+    onStrikeStrategyOpen,
+    onStrikeStrategyModalClose
+  }) => {
+  console.log({ cs, index })
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
-    <>
-      <Modal borderRadius={'none'} closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent borderRadius={'none'} background={colors.background.two} color={colors.text.light}>
-          <ModalHeader>Strike Strategy</ModalHeader>
-          <ModalCloseButton />
+    <BaseShadowBox padding={theme.padding.lg}  _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
+      <Stack spacing={4}>
 
-          <ModalBody>
-            <Flex>
-              <Box flex='1'>
-                <Slider name={"Target Delta"} step={.1} min={-1} max={1} id={"targetDelta"} setSliderValue={setValue} sliderValue={targetDelta} label={''} />    
-                <Slider name={"Max Delta Gap"} step={.05} min={0} max={.5} id={"maxDeltaGap"} setSliderValue={setValue} sliderValue={maxDeltaGap} label={''} />
-                <Slider name={"Max Vol Variance"} step={.1} min={0} max={1} id={"maxVolVariance"} setSliderValue={setValue} sliderValue={maxVolVariance} label={''} />
-                <Slider name={"Min Vol"} step={.1} min={0} max={2} id={"minVol"} setSliderValue={setValue} sliderValue={minVol} label={''} />
-                <Slider name={"Max Vol"} step={.1} min={0} max={2} id={"maxVol"} setSliderValue={setValue} sliderValue={maxVol} label={''} />
+        <Box>
+          <SelectStrikeButton onClick={() => {
+              onStrikeSelectOpen()
+              dispatch({ type: 'ACTIVE_CURRENT_STRIKE_INDEX', payload: index })
+          }}>
+            {
+              cs._strike != null ? 
+              `$${cs._strike.strikePrice}` :
+              'Select Strike'
+            }
+          </SelectStrikeButton>
+        </Box>
+        
+        <Box>
+          <Center w='16px' h='16px' bg={getOptionType( cs.optionType )[1]} color='white'>
+            <Box as='span' fontWeight='bold' fontSize='xs'>
+            { getOptionType( cs.optionType )[0] }
+            </Box>
+          </Center>
+        </Box>
+
+        {
+          cs._strike != null ? 
+          <Box>
+            <Center bg={cs.optionType == 0 || cs.optionType == 1 ? '#000' : '#84FFC4'} color={cs.optionType == 0 || cs.optionType == 1 ? '#fff' : '#000'}>
+              <Box as='span' fontWeight='bold' fontSize='xs'>
+              {
+                cs.optionType == 0 || cs.optionType == 1 ?
+                `Max Cost $${Math.round(cs._strike.pricePerOption)}` :
+                `Min. Premium Received $${Math.round(cs._strike.pricePerOption)}`
+              }
               </Box>
-            </Flex>
-          </ModalBody>
+            </Center>
+          </Box> :
+          null
+        }
 
-          <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={() => {
-              dispatch({ type: 'RESET_CURRENT_STRIKE_STRATEGY', payload: { activeIndex: activeCurrentStrikeIndex } })
-              onClose()
-            }}>
-              Cancel
-            </Button>
-            <Button colorScheme='blue' mr={3} onClick={onClose}>
-              Save
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+        <Box>
+          <SelectStrikeStrategyButton 
+            onClick={() => {
+              onStrikeStrategyOpen()
+              dispatch({ type: 'ACTIVE_CURRENT_STRIKE_INDEX', payload: index })
+            }}
+          >
+            Strike Strategy
+          </SelectStrikeStrategyButton>
+        </Box>
+        
+      </Stack>
+       
+    </BaseShadowBox>
   )
+}
+
+const getOptionType = (id) => {
+  switch (id) {
+    case 0:
+      return ['BC', '#000']
+    case 1:
+      return ['BP', '#000']
+    case 3:
+      return ['SC', '#000']
+    case 4:
+      return ['SP', '#000']
+    default:
+      return ['', '']
+  }
 }

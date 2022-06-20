@@ -88,7 +88,7 @@
           ]
         },
         "GWAVOracle": {
-          "address": "0xf198e9De4E606cF0903E193b3fA2553fBe0fb552",
+          "address": "0xF894521E2ADD138364fa96cD34fa08B3879D19B9",
           "abi": [
             {
               "inputs": [],
@@ -96,23 +96,85 @@
               "type": "constructor"
             },
             {
-              "anonymous": false,
               "inputs": [
                 {
-                  "indexed": true,
                   "internalType": "address",
-                  "name": "previousOwner",
+                  "name": "thrower",
                   "type": "address"
                 },
                 {
-                  "indexed": true,
+                  "internalType": "address",
+                  "name": "caller",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "nominatedOwner",
+                  "type": "address"
+                }
+              ],
+              "name": "OnlyNominatedOwner",
+              "type": "error"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "thrower",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "caller",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "owner",
+                  "type": "address"
+                }
+              ],
+              "name": "OnlyOwner",
+              "type": "error"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "oldOwner",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
                   "internalType": "address",
                   "name": "newOwner",
                   "type": "address"
                 }
               ],
-              "name": "OwnershipTransferred",
+              "name": "OwnerChanged",
               "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "newOwner",
+                  "type": "address"
+                }
+              ],
+              "name": "OwnerNominated",
+              "type": "event"
+            },
+            {
+              "inputs": [],
+              "name": "acceptOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
             },
             {
               "inputs": [
@@ -186,6 +248,61 @@
               "type": "function"
             },
             {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_owner",
+                  "type": "address"
+                }
+              ],
+              "name": "nominateNewOwner",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "nominatedOwner",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "strikeId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "secondsAgo",
+                  "type": "uint256"
+                }
+              ],
+              "name": "optionPriceGWAV",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "callPrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "putPrice",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
               "inputs": [],
               "name": "owner",
               "outputs": [
@@ -199,8 +316,24 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "renounceOwnership",
+              "inputs": [
+                {
+                  "internalType": "contract OptionMarket",
+                  "name": "_optionMarket",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract OptionGreekCache",
+                  "name": "_greekCache",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract SynthetixAdapter",
+                  "name": "_synthetixAdapter",
+                  "type": "address"
+                }
+              ],
+              "name": "setLyraAddresses",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -227,19 +360,6 @@
                 }
               ],
               "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "newOwner",
-                  "type": "address"
-                }
-              ],
-              "name": "transferOwnership",
-              "outputs": [],
-              "stateMutability": "nonpayable",
               "type": "function"
             },
             {
@@ -293,7 +413,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0x23AE640ed765C0F55C5789498b9fCBB4888045cb",
+          "address": "0xAc9663CAC7A65F276BF50B8d8359F414E762e36C",
           "abi": [
             {
               "inputs": [],
@@ -455,7 +575,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x58f696c1e9179b8950a9B4b58F2Da36A38C5Ccbf",
+          "address": "0x28e54dfdB660548F617CF737Eb42d2751987aB6b",
           "abi": [
             {
               "inputs": [
@@ -754,13 +874,13 @@
           ]
         },
         "OtusController": {
-          "address": "0xe8839FD5722ca830aD827E9AB7e0BE677F4a666a",
+          "address": "0xE5C46c1920fDFa691b07a719F0C0689abBc5b290",
           "abi": [
             {
               "inputs": [
                 {
                   "internalType": "address",
-                  "name": "_optionMarketViewer",
+                  "name": "_lyraRegistry",
                   "type": "address"
                 },
                 {
@@ -1071,6 +1191,19 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "lyraRegistry",
+              "outputs": [
+                {
+                  "internalType": "contract LyraRegistry",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "address",
@@ -1087,19 +1220,6 @@
               "outputs": [
                 {
                   "internalType": "address",
-                  "name": "",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "optionMarketViewer",
-              "outputs": [
-                {
-                  "internalType": "contract OptionMarketViewer",
                   "name": "",
                   "type": "address"
                 }
@@ -1313,7 +1433,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0x71196C46860587676F158CEc15DA26e4475Ce6B5",
+          "address": "0x910358171E660a388A6B8c37440c58a51a56BaC4",
           "abi": [
             {
               "inputs": [
@@ -2881,7 +3001,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0x0c55426066b2Fa1bd04cD12AcCd66958E5032F1a",
+          "address": "0x4Cbe9ecFFa5f62475560b627Afaf524b1c1595E5",
           "abi": [
             {
               "inputs": [
@@ -3645,6 +3765,42 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "getSpotPriceForMarket",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "spotPrice",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "getStrikeOptionTypes",
+              "outputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "strikes",
+                  "type": "uint256[]"
+                },
+                {
+                  "internalType": "uint256[]",
+                  "name": "optionTypes",
+                  "type": "uint256[]"
+                },
+                {
+                  "internalType": "uint256[]",
+                  "name": "positionIds",
+                  "type": "uint256[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "uint256[]",
@@ -3757,11 +3913,6 @@
                   "internalType": "address[]",
                   "name": "marketAddresses",
                   "type": "address[]"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_gwavOracle",
-                  "type": "address"
                 },
                 {
                   "components": [

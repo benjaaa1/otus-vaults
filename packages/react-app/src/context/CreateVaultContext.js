@@ -40,9 +40,9 @@ export const CreateVaultProvider = ({ children }) => {
   }, []); 
 
   const onSelectMarket = (selectedId) => {
-    const { name, id, baseAddress, quoteAddress } = state.markets.find(({ name }) => name === selectedId);
-    console.log({ name, baseAddress, quoteAddress })
-    dispatch({ type: 'SET_SELECTED_MARKET', payload: { id, name } });
+    const { name, id, baseToken, quoteToken, address} = state.markets.find(({ name }) => name === selectedId);
+    console.log({ name, baseToken, quoteToken, id })
+    dispatch({ type: 'SET_SELECTED_MARKET', payload: { id, name, address } });
   }
 
   const updateVaultInformation = (field, value) => {

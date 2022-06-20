@@ -5,8 +5,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const lyraMarketRegistery = {
-    address: "0x8Ac083da00c75d46938abCccAC5E202E6197e022"
+  const lyraMarketRegistry = { // optionmarketviewer
+    address: "0xBa97C08C0901d107aC9cF73351FdDA4A1503eaf8"
   }
 
   const futuresMarketManager = {
@@ -17,7 +17,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ 
-      lyraMarketRegistery.address, // lyra market
+      lyraMarketRegistry.address, // lyra market
       futuresMarketManager.address
     ],
     log: true,

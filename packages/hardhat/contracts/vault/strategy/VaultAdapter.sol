@@ -5,7 +5,7 @@ pragma solidity 0.8.9;
 import "hardhat/console.sol";
 
 // Libraries
-import {BlackScholes} from '@lyrafinance/protocol/contracts/lib/BlackScholes.sol';
+import {BlackScholes} from '@lyrafinance/protocol/contracts/libraries/BlackScholes.sol';
 import {DecimalMath} from '@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol';
 import '../../interfaces/IFuturesMarket.sol';
 
@@ -110,8 +110,11 @@ contract VaultAdapter is OwnableUpgradeable {
   }
 
   struct ExchangeRateParams {
+    // current snx oracle base price
     uint spotPrice;
+    // snx spot exchange rate from quote to base
     uint quoteBaseFeeRate;
+    // snx spot exchange rate from base to quote
     uint baseQuoteFeeRate;
   }
 
@@ -200,6 +203,10 @@ contract VaultAdapter is OwnableUpgradeable {
   //////////////
   // Exchange //
   //////////////
+
+  function getSpotPriceForMarket() public view returns (uint spotPrice) {
+    spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket)); 
+  }
 
   function exchangeFromExactQuote(uint amountQuote, uint minBaseReceived) internal returns (uint baseReceived) {
     baseReceived = synthetixAdapter.exchangeFromExactQuote(address(optionMarket), amountQuote);
@@ -339,8 +346,7 @@ contract VaultAdapter is OwnableUpgradeable {
   }
 
   function getFreeLiquidity() internal view returns (uint freeLiquidity) {
-    SynthetixAdapter.ExchangeParams memory exchangeParams = synthetixAdapter.getExchangeParams(address(optionMarket));
-    freeLiquidity = liquidityPool.getLiquidity(exchangeParams.spotPrice, exchangeParams.short).freeLiquidity;
+    freeLiquidity = liquidityPool.getCurrentLiquidity().freeLiquidity;
   }
 
   function getMarketParams() internal view returns (MarketParams memory) {

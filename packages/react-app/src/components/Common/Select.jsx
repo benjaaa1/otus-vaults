@@ -27,13 +27,19 @@ export const BaseMenu = ({ title, options, onClick }) => {
         py={2}
         borderRadius='sm'
         bg={colors.background.one}
+        color={colors.text.light}
       >
         { title }
       </MenuButton>
       <MenuList>
         {
           options.map(({ name, id }) => {
-            return <MenuItem onClick={() => onClick(id)}>{ name }</MenuItem>
+            return <MenuItem 
+            bg={colors.background.one}
+            color={colors.text.light}
+            onClick={() => onClick(id)}>
+              { name }
+            </MenuItem>
           })
         }
       </MenuList>
