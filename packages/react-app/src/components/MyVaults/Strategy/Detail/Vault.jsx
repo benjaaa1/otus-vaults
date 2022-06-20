@@ -39,6 +39,7 @@ export default function VaultDetail() {
   } = useStrategyContext();
 
   const { currentStrikes, size } = state; 
+  const { currentPrice } = strategyValue; 
 
   const [chartData, setChartData] = useState([]);
   const [transactionData, setTransactionData] = useState({
@@ -82,7 +83,7 @@ export default function VaultDetail() {
           <StrikesSelected />
           <TradeDetails />
           {/* <CollateralDetails /> */}
-          <SupervisorChart data={chartData} />
+          <SupervisorChart data={chartData} currentPrice={currentPrice} />
           <CostDetails transactionData={transactionData} />
         </VaultStrategyBox>
 

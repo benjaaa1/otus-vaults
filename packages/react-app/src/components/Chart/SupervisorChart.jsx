@@ -51,8 +51,8 @@ import {
 } from "recharts";
 import colors from "../../designSystem/colors";
 
-export const SupervisorChart = ({ data }) => {
-  console.log({ data })
+export const SupervisorChart = ({ data, currentPrice }) => {
+  console.log({ data, currentPrice })
   return (
     <LineChart
       width={340}
@@ -74,7 +74,7 @@ export const SupervisorChart = ({ data }) => {
       {/* <ReferenceLine x={2750} stroke="red" />
       <ReferenceLine x={3050} stroke="red" /> */}
 
-      <ReferenceLine x={1050} stroke={colors.background.three} />
+      <ReferenceLine x={currentPrice} stroke={colors.background.three} />
       <ReferenceLine y={0} stroke={colors.background.three} />
 
       {/* <ReferenceDot key={'1'} x={-2} y={2} /> */}

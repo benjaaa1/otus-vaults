@@ -30,7 +30,7 @@ export const Vaults = ({ vaults }) => {
 
 export const VaultSummary = ({ vault, viewVault }) => {
 
-  const { vaultInfo } = useVaultStrategyState(vault); 
+  const { vaultInfo, currentBasePrice } = useVaultStrategyState(vault); 
 
   return (
     <BaseShadowBox padding={theme.padding.lg} _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
@@ -85,7 +85,7 @@ export const VaultSummary = ({ vault, viewVault }) => {
 
         <Box onClick={viewVault} >
           <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Price</Text>
-          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>$1200</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>${ vaultInfo.currentBasePrice }</Text>
         </Box>
           
         <Box onClick={viewVault} >

@@ -8,7 +8,8 @@ import {
   Text,
   Input,
   VStack,
-  StackDivider
+  StackDivider,
+  Spacer
 } from '@chakra-ui/react';
 
 import { useStrategyContext } from "../../../../context/StrategyContext";
@@ -17,44 +18,91 @@ import colors from "../../../../designSystem/colors";
 export const CostDetails = ({ transactionData }) => {
 
   const { 
-    state, 
-    dispatch
+    strategyValue
   } = useStrategyContext();
 
-  return <Flex borderTop={'1px solid #333'} p='4'>
+  const { vaultState } = strategyValue; 
 
-    <VStack
-      divider={<StackDivider borderColor='gray.200' />}
-      spacing={4}
-      align='stretch'
-    >
-      <HStack w={'full'} spacing={8} direction='row'>
+  return <Box  borderTop={'1px solid #333'} p={'4'}>
       
-        <Text fontSize={'sm'} fontWeight={'400'} fontFamily={`'IBM Plex Mono', monospace`}>
-          Min Received
-        </Text>
+      <Flex minWidth='max-content' alignItems={'center'} justifyContent={'space-between'}>
 
-        <Text fontSize={'sm'} fontWeight={'400'} fontFamily={`'IBM Plex Mono', monospace`}>
-          ${ transactionData.minReceived }
-        </Text>
+        <Box flex={'1'}>
+          <Text fontSize={'sm'} fontWeight={'400'} fontFamily={`'IBM Plex Sans', monospace`}>
+            Min Received
+          </Text>
+        </Box>
 
-      </HStack>
+        <Spacer />
 
-      <HStack  w={'full'} spacing={8} direction='row'>
+        <Box flex={'1'}>
+          <Text fontSize={'sm'} fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>
+            ${ transactionData.minReceived }
+          </Text>
+        </Box>
 
-        <Text fontSize={'sm'} fontWeight={'400'} fontFamily={`'IBM Plex Mono', monospace`}>
-          Max Cost 
-        </Text>
+      </Flex>
 
-        <Text fontSize={'sm'} fontWeight={'400'} fontFamily={`'IBM Plex Mono', monospace`}>
-          ${
-            transactionData.maxCost
-          }
-        </Text>
+      <Flex minWidth='max-content' alignItems={'center'} justifyContent={'space-between'}>
 
-      </HStack>
+        <Box flex={'1'}>
+          <Text fontSize={'sm'} fontWeight={'400'} fontFamily={`'IBM Plex Sans', monospace`}>
+            Max Cost 
+          </Text>
+        </Box>
 
-    </VStack>
+        <Spacer />
 
-  </Flex>
+        <Box flex={'1'}>
+          <Text fontSize={'sm'} fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>
+            ${
+              transactionData.maxCost
+            }
+          </Text>
+        </Box>
+
+      </Flex>
+
+      
+      <Flex minWidth='max-content' alignItems={'center'} justifyContent={'space-between'}>
+
+        <Box flex={'1'}>
+          <Text fontSize={'sm'} fontWeight={'400'} fontFamily={`'IBM Plex Sans', monospace`}>
+            Vault Funds Locked
+          </Text>
+        </Box>
+
+        <Spacer />
+
+        <Box flex={'1'}>
+          <Text fontSize={'sm'} fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>
+            ${
+              vaultState.lockedAmount
+            }
+          </Text>
+        </Box>
+
+      </Flex>
+
+      <Flex minWidth='max-content' alignItems={'center'} justifyContent={'space-between'}>
+
+        <Box flex={'1'}>
+          <Text fontSize={'sm'} fontWeight={'400'} fontFamily={`'IBM Plex Sans', monospace`}>
+            Capital Used
+          </Text>
+        </Box>
+
+        <Spacer />
+
+        <Box flex={'1'}>
+          <Text fontSize={'sm'} fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>
+            ${
+              vaultState.lockedAmount - vaultState.lockedAmountLeft
+            }
+          </Text>
+        </Box>
+
+      </Flex>
+
+  </Box>
 }

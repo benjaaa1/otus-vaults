@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import useWeb3 from "./useWeb3";
-import { useHistory } from "react-router-dom";
-import { toast } from 'react-toastify';
-import { ethers } from "ethers";
-import { MESSAGE, TYPE, Notifier } from "../notifcations";
 import { formatUnits } from "ethers/lib/utils";
-import { getStrike, lyra } from "../helpers/lyra";
+import { getStrike } from "../helpers/lyra";
 
 export default function useVaultStrategyState(vault) {
 
@@ -16,9 +12,8 @@ export default function useVaultStrategyState(vault) {
   const otusVault = contracts ? contracts['OtusVault'] : "";
   const strategy = contracts ? contracts['Strategy'] : "";
 
-  const [currentAPR, setCurrentAPR] = useState('')
-
   const [vaultInfo, setVaultInfo] = useState({
+    currentBasePrice: 0,
     tokenName: '',
     tokenSymbol: '',
     name: '', 
@@ -89,7 +84,7 @@ export default function useVaultStrategyState(vault) {
         const roundPremiumCollected = await otusVault.roundPremiumCollected();
         console.log({ roundPremiumCollected })
         const _currentAPR =  Math.round(formatUnits(roundPremiumCollected) * 52 / formatUnits(vs.lockedAmount) * 100); 
-
+        console.log({ _currentAPR })
         setVaultInfo(ps => {
           const { vaultState } = ps; 
           return { ...ps, vaultState: {
@@ -115,6 +110,8 @@ export default function useVaultStrategyState(vault) {
   useEffect(async() => {
     if(strategy) {
       try {
+        const currentBasePrice = await strategy.getSpotPriceForMarket(); 
+        
         const [strikes, optionTypes, positionIds] = await strategy.getStrikeOptionTypes();
 
         const strikesInfo = await Promise.all(strikes.map(async (strikeId, index) => {
@@ -131,7 +128,7 @@ export default function useVaultStrategyState(vault) {
         console.log({strikesInfo})
 
         setVaultInfo(ps => {
-          return { ...ps, strikes: strikesInfo }
+          return { ...ps, strikes: strikesInfo, currentBasePrice: Math.round(parseFloat(formatUnits(currentBasePrice))) }
         })
 
       } catch (error) {

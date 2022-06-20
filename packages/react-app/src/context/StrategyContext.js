@@ -43,6 +43,9 @@ export const StrategyProvider = ({ children }) => {
     hasStrategy: false, 
     vaultState: { 
       round: 0,
+      totalPending: 0,
+      lastLockedAmount: 0,
+      lockedAmountLeft: 0,
       lockedAmount: 0,
       roundInProgress: false
     },
@@ -51,6 +54,7 @@ export const StrategyProvider = ({ children }) => {
       asset: ''
     },
     activeBoardId: null,
+    currentPrice: 0,
   })
 
   useEffect(async () => {
@@ -58,14 +62,11 @@ export const StrategyProvider = ({ children }) => {
       try {
         const _lyraMarket = await getLyraMarket(market); 
         dispatch({ type: 'UPDATE_LYRA_MARKET', payload: _lyraMarket }); 
-        const currentBasePrice = await strategyContract.getSpotPriceForMarket(); 
-        console.log({ currentBasePrice })
       } catch (error) {
         console.log({ error })
       }
     }
   }, [market]); 
-
 
   useEffect(async () => {
     if(lyraMarket) {
@@ -116,6 +117,8 @@ export const StrategyProvider = ({ children }) => {
         const vaultParams = await otusVaultContract.vaultParams(); 
         const activeBoardId = await strategyContract.activeBoardId();
         const activeStrikeIds = await strategyContract.getActiveStrikeIds();
+        const currentBasePrice = await strategyContract.getSpotPriceForMarket(); 
+        console.log({ currentBasePrice })
 
         console.log({ activeStrikeIds, vaultState, vaultParams, activeBoardId })
 
@@ -129,7 +132,15 @@ export const StrategyProvider = ({ children }) => {
 
         console.log({ strikeToPositionIds })
 
-        updateValue('vaultState', vaultState); 
+        updateValue('currentPrice', Math.round(parseFloat(formatUnits(currentBasePrice)))); 
+        updateValue('vaultState', {
+          round: Math.round(parseFloat(formatUnits(vaultState.round) * (10**18))),
+          lockedAmount: formatUnits(vaultState.lockedAmount),
+          totalPending: formatUnits(vaultState.totalPending),
+          lastLockedAmount: formatUnits(vaultState.lastLockedAmount),
+          lockedAmountLeft: formatUnits(vaultState.lockedAmountLeft),
+          roundInProgress: vaultState.roundInProgress
+        }); 
         updateValue('vaultParams', vaultParams);
         const formattedActiveBoardId = Math.round(parseFloat(formatUnits(activeBoardId)) * (10 ** 18)); 
         // if(formattedActiveBoardId > 0) {

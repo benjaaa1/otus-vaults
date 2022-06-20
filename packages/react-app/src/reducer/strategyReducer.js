@@ -101,17 +101,6 @@ export const strategyReducer = (state, action) => {
     case 'UPDATE_STRIKES_WITH_PRICING':
       const { _index, _liveStrikesWithFees } = action.payload; 
       return { ...state, liveStrikes: { ...state.liveStrikes, [_index]: _liveStrikesWithFees } };
-    // case 'SET_CURRENT_STRIKE_OPTION_TYPE': 
-    //   return { ...state, activeCurrentStrikeIndex: action.payload.index, currentStrikes: state.currentStrikes.map((cs, index) => {
-    //     if(action.payload.index == index) {
-    //       const { strike } = cs; 
-    //       const optionType = parseInt(action.payload.value); 
-    //       const isBuy = optionType == 0 || optionType == 1 ? true : false; 
-    //       const isCall = optionType == 0 || optionType == 3 ? true : false; 
-    //       return { ...cs, optionType, isBuy, isCall }; 
-    //     }
-    //     return cs; 
-    //   }) };
     case 'UPDATE_CURRENT_STRIKE_STRATEGY':
       const { value, id, activeIndex } = action.payload; 
       return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
