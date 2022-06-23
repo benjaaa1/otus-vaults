@@ -1,5 +1,5 @@
-import { formatUnits, parseUnits } from "ethers/lib/utils";
-import { getQuoteBoard, lyra } from "./lyra";
+import { formatUnits } from "ethers/lib/utils";
+import { lyra } from "./lyra";
 import { ONE_BN, UNIT } from "../constants/bn";
 import { BigNumber } from "ethers";
 

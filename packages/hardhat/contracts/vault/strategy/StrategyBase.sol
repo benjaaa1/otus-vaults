@@ -201,10 +201,6 @@ contract StrategyBase is FuturesAdapter, VaultAdapter {
   // View Strikes //
   //////////////////
 
-  function getActiveStrikeIds() public view returns (uint[] memory) {
-    return activeStrikeIds; 
-  }
-
   /**
    * @dev verify if the strike is valid for the strategy
    * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap

@@ -21,7 +21,7 @@ export default function useWeb3(customAddresses, customAddressesL1) {
 
   const userProviderAndSigner = useUserProviderAndSigner(injectedProvider, localProvider, false);
   const signer = userProviderAndSigner.signer;
-  
+  console.log({ userProviderAndSigner })
   const chainId = useChainId(signer); 
 
   const contractConfig = { deployedContracts: deployedContracts || {}, externalContracts: externalContracts || {} };
@@ -44,6 +44,7 @@ export default function useWeb3(customAddresses, customAddressesL1) {
 
   return {
     address, 
+    chainId,
     signer, 
     web3CachedProvider, 
     loadWeb3Modal, 

@@ -43,6 +43,7 @@ export const strategyInitialState = {
   currentBoard: null,
   currentStrikes: [],
   activeCurrentStrikeIndex: null,
+  activeBoardId: null,
   size: 1,
 }
 
@@ -71,8 +72,6 @@ export const strategyReducer = (state, action) => {
       return { ...state, lyraMarket: action.payload };
     case 'SET_LIVE_BOARDS':
       return { ...state, liveBoards: action.payload };
-    // case 'SET_LIVE_STRIKES':
-    //   return { ...state, selectedBoard: state.liveBoards[action.payload], liveStrikes: {} };
     case 'UPDATE_STRIKES':
       return { ...state, strikes: action.payload };
     case 'SET_SELECTED_BOARD':
@@ -112,6 +111,9 @@ export const strategyReducer = (state, action) => {
     case 'UPDATE_SIZE':
       const { size } = action.payload; 
       return { ...state, size };
+    // case 'UPDATE_ACTIVE_BOARD_ID':
+    //   const { size } = action.payload; 
+    //   return { ...state, size };
     default: 
       return { ...state }  
   }

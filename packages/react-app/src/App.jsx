@@ -10,6 +10,7 @@ import Product from "./components/Product";
 import { Vault } from "./components/Product/Vault";
 import Strategy from "./components/MyVaults/Strategy";
 import MyVaults from "./components/MyVaults";
+import Portfolio from "./components/Portfolio";
 
 function App(props) {
 
@@ -24,7 +25,7 @@ function App(props) {
           <Vault />
         </Route>
         <Route path="/portfolio">
-          Portfolio         
+          <Portfolio />   
         </Route>
         <Route path="/my-vaults">
           <MyVaults />

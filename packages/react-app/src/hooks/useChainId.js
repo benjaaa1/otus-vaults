@@ -7,8 +7,8 @@ export default function useChainId(userSigner) {
   const [selectedChainId, setSelectedChainId] = useState(NETWORKS.optimism.chainId); 
 
   useEffect(() => {
-    if(userSigner && userSigner.provider._network.chainId) {
-      setSelectedChainId(userSigner.provider._network.chainId)
+    if(userSigner && userSigner.provider._network) {
+      setSelectedChainId(userSigner.provider._network)
     }
   }, [userSigner])
   // const [localChainId] = useState(localProvider._network.chainId);

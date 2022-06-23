@@ -52,7 +52,7 @@ export default function VaultDetail() {
 
   useEffect(async () => {
     console.log({ size })
-    const [_chartData, _transactionData] = await data(currentStrikes, parseInt(size)); 
+    const [_chartData, _transactionData] = await data(currentStrikes, parseInt(size || 1)); 
     setChartData(_chartData); 
     setTransactionData(_transactionData); 
 

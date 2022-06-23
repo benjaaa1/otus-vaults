@@ -53,7 +53,7 @@ export const VaultSummary = ({ vault, viewVault }) => {
         
         <Box onClick={viewVault}  borderBottom={'1px solid #333'}>
           <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Projected Yield</Text>
-          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{vaultInfo.currentAPR}%</Text>
+          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{vaultInfo.vaultState.currentAPR}%</Text>
         </Box>
 
 
