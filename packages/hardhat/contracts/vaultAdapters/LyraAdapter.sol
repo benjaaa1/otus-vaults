@@ -24,12 +24,12 @@ import {BasicFeeCounter} from '@lyrafinance/protocol/contracts/periphery/BasicFe
 import {OptionMarketPricer} from '@lyrafinance/protocol/contracts/OptionMarketPricer.sol';
 
 /**
- * @title VaultAdapter 
+ * @title LyraAdapter 
  * @author Lyra
  * @dev LyraAdapter but inherits from OwnerUpgradable - Provides helpful functions for the vault adapter
  */
 
-contract VaultAdapter is OwnableUpgradeable {
+contract LyraAdapter is OwnableUpgradeable {
   using DecimalMath for uint;
 
   ///////////////////////

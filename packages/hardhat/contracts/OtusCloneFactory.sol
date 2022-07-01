@@ -127,15 +127,4 @@ contract OtusCloneFactory {
 
 		emit NewStrategyClone(_strategy, msg.sender);
 	}
-
-	// function _cloneL2DepositMover(address _vault) external {
-	// 	address l2DepositMoverClone = Clones.clone(l2DepositMover);
-	// 	require(l2DepositMoverClone != address(0), "Deposit clone not created"); 
-	// 	vaultBridge[_vault] = l2DepositMoverClone; 
-	// 	IL2DepositMover(l2DepositMoverClone).initialize(
-	// 		msg.sender,
-	// 		_vault
-	// 	);
-	// }
-
 }

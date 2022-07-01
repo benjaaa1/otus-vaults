@@ -5,7 +5,7 @@ const LyraConfig = {
   chainId: 69
 };
 
-export const lyra = new Lyra(LyraConfig);
+export const lyra = new Lyra();
 
 export const getStrike = async (strikeId) => await lyra.strike('ETH', strikeId);
 

@@ -14,59 +14,59 @@ import colors from "../../designSystem/colors";
 import { HeaderContainer, PageContainer } from "../Common/Container";
 import { BaseHeaderText } from "../../designSystem";
 
-import { Contract, Provider } from 'ethers-multicall';
+// import { Contract, Provider } from 'ethers-multicall';
 import deployedContracts from "../../contracts/hardhat_contracts.json";
 import { INFURA_ID } from "../../constants";
 import { ethers } from "ethers";
 
 const Portfolio = () => {
 
-  const provider = new ethers.providers.InfuraProvider('optimism-kovan', INFURA_ID);
-  const ethcallProvider = new Provider(provider);
-  const {address, chainId,  signer} = useWeb3({});
+  // const provider = new ethers.providers.InfuraProvider('optimism-kovan', INFURA_ID);
+  // const ethcallProvider = new Provider(provider);
+  // const {address, chainId,  signer} = useWeb3({});
 
-  const [vaults, setVaults] = useState([]); 
+  // const [vaults, setVaults] = useState([]); 
 
-  const { contracts } = useWeb3({});
+  // const { contracts } = useWeb3({});
 
-  const otusController = contracts ? contracts['OtusController'] : "";
+  // const otusController = contracts ? contracts['OtusController'] : "";
 
-  const [OtusVaultABI, setOtusVaultABI] = useState(null); 
+  // const [OtusVaultABI, setOtusVaultABI] = useState(null); 
 
-  useEffect(() => {
-    console.log({ chainId})
-    if(chainId != null && deployedContracts != undefined) {
-      setOtusVaultABI(deployedContracts['69']['kovanOptimism'].OtusVault.abi)
-    }
-  }, [chainId, deployedContracts])
+  // useEffect(() => {
+  //   console.log({ chainId})
+  //   if(chainId != null && deployedContracts != undefined) {
+  //     setOtusVaultABI(deployedContracts['69']['kovanOptimism'].OtusVault.abi)
+  //   }
+  // }, [chainId, deployedContracts])
 
-  useEffect(async () => {
-    if(otusController) {
-      try {
-        const _vaults = await otusController.getActiveVaults();  
-        setVaults(_vaults);  
-      } catch (error) {
-        console.log({ error })
-      }
-    }
-  }, [otusController])
+  // useEffect(async () => {
+  //   if(otusController) {
+  //     try {
+  //       const _vaults = await otusController.getActiveVaults();  
+  //       setVaults(_vaults);  
+  //     } catch (error) {
+  //       console.log({ error })
+  //     }
+  //   }
+  // }, [otusController])
 
-  useEffect(async () => {
-    if(OtusVaultABI != null) {
-      try {
-        const vaultCalls = vaults.map(vault => {
-          const otusVaultContract = new Contract(vault, OtusVaultABI);
-          const call = otusVaultContract.depositReceipts(address);
-          return call; 
-        })
+  // useEffect(async () => {
+  //   if(OtusVaultABI != null) {
+  //     try {
+  //       const vaultCalls = vaults.map(vault => {
+  //         const otusVaultContract = new Contract(vault, OtusVaultABI);
+  //         const call = otusVaultContract.depositReceipts(address);
+  //         return call; 
+  //       })
   
-        const receipts = await ethcallProvider.all(vaultCalls); 
-        console.log({ receipts })
-      } catch (error) {
-        console.log({ error })
-      }
-    }
-  }, [OtusVaultABI, vaults])
+  //       const receipts = await ethcallProvider.all(vaultCalls); 
+  //       console.log({ receipts })
+  //     } catch (error) {
+  //       console.log({ error })
+  //     }
+  //   }
+  // }, [OtusVaultABI, vaults])
 
   return <PageContainer>
 

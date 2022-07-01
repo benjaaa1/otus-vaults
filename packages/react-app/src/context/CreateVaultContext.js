@@ -104,7 +104,7 @@ export const CreateVaultProvider = ({ children }) => {
         formattedVaultStrategy
       })
 
-      const response = await otusController.connect(signer).createVault(
+      const response = await otusController.connect(signer).createOptionsVault(
         optionMarket,
         formattedVaultInformation,
         formattedVaultParams,

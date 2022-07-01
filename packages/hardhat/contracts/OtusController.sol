@@ -55,10 +55,23 @@ contract OtusController is Ownable {
     otusCloneFactory = _otusCloneFactory; 
   }
 
+  // /**
+	// * @notice Create Delta Neutral Vault controlled
+	// */
+  // function createDeltraNeutralVault(
+  //   address market,
+  //   Vault.VaultInformation memory _vaultInfo,
+  //   Vault.VaultParams memory _vaultParams,
+  //   address keeper
+  // ) {
+  //   // create vault
+  //   address vault = IOtusCloneFactory(otusCloneFactory).cloneVault();
+  // }
+
   /**
-	* @notice Vault create controlled
+	* @notice Create Options Vault controlled
 	*/
-  function createVault(		
+  function createOptionsVault(		
       address _optionMarket,
       Vault.VaultInformation memory _vaultInfo,
       Vault.VaultParams memory _vaultParams,
@@ -105,7 +118,7 @@ contract OtusController is Ownable {
   }
 
   /**
-	* @notice Set keeper
+	* @notice Set options keeper
 	*/
 	function setKeeper(address _keeper) external onlyOwner {
 		keeper = _keeper; 

@@ -28,6 +28,7 @@
     "qrcode-terminal": "^0.12.0",
     "ramda": "^0.27.1",
     "solidity-coverage": "^0.7.20",
+    "synthetix": "^2.74.1",
     "typechain": "^8.0.0"
   },
   "scripts": {

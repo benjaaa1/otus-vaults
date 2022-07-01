@@ -87,6 +87,15 @@ contract Strategy is StrategyBase {
     currentStrategy = _currentStrategy;
   }
 
+  /**
+  * update for buy call, sell call, buy put, sell put
+  *
+  */
+
+  function setStrikestrategy(StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
+
+  }
+
   function setHedgeStrategy(
       HedgeDetail memory _hedgeStrategy
     ) external onlyOwner {

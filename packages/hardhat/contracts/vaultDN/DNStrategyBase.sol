@@ -22,7 +22,7 @@ import {FuturesAdapter} from "./FuturesAdapter.sol";
  * @dev LyraAdapter but inherits from OwnerUpgradable - Provides helpful functions for the vault adapter
  */
 
-contract StrategyBase is FuturesAdapter, VaultAdapter {
+contract DNStrategyBase is FuturesAdapter, ExchangeAdapter {
   using SafeDecimalMath for uint;
 
   ///////////////

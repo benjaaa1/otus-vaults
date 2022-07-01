@@ -9,7 +9,7 @@ import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '../interfaces/IFuturesMarket.sol';
 import {IStrategy} from "../interfaces/IStrategy.sol";
 
-import {BaseVault} from "./BaseVault.sol";
+import {BaseVault} from "../vault/BaseVault.sol";
 import {Vault} from "../libraries/Vault.sol";
 
 import {Strategy} from "./strategy/Strategy.sol";
