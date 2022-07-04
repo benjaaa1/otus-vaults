@@ -175,7 +175,7 @@ contract OtusVault is BaseVault {
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function trade(StrategyBase.StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
+  function trade(StrategyBase.StrikeTrade[] memory _strike) external onlyOwner {
     // can trade during round as long as lockedAmount is greater than 0
     // round should be opened 
     require(vaultState.roundInProgress, "round not opened");
@@ -185,9 +185,9 @@ contract OtusVault is BaseVault {
     uint positionId;
     uint premiumReceived;
     uint capitalUsed;
-    for(uint i = 0; i < _currentStrikeStrategies.length; i++) { 
-      StrategyBase.StrikeStrategyDetail memory _currentStrikeStrategy = _currentStrikeStrategies[i]; 
-      (positionId, premiumReceived, capitalUsed) = IStrategy(strategy).doTrade(_currentStrikeStrategy);
+    for(uint i = 0; i < _strikeIds.length; i++) { 
+      StrategyBase.StrikeTrade memory _trade = _strike[i]; 
+      (positionId, premiumReceived, capitalUsed) = IStrategy(strategy).doTrade(_trade);
       roundPremiumCollected += premiumReceived;
       allCapitalUsed += capitalUsed; 
     }
@@ -206,7 +206,7 @@ contract OtusVault is BaseVault {
   }
 
   /************************************************
-  *  Hedge Actions - Kwenta 
+  *  Hedge Actions - Synthetix Futures 
   ***********************************************/
 
     /**

@@ -24,9 +24,7 @@ contract Strategy is StrategyBase {
   using SignedSafeDecimalMath for int;
 
   IERC20 public collateralAsset; 
-
   address public vault;
-
   OtusVault public otusVault;
   
   /************************************************
@@ -92,7 +90,23 @@ contract Strategy is StrategyBase {
   *
   */
 
-  function setStrikestrategy(StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
+  function setStrikeStrategyDetail(StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
+    (, , , , , , , bool roundInProgress,) = otusVault.vaultState();
+    require(!roundInProgress, "round opened");
+
+    uint len = _currentStrikeStrategies.length; 
+    StrikeStrategyDetail memory currentStrikeStrategy;
+
+    for(uint i = 0; i < len; i++) {
+      currentStrikeStrategy = _currentStrikeStrategies[i];
+      currentStrikeStrategies[currentStrikeStrategy.optionType] = StrikeStrategyDetail(
+        currentStrikeStrategy.targetDelta,
+        currentStrikeStrategy.maxDeltaGap,
+        currentStrikeStrategy.minVol,
+        currentStrikeStrategy.maxVol,
+        currentStrikeStrategy.maxVolVariance
+      )
+    }
 
   }
 
@@ -127,21 +141,23 @@ contract Strategy is StrategyBase {
   /**
   * @notice sell a fix aomunt of options and collect premium
   * @dev the vault should pass in a strike id, and the strategy would verify if the strike is valid on-chain.
-  * @param currentStrikeStrategy lyra strikeId to trade
+  * @param _strike lyra strikeId to trade
   * @return positionId
   * @return premiumReceived
   * @return capitalUsed
   */
-  function doTrade(StrikeStrategyDetail memory currentStrikeStrategy) external onlyVault returns (
+  function doTrade(StrikeTrade memory _strike) external onlyVault returns (
       uint positionId,
       uint premiumReceived,
       uint capitalUsed
     )
   {
     uint index = activeStrikeIds.length; 
-    uint strikeId = currentStrikeStrategy.strikeId;
-    uint size = currentStrikeStrategy.size;
-    uint optionType = currentStrikeStrategy.optionType;
+    uint strikeId = _strike.strikeId;
+    uint size = _strike.size;
+    uint optionType = _strike.optionType;
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType]; 
+
     require(
       validateTimeIntervalByOptionType(strikeId, optionType),
       "min time interval not passed for option type"
@@ -153,14 +169,14 @@ contract Strategy is StrategyBase {
     require(isValidStrike(strike, currentStrikeStrategy), "invalid strike");
 
     if(_isLong(currentStrikeStrategy.optionType)) {
-      uint maxPremium = _getPremiumLimit(strike, false, currentStrikeStrategy);
+      uint maxPremium = _getPremiumLimit(strike, false, currentStrikeStrategy, _strike);
 
       require(
         collateralAsset.transferFrom(address(vault), address(this), maxPremium),
         "collateral transfer from vault failed"
       );
 
-      (positionId, premiumReceived) = _buyStrike(strike, size, currentStrikeStrategy, index, maxPremium);
+      (positionId, premiumReceived) = _buyStrike(strike, size, currentStrikeStrategy, _strike, index, maxPremium);
 
       capitalUsed = maxPremium; 
     } else {
@@ -171,21 +187,12 @@ contract Strategy is StrategyBase {
         "collateral transfer from vault failed"
       );
 
-      (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, index);
+      (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, _strike, index);
 
       capitalUsed = collateralToAdd;
     }
 
-    currentStrikeStrategies.push(StrikeStrategyDetail(
-      currentStrikeStrategy.targetDelta,
-      currentStrikeStrategy.maxDeltaGap,
-      currentStrikeStrategy.minVol,
-      currentStrikeStrategy.maxVol,
-      currentStrikeStrategy.maxVolVariance,
-      currentStrikeStrategy.optionType,
-      currentStrikeStrategy.strikeId,
-      currentStrikeStrategy.size
-    ));
+    currentStrikeTrades.push(_strike);
   }
 
   
@@ -196,16 +203,16 @@ contract Strategy is StrategyBase {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
     uint quoteBal = quoteAsset.balanceOf(address(this));
 
-    StrikeStrategyDetail memory currentStrikeStrategy; 
+    StrikeTrade memory currentStrikeTrade; 
 
     bool hasBaseCollat = false; 
     bool hasQuoteCollat = false; 
 
-    for(uint i = 0; i < currentStrikeStrategies.length; i++) {
-      currentStrikeStrategy = currentStrikeStrategies[i]; 
+    for(uint i = 0; i < currentStrikeTrades.length; i++) {
+      currentStrikeTrade = currentStrikeTrades[i]; 
 
       // base asset might not be needed if we only use usd 
-      if (_isBaseCollat(currentStrikeStrategy.optionType)) {
+      if (_isBaseCollat(currentStrikeTrade.optionType)) {
         hasBaseCollat = true; 
       } else {
         hasQuoteCollat = true; 
@@ -290,10 +297,11 @@ contract Strategy is StrategyBase {
     uint _size, 
     uint setCollateralTo,
     StrikeStrategyDetail memory currentStrikeStrategy,
+    StrikeTrade memory currentStrikeTrade,
     uint strategyIndex
   ) internal returns (uint, uint) {
     // get minimum expected premium based on minIv
-    uint minExpectedPremium = _getPremiumLimit(strike, true, currentStrikeStrategy);
+    uint minExpectedPremium = _getPremiumLimit(strike, true, currentStrikeStrategy, currentStrikeTrade);
     OptionType optionType = OptionType(currentStrikeStrategy.optionType);
     // perform trade
     TradeResult memory result = openPosition(
@@ -332,6 +340,7 @@ contract Strategy is StrategyBase {
     Strike memory strike,
     uint _size, 
     StrikeStrategyDetail memory currentStrikeStrategy,
+    StrikeTrade memory currentStrikeTrade,
     uint strategyIndex,
     uint maxPremium
   ) internal returns (uint, uint) {
@@ -380,11 +389,12 @@ contract Strategy is StrategyBase {
       "amount exceeds allowed close amount"
     );
 
-    uint currentStrikeStrategyIndex = strategyToStrikeId[position.strikeId];
-    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeStrategyIndex]; 
+    uint currentStrikeStrategyIndex = strikeIdToTrade[position.strikeId];
+    StrikeTrade memory currentStrikeTrade = currentStrikeTrades[currentStrikeTradeIndex]; 
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeStrategyIndex.optionType]; 
 
     // closes excess position with premium balance
-    uint maxExpectedPremium = _getPremiumLimit(strike, false, currentStrikeStrategy);
+    uint maxExpectedPremium = _getPremiumLimit(strike, false, currentStrikeStrategy, currentStrikeTrade);
     TradeInputParameters memory tradeParams = TradeInputParameters({
       strikeId: position.strikeId,
       positionId: position.positionId,

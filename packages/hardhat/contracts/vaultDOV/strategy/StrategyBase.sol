@@ -39,7 +39,8 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
 
   uint[] public activeStrikeIds;
   mapping(uint => uint) public strikeToPositionId;
-  mapping(uint => uint) public strategyToStrikeId;
+  mapping(uint => uint) public strikeIdToTrade;
+
   mapping(uint => uint) public lastTradeTimestamp;
   mapping(uint => uint) public lastTradeOptionType;
 
@@ -60,6 +61,12 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     uint maxVol; // slider
     uint maxVolVariance; // slider
     uint optionType; 
+    // uint strikeId;
+    // uint size; 
+  }
+
+  struct StrikeTrade {
+    uint optionType; 
     uint strikeId;
     uint size; 
   }
@@ -72,8 +79,19 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     uint stopLossLimit; // .001 1%
   }
 
-  StrategyDetail public currentStrategy; // this wont change much 
-  StrikeStrategyDetail[] public currentStrikeStrategies; // this will change every week possibly
+  StrikeTrade[] public currentStrikeTrades; 
+
+  // Round settings
+  StrategyDetail public currentStrategy; 
+  
+  // Strike settings 
+  // index 0 - BC
+  // index 1 - BP
+  // index 2 - SC
+  // index 3 - SP
+
+  mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies; 
+
   HedgeDetail public currentHedgeStrategy;
 
   constructor(address _synthetixAdapter) FuturesAdapter() VaultAdapter(_synthetixAdapter)  {}
@@ -145,10 +163,10 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
   /**
    * @dev add strike id to activeStrikeIds array
    */
-  function _addActiveStrike(uint strikeId, uint tradedPositionId, uint currentStrategyDetailIndex) internal {
+  function _addActiveStrike(uint strikeId, uint tradedPositionId, uint currentStrikeTradeIndex) internal {
     if (!_isActiveStrike(strikeId)) {
       strikeToPositionId[strikeId] = tradedPositionId;
-      strategyToStrikeId[strikeId] = currentStrategyDetailIndex;
+      strikeIdToTrade[strikeId] = currentStrikeTradeIndex;
       activeStrikeIds.push(strikeId);
     }
   }
@@ -165,17 +183,17 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
         // revert if position state is not settled
         require(position.state != PositionState.ACTIVE, "cannot clear active position");
         delete strikeToPositionId[strikeId];
-        delete strategyToStrikeId[strikeId];
+        delete strikeIdToTrade[strikeId];
         delete lastTradeTimestamp[i];
         delete lastTradeOptionType[i];
       }
       delete activeStrikeIds;
-      delete currentStrikeStrategies; 
+      delete currentStrikeTrades; 
     }
   }
 
-  function _clearCurrentStrategyStrikes() public {
-    delete currentStrikeStrategies; 
+  function _clearCurrentStrikeTrades() public {
+    delete currentStrikeTrades; 
   }
 
   function _isActiveStrike(uint strikeId) internal view returns (bool isActive) {
@@ -275,7 +293,8 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
   function _getPremiumLimit(
       Strike memory strike, 
       bool isMin, 
-      StrikeStrategyDetail memory currentStrikeStrategy
+      StrikeStrategyDetail memory currentStrikeStrategy,
+      StrikeTrade memory currentStrikeTrade
     ) public view returns (uint limitPremium) {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
     uint limitVol = isMin ? currentStrikeStrategy.minVol : currentStrikeStrategy.maxVol;
@@ -287,8 +306,8 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     );
 
     limitPremium = _isCall(currentStrikeStrategy.optionType)
-      ? minCallPremium.multiplyDecimal(currentStrikeStrategy.size)
-      : minPutPremium.multiplyDecimal(currentStrikeStrategy.size);
+      ? minCallPremium.multiplyDecimal(currentStrikeTrade.size)
+      : minPutPremium.multiplyDecimal(currentStrikeTrade.size);
   }
 
   /**
