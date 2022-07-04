@@ -3579,6 +3579,22 @@
     graphql-request "^4.2.0"
     node-fetch "^2.6.1"
 
+"@lyrafinance/protocol@^0.1.1-alpha":
+  version "0.1.1-alpha"
+  resolved "https://registry.yarnpkg.com/@lyrafinance/protocol/-/protocol-0.1.1-alpha.tgz#3df3326e3eb0988784e9979f25ab3a8c90060915"
+  integrity sha512-LYkyxQpaeBeOoUm1Zen7Bk6vmqfpdFS8xrAjLHdHASkIEJK/cnP/xvRCPx/lxr8h8h5EBT7NYbNxRUWqVVwvlQ==
+  dependencies:
+    "@ethersproject/abi" "^5.4.0"
+    "@ethersproject/abstract-provider" "^5.6.0"
+    "@openzeppelin/hardhat-upgrades" "^1.14.0"
+    "@typechain/hardhat" "^3.0.0"
+    dotenv "^9.0.2"
+    hardhat-dependency-compiler "^1.1.2"
+    hardhat-tracer "1.0.0-alpha.6"
+    openzeppelin-contracts-4.4.1 "npm:@openzeppelin/contracts@4.4.1"
+    openzeppelin-contracts-upgradeable-4.5.1 "npm:@openzeppelin/contracts-upgradeable@4.5.1"
+    stochastic "^0.0.14"
+
 "@metamask/eth-sig-util@^4.0.0":
   version "4.0.0"
   resolved "https://registry.npmjs.org/@metamask/eth-sig-util/-/eth-sig-util-4.0.0.tgz"
@@ -3682,6 +3698,29 @@
   version "4.5.0"
   resolved "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-4.5.0.tgz"
   integrity sha512-fdkzKPYMjrRiPK6K4y64e6GzULR7R7RwxSigHS8DDp7aWDeoReqsQI+cxHV1UuhAqX69L1lAaWDxenfP+xiqzA==
+
+"@openzeppelin/hardhat-upgrades@^1.14.0":
+  version "1.19.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/hardhat-upgrades/-/hardhat-upgrades-1.19.0.tgz#8f17210b924eb04c3ea4aa9795c1bb01d8a7dc3f"
+  integrity sha512-351QqDO3nZ96g0BO/bQnaTflix4Nw4ELWC/hZ8PwicsuVxRmxN/GZhxPrs62AOdiQdZ+xweawrVXa5knliRd4A==
+  dependencies:
+    "@openzeppelin/upgrades-core" "^1.16.0"
+    chalk "^4.1.0"
+    proper-lockfile "^4.1.1"
+
+"@openzeppelin/upgrades-core@^1.16.0":
+  version "1.16.1"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.16.1.tgz#a4c383fc628cc9d37d5a276def99a093c951644b"
+  integrity sha512-+hejbeAfsZWIQL5Ih13gkdm2KO6kbERc1ektzcyb25/OtUwaRjIIHxW++LdC/3Hg5uzThVOzJBfiLdAbgwD+OA==
+  dependencies:
+    bn.js "^5.1.2"
+    cbor "^8.0.0"
+    chalk "^4.1.0"
+    compare-versions "^4.0.0"
+    debug "^4.1.1"
+    ethereumjs-util "^7.0.3"
+    proper-lockfile "^4.1.1"
+    solidity-ast "^0.4.15"
 
 "@otusfinance/otus-hardhat-ethers@^2.0.8":
   version "2.0.8"
@@ -4342,6 +4381,13 @@
   dependencies:
     lodash "^4.17.15"
     ts-essentials "^7.0.1"
+
+"@typechain/hardhat@^3.0.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@typechain/hardhat/-/hardhat-3.1.0.tgz#88bd9e9d55e30fbece6fbb34c03ecd40a8b2013a"
+  integrity sha512-C6Be6l+vTpao19PvMH2CB/lhL1TRLkhdPkvQCF/zqkY1e+0iqY2Bb9Jd3PTt6I8QvMm89ZDerrCJC9927ZHmlg==
+  dependencies:
+    fs-extra "^9.1.0"
 
 "@typechain/hardhat@^6.0.0":
   version "6.0.0"
@@ -7909,6 +7955,13 @@ cbor@^5.0.2:
     bignumber.js "^9.0.1"
     nofilter "^1.0.4"
 
+cbor@^8.0.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/cbor/-/cbor-8.1.0.tgz#cfc56437e770b73417a2ecbfc9caf6b771af60d5"
+  integrity sha512-DwGjNW9omn6EwP70aXsn7FQJx5kO12tX0bZkaTjzdVFM6/7nhA4t0EENocKGx6D2Bch9PE2KzCUf5SceBdeijg==
+  dependencies:
+    nofilter "^3.1.0"
+
 cborg@^1.5.4, cborg@^1.6.0:
   version "1.9.3"
   resolved "https://registry.yarnpkg.com/cborg/-/cborg-1.9.3.tgz#672f4dbcd7149f07de3317848cbab43b20a63d2a"
@@ -8472,6 +8525,11 @@ commondir@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/commondir/-/commondir-1.0.1.tgz"
   integrity sha1-3dgA2gxmEnOTzKWVDqloo6rxJTs=
+
+compare-versions@^4.0.0:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/compare-versions/-/compare-versions-4.1.3.tgz#8f7b8966aef7dc4282b45dfa6be98434fc18a1a4"
+  integrity sha512-WQfnbDcrYnGr55UwbxKiQKASnTtNnaAWVi8jZyy8NTpVAXWACSne8lMD1iaIo9AiU6mnuLvSVshCzewVuWxHUg==
 
 component-emitter@^1.2.1:
   version "1.3.0"
@@ -9811,6 +9869,11 @@ dotenv@^8.2.0:
   resolved "https://registry.npmjs.org/dotenv/-/dotenv-8.6.0.tgz"
   integrity sha512-IrPdXQsk2BbzvCBGBOTmmSH5SodmqZNt4ERAZDmW4CT+tL8VtvinqywuANaFu4bOMWki16nqf0e4oC0QIaDr/g==
 
+dotenv@^9.0.2:
+  version "9.0.2"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-9.0.2.tgz#dacc20160935a37dea6364aa1bef819fb9b6ab05"
+  integrity sha512-I9OvvrHp4pIARv4+x9iuewrWycX6CcZtoAu1XrzPxc5UygMJXJZYmBsynku8IkrJwgypE5DGNjDPmPRhDCptUg==
+
 dotignore@~0.1.2:
   version "0.1.2"
   resolved "https://registry.npmjs.org/dotignore/-/dotignore-0.1.2.tgz"
@@ -11032,6 +11095,17 @@ ethereumjs-util@^7.0.10, ethereumjs-util@^7.0.2, ethereumjs-util@^7.1.0, ethereu
   version "7.1.4"
   resolved "https://registry.npmjs.org/ethereumjs-util/-/ethereumjs-util-7.1.4.tgz"
   integrity sha512-p6KmuPCX4mZIqsQzXfmSx9Y0l2hqf+VkAiwSisW3UKUFdk8ZkAt+AYaor83z2nSi6CU2zSsXMlD80hAbNEGM0A==
+  dependencies:
+    "@types/bn.js" "^5.1.0"
+    bn.js "^5.1.2"
+    create-hash "^1.1.2"
+    ethereum-cryptography "^0.1.3"
+    rlp "^2.2.4"
+
+ethereumjs-util@^7.0.3:
+  version "7.1.5"
+  resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-7.1.5.tgz#9ecf04861e4fbbeed7465ece5f23317ad1129181"
+  integrity sha512-SDl5kKrQAudFBUe5OJM9Ac6WmMyYmXX/6sTmLZ3ffG2eY6ZIGBes3pEDxNN6V72WyOw4CPD5RomKdsa8DAAwLg==
   dependencies:
     "@types/bn.js" "^5.1.0"
     bn.js "^5.1.2"
@@ -12910,6 +12984,13 @@ hardhat-gas-reporter@^1.0.8:
     array-uniq "1.0.3"
     eth-gas-reporter "^0.2.24"
     sha1 "^1.1.1"
+
+hardhat-tracer@1.0.0-alpha.6:
+  version "1.0.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/hardhat-tracer/-/hardhat-tracer-1.0.0-alpha.6.tgz#4545a772930567cad4620ee9448cb76e89b07b02"
+  integrity sha512-QXKEJPaCDU0P7ZNHvFuGQoKLZ9+uma3ASAoPjhHr4CYwgIHcronVPZ7zkztRc7LhDbKFffIuoh0jEQWGgR6Neg==
+  dependencies:
+    ethers "^5.0.24"
 
 hardhat-tracer@^1.1.0-rc.3:
   version "1.1.0-rc.3"
@@ -17440,6 +17521,11 @@ nofilter@^1.0.4:
   resolved "https://registry.npmjs.org/nofilter/-/nofilter-1.0.4.tgz"
   integrity sha512-N8lidFp+fCz+TD51+haYdbDGrcBWwuHX40F5+z0qkUjMJ5Tp+rdSuAkMJ9N9eoolDlEVTf6u5icM+cNKkKW2mA==
 
+nofilter@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-3.1.0.tgz#c757ba68801d41ff930ba2ec55bab52ca184aa66"
+  integrity sha512-l2NNj07e9afPnhAhvgVrCD/oy2Ai1yfLpuo3EpiO1jFTsB4sFz6oIfAfSZyQzVpkZQ9xS8ZS5g1jCBgq4Hwo0g==
+
 noop-logger@^0.1.1:
   version "0.1.1"
   resolved "https://registry.npmjs.org/noop-logger/-/noop-logger-0.1.1.tgz"
@@ -17799,6 +17885,16 @@ open@^7.0.2, open@^7.4.2:
   dependencies:
     is-docker "^2.0.0"
     is-wsl "^2.1.1"
+
+"openzeppelin-contracts-4.4.1@npm:@openzeppelin/contracts@4.4.1":
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.4.1.tgz#3382db2cd83ab565ed9626765e7da92944b45de8"
+  integrity sha512-o+pHCf/yMLSlV5MkDQEzEQL402i6SoRnktru+0rdSxVEFZcTzzGhZCAtZjUFyKGazMSv1TilzMg+RbED1N8XHQ==
+
+"openzeppelin-contracts-upgradeable-4.5.1@npm:@openzeppelin/contracts-upgradeable@4.5.1":
+  version "4.5.1"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.5.1.tgz#dc354082460eb34f5833afdecfab46538b208c4f"
+  integrity sha512-xcKycsSyFauIGMhSeeTJW/Jzz9jZUJdiFNP9Wo/9VhMhw8t5X0M92RY6x176VfcIWsxURMHFWOJVTlFA78HI/w==
 
 opn@^5.5.0:
   version "5.5.0"
@@ -19438,6 +19534,15 @@ prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1,
     loose-envify "^1.4.0"
     object-assign "^4.1.1"
     react-is "^16.13.1"
+
+proper-lockfile@^4.1.1:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/proper-lockfile/-/proper-lockfile-4.1.2.tgz#c8b9de2af6b2f1601067f98e01ac66baa223141f"
+  integrity sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==
+  dependencies:
+    graceful-fs "^4.2.4"
+    retry "^0.12.0"
+    signal-exit "^3.0.2"
 
 protobufjs@^6.10.2:
   version "6.11.2"
@@ -21534,6 +21639,11 @@ solc@^0.6.3:
     semver "^5.5.0"
     tmp "0.0.33"
 
+solidity-ast@^0.4.15:
+  version "0.4.35"
+  resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.35.tgz#82e064b14dc989338123264bde2235cad751f128"
+  integrity sha512-F5bTDLh3rmDxRmLSrs3qt3nvxJprWSEkS7h2KmuXDx7XTfJ6ZKVTV1rtPIYCqJAuPsU/qa8YUeFn7jdOAZcTPA==
+
 solidity-coverage@^0.7.20:
   version "0.7.20"
   resolved "https://registry.yarnpkg.com/solidity-coverage/-/solidity-coverage-0.7.20.tgz#246e9b0dd62f698bb8ddeecdcc46cab26c48b637"
@@ -21819,6 +21929,11 @@ stealthy-require@^1.1.1:
   version "1.1.1"
   resolved "https://registry.npmjs.org/stealthy-require/-/stealthy-require-1.1.1.tgz"
   integrity sha1-NbCYdbT/SfJqd35QmzCQoyJr8ks=
+
+stochastic@^0.0.14:
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/stochastic/-/stochastic-0.0.14.tgz#eea8388b578ad3d921076f69bfe5b4352db34e08"
+  integrity sha512-Fmqw54Kow7ifMlU+CutWppy8jHhrBQMA1eG3gK94FUkwftrRS48qUtZ7m0hXlDAlG8u8DSWjIkPsRscl8AP7LA==
 
 store@2.0.12:
   version "2.0.12"

@@ -7,7 +7,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import '../interfaces/IFuturesMarket.sol';
-import {IStrategy} from "../interfaces/IStrategy.sol";
+import {IDNStrategy} from "../interfaces/IDNStrategy.sol";
 
 import {BaseVault} from "./BaseVault.sol";
 import {Vault} from "../libraries/Vault.sol";
@@ -27,8 +27,6 @@ contract OtusDNVault is BaseVault {
   string public vaultDescription; 
   // Amount locked for scheduled withdrawals last week;
   uint128 public lastQueuedWithdrawAmount;
-  uint256 public roundHedgeAttempts; 
-  uint public roundPremiumCollected; 
 
   IERC20 collateralAsset; 
 
@@ -79,6 +77,7 @@ contract OtusDNVault is BaseVault {
     address _owner,
     Vault.VaultInformation memory _vaultInfo, 
     Vault.VaultParams memory _vaultParams,
+    address _strategy
   ) external {
 
     vaultName = _vaultInfo.name; 
@@ -113,26 +112,18 @@ contract OtusDNVault is BaseVault {
     vaultState.lockedAmount = 0;
     vaultState.nextRoundReadyTimestamp = block.timestamp + Vault.ROUND_DELAY;
     vaultState.roundInProgress = false;
-    vaultState.tradesExecuted = false;
-    roundHedgeAttempts = 0; 
 
-    // won't be able to close if positions are not settled
-    IStrategy(strategy).returnFundsAndClearStrikes();
-
-    // withdraw all margin from futures market 
-    // _strategy.closeHedgeEndOfRound();
     emit RoundClosed(vaultState.round, lockAmount);
   }
 
   /**
    * @notice Start the next/new round
    */
-  function startNextRound(uint boardId) external onlyOwner {
-    //can't start next round before outstanding expired positions are settled. 
+  function startNextRound() external onlyOwner {
     require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
     require(address(strategy) != address(0), "Strategy not set");
-    IStrategy(strategy).setBoard(boardId);
+    IDNStrategy(strategy).setBoard(boardId);
 
     (uint lockedBalance, uint queuedWithdrawAmount) = _rollToNextRound(uint(lastQueuedWithdrawAmount));
 
@@ -145,29 +136,29 @@ contract OtusDNVault is BaseVault {
     emit RoundStarted(vaultState.round, uint104(lockedBalance));
   }
 
+  function endRounds() external onlyOwner {
+    
+    // won't be able to close if funds are not returned to vault traded back from base asset
+    IDNStrategy(strategy).returnFunds();
+
+  }
+
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function trade(StrategyBase.StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
+  function trade() external onlyOwner {
     // can trade during round as long as lockedAmount is greater than 0
     // round should be opened 
     require(vaultState.roundInProgress, "round not opened");
-    require(!vaultState.tradesExecuted, "trades executed for round");
 
-    uint allCapitalUsed; 
     uint positionId;
     uint premiumReceived;
     uint capitalUsed;
-    for(uint i = 0; i < _currentStrikeStrategies.length; i++) { 
-      StrategyBase.StrikeStrategyDetail memory _currentStrikeStrategy = _currentStrikeStrategies[i]; 
-      (positionId, premiumReceived, capitalUsed) = IStrategy(strategy).doTrade(_currentStrikeStrategy);
-      roundPremiumCollected += premiumReceived;
-      allCapitalUsed += capitalUsed; 
-    }
+
+    (positionId, premiumReceived, capitalUsed) = IDNStrategy(strategy).doTrade();
     
     // update the remaining locked amount -- lockedAmountLeft can be used for hedge
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
-    vaultState.tradesExecuted = true;
 
     emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
   }
