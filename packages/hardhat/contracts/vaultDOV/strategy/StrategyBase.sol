@@ -77,6 +77,7 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     uint limitStrikePricePercent; // .0005 = ex. strike price of 1750 .5% ~ 1758.75
     uint leverageSize; // 150% ~ 1.5x 200% 2x 
     uint stopLossLimit; // .001 1%
+    bool isLongHedge; // 
   }
 
   StrikeTrade[] public currentStrikeTrades; 
