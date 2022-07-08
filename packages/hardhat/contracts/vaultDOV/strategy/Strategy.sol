@@ -23,7 +23,6 @@ contract Strategy is StrategyBase {
   using SignedSafeMath for int;
   using SignedSafeDecimalMath for int;
 
-  IERC20 public collateralAsset; 
   address public vault;
   OtusVault public otusVault;
   
@@ -34,7 +33,6 @@ contract Strategy is StrategyBase {
   event HedgeClosePosition(address closer);
 
   event HedgeModifyPosition(address closer, uint marginDelta, uint256 hedgeAttempt);
-
 
   /************************************************
    *  Modifiers
@@ -66,8 +64,6 @@ contract Strategy is StrategyBase {
     ); 
 
     vault = _vault;
-    otusVault = OtusVault(_vault); 
-    collateralAsset = IERC20(marketAddresses[0]);
   }
 
   /************************************************
@@ -80,18 +76,30 @@ contract Strategy is StrategyBase {
   * quoteAsset usually USD baseAsset usually ETH
   */
   function setStrategy(StrategyDetail memory _currentStrategy) external onlyOwner {
-    (, , , , , , , bool roundInProgress,) = otusVault.vaultState();
+    (, , , , , , , bool roundInProgress,) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
     currentStrategy = _currentStrategy;
   }
 
+  function setHedgeStrategy(StrikeHedgeDetail[] memory _hedgeStrategies) external onlyOwner {
+    (, , , , , , , bool roundInProgress,) = OtusVault(vault).vaultState();
+    require(!roundInProgress, "round opened");
+
+    uint len = _hedgeStrategies.length; 
+    StrikeHedgeDetail memory currentHedgeStrategy;
+
+    for(uint i = 0; i < len; i++) {
+      currentHedgeStrategy = _hedgeStrategies[i];
+      currentHedgeStrategies[currentHedgeStrategy.optionType] = currentHedgeStrategy;
+    }
+  }
+
   /**
-  * update for buy call, sell call, buy put, sell put
-  *
+  * @dev update for buy call, sell call, buy put, sell put
   */
 
   function setStrikeStrategyDetail(StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
-    (, , , , , , , bool roundInProgress,) = otusVault.vaultState();
+    (, , , , , , , bool roundInProgress,) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
 
     uint len = _currentStrikeStrategies.length; 
@@ -99,27 +107,21 @@ contract Strategy is StrategyBase {
 
     for(uint i = 0; i < len; i++) {
       currentStrikeStrategy = _currentStrikeStrategies[i];
-      currentStrikeStrategies[currentStrikeStrategy.optionType] = StrikeStrategyDetail(
-        currentStrikeStrategy.targetDelta,
-        currentStrikeStrategy.maxDeltaGap,
-        currentStrikeStrategy.minVol,
-        currentStrikeStrategy.maxVol,
-        currentStrikeStrategy.maxVolVariance
-      )
+      currentStrikeStrategies[currentStrikeStrategy.optionType] = currentStrikeStrategy;
     }
 
   }
 
-  function setHedgeStrategy(
-      HedgeDetail memory _hedgeStrategy
-    ) external onlyOwner {
-    (, , , , , , , bool roundInProgress,) = otusVault.vaultState();
-    require(!roundInProgress, "round opened");
-    currentHedgeStrategy = _hedgeStrategy; 
-  }
+  function getCurrentStrikeStrategies() public view returns (StrikeStrategyDetail[] memory _currentStrikeStrategies) {
 
-  function getCurrentStrikeStrategies() public view returns (StrikeStrategyDetail[] memory) {
-    return currentStrikeStrategies; 
+    _currentStrikeStrategies = new StrikeStrategyDetail[](StrikeStrategiesPossible);
+
+    for(uint i = 0; i < StrikeStrategiesPossible; i++) {
+      StrikeStrategyDetail memory _strikeStrategy = currentStrikeStrategies[i];
+
+    }
+
+    return _currentStrikeStrategies; 
   }
 
   ///////////////////
@@ -152,7 +154,6 @@ contract Strategy is StrategyBase {
       uint capitalUsed
     )
   {
-    uint index = activeStrikeIds.length; 
     uint strikeId = _strike.strikeId;
     uint size = _strike.size;
     uint optionType = _strike.optionType;
@@ -172,22 +173,22 @@ contract Strategy is StrategyBase {
       uint maxPremium = _getPremiumLimit(strike, false, currentStrikeStrategy, _strike);
 
       require(
-        collateralAsset.transferFrom(address(vault), address(this), maxPremium),
+        quoteAsset.transferFrom(address(vault), address(this), maxPremium),
         "collateral transfer from vault failed"
       );
 
-      (positionId, premiumReceived) = _buyStrike(strike, size, currentStrikeStrategy, _strike, index, maxPremium);
+      (positionId, premiumReceived) = _buyStrike(strike, size, currentStrikeStrategy, maxPremium);
 
       capitalUsed = maxPremium; 
     } else {
       (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike, size, optionType);
 
       require(
-        collateralAsset.transferFrom(address(vault), address(this), collateralToAdd),
+        quoteAsset.transferFrom(address(vault), address(this), collateralToAdd), // susd for now
         "collateral transfer from vault failed"
       );
 
-      (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, _strike, index);
+      (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, _strike);
 
       capitalUsed = collateralToAdd;
     }
@@ -288,7 +289,6 @@ contract Strategy is StrategyBase {
    * @param _size target collateral amount
    * @param setCollateralTo target collateral amount
    * @param currentStrikeStrategy target collateral amount
-   * @param strategyIndex target collateral amount
    * @return positionId
    * @return premiumReceived
    */
@@ -297,9 +297,10 @@ contract Strategy is StrategyBase {
     uint _size, 
     uint setCollateralTo,
     StrikeStrategyDetail memory currentStrikeStrategy,
-    StrikeTrade memory currentStrikeTrade,
-    uint strategyIndex
+    StrikeTrade memory currentStrikeTrade
   ) internal returns (uint, uint) {
+    uint strategyIndex = activeStrikeIds.length; 
+
     // get minimum expected premium based on minIv
     uint minExpectedPremium = _getPremiumLimit(strike, true, currentStrikeStrategy, currentStrikeTrade);
     OptionType optionType = OptionType(currentStrikeStrategy.optionType);
@@ -340,10 +341,9 @@ contract Strategy is StrategyBase {
     Strike memory strike,
     uint _size, 
     StrikeStrategyDetail memory currentStrikeStrategy,
-    StrikeTrade memory currentStrikeTrade,
-    uint strategyIndex,
     uint maxPremium
   ) internal returns (uint, uint) {
+    uint strategyIndex = activeStrikeIds.length; 
 
     OptionType optionType = OptionType(currentStrikeStrategy.optionType);
     // perform trade to long
@@ -389,9 +389,9 @@ contract Strategy is StrategyBase {
       "amount exceeds allowed close amount"
     );
 
-    uint currentStrikeStrategyIndex = strikeIdToTrade[position.strikeId];
+    uint currentStrikeTradeIndex = strikeIdToTrade[position.strikeId];
     StrikeTrade memory currentStrikeTrade = currentStrikeTrades[currentStrikeTradeIndex]; 
-    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeStrategyIndex.optionType]; 
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeTrade.optionType]; 
 
     // closes excess position with premium balance
     uint maxExpectedPremium = _getPremiumLimit(strike, false, currentStrikeStrategy, currentStrikeTrade);
@@ -444,15 +444,19 @@ contract Strategy is StrategyBase {
       : 0;
   }
 
-  /************************************************
-   *  KEEPER ACTIONS -  HEDGE
-   ***********************************************/
+  /******************************************************
+   *  KEEPER ACTIONS -  HEDGE WITH SYNTHETIX FUTURES
+   *****************************************************/
 
-  function _hedge(bool activeShort, uint lockedAmountLeft, uint roundHedgeAttempts) external onlyVault  {
-    require(!activeShort, "Active futures hedge");
-    require(currentHedgeStrategy.maxHedgeAttempts <= roundHedgeAttempts); 
+  function _hedge(uint optionType, uint lockedAmountLeft, uint hedgeAttempts) external onlyVault  {
+    // need to track by optiontype 
+    StrikeHedgeDetail memory currentHedgeStrategy = currentHedgeStrategies[optionType];
+    require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts); 
+
+    // check futures positions 
+
     // through kwenta
-    if(roundHedgeAttempts == 0) { // first time hedging
+    if(hedgeAttempts == 0) { // first time hedging
       require(
         // need to use kwenta / synthetix susd collateralAssetTest
         IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(vault), address(this), lockedAmountLeft),
@@ -472,11 +476,10 @@ contract Strategy is StrategyBase {
     _modifyPosition(-int(size)); 
   } 
 
-  function _closeHedge(bool activeShort) external onlyVault  {
-    require(activeShort, "No active futures hedge");
+  function _closeHedge() external onlyVault  {
+    // need to track by optiontype no more global active short
     (,, uint128 margin, uint128 lastPrice, int128 size) = _positions(); 
     _closePosition();
-    activeShort = false; 
   }
 
   function closeHedgeEndOfRound() public {

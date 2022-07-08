@@ -2,26 +2,25 @@
 pragma solidity 0.8.9;
 
 // Libraries
-import "./synthetix/DecimalMath.sol";
+import {LiquidityPool} from "@lyrafinance/protocol/contracts/LiquidityPool.sol";
+import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
 
 // Inherited
-import "./synthetix/OwnedUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 // Interfaces
-import "./interfaces/ISynthetix.sol";
-import "./interfaces/IAddressResolver.sol";
-import "./interfaces/IExchanger.sol";
-import "./interfaces/IExchangeRates.sol";
-import "./LiquidityPool.sol";
-import "./interfaces/IDelegateApprovals.sol";
+import {ISynthetix} from "../interfaces/ISynthetix.sol";
+import {IAddressResolver} from "../interfaces/IAddressResolver.sol";
+import {IExchanger} from "../interfaces/IExchanger.sol";
+import {IExchangeRates} from "../interfaces/IExchangeRates.sol";
+import {IDelegateApprovals} from "../interfaces/IDelegateApprovals.sol";
 
 /**
- * @title SynthetixAdapter
- * @author Lyra
+ * @title ExchangeAdapter
+ * @author Lyra 
  * @dev Manages access to exchange functions on Synthetix.
- * The OptionMarket contract address is used as the key to access the relevant exchange parameters for the market.
  */
-contract SynthetixAdapter is OwnedUpgradeable {
+contract ExchangeAdapter is OwnableUpgradeable {
   using DecimalMath for uint;
 
   /**
@@ -58,10 +57,10 @@ contract SynthetixAdapter is OwnedUpgradeable {
   IDelegateApprovals public delegateApprovals;
 
   // Variables related to calculating premium/fees
-  mapping(address => bytes32) public quoteKey;
-  mapping(address => bytes32) public baseKey;
-  mapping(address => address) public rewardAddress;
-  mapping(address => bytes32) public trackingCode;
+  bytes32 public quoteKey;
+  bytes32 public baseKey;
+  address public rewardAddress;
+  bytes32 public trackingCode;
 
   function initialize() external initializer {
     __Ownable_init();
@@ -148,7 +147,8 @@ contract SynthetixAdapter is OwnedUpgradeable {
    * @notice Swap quote for base with a limit on the amount of quote to be spent.
    *
    * @param exchangeParams The current exchange rates for the swap
-   * @param optionMarket The base asset of this option market to receive
+   * @param quoteKey The quote asset to receive
+   * @param baseKey The base asset to receive
    * @param amountBase The exact amount of base to receive from the swap
    * @param quoteLimit The maximum amount of quote to spend for base
    * @return quoteSpent The amount of quote spent on the swap
@@ -174,7 +174,7 @@ contract SynthetixAdapter is OwnedUpgradeable {
       );
     }
 
-    return (quoteToSpend, _exchangeQuoteForBase(bytes32 quoteKey, bytes32 baseKey, quoteToSpend));
+    return (quoteToSpend, _exchangeQuoteForBase(quoteKey, baseKey, quoteToSpend));
   }
 
   function _exchangeQuoteForBase(bytes32 quoteKey, bytes32 baseKey, uint amountQuote) internal returns (uint baseReceived) {
@@ -223,40 +223,12 @@ contract SynthetixAdapter is OwnedUpgradeable {
   /////////////////////////////////////////
   // Exchanging BaseAsset for QuoteAsset //
   /////////////////////////////////////////
-
-  /**
-   * @notice Swap an exact amount of base for quote.
-   *
-   * @param optionMarket The base asset of this optionMarket to be used
-   * @param amountBase The exact amount of base to be used for the swap
-   * @return quoteReceived The amount of quote received from the swap
-   */
-  function exchangeFromExactBase(address optionMarket, uint amountBase) external returns (uint quoteReceived) {
-    return _exchangeBaseForQuote(optionMarket, amountBase);
-  }
-
-  /**
-   * @notice Swap base for an exact amount of quote
-   *
-   * @param exchangeParams The current exchange rates for the swap
-   * @param optionMarket The base asset of this optionMarket to be used
-   * @param amountQuote The exact amount of quote to receive
-   * @return baseSpent The amount of baseSpent on the swap
-   * @return quoteReceived The amount of quote received from the swap
-   */
-  function exchangeToExactQuote(
-    ExchangeParams memory exchangeParams,
-    address optionMarket,
-    uint amountQuote
-  ) external returns (uint baseSpent, uint quoteReceived) {
-    return exchangeToExactQuoteWithLimit(exchangeParams, optionMarket, amountQuote, type(uint).max);
-  }
-
   /**
    * @notice Swap base for an exact amount of quote with a limit on the amount of base to be used
    *
    * @param exchangeParams The current exchange rates for the swap
-   * @param optionMarket The base asset of this optionMarket to be used
+   * @param quoteKey The quote asset to receive
+   * @param baseKey The base asset to receive
    * @param amountQuote The exact amount of quote to receive
    * @param baseLimit The limit on the amount of base to be used
    * @return baseSpent The amount of base spent on the swap
@@ -264,7 +236,8 @@ contract SynthetixAdapter is OwnedUpgradeable {
    */
   function exchangeToExactQuoteWithLimit(
     ExchangeParams memory exchangeParams,
-    address optionMarket,
+    bytes32 baseKey, 
+    bytes32 quoteKey,
     uint amountQuote,
     uint baseLimit
   ) public returns (uint baseSpent, uint quoteReceived) {
@@ -281,32 +254,32 @@ contract SynthetixAdapter is OwnedUpgradeable {
       );
     }
 
-    return (baseToSpend, _exchangeBaseForQuote(optionMarket, baseToSpend));
+    return (baseToSpend, _exchangeBaseForQuote(baseKey, quoteKey, baseToSpend));
   }
 
-  function _exchangeBaseForQuote(address optionMarket, uint amountBase) internal returns (uint quoteReceived) {
+  function _exchangeBaseForQuote(bytes32 baseKey, bytes32 quoteKey, uint amountBase) internal returns (uint quoteReceived) {
     if (amountBase == 0) {
       return 0;
     }
     // swap exactly `amountBase` baseAsset for quoteAsset
     quoteReceived = synthetix.exchangeOnBehalfWithTracking(
       msg.sender,
-      baseKey[optionMarket],
+      baseKey,
       amountBase,
-      quoteKey[optionMarket],
-      rewardAddress[optionMarket],
-      trackingCode[optionMarket]
+      quoteKey,
+      rewardAddress,
+      trackingCode
     );
     if (amountBase > 1e10 && quoteReceived == 0) {
       revert ReceivedZeroFromExchange(
         address(this),
-        baseKey[optionMarket],
-        quoteKey[optionMarket],
+        baseKey,
+        quoteKey,
         amountBase,
         quoteReceived
       );
     }
-    emit BaseSwappedForQuote(optionMarket, msg.sender, amountBase, quoteReceived);
+    emit BaseSwappedForQuote(msg.sender, amountBase, quoteReceived);
     return quoteReceived;
   }
 
@@ -345,16 +318,7 @@ contract SynthetixAdapter is OwnedUpgradeable {
     IExchangeRates exchangeRates,
     IDelegateApprovals delegateApprovals
   );
-  /**
-   * @dev Emitted when values for a given option market are set.
-   */
-  event GlobalsSetForContract(
-    address indexed market,
-    bytes32 quoteKey,
-    bytes32 baseKey,
-    address rewardAddress,
-    bytes32 trackingCode
-  );
+
   /**
    * @dev Emitted when GlobalPause.
    */
@@ -368,17 +332,15 @@ contract SynthetixAdapter is OwnedUpgradeable {
    * Which base and quote were swapped can be determined by the given marketAddress.
    */
   event BaseSwappedForQuote(
-    address indexed marketAddress,
     address indexed exchanger,
     uint baseSwapped,
     uint quoteReceived
   );
   /**
    * @dev Emitted when an exchange for quote to base occurs.
-   * Which base and quote were swapped can be determined by the given marketAddress.
+   * Which base and quote were swapped can be determined by exchanger.
    */
   event QuoteSwappedForBase(
-    address indexed marketAddress,
     address indexed exchanger,
     uint quoteSwapped,
     uint baseReceived

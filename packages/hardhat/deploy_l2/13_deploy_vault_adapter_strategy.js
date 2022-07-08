@@ -1,6 +1,5 @@
 // deploy/00_deploy_your_contract.js
 const { ethers } = require("hardhat");
-const { getGlobalDeploys, getMarketDeploys } = require('@lyrafinance/protocol');
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
@@ -16,7 +15,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     ],
     log: true,
     libraries: {
-      BlackScholes: '0x60B99483Cf4DbE25Bad03f329446435c0Ffe1a21' // lyraGlobal.BlackScholes.address
+      BlackScholes: '0x0f617bffd8ED167BA27a16B5aeC99E286C067db9' // lyraGlobal.BlackScholes.address
     }
   });
 

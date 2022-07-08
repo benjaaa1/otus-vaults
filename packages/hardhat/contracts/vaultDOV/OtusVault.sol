@@ -22,28 +22,26 @@ contract OtusVault is BaseVault {
   *  IMMUTABLES & CONSTANTS
   ***********************************************/
   address public strategy;
-  address public immutable keeper; 
+  address public keeper; 
 
   string public vaultName; 
   string public vaultDescription; 
-  // Amount locked for scheduled withdrawals last week;
+
   uint128 public lastQueuedWithdrawAmount;
-  uint256 public roundHedgeAttempts; 
   uint public roundPremiumCollected; 
-  bool public activeShort; 
 
   IERC20 collateralAsset; 
 
-  enum VaultType {
-    SHORT_PUT,
-    SHORT_CALL,
-    APE_BULL, 
-    SHORT_STRADDLE,
-    SHORT_STRANGLE
-  }
-
   // add details for for vault type ~
   bool public isPublic;
+
+  /************************************************
+  *   HEDGE TRACKING
+  ************************************************/
+  
+  bool public hasFuturesHedge; 
+  mapping(uint => uint) public hedgeAttemptsByOptionType; 
+  mapping(uint => bool) public activeHedgeByOptionType; 
 
   /************************************************
    *  EVENTS
@@ -59,7 +57,7 @@ contract OtusVault is BaseVault {
 
   event RoundSettled(address user, uint16 roundId, uint currentCollateral);
 
-  event KeeperUpdated(address keeper);
+  event KeeperUpdated(address owner, address keeper);
 
   /************************************************
    *  Modifiers
@@ -116,14 +114,9 @@ contract OtusVault is BaseVault {
    *  SETTERS
    ***********************************************/
 
-  /**
-  * @notice Sets the strategy contract
-  * @param _strategy is the address of the strategy contract
-  */
-  function setStrategy(address _strategy) public onlyKeeper { 
-    collateralAsset = IERC20(vaultParams.asset);
-    collateralAsset.approve(_strategy, type(uint).max);
-    emit StrategyUpdated(_strategy);
+  function setKeeper(address _keeper) public onlyOwner {
+    keeper = _keeper;
+    emit KeeperUpdated(msg.sender, _keeper);
   }
 
   /************************************************
@@ -141,14 +134,29 @@ contract OtusVault is BaseVault {
     vaultState.nextRoundReadyTimestamp = block.timestamp + Vault.ROUND_DELAY;
     vaultState.roundInProgress = false;
     vaultState.tradesExecuted = false;
-    roundHedgeAttempts = 0; 
 
     // won't be able to close if positions are not settled
     IStrategy(strategy).returnFundsAndClearStrikes();
+        
+    if(hasFuturesHedge == true) {
+      _clearHedges();
+    }
+
+    emit RoundClosed(vaultState.round, lockAmount);
+  }
+
+  function _clearHedges() internal {
 
     // withdraw all margin from futures market 
     // _strategy.closeHedgeEndOfRound();
-    emit RoundClosed(vaultState.round, lockAmount);
+
+    for(uint i = 3; i <= 4; i++) {
+      delete hedgeAttemptsByOptionType[i]; 
+      delete activeHedgeByOptionType[i]; 
+    }
+
+    hasFuturesHedge = false; 
+
   }
 
   /**
@@ -175,7 +183,7 @@ contract OtusVault is BaseVault {
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function trade(StrategyBase.StrikeTrade[] memory _strike) external onlyOwner {
+  function trade(StrategyBase.StrikeTrade[] memory _strikes) external onlyOwner {
     // can trade during round as long as lockedAmount is greater than 0
     // round should be opened 
     require(vaultState.roundInProgress, "round not opened");
@@ -185,11 +193,13 @@ contract OtusVault is BaseVault {
     uint positionId;
     uint premiumReceived;
     uint capitalUsed;
-    for(uint i = 0; i < _strikeIds.length; i++) { 
-      StrategyBase.StrikeTrade memory _trade = _strike[i]; 
+    for(uint i = 0; i < _strikes.length; i++) { 
+      StrategyBase.StrikeTrade memory _trade = _strikes[i]; 
       (positionId, premiumReceived, capitalUsed) = IStrategy(strategy).doTrade(_trade);
       roundPremiumCollected += premiumReceived;
       allCapitalUsed += capitalUsed; 
+
+      hasFuturesHedge = _trade.futuresHedge;  
     }
     
     // update the remaining locked amount -- lockedAmountLeft can be used for hedge
@@ -209,19 +219,28 @@ contract OtusVault is BaseVault {
   *  Hedge Actions - Synthetix Futures 
   ***********************************************/
 
-    /**
+  /**
    * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
   //  */
-  function _hedge() external onlyKeeper {
+  function hedge(uint optionType) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
-    IStrategy(strategy)._hedge(activeShort, vaultState.lockedAmountLeft, roundHedgeAttempts);
-    activeShort = true; 
-    roundHedgeAttempts += 1; 
+    require(hasFuturesHedge, "Vault is not hedging strikes");
+    require(activeHedgeByOptionType[optionType] == false, "Vault already has hedge for option type"); 
+
+    uint hedgeAttempts = hedgeAttemptsByOptionType[optionType];
+
+    // locked amout left has to be 
+    IStrategy(strategy)._hedge(optionType, vaultState.lockedAmountLeft, hedgeAttempts);
+
+    // track by option type hedge attempts 
+    hedgeAttemptsByOptionType[optionType] = hedgeAttempts + 1; 
+    activeHedgeByOptionType[optionType] = true; 
   }
 
-  function _closeHedge() external onlyKeeper {
-    IStrategy(strategy)._closeHedge(activeShort);
-    activeShort = false; 
+  function closeHedge(uint optionType) external onlyKeeper {
+    require(activeHedgeByOptionType[optionType], "Vault has no active hedge for option type"); 
+    IStrategy(strategy)._closeHedge();
+    activeHedgeByOptionType[optionType] = false; 
   }
 
 }

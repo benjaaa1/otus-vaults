@@ -12,8 +12,8 @@ import '../../synthetix/SafeDecimalMath.sol';
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ExchangeAdapter} from "../vaultAdapters/ExchangeAdapter.sol";
-import {FuturesAdapter} from "../vaultAdapters/FuturesAdapter.sol";
+import {ExchangeAdapter} from "../../vaultAdapters/ExchangeAdapter.sol";
+import {FuturesAdapter} from "../../vaultAdapters/FuturesAdapter.sol";
 
 /**
  * @title VaultAdapter 
@@ -22,6 +22,7 @@ import {FuturesAdapter} from "../vaultAdapters/FuturesAdapter.sol";
  */
 
 contract DNStrategyBase is FuturesAdapter, ExchangeAdapter {
+  using SafeMath for uint;
   using SafeDecimalMath for uint;
 
   ///////////////
@@ -30,6 +31,9 @@ contract DNStrategyBase is FuturesAdapter, ExchangeAdapter {
 
   IERC20 internal baseAsset; // sETH or sBTC
   IERC20 internal quoteAsset; // sUSD
+
+  // bytes32 internal baseKey; 
+  // bytes32 internal quoteKey;
 
   // strategies can be updated by different strategizers
   struct StrategyDetail {
@@ -40,7 +44,7 @@ contract DNStrategyBase is FuturesAdapter, ExchangeAdapter {
 
   StrategyDetail public currentStrategy; // this wont change much 
 
-  constructor(address _synthetixAdapter) FuturesAdapter() ExchangeAdapter(_synthetixAdapter)  {}
+  constructor() FuturesAdapter() ExchangeAdapter()  {}
 
   /**
   * @dev
@@ -59,11 +63,8 @@ contract DNStrategyBase is FuturesAdapter, ExchangeAdapter {
     address _quoteAsset = marketAddresses[0];  // quote asset
     address _baseAsset = marketAddresses[1];  // base asset
     address _futuresMarket = marketAddresses[2]; 
+    address _exchanger = marketAddresses[3]; 
 
-    if (address(quoteAsset) != address(0)) {
-      quoteAsset.approve(_optionMarket, 0);
-      quoteAsset.approve(_optionMarket, 0);
-    }
     if (address(baseAsset) != address(0)) {
       baseAsset.approve(_futuresMarket, 0);
       baseAsset.approve(_futuresMarket, 0);
@@ -76,8 +77,8 @@ contract DNStrategyBase is FuturesAdapter, ExchangeAdapter {
     quoteAsset.approve(_vault, type(uint).max);
     baseAsset.approve(_vault, type(uint).max);
 
-    quoteAsset.approve(_exchange, type(uint).max);
-    baseAsset.approve(_exchange, type(uint).max);
+    quoteAsset.approve(_exchanger, type(uint).max);
+    baseAsset.approve(_exchanger, type(uint).max);
 
     quoteAsset.approve(_futuresMarket, type(uint).max);
     baseAsset.approve(_futuresMarket, type(uint).max);

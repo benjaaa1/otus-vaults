@@ -1,6 +1,3 @@
-const { ethers } = require("hardhat");
-const { getGlobalDeploys, getMarketDeploys } = require('@lyrafinance/protocol');
-
 module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();

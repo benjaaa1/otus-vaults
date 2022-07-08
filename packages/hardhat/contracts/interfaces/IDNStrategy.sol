@@ -3,7 +3,7 @@
 pragma solidity >=0.8.4;
 
 import {Vault} from "../libraries/Vault.sol";
-import {DNStrategyBase} from "../vault/strategy/DNStrategyBase.sol";
+import {DNStrategyBase} from "../vaultDN/strategy/DNStrategyBase.sol";
 
 interface IDNStrategy {
 

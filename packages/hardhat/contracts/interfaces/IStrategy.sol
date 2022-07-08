@@ -3,7 +3,7 @@
 pragma solidity >=0.8.4;
 
 import {Vault} from "../libraries/Vault.sol";
-import {StrategyBase} from "../vault/strategy/StrategyBase.sol";
+import {StrategyBase} from "../vaultDOV/strategy/StrategyBase.sol";
 
 interface IStrategy {
 
@@ -12,7 +12,7 @@ interface IStrategy {
 	function setBoard(uint boardId) external; 
 
 	function doTrade(
-		StrategyBase.StrikeStrategyDetail memory currentStrikeStrategy
+		StrategyBase.StrikeTrade memory currentStrikeStrategy
 	) external returns (
 		uint positionId,
 		uint premiumReceived,
@@ -24,8 +24,8 @@ interface IStrategy {
     uint closeAmount
 	) external; 
 
-	function _hedge(bool activeShort, uint lockedAmountLeft, uint roundHedgeAttempts) external; 
+	function _hedge(uint optionType, uint lockedAmountLeft, uint roundHedgeAttempts) external; 
 
- 	function _closeHedge(bool activeShort) external; 
+ 	function _closeHedge() external; 
 
 }

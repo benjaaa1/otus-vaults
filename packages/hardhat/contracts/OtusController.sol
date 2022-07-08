@@ -6,7 +6,7 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import {StrategyBase} from "./vault/strategy/StrategyBase.sol";
+import {StrategyBase} from "./vaultDOV/strategy/StrategyBase.sol";
 
 import {IOtusCloneFactory} from "./interfaces/IOtusCloneFactory.sol"; 
 import {IFuturesMarketManager} from "./interfaces/IFuturesMarketManager.sol"; 
@@ -132,6 +132,10 @@ contract OtusController is Ownable {
     futuresMarket = futuresMarketManager.marketForKey(_synth);
   }
 
+  function getFuturesMarketByBaseAsset(address _baseAsset) public view returns (address futuresMarket) {
+    futuresMarket = futuresMarketByAsset[_baseAsset];
+  }
+
   function setOptionMarketDetails(address _optionMarket) public {
 
     (
@@ -175,7 +179,6 @@ contract OtusController is Ownable {
 	function _getVaults(address userSupervisor) public view returns (address[] memory userVaults) {
 		userVaults = vaults[userSupervisor]; 
 	}
-
 
 	function _getStrategies(address[] memory userVaults) public view returns (address[] memory userStrategies) {
     uint len = userVaults.length; 

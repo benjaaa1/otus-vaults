@@ -16,7 +16,6 @@ export const vaultStrategy = {
 export const currentHedgeStrategy = {
   hedgePercentage: .2, 
   maxHedgeAttempts: 4,
-  limitStrikePricePercent: .0005,
   leverageSize: 2,
   stopLossLimit: .001,
 }
@@ -24,7 +23,6 @@ export const currentHedgeStrategy = {
 export const hedgeStrategy = {
   hedgePercentage: 1.2,
   maxHedgeAttempts: 5,
-  limitStrikePricePercent: .2,
   leverageSize: 2,
   stopLossLimit: .001
 }

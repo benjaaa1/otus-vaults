@@ -6,7 +6,7 @@ import "hardhat/console.sol";
 
 import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
 import {IERC20Detailed} from "../interfaces/IERC20Detailed.sol";
-import {StrategyBase} from "../vault/strategy/StrategyBase.sol";
+import {StrategyBase} from "../vaultDOV/strategy/StrategyBase.sol";
 
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";

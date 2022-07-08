@@ -61,41 +61,33 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     uint maxVol; // slider
     uint maxVolVariance; // slider
     uint optionType; 
-    // uint strikeId;
-    // uint size; 
   }
 
   struct StrikeTrade {
     uint optionType; 
     uint strikeId;
     uint size; 
+    bool futuresHedge;
   }
 
-  struct HedgeDetail {
+  struct StrikeHedgeDetail {
     uint hedgePercentage; // 20% + collatPercent == 100%
     uint maxHedgeAttempts; // ~6 dependent on fees mostly 
-    uint limitStrikePricePercent; // .0005 = ex. strike price of 1750 .5% ~ 1758.75
     uint leverageSize; // 150% ~ 1.5x 200% 2x 
     uint stopLossLimit; // .001 1%
-    bool isLongHedge; // 
+    uint optionType; 
   }
 
   StrikeTrade[] public currentStrikeTrades; 
-
   // Round settings
   StrategyDetail public currentStrategy; 
-  
-  // Strike settings 
-  // index 0 - BC
-  // index 1 - BP
-  // index 2 - SC
-  // index 3 - SP
+  // option type => strike strategy
+  mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
+  uint public immutable StrikeStrategiesPossible = 4;
+  // option type => hedge
+  mapping(uint => StrikeHedgeDetail) public currentHedgeStrategies; 
 
-  mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies; 
-
-  HedgeDetail public currentHedgeStrategy;
-
-  constructor(address _synthetixAdapter) FuturesAdapter() VaultAdapter(_synthetixAdapter)  {}
+  constructor(address _synthetixAdapter) FuturesAdapter() LyraAdapter(_synthetixAdapter)  {}
 
   /**
   * @dev
@@ -110,7 +102,7 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     StrategyDetail memory _currentStrategy
   ) internal {
 
-    gwavOracle = GWAVOracle( marketAddresses[9]);
+    gwavOracle = GWAVOracle(marketAddresses[9]);
     currentStrategy = _currentStrategy;
 
     address _futuresMarket = marketAddresses[8]; 
@@ -214,7 +206,6 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
 
     return valid; 
   }
-
 
   //////////////////
   // View Strikes //
@@ -342,7 +333,17 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     return (strikes, optionTypes, positionIds); 
   }
 
-  
+  function getCurrentStrikeTrades() external view returns (StrikeTrade[] memory strikeTrades) {
+    uint len = currentStrikeTrades.length; 
+    strikeTrades = new StrikeTrade[](len); 
+
+    for(uint i = 0; i < len; i++) {
+      StrikeTrade memory strikeTrade = currentStrikeTrades[i];
+      strikeTrades[i] = strikeTrade;
+    }
+
+    return strikeTrades; 
+  }
   //////////
   // Misc //
   //////////

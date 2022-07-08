@@ -10,6 +10,9 @@ import {OtusController} from "../OtusController.sol";
 
 interface IOtusVault {
 	function reducePosition(uint positionId, uint closeAmount) external; 
+  function hedge(uint optionType) external; 
+	function closeHedge(uint optionType) external; 
+
 }
 
 contract Keeper is Ownable {
@@ -23,10 +26,9 @@ contract Keeper is Ownable {
     uint amount;
   }
 
-  struct HedgePosition {
+  struct HedgeTrade {
     address otusVault;
-    uint positionId;
-    uint amount;
+    uint optionType;
   }
 
   constructor(address _otusController) Ownable() {
@@ -49,19 +51,29 @@ contract Keeper is Ownable {
   //openHedgePosition
   //closeHedge
 
-  // function openHedgePosition(HedgePosition[] memory newHedgePositions) external {
+  function openHedgePosition(HedgeTrade[] memory newHedgeTrades) external onlyOwner {
     
-  //   for(uint i = 0; i < newHedgePositions.length; i++) {
-  //     bytes memory data = abi.encodeWithSelector(
-  //       IOtusVault.reducePosition.selector, 
-  //       newHedgePositions[i].positionId, 
-  //       newHedgePositions[i].amount
-  //     );
+    for(uint i = 0; i < newHedgeTrades.length; i++) {
+      bytes memory data = abi.encodeWithSelector(
+        IOtusVault.hedge.selector,
+        newHedgeTrades[i].optionType
+      );
+      callOptionalReturn(newHedgeTrades[i].otusVault, data);
+    }
 
-  //     callOptionalReturn(newHedgePositions[i].otusVault, data);
-  //   }
+  }
+    
+  function closeHedgePosition(HedgeTrade[] memory newHedgeTrades) external onlyOwner {
+    
+    for(uint i = 0; i < newHedgeTrades.length; i++) {
+      bytes memory data = abi.encodeWithSelector(
+        IOtusVault.closeHedge.selector,
+        newHedgeTrades[i].optionType
+      );
+      callOptionalReturn(newHedgeTrades[i].otusVault, data);
+    }
 
-  // }
+  }
 
   function callOptionalReturn(address otusVault, bytes memory data) private {
 

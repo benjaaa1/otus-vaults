@@ -68,16 +68,14 @@ export default function VaultDetail() {
           strategyValue.vaultState.roundInProgress ? 
           <>
             <VaultActionButton onClick={closeRound}>Close Round</VaultActionButton>
+            <VaultActionButton onClick={closeRound}>Activate Hedge Strategy</VaultActionButton>
           </> :
           <>
             <VaultActionButton onClick={setVaultStrategy}>Set Round Strategy</VaultActionButton>
+            <VaultActionButton onClick={setVaultStrategy}>Set Hedge Strategy</VaultActionButton>
             <VaultActionButton onClick={startRound}>Start Round</VaultActionButton>
           </>
         }
-
-        {/* <MenuItem onClick={reducePosition}>Reduce Position</MenuItem>
-                <MenuItem onClick={() => {  onOpen() }}>Set Hedge Strategy</MenuItem>
-                <MenuItem onClick={_hedge}>Hedge</MenuItem> */}
 
         <VaultStrategyBox>
           <StrikesSelected />
@@ -92,6 +90,7 @@ export default function VaultDetail() {
       </VStack> 
 
       <HedgeStrategyModal isOpen={isOpen} onClose={onClose} dispatch={dispatch} />
+      {/* <RoundStrategyModal isOpen={isOpen} onClose={onClose} dispatch={dispatch} /> */}
 
     </Box> 
   );
@@ -106,7 +105,6 @@ const HedgeStrategyModal = ({ isOpen, onClose }) => {
   const { 
     hedgePercentage,
     maxHedgeAttempts,
-    limitStrikePricePercent,
     leverageSize,
     stopLossLimit
   } = hedgeStrategy;
@@ -114,7 +112,6 @@ const HedgeStrategyModal = ({ isOpen, onClose }) => {
   console.log({ 
     hedgePercentage,
     maxHedgeAttempts,
-    limitStrikePricePercent,
     leverageSize,
     stopLossLimit
   });
@@ -134,11 +131,12 @@ const HedgeStrategyModal = ({ isOpen, onClose }) => {
           <ModalBody>
             <Flex>
               <Box flex='1'>
-                <Slider name={"Hedge Percentage"} step={.1} min={-1} max={1} id={"targetDelta"} setSliderValue={setValue} sliderValue={hedgePercentage} label={'%'} />    
-                <Slider name={"Max Hedge Attempts"} step={.05} min={0} max={.5} id={"maxDeltaGap"} setSliderValue={setValue} sliderValue={maxHedgeAttempts} label={''} />
-                <Slider name={"Strike Price Limit"} step={.1} min={0} max={1} id={"maxVolVariance"} setSliderValue={setValue} sliderValue={limitStrikePricePercent} label={'%'} />
-                <Slider name={"Leverage Size"} step={.1} min={0} max={2} id={"minVol"} setSliderValue={setValue} sliderValue={leverageSize} label={''} />
-                <Slider name={"Stop Loss Limit"} step={.1} min={0} max={2} id={"maxVol"} setSliderValue={setValue} sliderValue={stopLossLimit} label={'%'} />
+                <Slider name={"Hedge Percentage"} step={.1} min={-1} max={1} id={"hedgePercentage"} setSliderValue={setValue} sliderValue={hedgePercentage} label={'%'} />    
+                <Slider name={"Max Hedge Attempts"} step={.05} min={0} max={.5} id={"maxHedgeAttempts"} setSliderValue={setValue} sliderValue={maxHedgeAttempts} label={''} />
+                {/* <Slider name={"Strike Price Limit"} step={.1} min={0} max={1} id={"limitStrikePricePercent"} setSliderValue={setValue} sliderValue={limitStrikePricePercent} label={'%'} /> */}
+                <Slider name={"Leverage Size"} step={.1} min={0} max={2} id={"leverageSize"} setSliderValue={setValue} sliderValue={leverageSize} label={''} />
+                <Slider name={"Stop Loss Limit"} step={.1} min={0} max={2} id={"stopLossLimit"} setSliderValue={setValue} sliderValue={stopLossLimit} label={'%'} />
+                <Slider name={"Hedge Direction"} step={.1} min={0} max={2} id={"isLongHedge"} setSliderValue={setValue} sliderValue={stopLossLimit} label={'%'} />
               </Box>
             </Flex>
           </ModalBody>

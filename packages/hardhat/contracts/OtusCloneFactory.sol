@@ -6,7 +6,7 @@ import "hardhat/console.sol";
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {StrategyBase} from "./vault/strategy/StrategyBase.sol";
+import {StrategyBase} from "./vaultDOV/strategy/StrategyBase.sol";
 
 // libraries
 import {Vault} from "./libraries/Vault.sol";
@@ -117,6 +117,7 @@ contract OtusCloneFactory {
 	 ) public {
 		require(msg.sender == otusController, "Not allowed to create");
 		require(marketAddresses[0] != address(0), "Failed to get quote asset");
+		require(_vault != address(0), "_vault must be non zero address");
 
 		IStrategy(_strategy).initialize(
 			_owner,

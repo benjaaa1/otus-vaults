@@ -42,7 +42,7 @@ contract DNStrategy is DNStrategyBase {
    *  ADMIN
    ***********************************************/
 
-  constructor(address _synthetixAdapter) DNStrategyBase(_synthetixAdapter) {}
+  constructor() DNStrategyBase() {}
 
   function initialize(
     address _owner, 
@@ -73,7 +73,7 @@ contract DNStrategy is DNStrategyBase {
   * quoteAsset usually USD baseAsset usually ETH
   */
   function setStrategy(StrategyDetail memory _currentStrategy) external onlyOwner {
-    (, , , , , , , bool roundInProgress,) = otusVault.vaultState();
+    (, , , , , , , bool roundInProgress,) = dNOtusVault.vaultState();
     require(!roundInProgress, "round opened");
     currentStrategy = _currentStrategy;
   }
@@ -102,9 +102,9 @@ contract DNStrategy is DNStrategyBase {
         uint spotCapital, 
         uint perpCapital, 
         uint leverageSize
-      ) = _getCollateral(uint minCollateralPercent, uint allCapital);
+      ) = _getCollateral(minCollateralPercent, allCapital);
 
-      (futuresPositionId) = _tradePositiveFundingRate(spotCapital, perpCapital, leverageSize);
+      _tradePositiveFundingRate(spotCapital, perpCapital, leverageSize);
 
     } else {
 
@@ -112,9 +112,9 @@ contract DNStrategy is DNStrategyBase {
         uint spotCapital, 
         uint perpCapital, 
         uint leverageSize
-      ) = _getCollateral(uint minCollateralPercent, uint allCapital);
+      ) = _getCollateral(minCollateralPercent, allCapital);
 
-      (futuresPositionId) = _tradeNegativeFundingRate(spotCapital, perpCapital, leverageSize);
+      _tradeNegativeFundingRate(spotCapital, perpCapital, leverageSize);
 
     }
 
@@ -125,7 +125,6 @@ contract DNStrategy is DNStrategyBase {
    * @param spotCapital strike detail
    * @param perpCapital target collateral amount
    * @param leverageSize target collateral amount
-   * @return positionId
    */
   function _tradePositiveFundingRate(
     uint spotCapital, 
@@ -140,7 +139,7 @@ contract DNStrategy is DNStrategyBase {
     // require base is certain amount 
 
     // futures 
-    _transferMargin(perpCapital); 
+    _transferMargin(int(perpCapital)); 
     _modifyPosition(-int(leverageSize));
 
   }
@@ -166,35 +165,35 @@ contract DNStrategy is DNStrategyBase {
     // require base is certain amount 
 
     // futures 
-    _transferMargin(perpCapital); 
+    _transferMargin(int(perpCapital)); 
     _modifyPosition(int(leverageSize));
   }
 
   
-  /**
-   * @dev convert premium in quote asset into collateral asset and send it back to the vault.
-   */
-  function returnFundsAndClosePositions() external onlyVault {
-    ExchangeRateParams memory exchangeParams = getExchangeParams();
-    uint quoteBal = quoteAsset.balanceOf(address(this));
+  // /**
+  //  * @dev convert premium in quote asset into collateral asset and send it back to the vault.
+  //  */
+  // function returnFundsAndClosePositions() external onlyVault {
+  //   ExchangeRateParams memory exchangeParams = getExchangeParams();
+  //   uint quoteBal = quoteAsset.balanceOf(address(this));
 
-    if(hasBaseCollat) {
-      // exchange quote asset to base asset, and send base asset back to vault
-      uint baseBal = baseAsset.balanceOf(address(this));
-      uint minQuoteExpected = quoteBal.divideDecimal(exchangeParams.spotPrice).multiplyDecimal(
-        DecimalMath.UNIT - exchangeParams.baseQuoteFeeRate
-      );
-      uint baseReceived = exchangeFromExactQuote(quoteBal, minQuoteExpected);
-      require(baseAsset.transfer(address(vault), baseBal + baseReceived), "failed to return funds from strategy");
-    }
+  //   if(hasBaseCollat) {
+  //     // exchange quote asset to base asset, and send base asset back to vault
+  //     uint baseBal = baseAsset.balanceOf(address(this));
+  //     uint minQuoteExpected = quoteBal.divideDecimal(exchangeParams.spotPrice).multiplyDecimal(
+  //       DecimalMath.UNIT - exchangeParams.baseQuoteFeeRate
+  //     );
+  //     uint baseReceived = exchangeFromExactQuote(quoteBal, minQuoteExpected);
+  //     require(baseAsset.transfer(address(vault), baseBal + baseReceived), "failed to return funds from strategy");
+  //   }
 
-    if(hasQuoteCollat) {
-      // send quote balance directly
-    }
+  //   if(hasQuoteCollat) {
+  //     // send quote balance directly
+  //   }
 
-    require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
+  //   require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
 
-    _clearAllFuturesPositions();
-  }
+  //   _clearAllFuturesPositions();
+  // }
 
 }

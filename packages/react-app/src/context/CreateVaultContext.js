@@ -82,6 +82,7 @@ export const CreateVaultProvider = ({ children }) => {
 
       const formattedVaultInformation = {
         ...vaultInformation,
+        isPublic: true,
         performanceFee: parseUnits(performanceFee.toString(), 18), 
         managementFee: parseUnits(managementFee.toString(), 18),
       }
@@ -105,7 +106,7 @@ export const CreateVaultProvider = ({ children }) => {
       })
 
       const response = await otusController.connect(signer).createOptionsVault(
-        optionMarket,
+        "0xCdbF610D42873ed09C1ac085D7e64023FeE6692E",//optionMarket,
         formattedVaultInformation,
         formattedVaultParams,
         formattedVaultStrategy

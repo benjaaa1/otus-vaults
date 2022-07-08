@@ -5,7 +5,7 @@ pragma solidity 0.8.9;
 import "hardhat/console.sol";
 
 // Libraries
-import '../../interfaces/IFuturesMarket.sol';
+import '../interfaces/IFuturesMarket.sol';
 
 // Inherited
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";

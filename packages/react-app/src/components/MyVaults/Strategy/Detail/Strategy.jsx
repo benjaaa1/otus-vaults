@@ -32,10 +32,7 @@ export default function StrategyDetail() {
   const {
     selectedBoard,
     liveBoards,
-    liveStrikes,
-    needsQuotesUpdated,
-    currentStrikes,
-    activeCurrentStrikeIndex
+    currentStrikes
   } = state; 
 
   const { activeBoardId } = strategyValue;

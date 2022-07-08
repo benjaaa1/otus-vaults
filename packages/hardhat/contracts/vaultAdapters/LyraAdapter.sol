@@ -7,7 +7,7 @@ import "hardhat/console.sol";
 // Libraries
 import {BlackScholes} from '@lyrafinance/protocol/contracts/libraries/BlackScholes.sol';
 import {DecimalMath} from '@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol';
-import '../../interfaces/IFuturesMarket.sol';
+import '../interfaces/IFuturesMarket.sol';
 
 // Inherited
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";

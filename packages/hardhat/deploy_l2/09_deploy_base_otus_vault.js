@@ -7,16 +7,17 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   const vault = await ethers.getContract("Vault");
   const vaultLifeCycle = await ethers.getContract("VaultLifeCycle");
+  const keeper = await ethers.getContract("Keeper");
 
   const _roundDuration = 86400 * 7; // uint, 
-  const _keeper = "0x2A48Cea7dEF88436ba90d81eE6f55D416804bD54"; // address,
+  // const _keeper = "0x2A48Cea7dEF88436ba90d81eE6f55D416804bD54"; // address,
 
   await deploy("OtusVault", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ 
       _roundDuration,  
-      _keeper // address,
+      keeper.address // address,
     ],
     log: true,
     libraries: {

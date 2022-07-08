@@ -3,9 +3,18 @@ import { BaseLink } from "../../designSystem";
 import colors from "../../designSystem/colors";
 import theme from "../../designSystem/theme";
 
-export const NavigationLink = styled(BaseLink)`
+const NavigationLinkStyle = styled(BaseLink)`
   font-size: ${theme.fontSize.md}; 
-  font-weight: 400;
-  text-transform: uppercase;
   color: ${colors.buttons.primary};
 `;
+
+export const NavigationLink = (props) => {
+  return (
+    <NavigationLinkStyle 
+      {...props} 
+      style={isActive => {
+        console.log({ isActive })
+      }}
+    />
+  )
+}

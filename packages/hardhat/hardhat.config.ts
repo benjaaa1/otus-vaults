@@ -15,7 +15,6 @@ import "@nomiclabs/hardhat-etherscan";
 import "@typechain/hardhat";
 import "hardhat-dependency-compiler";
 import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths';
-// import "@tenderly/hardhat-tenderly";
 
 dotenv.config();
 
@@ -114,6 +113,9 @@ module.exports = {
         l2: "localOptimism",
       },
     },
+    // hardhat: {
+    //   allowUnlimitedContractSize: true
+    // }
   },
   solidity: {
     compilers: [
@@ -162,6 +164,6 @@ module.exports = {
   },
   dependencyCompiler: {
     paths: lyraContractPaths,
-  }
+  },
 };
 

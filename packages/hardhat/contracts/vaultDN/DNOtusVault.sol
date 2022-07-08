@@ -9,19 +9,17 @@ import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '../interfaces/IFuturesMarket.sol';
 import {IDNStrategy} from "../interfaces/IDNStrategy.sol";
 
-import {BaseVault} from "./BaseVault.sol";
+import {BaseVault} from "../vault/BaseVault.sol";
 import {Vault} from "../libraries/Vault.sol";
 
-import {Strategy} from "./strategy/Strategy.sol";
-import {StrategyBase} from "./strategy/StrategyBase.sol";
-
-contract OtusDNVault is BaseVault {
+contract DNOtusVault is BaseVault {
   using SafeMath for uint;
 
   /************************************************
   *  IMMUTABLES & CONSTANTS
   ***********************************************/
-  address public immutable keeper; 
+  address public strategy;
+  address public keeper; 
 
   string public vaultName; 
   string public vaultDescription; 
@@ -47,7 +45,7 @@ contract OtusDNVault is BaseVault {
 
   event RoundSettled(address user, uint16 roundId, uint currentCollateral);
 
-  event KeeperUpdated(address keeper);
+  event KeeperUpdated(address user, address keeper);
 
   /************************************************
    *  Modifiers
@@ -99,6 +97,15 @@ contract OtusDNVault is BaseVault {
   }
 
   /************************************************
+   *  SETTERS
+   ***********************************************/
+
+  function setKeeper(address _keeper) public onlyOwner {
+    keeper = _keeper;
+    emit KeeperUpdated(msg.sender, _keeper);
+  }
+
+  /************************************************
    *  PUBLIC ACTIONS
    ***********************************************/
 
@@ -123,7 +130,6 @@ contract OtusDNVault is BaseVault {
     require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
     require(address(strategy) != address(0), "Strategy not set");
-    IDNStrategy(strategy).setBoard(boardId);
 
     (uint lockedBalance, uint queuedWithdrawAmount) = _rollToNextRound(uint(lastQueuedWithdrawAmount));
 
@@ -155,10 +161,10 @@ contract OtusDNVault is BaseVault {
     uint premiumReceived;
     uint capitalUsed;
 
-    (positionId, premiumReceived, capitalUsed) = IDNStrategy(strategy).doTrade();
+    (positionId, capitalUsed) = IDNStrategy(strategy).doTrade();
     
     // update the remaining locked amount -- lockedAmountLeft can be used for hedge
-    vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
+    vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - capitalUsed;
 
     emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
   }

@@ -321,7 +321,6 @@ export const useStrategyContext = () => {
 //     const {
 //       hedgePercentage,
 //       maxHedgeAttempts,
-//       limitStrikePricePercent,
 //       leverageSize,
 //       stopLossLimit
 //     } = hedgeStrategy; 
@@ -329,7 +328,6 @@ export const useStrategyContext = () => {
 //     const formattedStrategy = {
 //       hedgePercentage: parseUnits(hedgePercentage.toString(), 18), 
 //       maxHedgeAttempts: parseUnits(maxHedgeAttempts.toString(), 18),
-//       limitStrikePricePercent: parseUnits(limitStrikePricePercent.toString(), 18), 
 //       leverageSize: parseUnits(leverageSize.toString(), 18),
 //       stopLossLimit: parseUnits(stopLossLimit.toString(), 18)
 //     }
