@@ -15,7 +15,7 @@ const registerMarkets = async () => {
 
 
     // need to update base asset 
-    const futures = await outsController.setFuturesMarkets("0x531CEf2f7fd6F76aa66e5D8aa03b81AdeCdeaC72", "0x7345544800000000000000000000000000000000000000000000000000000000")
+    const futures = await outsController.setFuturesMarkets("0xD7C80fC4A5B05B5bE7B5b762e32127B54Fea385A", "0x7345544800000000000000000000000000000000000000000000000000000000")
     const futuresReceipt = futures.wait(); 
 
     const futures1 = await outsController.getFuturesMarket("0x7345544800000000000000000000000000000000000000000000000000000000")
@@ -24,10 +24,10 @@ const registerMarkets = async () => {
     // get optionmarkets 
 
     
-    const optionMarkets = await outsController.setOptionMarketDetails("0xCdbF610D42873ed09C1ac085D7e64023FeE6692E"); 
+    const optionMarkets = await outsController.setOptionMarketDetails("0xDc06D81A68948544A6B453Df55CcD172061c6d6e"); 
     const optionMarketsReceipt = optionMarkets.wait(); 
 
-    const market = await outsController.getOptionMarketDetails("0xCdbF610D42873ed09C1ac085D7e64023FeE6692E"); 
+    const market = await outsController.getOptionMarketDetails("0xDc06D81A68948544A6B453Df55CcD172061c6d6e"); 
     console.log({ market })
 
     return true;

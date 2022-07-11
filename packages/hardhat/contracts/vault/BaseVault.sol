@@ -207,9 +207,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    */
   function deposit(uint amount) external nonReentrant {
     require(amount > 0, "!amount");
-
     _depositFor(amount, msg.sender);
-    // An approve() by the msg.sender is required beforehand
+    // asset is quote asset 
     IERC20(vaultParams.asset).safeTransferFrom(msg.sender, address(this), amount);
   }
 

@@ -93,7 +93,7 @@
           ]
         },
         "GWAVOracle": {
-          "address": "0xbA7EE593A8371F02B9E783348dF9c152a7d308cE",
+          "address": "0xf5EcD22FeE78b8Ad31d741916A848Ad49c875924",
           "abi": [
             {
               "inputs": [],
@@ -418,7 +418,7 @@
           ]
         },
         "Keeper": {
-          "address": "0xFf90e40710595ac67Bd5ae1af272d5B71a5a477C",
+          "address": "0x1cB5F971E1AC4E6871697C685440bceefeD4772A",
           "abi": [
             {
               "inputs": [
@@ -579,7 +579,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0xaF8EfC3f6b318005B8eb82985bEDC83B0B11De70",
+          "address": "0xF17b9892FB9686876C7B7358094A1D9eE6ac6b8C",
           "abi": [
             {
               "inputs": [],
@@ -741,7 +741,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0xc391DCb22559Be3b556378b284ec9B694fDEF068",
+          "address": "0xc249Ce8C04943a7C913596c0208Aaf013F0701e9",
           "abi": [
             {
               "inputs": [
@@ -1040,7 +1040,7 @@
           ]
         },
         "OtusController": {
-          "address": "0x74568A245F1E340Be6FA9939Cd0Bd4c880001664",
+          "address": "0x69448A387C0aa1d9fD0b91CAE9c167D122EC9AFa",
           "abi": [
             {
               "inputs": [
@@ -1075,6 +1075,31 @@
                 }
               ],
               "name": "OwnershipTransferred",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "user",
+                  "type": "address"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "vault",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "strategy",
+                  "type": "address"
+                }
+              ],
+              "name": "VaultCreated",
               "type": "event"
             },
             {
@@ -1113,7 +1138,7 @@
               "inputs": [
                 {
                   "internalType": "address",
-                  "name": "userSupervisor",
+                  "name": "_msgSender",
                   "type": "address"
                 }
               ],
@@ -1618,7 +1643,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0x25544a9859EC5001ce8886D11c17AD6b50722c02",
+          "address": "0xF0768c2A46b3BcFa076aF09fCf943ae2Aa178De6",
           "abi": [
             {
               "inputs": [
@@ -1948,16 +1973,16 @@
               "anonymous": false,
               "inputs": [
                 {
-                  "indexed": false,
+                  "indexed": true,
                   "internalType": "address",
-                  "name": "user",
+                  "name": "vault",
                   "type": "address"
                 },
                 {
                   "indexed": false,
-                  "internalType": "uint256",
+                  "internalType": "uint256[]",
                   "name": "positionId",
-                  "type": "uint256"
+                  "type": "uint256[]"
                 },
                 {
                   "indexed": false,
@@ -2829,7 +2854,13 @@
                 }
               ],
               "name": "trade",
-              "outputs": [],
+              "outputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "positionIds",
+                  "type": "uint256[]"
+                }
+              ],
               "stateMutability": "nonpayable",
               "type": "function"
             },
@@ -3209,7 +3240,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0x52e741C54e0e459b7E65E13125394e170454Fb55",
+          "address": "0xC8Ec8F8AC489f556e6acfB85B9deCBA15dd151F8",
           "abi": [
             {
               "inputs": [
@@ -3344,43 +3375,6 @@
                   "internalType": "bool",
                   "name": "isMin",
                   "type": "bool"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "int256",
-                      "name": "targetDelta",
-                      "type": "int256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxDeltaGap",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVolVariance",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "optionType",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct StrategyBase.StrikeStrategyDetail",
-                  "name": "currentStrikeStrategy",
-                  "type": "tuple"
                 },
                 {
                   "components": [
@@ -4233,41 +4227,9 @@
                   "type": "tuple"
                 },
                 {
-                  "components": [
-                    {
-                      "internalType": "int256",
-                      "name": "targetDelta",
-                      "type": "int256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxDeltaGap",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVolVariance",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "optionType",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct StrategyBase.StrikeStrategyDetail",
-                  "name": "currentStrikeStrategy",
-                  "type": "tuple"
+                  "internalType": "uint256",
+                  "name": "optionType",
+                  "type": "uint256"
                 }
               ],
               "name": "isValidStrike",

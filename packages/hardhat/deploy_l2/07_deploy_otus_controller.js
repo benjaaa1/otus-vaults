@@ -6,7 +6,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deployer } = await getNamedAccounts();
 
   const lyraMarketRegistry = { // optionmarketviewer
-    address: "0xa5c383cd6C82FDe0fc9A1FEbD2e9c9B2D98F507D"
+    address: "0x91a1AB0DDa247CE6D8666c5A49c183f8978a9797"
   }
 
   const futuresMarketManager = {

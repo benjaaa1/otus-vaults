@@ -45,6 +45,16 @@ contract OtusController is Ownable {
   mapping(address => bool) public vaultsStatus;
   address[] public vaultsList; 
 
+  /************************************************
+   *  EVENTS
+   ***********************************************/
+
+  event VaultCreated(address indexed user, address indexed vault, address strategy);
+
+  /************************************************
+  *  CONSTRUCTOR & INITIALIZATION
+  ***********************************************/
+
   constructor(address _lyraRegistry, address _futuresMarketManager) Ownable() {
     lyraRegistry = LyraRegistry(_lyraRegistry);
     futuresMarketManager = IFuturesMarketManager(_futuresMarketManager);
@@ -88,10 +98,10 @@ contract OtusController is Ownable {
     vaults[msg.sender].push(vault);
 		require(vault != address(0), "Vault not created"); 
 
-    // create strategy 
+    // create strategy clone
     address strategy = IOtusCloneFactory(otusCloneFactory).cloneStrategy(); 
+    require(strategy != address(0), "Strategy not created"); 
 		strategies[vault] = strategy;
-		require(strategy != address(0), "Strategy not created"); 
 
     // initialize vault
     IOtusCloneFactory(otusCloneFactory)._initializeClonedVault(
@@ -114,6 +124,8 @@ contract OtusController is Ownable {
     ); 
 
 		_addVault(vault);
+
+    emit VaultCreated(msg.sender, vault, strategy);
 
   }
 
@@ -171,13 +183,13 @@ contract OtusController is Ownable {
   }
 
   function getUserManagerDetails() public view returns (address[] memory userVaults, address[] memory userStrategies) {
-    address userSupervisor = msg.sender;
-    userVaults = _getVaults(userSupervisor);
+    address _msgSender = msg.sender;
+    userVaults = _getVaults(_msgSender);
     userStrategies = _getStrategies(userVaults); 
   }
 
-	function _getVaults(address userSupervisor) public view returns (address[] memory userVaults) {
-		userVaults = vaults[userSupervisor]; 
+	function _getVaults(address _msgSender) public view returns (address[] memory userVaults) {
+		userVaults = vaults[_msgSender]; 
 	}
 
 	function _getStrategies(address[] memory userVaults) public view returns (address[] memory userStrategies) {
@@ -195,6 +207,18 @@ contract OtusController is Ownable {
   }
 
   function getActiveVaults() public view returns (address[] memory) {
-    return vaultsList;
+    uint len = vaultsList.length;
+    address[] memory activeVaults = new address[](len); 
+
+    for(uint i = 0; i < len; i++) {
+      address _vault = vaultsList[i]; 
+      bool active = vaultsStatus[_vault];
+      if(active) {
+        activeVaults[i] = _vault; 
+      }
+    }
+
+    return activeVaults; 
+
   }
 }

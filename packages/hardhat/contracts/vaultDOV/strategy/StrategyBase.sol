@@ -212,13 +212,16 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
   //////////////////
 
   /**
-   * @dev verify if the strike is valid for the strategy
-   * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
-   */
-  function isValidStrike(Strike memory strike, StrikeStrategyDetail memory currentStrikeStrategy) public view returns (bool isValid) {
+  * @dev verify if the strike is valid for the strategy
+  * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
+  */
+  function isValidStrike(Strike memory strike, uint optionType) public view returns (bool isValid) {
+       
     if (activeExpiry != strike.expiry) {
       return false;
     }
+
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
 
     uint[] memory strikeId = _toDynamic(strike.id);
     uint vol = getVols(strikeId)[0];
@@ -232,7 +235,9 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
   /**
    * @dev check if the vol variance for the given strike is within certain range
    */
-  function _isValidVolVariance(uint strikeId, StrikeStrategyDetail memory currentStrikeStrategy) internal view returns (bool isValid) {
+  function _isValidVolVariance(uint strikeId, uint optionType) internal view returns (bool isValid) {
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
+
     uint volGWAV = gwavOracle.volGWAV(strikeId, currentStrategy.gwavPeriod);
     uint volSpot = getVols(_toDynamic(strikeId))[0];
 
@@ -285,10 +290,11 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
   function _getPremiumLimit(
       Strike memory strike, 
       bool isMin, 
-      StrikeStrategyDetail memory currentStrikeStrategy,
       StrikeTrade memory currentStrikeTrade
     ) public view returns (uint limitPremium) {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeTrade.optionType];
+
     uint limitVol = isMin ? currentStrikeStrategy.minVol : currentStrikeStrategy.maxVol;
     (uint minCallPremium, uint minPutPremium) = getPurePremium(
       _getSecondsToExpiry(strike.expiry),

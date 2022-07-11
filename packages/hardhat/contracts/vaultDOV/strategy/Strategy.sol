@@ -115,10 +115,11 @@ contract Strategy is StrategyBase {
   function getCurrentStrikeStrategies() public view returns (StrikeStrategyDetail[] memory _currentStrikeStrategies) {
 
     _currentStrikeStrategies = new StrikeStrategyDetail[](StrikeStrategiesPossible);
+    StrikeStrategyDetail memory _strikeStrategy;
 
     for(uint i = 0; i < StrikeStrategiesPossible; i++) {
-      StrikeStrategyDetail memory _strikeStrategy = currentStrikeStrategies[i];
-
+      _strikeStrategy = currentStrikeStrategies[i];
+    
     }
 
     return _currentStrikeStrategies; 
@@ -164,13 +165,13 @@ contract Strategy is StrategyBase {
       "min time interval not passed for option type"
     );
 
-    require(_isValidVolVariance(strikeId, currentStrikeStrategy), "vol variance exceeded");
+    require(_isValidVolVariance(strikeId, optionType), "vol variance exceeded");
 
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
-    require(isValidStrike(strike, currentStrikeStrategy), "invalid strike");
+    require(isValidStrike(strike, optionType), "invalid strike");
 
     if(_isLong(currentStrikeStrategy.optionType)) {
-      uint maxPremium = _getPremiumLimit(strike, false, currentStrikeStrategy, _strike);
+      uint maxPremium = _getPremiumLimit(strike, false, _strike);
 
       require(
         quoteAsset.transferFrom(address(vault), address(this), maxPremium),
@@ -302,7 +303,7 @@ contract Strategy is StrategyBase {
     uint strategyIndex = activeStrikeIds.length; 
 
     // get minimum expected premium based on minIv
-    uint minExpectedPremium = _getPremiumLimit(strike, true, currentStrikeStrategy, currentStrikeTrade);
+    uint minExpectedPremium = _getPremiumLimit(strike, true, currentStrikeTrade);
     OptionType optionType = OptionType(currentStrikeStrategy.optionType);
     // perform trade
     TradeResult memory result = openPosition(
@@ -391,10 +392,9 @@ contract Strategy is StrategyBase {
 
     uint currentStrikeTradeIndex = strikeIdToTrade[position.strikeId];
     StrikeTrade memory currentStrikeTrade = currentStrikeTrades[currentStrikeTradeIndex]; 
-    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeTrade.optionType]; 
 
     // closes excess position with premium balance
-    uint maxExpectedPremium = _getPremiumLimit(strike, false, currentStrikeStrategy, currentStrikeTrade);
+    uint maxExpectedPremium = _getPremiumLimit(strike, false, currentStrikeTrade);
     TradeInputParameters memory tradeParams = TradeInputParameters({
       strikeId: position.strikeId,
       positionId: position.positionId,

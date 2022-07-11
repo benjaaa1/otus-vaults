@@ -49,7 +49,7 @@ contract OtusVault is BaseVault {
 
   event StrategyUpdated(address strategy);
 
-  event Trade(address user, uint positionId, uint16 roundId, uint premium);
+  event Trade(address indexed vault, uint[] positionId, uint16 roundId, uint premium);
 
   event RoundStarted(uint16 roundId, uint104 lockAmount);
 
@@ -183,7 +183,7 @@ contract OtusVault is BaseVault {
   /**
    * @notice Start the trade for the next/new round depending on strategy
    */
-  function trade(StrategyBase.StrikeTrade[] memory _strikes) external onlyOwner {
+  function trade(StrategyBase.StrikeTrade[] memory _strikes) external onlyOwner returns (uint[] memory positionIds) {
     // can trade during round as long as lockedAmount is greater than 0
     // round should be opened 
     require(vaultState.roundInProgress, "round not opened");
@@ -193,12 +193,15 @@ contract OtusVault is BaseVault {
     uint positionId;
     uint premiumReceived;
     uint capitalUsed;
-    for(uint i = 0; i < _strikes.length; i++) { 
+    uint len = _strikes.length;
+    positionIds = new uint[](len);
+
+    for(uint i = 0; i < len; i++) { 
       StrategyBase.StrikeTrade memory _trade = _strikes[i]; 
       (positionId, premiumReceived, capitalUsed) = IStrategy(strategy).doTrade(_trade);
       roundPremiumCollected += premiumReceived;
       allCapitalUsed += capitalUsed; 
-
+      positionIds[i] = positionId;
       hasFuturesHedge = _trade.futuresHedge;  
     }
     
@@ -206,7 +209,7 @@ contract OtusVault is BaseVault {
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
     vaultState.tradesExecuted = true;
 
-    emit Trade(msg.sender, positionId, vaultState.round, premiumReceived);
+    emit Trade(address(this), positionIds, vaultState.round, premiumReceived);
   }
 
   /// @dev anyone close part of the position with premium made by the strategy if a position is dangerous
@@ -225,7 +228,7 @@ contract OtusVault is BaseVault {
   function hedge(uint optionType) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
     require(hasFuturesHedge, "Vault is not hedging strikes");
-    require(activeHedgeByOptionType[optionType] == false, "Vault already has hedge for option type"); 
+    require(activeHedgeByOptionType[optionType] == false, "Vault has hedge for option type"); 
 
     uint hedgeAttempts = hedgeAttemptsByOptionType[optionType];
 

@@ -226,7 +226,7 @@ module.exports = {
   69: {
     contracts: {
       SUSD: {
-        address: "0xBc8B64B2B32F32C6c4F14FfCd2CC2005272541CD",
+        address: "0xD1Aeb560393cF96162833f170345bff3dF6D087B",
         abi: ERC20ABI,
       },
       SUSDSNX: {
