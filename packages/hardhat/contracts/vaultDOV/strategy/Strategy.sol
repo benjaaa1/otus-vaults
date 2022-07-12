@@ -486,4 +486,11 @@ contract Strategy is StrategyBase {
     _withdrawAllMargin(); 
   }
 
+  /**
+  * @dev - used for testing
+  */
+  function withdrawSUSDSNX() public {
+    uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
+    IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(this), msg.sender, balance);
+  }
 }

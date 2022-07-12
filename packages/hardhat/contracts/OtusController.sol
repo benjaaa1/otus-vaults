@@ -29,8 +29,8 @@ contract OtusController is Ownable {
   
   IFuturesMarketManager immutable public futuresMarketManager;
   LyraRegistry public lyraRegistry; 
-
   address public keeper;  
+  
   address public otusCloneFactory;  
 
   mapping(address => address[]) public marketAddress; 
@@ -55,9 +55,10 @@ contract OtusController is Ownable {
   *  CONSTRUCTOR & INITIALIZATION
   ***********************************************/
 
-  constructor(address _lyraRegistry, address _futuresMarketManager) Ownable() {
+  constructor(address _lyraRegistry, address _futuresMarketManager, address _keeper) Ownable() {
     lyraRegistry = LyraRegistry(_lyraRegistry);
     futuresMarketManager = IFuturesMarketManager(_futuresMarketManager);
+    keeper = _keeper; 
   }
 
   function setOtusCloneFactory(address _otusCloneFactory) public onlyOwner {
@@ -94,7 +95,7 @@ contract OtusController is Ownable {
  		address[] memory _vaults = vaults[msg.sender]; 
     uint len = _vaults.length; 
 
-    require(len <= 3, "Max 3 vaults created"); 
+    require(len < 9, "Max 9 vaults created"); 
     vaults[msg.sender].push(vault);
 		require(vault != address(0), "Vault not created"); 
 
@@ -109,7 +110,8 @@ contract OtusController is Ownable {
       msg.sender,
       _vaultInfo,
       _vaultParams,
-      strategy
+      strategy,
+      keeper
     ); 
 
  		address[] memory marketAddresses = getOptionMarketDetails(_optionMarket); 
@@ -204,6 +206,10 @@ contract OtusController is Ownable {
   function _addVault(address _otusVault) public {
     vaultsList.push(_otusVault); 
     vaultsStatus[_otusVault] = true; 
+  }
+
+  function _setVaultStatus(address _otusVault, bool status) public {
+    vaultsStatus[_otusVault] = status; 
   }
 
   function getActiveVaults() public view returns (address[] memory) {

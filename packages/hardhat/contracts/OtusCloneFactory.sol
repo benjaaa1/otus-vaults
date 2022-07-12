@@ -20,7 +20,8 @@ interface IOtusVault {
 		address _owner,
 		Vault.VaultInformation memory _vaultInfo,
 		Vault.VaultParams memory _vaultParams,
-		address __strategy
+		address _strategy,
+		address _keeper
 	) external; 
 }
 
@@ -93,14 +94,16 @@ contract OtusCloneFactory {
 		address _owner,
 		Vault.VaultInformation memory _vaultInfo,
 		Vault.VaultParams memory _vaultParams,
-		address __strategy
+		address _strategy,
+		address _keeper
 	) public {
 		require(msg.sender == otusController, "Not allowed to create");
 		IOtusVault(_otusVaultClone).initialize(
 			_owner,
 			_vaultInfo,
 			_vaultParams,
-			__strategy
+			_strategy,
+			_keeper
 		);
 
 	}

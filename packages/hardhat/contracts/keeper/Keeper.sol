@@ -6,19 +6,15 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import {OtusController} from "../OtusController.sol"; 
 
 interface IOtusVault {
 	function reducePosition(uint positionId, uint closeAmount) external; 
   function hedge(uint optionType) external; 
 	function closeHedge(uint optionType) external; 
-
 }
 
 contract Keeper is Ownable {
   using Address for address;
-
-  OtusController immutable public otusController;
 
   struct Position {
     address otusVault;
@@ -31,9 +27,7 @@ contract Keeper is Ownable {
     uint optionType;
   }
 
-  constructor(address _otusController) Ownable() {
-    otusController = OtusController(_otusController);
-  }
+  constructor() Ownable() {}
 
   function reducePosition(Position[] memory vaultPositions) external onlyOwner {
 
@@ -63,25 +57,24 @@ contract Keeper is Ownable {
 
   }
     
-  function closeHedgePosition(HedgeTrade[] memory newHedgeTrades) external onlyOwner {
+  function closeHedgePosition(HedgeTrade[] memory newHedgeTrades) external onlyOwner returns (uint) {
     
-    for(uint i = 0; i < newHedgeTrades.length; i++) {
-      bytes memory data = abi.encodeWithSelector(
-        IOtusVault.closeHedge.selector,
-        newHedgeTrades[i].optionType
-      );
-      callOptionalReturn(newHedgeTrades[i].otusVault, data);
-    }
+    // for(uint i = 0; i < newHedgeTrades.length; i++) {
+    //   bytes memory data = abi.encodeWithSelector(
+    //     IOtusVault.closeHedge.selector,
+    //     newHedgeTrades[i].optionType
+    //   );
+    //   callOptionalReturn(newHedgeTrades[i].otusVault, data);
+    // }
+
+    return newHedgeTrades[0].optionType;
 
   }
 
   function callOptionalReturn(address otusVault, bytes memory data) private {
 
-    bytes memory returndata = otusVault.functionCall(data, "OtusVault: Low level call Failed");
-    if (returndata.length > 0) {
-        // Return data is optional
-        require(abi.decode(returndata, (bool)), "OtusVault: Operation did not succeed");
-    }
+    (bool success, bytes memory returndata) = otusVault.call(data);
+    require(success, "OtusVault: Operation did not succeed");
 
   }
 }

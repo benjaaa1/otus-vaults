@@ -72,12 +72,7 @@ contract OtusVault is BaseVault {
   *  CONSTRUCTOR & INITIALIZATION
   ***********************************************/
 
-  constructor(
-    uint _roundDuration,
-    address _keeper
-  ) BaseVault(_roundDuration) {
-    keeper = _keeper; 
-  }
+  constructor(uint _roundDuration) BaseVault(_roundDuration) {}
 
   /**
   * @notice Initializes contract on clone
@@ -87,7 +82,8 @@ contract OtusVault is BaseVault {
     address _owner,
     Vault.VaultInformation memory _vaultInfo, 
     Vault.VaultParams memory _vaultParams,
-    address _strategy
+    address _strategy,
+    address _keeper
   ) external {
 
     vaultName = _vaultInfo.name; 
@@ -95,7 +91,8 @@ contract OtusVault is BaseVault {
     isPublic = _vaultInfo.isPublic; 
     
     strategy = _strategy;
-
+    keeper = _keeper; 
+    
     collateralAsset = IERC20(_vaultParams.asset);
     collateralAsset.approve(_strategy, type(uint).max);
 
@@ -225,6 +222,10 @@ contract OtusVault is BaseVault {
   /**
    * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
   //  */
+  // function hedge(uint optionType) external returns (uint) {
+  //   return optionType;
+  // }
+
   function hedge(uint optionType) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
     require(hasFuturesHedge, "Vault is not hedging strikes");
@@ -246,4 +247,11 @@ contract OtusVault is BaseVault {
     activeHedgeByOptionType[optionType] = false; 
   }
 
+  /**
+  * @dev - used for testing
+  */
+  function withdrawSUSDSNX() public {
+    uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
+    // IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57000737919682).transferFrom(address(this), msg.sender, balance);
+  }
 }

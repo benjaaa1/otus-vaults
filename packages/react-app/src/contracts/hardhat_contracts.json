@@ -418,16 +418,10 @@
           ]
         },
         "Keeper": {
-          "address": "0x1cB5F971E1AC4E6871697C685440bceefeD4772A",
+          "address": "0x209F60C5e0b7D10d13D9963cE95927938332bA00",
           "abi": [
             {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "_otusController",
-                  "type": "address"
-                }
-              ],
+              "inputs": [],
               "stateMutability": "nonpayable",
               "type": "constructor"
             },
@@ -471,7 +465,13 @@
                 }
               ],
               "name": "closeHedgePosition",
-              "outputs": [],
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
               "stateMutability": "nonpayable",
               "type": "function"
             },
@@ -498,19 +498,6 @@
               "name": "openHedgePosition",
               "outputs": [],
               "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "otusController",
-              "outputs": [
-                {
-                  "internalType": "contract OtusController",
-                  "name": "",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "view",
               "type": "function"
             },
             {
@@ -579,7 +566,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0xF17b9892FB9686876C7B7358094A1D9eE6ac6b8C",
+          "address": "0x8b1B4c6052543f8B585516c0c8AaDdb74319CE22",
           "abi": [
             {
               "inputs": [],
@@ -741,7 +728,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0xc249Ce8C04943a7C913596c0208Aaf013F0701e9",
+          "address": "0x0651628222935D3847A0Ac2F678ff59F76613B42",
           "abi": [
             {
               "inputs": [
@@ -950,7 +937,12 @@
                 },
                 {
                   "internalType": "address",
-                  "name": "__strategy",
+                  "name": "_strategy",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_keeper",
                   "type": "address"
                 }
               ],
@@ -1040,7 +1032,7 @@
           ]
         },
         "OtusController": {
-          "address": "0x69448A387C0aa1d9fD0b91CAE9c167D122EC9AFa",
+          "address": "0x482524F89c7584932647d545C83159314aFbb3DF",
           "abi": [
             {
               "inputs": [
@@ -1052,6 +1044,11 @@
                 {
                   "internalType": "address",
                   "name": "_futuresMarketManager",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_keeper",
                   "type": "address"
                 }
               ],
@@ -1151,6 +1148,24 @@
                 }
               ],
               "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_otusVault",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "status",
+                  "type": "bool"
+                }
+              ],
+              "name": "_setVaultStatus",
+              "outputs": [],
+              "stateMutability": "nonpayable",
               "type": "function"
             },
             {
@@ -1643,7 +1658,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0xF0768c2A46b3BcFa076aF09fCf943ae2Aa178De6",
+          "address": "0xEacFF0F13BeB9ffc26F02fE4F3314da541f3AF9a",
           "abi": [
             {
               "inputs": [
@@ -1651,11 +1666,6 @@
                   "internalType": "uint256",
                   "name": "_roundDuration",
                   "type": "uint256"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_keeper",
-                  "type": "address"
                 }
               ],
               "stateMutability": "nonpayable",
@@ -2449,6 +2459,11 @@
                   "internalType": "address",
                   "name": "_strategy",
                   "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_keeper",
+                  "type": "address"
                 }
               ],
               "name": "initialize",
@@ -3040,6 +3055,13 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "withdrawSUSDSNX",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "address",
@@ -3240,7 +3262,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0xC8Ec8F8AC489f556e6acfB85B9deCBA15dd151F8",
+          "address": "0xb9418deEaC01585f41570118d87eE057000da83d",
           "abi": [
             {
               "inputs": [
@@ -4557,6 +4579,13 @@
                 }
               ],
               "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "withdrawSUSDSNX",
+              "outputs": [],
+              "stateMutability": "nonpayable",
               "type": "function"
             }
           ]

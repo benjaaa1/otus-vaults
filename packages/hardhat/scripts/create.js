@@ -25,30 +25,34 @@ const privateKeyFunder = '83b0ab1fd1b00eaa17ec88017e5802a66de33de1ae370863c9bb37
 
 const funder = new ethers.Wallet(privateKeyFunder, provider);
 
-const privateKeyDeployer = 'c849d425948762e2690bf6dda2e7adbd92ba6aa389e12a40152037eed3b2132b'; 
+const privateKeyDeployer = 'bc07d1ebe4234bd060b3f858e333ede238381f47843e8b19053a037d108d288f'; 
 
 const deployer = new ethers.Wallet(privateKeyDeployer, provider);
 
 const currentSUSD = '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8';
 
-const snxSUSD = '0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57'; 
+const _snxSUSD = '0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57'; 
 
 const currentTestFaucet = '0xf0034bd49d548095b7a369bfb456680d3188cf16'; 
 
-// const depositSNXSUSDToVaultStrategy = (snxSUSDInstance, _strategy) => {
-//   const transfer = await snxSUSDInstance.connect(funder).transfer(_strategy, ethers.utils.parseEther("1000")); 
-//   const transferReceipt = await transfer.wait(); 
-// }
+const depositSNXSUSDToVault = async (snxSUSDInstance, _vault) => {
+  const transfer = await snxSUSDInstance.connect(funder).transfer(_vault, ethers.utils.parseEther("200")); 
+  const transferReceipt = await transfer.wait(); 
+}
 
-const withdrawSNX = () => {
+const withdrawSNXSUSD = async (otusVaultInstance, strategyInstance) => {
+  const transferVault = await otusVaultInstance.connect(funder).withdrawSUSDSNX(); 
+  const transferVaultReceipt = await transferVault.wait(); 
 
+  const transferStrategy = await strategyInstance.connect(funder).withdrawSUSDSNX(); 
+  const transferReceipt = await transferStrategy.wait(); 
 }
 
 const dripApproveAndDeposit = async (susd, testFaucet, otusVaultInstance, _vault) => {
       
   const signers = [];
 
-  for( let i = 0; i < 2; i++) {
+  for( let i = 0; i < 4; i++) {
     // Get a new wallet
     let wallet = ethers.Wallet.createRandom();
     // add the provider from Hardhat
@@ -66,7 +70,7 @@ const dripApproveAndDeposit = async (susd, testFaucet, otusVaultInstance, _vault
 
     const balance = await susd.balanceOf(signer.address); 
     const formattedBalance = ethers.utils.formatEther(balance);
-    console.log({ [signer.address]: formattedBalance })
+    console.log({ formattedBalance })
     const approve = await susd.connect(signer).approve(_vault, ethers.utils.parseEther(formattedBalance)); 
     const approveReceipt = await approve.wait(); 
 
@@ -169,6 +173,7 @@ const create = async () => {
     const otusVault = await ethers.getContract("OtusVault");
     const strategy = await ethers.getContract("Strategy");
     const susd = await ethers.getContractAt(ERC20ABI, currentSUSD);
+    const snxSUSD = await ethers.getContractAt(ERC20ABI, _snxSUSD);
     const testFaucet = await ethers.getContractAt(TESTFAUCETABI, currentTestFaucet);
 
     const performanceFee = 0;
@@ -211,7 +216,6 @@ const create = async () => {
       formattedVaultStrategy
     ); 
     const createVaultReceipt = await createVault.wait();
-    
     // get vault information back
     const { userVaults, userStrategies } = await otusController.connect(deployer).getUserManagerDetails();
     const userVaultInformation = userVaults.map((vault, index) => {
@@ -227,11 +231,10 @@ const create = async () => {
     const strategyInstance = strategy.attach(_strategy); 
 
     // approve and deposit susd 
-    // probably best here to get the signers 
     await dripApproveAndDeposit(susd, testFaucet, otusVaultInstance, _vault); 
 
     // in future also deposit susd snx
-    // await snxSUSDApproveAndDeposit();
+    // await depositSNXSUSDToVault(snxSUSD, _vault);
     // set strike options strategies 
     const currentStrikeStrategies = buildStrikeStrategies(); 
 
@@ -250,19 +253,14 @@ const create = async () => {
     const startRound = await otusVaultInstance.connect(deployer).startNextRound(selectedBoard.id); 
     const startRoundReceipt = await startRound.wait(); 
     
-    // select strikes StrategyBase.StrikeTrade[]
+    // select strikes StrategyBase.StrikeTrade[] and trade
     const trades = await buildTrades(selectedBoard, deployer, strategyInstance); 
-    console.log('trades')
-    const trade = await otusVaultInstance.connect(deployer).trade([trades], { gasLimit: 7500000 }); 
+    const trade = await otusVaultInstance.connect(deployer).trade([trades]); 
     const tradeReceipt = await trade.wait(); 
-    console.log({ trade, tradeReceipt })
 
+    // get positions opened
     const [strikes, optionTypes, positionIds] = await strategyInstance.getStrikeOptionTypes();
     console.log({ strikes, optionTypes, positionIds })
-
-    // otusVaultInstance.on("Trade", (user, positionIds, roundId, premium) => {
-    //   console.log(user, positionIds, roundId, premium);
-    // })
 
     return true;
   } catch (e) {

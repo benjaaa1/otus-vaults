@@ -12,13 +12,16 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const futuresMarketManager = {
     address: "0xA3e4c049dA5Fe1c5e046fb3dCe270297D9b2c6a9"
   }
+  
+  console.log({ deployer: deployer })
 
   await deploy("OtusController", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ 
       lyraMarketRegistry.address, // lyra market
-      futuresMarketManager.address
+      futuresMarketManager.address,
+      deployer // keeper 
     ],
     log: true,
   });

@@ -16,7 +16,8 @@ interface IOtusCloneFactory {
 		address _owner,
 		Vault.VaultInformation memory _vaultInfo,
 		Vault.VaultParams memory _vaultParams,
-		address __strategy
+		address _strategy,
+		address _keeper
 	) external;
 
   /** v
