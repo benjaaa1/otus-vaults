@@ -71,8 +71,6 @@ export default function VaultDetail() {
             <VaultActionButton onClick={closeRound}>Activate Hedge Strategy</VaultActionButton>
           </> :
           <>
-            <VaultActionButton onClick={setVaultStrategy}>Set Round Strategy</VaultActionButton>
-            <VaultActionButton onClick={setVaultStrategy}>Set Hedge Strategy</VaultActionButton>
             <VaultActionButton onClick={startRound}>Start Round</VaultActionButton>
           </>
         }

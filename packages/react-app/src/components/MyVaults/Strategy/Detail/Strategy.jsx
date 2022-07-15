@@ -134,7 +134,7 @@ const StrikeSummary = ({
         </Box>
         
         <Box>
-          <Center w='16px' h='16px' bg={getOptionType( cs.optionType )[1]} color='white'>
+          <Center bg={getOptionType( cs.optionType )[1]} color='white'>
             <Box as='span' fontWeight='bold' fontSize='xs'>
             { getOptionType( cs.optionType )[0] }
             </Box>
@@ -145,7 +145,7 @@ const StrikeSummary = ({
           cs._strike != null ? 
           <Box>
             <Center bg={cs.optionType == 0 || cs.optionType == 1 ? '#000' : '#84FFC4'} color={cs.optionType == 0 || cs.optionType == 1 ? '#fff' : '#000'}>
-              <Box as='span' fontWeight='bold' fontSize='xs'>
+              <Box as='span' fontWeight='bold' fontSize='sm'>
               {
                 cs.optionType == 0 || cs.optionType == 1 ?
                 `Max Cost $${Math.round(cs._strike.pricePerOption)}` :
