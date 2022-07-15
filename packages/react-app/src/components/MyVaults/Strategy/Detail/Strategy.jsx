@@ -1,11 +1,9 @@
 import React from "react";
-import { formatUnits } from "ethers/lib/utils";
 
 import {
   Flex, 
   Box,
   useDisclosure,
-  Spacer,
   Grid, 
   GridItem,
   Stack,
@@ -13,16 +11,11 @@ import {
   Center
 } from '@chakra-ui/react';
 
-import { Slider } from "../../../Common/Slider";
 import { Select } from "../../../Common/Select";
-import { AddButton, RemoveButton, SelectStrikeButton, SelectStrikeStrategyButton, ViewLinkButton } from "../../../Common/Button";
+import { AddButton, SelectStrikeButton, ViewLinkButton } from "../../../Common/Button";
 import { useStrategyContext } from "../../../../context/StrategyContext"
-import { strikeStrategy } from "../../../../reducer/strategyReducer";
-import { ArrowForwardIcon } from "@chakra-ui/icons";
-import colors from "../../../../designSystem/colors";
 import { BaseShadowBox } from "../../../Common/Container";
 import theme from "../../../../designSystem/theme";
-import { StrikeStrategyModal } from "./StrikeStrategyModal";
 import StrikesModal from "./StrikesModal";
 
 export default function StrategyDetail() {
@@ -39,17 +32,41 @@ export default function StrategyDetail() {
   console.log({ activeBoardId })
 
   const { isOpen: isStrikeSelectModalOpen , onOpen: onStrikeSelectOpen, onClose: onStrikeSelectModalClose } = useDisclosure()
-  const { isOpen: isStrikeStrategyModalOpen , onOpen: onStrikeStrategyOpen, onClose: onStrikeStrategyModalClose } = useDisclosure()
 
 // active is more simple
 // upcoming is this one
 
   return (
     <>
-      <Flex border={'1px solid #333'} minWidth='max-content' alignItems='center' p={4}>
+      <Flex border={'1px solid #333'} minWidth='max-content' alignItems='center' p={4} mb={4}>
+        <Box flex={1} p={2}>
+
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Vault Status</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>In Progress</Text>
+
+        </Box>
+        <Box flex={1} p={2}>
+
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Vault Status</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>In Progress</Text>
+
+        </Box>
+        <Box flex={1} p={2}>
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Vault Status</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>In Progress</Text>
+        </Box>
+
+        <Box flex={1} p={2}>
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Vault Status</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>In Progress</Text>
+        </Box>
+
         <Box flex={1} p={2}>
           <ViewLinkButton onClick={viewVault} />
         </Box>
+      </Flex>
+
+      <Flex minWidth='max-content' alignItems='center' p={4}>
         <Box flex={2} p={2}>
         {/* isDisabled={activeBoardId > 0} only disable if trades occurred */}
           <Select width="100%" id='market' id='board' placeholder={'Select Round Expiry'} onChange={(e) => setSelectedBoard(e.target.value)}>
@@ -74,8 +91,6 @@ export default function StrategyDetail() {
                   dispatch={dispatch} 
                   onStrikeSelectOpen={onStrikeSelectOpen}
                   onStrikeSelectModalClose={onStrikeSelectModalClose}
-                  onStrikeStrategyOpen={onStrikeStrategyOpen}
-                  onStrikeStrategyModalClose={onStrikeStrategyModalClose}
                 />
               </GridItem>
             )
@@ -84,7 +99,6 @@ export default function StrategyDetail() {
       </Grid>
 
       <StrikesModal isOpen={isStrikeSelectModalOpen} onClose={onStrikeSelectModalClose} />
-      <StrikeStrategyModal isOpen={isStrikeStrategyModalOpen} onClose={onStrikeStrategyModalClose} />
     </>
   )
 
@@ -143,17 +157,6 @@ const StrikeSummary = ({
           null
         }
 
-        <Box>
-          <SelectStrikeStrategyButton 
-            onClick={() => {
-              onStrikeStrategyOpen()
-              dispatch({ type: 'ACTIVE_CURRENT_STRIKE_INDEX', payload: index })
-            }}
-          >
-            Strike Strategy
-          </SelectStrikeStrategyButton>
-        </Box>
-        
       </Stack>
        
     </BaseShadowBox>
@@ -163,13 +166,13 @@ const StrikeSummary = ({
 const getOptionType = (id) => {
   switch (id) {
     case 0:
-      return ['BC', '#000']
+      return ['Buy Call', '#000']
     case 1:
-      return ['BP', '#000']
+      return ['Buy Put', '#000']
     case 3:
-      return ['SC', '#000']
+      return ['Sell Call', '#000']
     case 4:
-      return ['SP', '#000']
+      return ['Sell Put', '#000']
     default:
       return ['', '']
   }

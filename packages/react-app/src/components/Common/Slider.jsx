@@ -12,7 +12,7 @@ import {
   FormLabel,
 } from '@chakra-ui/react'
 
-export const Slider = ({ name, id, min, max, step, setSliderValue, sliderValue, label }) => {
+export const Slider = ({ name, id, id2, min, max, step, setSliderValue, sliderValue, label }) => {
 
   const [showTooltip, setShowTooltip] = React.useState(false)
 
@@ -26,7 +26,7 @@ export const Slider = ({ name, id, min, max, step, setSliderValue, sliderValue, 
           max={max}
           colorScheme='teal'
           step={step}
-          onChange={(v) => setSliderValue(id, v)}
+          onChange={(v) => setSliderValue(id, v, id2)}
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
         >

@@ -20,16 +20,34 @@ export const currentHedgeStrategy = {
   stopLossLimit: .001,
 }
 
-export const hedgeStrategy = {
-  hedgePercentage: 1.2,
-  maxHedgeAttempts: 5,
-  leverageSize: 2,
-  stopLossLimit: .001
+export const strikeTrade = {
+  optionType: 0, 
+  size: 1,
+  futuresHedge: false, 
+  strikeId: 0,
+  isCall: true, 
+  isBuy: true,
+  _strike: null
+}
+
+export const strikeStrategy = {
+  targetDelta: .2,
+  maxDeltaGap: 0.05,
+  minVol: .8,
+  maxVol: 1.3,
+  maxVolVariance: .1,
+  optionType: 0
 }
 
 export const strategyInitialState = {
-  strategy: vaultStrategy,
+  vaultStrategy: vaultStrategy,
   hedgeStrategy: currentHedgeStrategy,
+  strikeStrategy: {
+    0: strikeStrategy, // LONG_CALL
+    1: strikeStrategy, // LONG_PUT
+    3: strikeStrategy, // SHORT_CALL_QUOTE
+    4: strikeStrategy // SHORT_PUT_QUOTE
+  },
   market: 'eth', 
   needsQuotesUpdated: false,
   lyraMarket: null, 
@@ -45,25 +63,8 @@ export const strategyInitialState = {
   size: 1,
 }
 
-export const strikeStrategy = {
-  targetDelta: .2,
-  maxDeltaGap: 0.05,
-  minVol: .8,
-  maxVol: 1.3,
-  maxVolVariance: .1,
-  optionType: 0, 
-  isCall: true, 
-  isBuy: true,
-  _strike: null
-}
-
 export const strategyReducer = (state, action) => {
-  console.log('in reducer', { state, action })
   switch (action.type) {
-    case 'UPDATE_STRATEGY': 
-      return { ...state, strategy: { ...state.strategy, [action.field]: action.payload }}
-    case 'UPDATE_HEDGE_STRATEGY': 
-      return { ...state, hedgeStrategy: { ...state.hedgeStrategy, [action.field]: action.payload }}
     case 'UPDATE_MARKET':
       return { ...state, market: action.payload };
     case 'UPDATE_LYRA_MARKET':
@@ -74,8 +75,21 @@ export const strategyReducer = (state, action) => {
       return { ...state, strikes: action.payload };
     case 'SET_SELECTED_BOARD':
       return { ...state, selectedBoard: action.payload.selectedBoard, currentStrikes: [], liveBoardStrikes: action.payload.liveBoardStrikes }; //, needsQuotesUpdated: true
+    case 'UPDATE_ROUND_STRATEGY': 
+      return { ...state, strategy: { ...state.strategy, [action.field]: action.payload }}
+    case 'RESET_ROUND_STRATEGY': 
+      return { ...state, vaultStrategy: vaultStrategy };
+    case 'UPDATE_HEDGE_STRATEGY': 
+      return { ...state, hedgeStrategy: { ...state.hedgeStrategy, [action.field]: action.payload }}
+    case 'RESET_HEDGE_STRATEGY': 
+      return { ...state, hedgeStrategy: currentHedgeStrategy };
+    case 'UPDATE_STRIKE_STRATEGY':
+      const { value, id, _optionType } = action.payload; 
+      const { strikeStrategy } = state; 
+      const strategyForOT = strikeStrategy[_optionType];
+      return { ...state, strikeStrategy: { ...strategyForOT, [id]: value } };
     case 'ADD_CURRENT_STRIKE':
-      return { ...state, currentStrikes: state.currentStrikes.concat(strikeStrategy) };
+      return { ...state, currentStrikes: state.currentStrikes.concat(strikeTrade) };
     case 'UPDATE_CURRENT_STRIKE':
       const _strike = action.payload.strike; 
       const optionType = parseInt(action.payload.optionType); 
@@ -98,14 +112,14 @@ export const strategyReducer = (state, action) => {
     case 'UPDATE_STRIKES_WITH_PRICING':
       const { _index, _liveStrikesWithFees } = action.payload; 
       return { ...state, liveStrikes: { ...state.liveStrikes, [_index]: _liveStrikesWithFees } };
-    case 'UPDATE_CURRENT_STRIKE_STRATEGY':
-      const { value, id, activeIndex } = action.payload; 
-      return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
-        if(activeIndex == index) {
-          return { ...cs, [id]: value }; 
-        }
-        return cs; 
-      }) };
+    // case 'UPDATE_CURRENT_STRIKE_STRATEGY':
+    //   const { value, id, activeIndex } = action.payload; 
+    //   return { ...state, currentStrikes: state.currentStrikes.map((cs, index) => {
+    //     if(activeIndex == index) {
+    //       return { ...cs, [id]: value }; 
+    //     }
+    //     return cs; 
+    //   }) };
     case 'UPDATE_SIZE':
       const { size } = action.payload; 
       return { ...state, size };

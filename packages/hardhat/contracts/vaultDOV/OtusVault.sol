@@ -123,7 +123,7 @@ contract OtusVault is BaseVault {
   /**
    * @notice Closes the current round, enable user to deposit for the next round
    */
-  function closeRound() external {
+  function closeRound() external onlyOwner {
     uint104 lockAmount = vaultState.lockedAmount;
     vaultState.lastLockedAmount = lockAmount;
     vaultState.lockedAmountLeft = 0;
