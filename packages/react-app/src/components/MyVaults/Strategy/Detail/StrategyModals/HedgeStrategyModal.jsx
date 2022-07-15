@@ -11,11 +11,13 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  Stack,
 } from '@chakra-ui/react';
 
 import { Slider } from "../../../../Common/Slider";
 import { useStrategyContext } from "../../../../../context/StrategyContext"
 import colors from "../../../../../designSystem/colors";
+import { CreateButton } from "../../../../Common/Button";
 
 export const HedgeStrategyModal = ({ isOpen, onClose }) => {
 
@@ -46,30 +48,47 @@ export const HedgeStrategyModal = ({ isOpen, onClose }) => {
       <Modal borderRadius={'none'} closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent borderRadius={'none'} background={colors.background.two} color={colors.text.light}>
-          <ModalHeader>Strike Strategy</ModalHeader>
+          <ModalHeader>Hedge Strategy</ModalHeader>
           <ModalCloseButton />
 
           <ModalBody>
-            <Flex>
-              <Box flex='1'>
-                <Slider name={"Hedge Percentage"} step={.1} min={-1} max={1} id={"hedgePercentage"} setSliderValue={setValue} sliderValue={hedgePercentage} label={''} />    
-                <Slider name={"Max Hedge Attempts"} step={.05} min={0} max={.5} id={"maxHedgeAttempts"} setSliderValue={setValue} sliderValue={maxHedgeAttempts} label={''} />
-                <Slider name={"Leverage Size"} step={.1} min={0} max={1} id={"leverageSize"} setSliderValue={setValue} sliderValue={leverageSize} label={''} />
-                <Slider name={"Stop Loss Limit"} step={.1} min={0} max={2} id={"stopLossLimit"} setSliderValue={setValue} sliderValue={stopLossLimit} label={''} />
-              </Box>
-            </Flex>
+
+              <Stack spacing={6} align='stretch'>
+
+              <Flex>
+                <Box flex='1'>
+                  <Slider name={"Hedge Percentage"} step={.1} min={-1} max={1} id={"hedgePercentage"} setSliderValue={setValue} sliderValue={hedgePercentage} label={''} />
+                </Box>
+              </Flex>
+
+              <Flex>
+                <Box flex='1'>
+                  <Slider name={"Max Hedge Attempts"} step={.05} min={0} max={.5} id={"maxHedgeAttempts"} setSliderValue={setValue} sliderValue={maxHedgeAttempts} label={''} />
+                </Box>
+              </Flex>
+
+              <Flex>
+                <Box flex='1'>
+                  <Slider name={"Leverage Size"} step={.1} min={0} max={1} id={"leverageSize"} setSliderValue={setValue} sliderValue={leverageSize} label={''} />
+                </Box>
+              </Flex>
+
+              <Flex>
+                <Box flex='1'>
+                  <Slider name={"Stop Loss Limit"} step={.1} min={0} max={2} id={"stopLossLimit"} setSliderValue={setValue} sliderValue={stopLossLimit} label={''} />
+                </Box>
+              </Flex>
+              
+              </Stack>
+
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={() => {
-              dispatch({ type: 'RESET_HEDGE_STRATEGY' })
-              onClose()
-            }}>
-              Cancel
-            </Button>
-            <Button colorScheme='blue' mr={3} onClick={onClose}>
+
+            <CreateButton onClick={onClose}>
               Save
-            </Button>
+            </CreateButton>
+
           </ModalFooter>
         </ModalContent>
       </Modal>

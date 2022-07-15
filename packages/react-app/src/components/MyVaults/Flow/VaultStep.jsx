@@ -5,7 +5,7 @@ import { Select } from "../../Common/Select";
 import { Slider } from "../../Common/Slider";
 import { useCreateVaultContext } from "../../../context/CreateVaultContext";
 
-const VaulStep = () => {
+const VaultStep = () => {
 
   const { state, updateVaultInformation, updateVaultParams, onSelectMarket } = useCreateVaultContext(); 
 
@@ -80,4 +80,4 @@ const VaulStep = () => {
   )
 }
 
-export default VaulStep;
+export default VaultStep;

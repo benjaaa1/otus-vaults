@@ -18,7 +18,7 @@ import colors from "../../../designSystem/colors";
 import { CreateButton, NextButton, PreviousButton } from "../../Common/Button";
 import { CreateVaultProvider, useCreateVaultContext } from "../../../context/CreateVaultContext";
 import StartStep from "./StartStep";
-import VaulStep from "./VaultStep";
+import VaultStep from "./VaultStep";
 import StrategyStep from "./StrategyStep";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 import ReviewStep from "./ReviewStep";
@@ -86,7 +86,7 @@ const CreateVaultStep = () => {
       comp = <StartStep />
       break;
     case 1:
-      comp = <VaulStep />
+      comp = <VaultStep />
       break;
     case 2:
       comp = <StrategyStep />

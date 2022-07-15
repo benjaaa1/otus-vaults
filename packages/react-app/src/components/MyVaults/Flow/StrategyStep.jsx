@@ -20,7 +20,7 @@ const StrategyStep = () => {
   } = vaultStrategy; 
 
   return (
-      <Box  p={'6'}>
+      <Box p={'6'}>
 
         <Stack spacing={6}>
           

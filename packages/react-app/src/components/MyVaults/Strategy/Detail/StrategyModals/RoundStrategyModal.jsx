@@ -11,11 +11,13 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  Stack
 } from '@chakra-ui/react';
 
 import { Slider } from "../../../../Common/Slider";
 import { useStrategyContext } from "../../../../../context/StrategyContext"
 import colors from "../../../../../designSystem/colors";
+import { CreateButton } from "../../../../Common/Button";
 
 export const RoundStrategyModal = ({ isOpen, onClose }) => {
 
@@ -54,28 +56,55 @@ export const RoundStrategyModal = ({ isOpen, onClose }) => {
           <ModalCloseButton />
 
           <ModalBody>
-            <Flex>
-              <Box flex='1'>
-              <Slider name={"Collateral Buffer"} step={.1} min={1} max={2} id={"collatBuffer"} setSliderValue={setValue} sliderValue={collatBuffer} label={''} />    
-              <Slider name={"Collateral Percent"} step={.05} min={.25} max={1} id={"collatPercent"} setSliderValue={setValue} sliderValue={collatPercent} label={'%'} />    
-              <Slider name={"Min. Time to Expiry"} step={1} min={0} max={12} id={"minTimeToExpiry"} setSliderValue={setValue} sliderValue={minTimeToExpiry} label={' hours'} />    
-              <Slider name={"Max Time to Expiry"} step={1} min={0} max={16} id={"maxTimeToExpiry"} setSliderValue={setValue} sliderValue={maxTimeToExpiry} label={' weeks'} />    
-              <Slider name={"Min. Trade Interval"} step={1} min={0} max={60} id={"minTradeInterval"} setSliderValue={setValue} sliderValue={minTradeInterval} label={' minutes'} />    
-              <Slider name={"GWAV Period"} step={1} min={0} max={60} id={"gwavPeriod"} setSliderValue={setValue} sliderValue={gwavPeriod} label={' minutes'} />    
-              </Box>
-            </Flex>
+
+              <Stack spacing={6}>
+          
+                <Flex>
+                  <Box flex='1'>
+                    <Slider name={"Collateral Buffer"} step={.1} min={1} max={2} id={"collatBuffer"} setSliderValue={setValue} sliderValue={collatBuffer} label={''} />    
+                  </Box>
+                </Flex>
+        
+                <Flex>
+                  <Box flex='1'>
+                    <Slider name={"Collateral Percent"} step={.05} min={.25} max={1} id={"collatPercent"} setSliderValue={setValue} sliderValue={collatPercent} label={'%'} />    
+                  </Box>
+                </Flex>
+                
+                <Flex>
+                  <Box flex='1'>
+                    <Slider name={"Min. Time to Expiry"} step={1} min={0} max={12} id={"minTimeToExpiry"} setSliderValue={setValue} sliderValue={minTimeToExpiry} label={' hours'} />    
+                  </Box>
+                </Flex>
+                
+                <Flex>
+                  <Box flex='1'>
+                    <Slider name={"Max Time to Expiry"} step={1} min={0} max={16} id={"maxTimeToExpiry"} setSliderValue={setValue} sliderValue={maxTimeToExpiry} label={' weeks'} />    
+                  </Box>
+                </Flex>
+                
+                <Flex>
+                  <Box flex='1'>
+                    <Slider name={"Min. Trade Interval"} step={1} min={0} max={60} id={"minTradeInterval"} setSliderValue={setValue} sliderValue={minTradeInterval} label={' minutes'} />    
+                  </Box>
+                </Flex>
+                
+                <Flex>
+                  <Box flex='1'>
+                    <Slider name={"GWAV Period"} step={1} min={0} max={60} id={"gwavPeriod"} setSliderValue={setValue} sliderValue={gwavPeriod} label={' minutes'} />    
+                  </Box>
+                </Flex>
+      
+              </Stack>
+
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={() => {
-              dispatch({ type: 'RESET_ROUND_STRATEGY' })
-              onClose()
-            }}>
-              Cancel
-            </Button>
-            <Button colorScheme='blue' mr={3} onClick={onClose}>
+
+            <CreateButton onClick={onClose}>
               Save
-            </Button>
+            </CreateButton>
+
           </ModalFooter>
         </ModalContent>
       </Modal>
