@@ -21,12 +21,16 @@ export const Slider = ({ name, id, id2, min, max, step, setSliderValue, sliderVa
       <FormLabel fontWeight={'700'} fontSize={theme.fontSize.sm} fontFamily={theme.font.header} color={colors.text.light} htmlFor={id}>{ name }</FormLabel>
         <Chakraslider
           defaultValue={sliderValue}
+          value={sliderValue}
           id={id}
           min={min}
           max={max}
           colorScheme='teal'
           step={step}
-          onChange={(v) => setSliderValue(id, v, id2)}
+          onChange={(v) => {
+            console.log({ id, v, id2 })
+            setSliderValue(id, v, id2)
+          }}
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
         >

@@ -86,8 +86,9 @@ export const strategyReducer = (state, action) => {
     case 'UPDATE_STRIKE_STRATEGY':
       const { value, id, _optionType } = action.payload; 
       const { strikeStrategy } = state; 
-      const strategyForOT = strikeStrategy[_optionType];
-      return { ...state, strikeStrategy: { ...strategyForOT, [id]: value } };
+      const updatedStrategy = { ...strikeStrategy, [_optionType]: { ...strikeStrategy[_optionType], [id]: value } }; 
+      console.log({ updatedStrategy })
+      return { ...state, strikeStrategy: updatedStrategy };
     case 'ADD_CURRENT_STRIKE':
       return { ...state, currentStrikes: state.currentStrikes.concat(strikeTrade) };
     case 'UPDATE_CURRENT_STRIKE':
