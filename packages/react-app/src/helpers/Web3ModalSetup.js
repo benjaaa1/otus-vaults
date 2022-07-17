@@ -11,11 +11,20 @@ const walletLink = new WalletLink({
 // WalletLink provider
 const walletLinkProvider = walletLink.makeWeb3Provider(`https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`, 1);
 
+const providerOptions = {
+  walletconnect: {
+    package: WalletConnectProvider, // required
+    options: {
+      infuraId: INFURA_ID, // required
+    },
+  },
+}
 const web3ModalSetup = () =>
   new Web3Modal({
     network: "mainnet", // Optional. If using WalletConnect on xDai, change network to "xdai" and add RPC info below for xDai chain.
     cacheProvider: true, // optional
     theme: "dark", // optional. Change to "dark" for a dark theme.
+    providerOptions
     // providerOptions: {
     //   walletconnect: {
     //     package: WalletConnectProvider, // required
