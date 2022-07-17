@@ -34,8 +34,7 @@ export default function VaultDetail() {
     dispatch, 
     trade,
     startRound,
-    closeRound,
-    setVaultStrategy
+    closeRound
   } = useStrategyContext();
 
   const { currentStrikes, size } = state; 
@@ -68,7 +67,7 @@ export default function VaultDetail() {
           strategyValue.vaultState.roundInProgress ? 
           <>
             <VaultActionButton onClick={closeRound}>Close Round</VaultActionButton>
-            <VaultActionButton onClick={closeRound}>Activate Hedge Strategy</VaultActionButton>
+            {/* <VaultActionButton onClick={closeRound}>Activate Hedge Strategy</VaultActionButton> */}
           </> :
           <>
             <VaultActionButton onClick={startRound}>Start Round</VaultActionButton>

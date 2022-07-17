@@ -12,9 +12,7 @@ export const NavigationLink = (props) => {
   return (
     <NavigationLinkStyle 
       {...props} 
-      style={isActive => {
-        console.log({ isActive })
-      }}
+      style={isActive => {}}
     />
   )
 }

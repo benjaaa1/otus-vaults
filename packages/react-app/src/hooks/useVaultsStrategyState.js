@@ -41,29 +41,20 @@ export default function useVaultStrategyState(vault) {
     if(otusVault) {
       try {
         const strategyAddress = await otusVault.strategy(); 
-        console.log({ strategyAddress })
         setContractAddresses(prev => {
           return { ...prev, Strategy: strategyAddress }
         }); 
 
         const tokenName = await otusVault.name(); 
-        console.log({ tokenName })
         const tokenSymbol = await otusVault.symbol(); 
-        console.log({ tokenSymbol })
 
         const vaultName = await otusVault.vaultName(); 
-        console.log({ vaultName })
 
         const vaultDescription = await otusVault.vaultDescription(); 
-        console.log({ vaultDescription })
 
         const isPublic = await otusVault.isPublic(); 
-        console.log({ isPublic })
 
         const vp = await otusVault.vaultParams(); 
-        console.log({
-          cap: formatUnits(vp.cap)
-        });
 
         setVaultInfo(ps => {
           const { vaultParams } = ps; 
@@ -82,9 +73,7 @@ export default function useVaultStrategyState(vault) {
         
         const vs = await otusVault.vaultState(); 
         const roundPremiumCollected = await otusVault.roundPremiumCollected();
-        console.log({ roundPremiumCollected })
         const _currentAPR =  Math.round(formatUnits(roundPremiumCollected) * 52 / formatUnits(vs.lockedAmount) * 100); 
-        console.log({ _currentAPR })
         setVaultInfo(ps => {
           const { vaultState } = ps; 
           return { ...ps, vaultState: {
@@ -115,7 +104,6 @@ export default function useVaultStrategyState(vault) {
         const [strikes, optionTypes, positionIds] = await strategy.getStrikeOptionTypes();
 
         const strikesInfo = await Promise.all(strikes.map(async (strikeId, index) => {
-          console.log({ strikeId, strikeIdFormat: Math.round(parseFloat(formatUnits(strikeId) * (10**18))) })
           const strike = await getStrike(Math.round(parseFloat(formatUnits(strikeId) * (10**18))));
           return {
             strikeId: strike.id, 
@@ -124,8 +112,6 @@ export default function useVaultStrategyState(vault) {
             optionType: Math.round(parseFloat(formatUnits(optionTypes[index]) * (10 ** 18)))
           }; 
         }))
-
-        console.log({strikesInfo})
 
         setVaultInfo(ps => {
           return { ...ps, strikes: strikesInfo, currentBasePrice: Math.round(parseFloat(formatUnits(currentBasePrice))) }

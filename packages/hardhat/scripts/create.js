@@ -25,7 +25,7 @@ const privateKeyFunder = '83b0ab1fd1b00eaa17ec88017e5802a66de33de1ae370863c9bb37
 
 const funder = new ethers.Wallet(privateKeyFunder, provider);
 
-const privateKeyDeployer = 'bc07d1ebe4234bd060b3f858e333ede238381f47843e8b19053a037d108d288f'; 
+const privateKeyDeployer = '83b0ab1fd1b00eaa17ec88017e5802a66de33de1ae370863c9bb371dca13c99c'; 
 
 const deployer = new ethers.Wallet(privateKeyDeployer, provider);
 

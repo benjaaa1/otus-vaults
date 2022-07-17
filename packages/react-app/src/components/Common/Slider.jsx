@@ -28,7 +28,6 @@ export const Slider = ({ name, id, id2, min, max, step, setSliderValue, sliderVa
           colorScheme='teal'
           step={step}
           onChange={(v) => {
-            console.log({ id, v, id2 })
             setSliderValue(id, v, id2)
           }}
           onMouseEnter={() => setShowTooltip(true)}

@@ -321,22 +321,30 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
   // View //
   //////////
 
-  function getStrikeOptionTypes() external view returns (uint[] memory strikes, uint[] memory optionTypes, uint[] memory positionIds) {
-    uint len = activeStrikeIds.length; 
-    strikes = new uint[](len); 
-    optionTypes = new uint[](len); 
-    positionIds = new uint[](len); 
+  function getStrikeOptionTypes() external view returns (
+      uint[] memory strikes, 
+      uint[] memory optionTypes, 
+      uint[] memory positionIds,
+      uint[] memory sizes
+    ) {
+      uint len = activeStrikeIds.length; 
+      strikes = new uint[](len); 
+      optionTypes = new uint[](len); 
+      positionIds = new uint[](len); 
+      sizes = new uint[](len); 
 
-    for(uint i = 0; i < len; i++) {
-      uint strikeId = activeStrikeIds[i];
-      strikes[i] = strikeId;
-      uint optionType = lastTradeOptionType[strikeId];
-      optionTypes[i] = optionType; 
-      uint positionId = strikeToPositionId[strikeId];
-      positionIds[i] = positionId;
-    }
+      for(uint i = 0; i < len; i++) {
+        uint strikeId = activeStrikeIds[i];
+        strikes[i] = strikeId;
+        uint optionType = lastTradeOptionType[strikeId];
+        optionTypes[i] = optionType; 
+        uint positionId = strikeToPositionId[strikeId];
+        positionIds[i] = positionId;
+        uint size = currentStrikeTrades[i].size;
+        sizes[i] = size;
+      }
 
-    return (strikes, optionTypes, positionIds); 
+    return (strikes, optionTypes, positionIds, sizes); 
   }
 
   function getCurrentStrikeTrades() external view returns (StrikeTrade[] memory strikeTrades) {
@@ -350,6 +358,7 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
 
     return strikeTrades; 
   }
+  
   //////////
   // Misc //
   //////////

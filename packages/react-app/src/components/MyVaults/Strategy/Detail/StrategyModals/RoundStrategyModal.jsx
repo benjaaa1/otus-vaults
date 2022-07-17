@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   Flex, 
@@ -21,7 +21,9 @@ import { CreateButton } from "../../../../Common/Button";
 
 export const RoundStrategyModal = ({ isOpen, onClose }) => {
 
-  const { state, dispatch } = useStrategyContext();
+  const [isLoading, setLoading] = useState(false);
+
+  const { state, dispatch, setVaultStrategy } = useStrategyContext();
 
   const { vaultStrategy } = state; 
 
@@ -34,15 +36,17 @@ export const RoundStrategyModal = ({ isOpen, onClose }) => {
     gwavPeriod,
   } = vaultStrategy;
 
-  console.log({ 
-    collatBuffer, 
-    collatPercent,
-    minTimeToExpiry,
-    maxTimeToExpiry,
-    minTradeInterval,
-    gwavPeriod,
-  });
+  const save = async () => {
+    console.log({ vaultStrategy })
+    setLoading(true);
 
+    await setVaultStrategy(); 
+    setLoading(false);
+
+    onClose(); 
+
+  }
+  
   const setValue = (id, value) => {
     dispatch({ type: 'UPDATE_ROUND_STRATEGY', payload: { value, id } })
   }
@@ -101,7 +105,7 @@ export const RoundStrategyModal = ({ isOpen, onClose }) => {
 
           <ModalFooter>
 
-            <CreateButton onClick={onClose}>
+            <CreateButton isLoading={isLoading} onClick={save}>
               Save
             </CreateButton>
 

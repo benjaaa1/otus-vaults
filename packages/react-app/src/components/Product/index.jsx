@@ -23,14 +23,12 @@ const Product = () => {
   const { contracts } = useWeb3({});
 
   const otusController = contracts ? contracts['OtusController'] : "";
-
+  console.log({ otusController })
   useEffect(async () => {
     if(otusController) {
       try {
         const _vaults = await otusController.getActiveVaults();  
         setVaults(_vaults);  
-        const _marketAddress = await otusController.marketAddress('0x01DFc64625e121035235a83A0979a6A1831aA93b', 0);
-        console.log({ _marketAddress})
       } catch (error) {
         console.log({ error })
       }

@@ -20,12 +20,13 @@ import StrikesModal from "./StrikesModal";
 
 export default function StrategyDetail() {
 
-  const { state, dispatch, strategyValue, viewVault, setSelectedBoard } = useStrategyContext();
+  const { state, dispatch, strategyAddress, strategyValue, viewVault, setSelectedBoard } = useStrategyContext();
 
   const {
     selectedBoard,
     liveBoards,
-    currentStrikes
+    currentStrikes,
+    currentRoundStrikes
   } = state; 
 
   const { activeBoardId } = strategyValue;
@@ -69,39 +70,86 @@ export default function StrategyDetail() {
       <Flex minWidth='max-content' alignItems='center' p={4}>
         <Box flex={2} p={2}>
         {/* isDisabled={activeBoardId > 0} only disable if trades occurred */}
-          <Select width="100%" id='market' id='board' placeholder={'Select Round Expiry'} onChange={(e) => setSelectedBoard(e.target.value)}>
+          <Select width="100%" id='market' id='board' placeholder={'Select Round Expiry'} value={activeBoardId} onChange={(e) => setSelectedBoard(e.target.value)}>
           {
             Object.values(liveBoards).map(({ name, id }) => (<option value={id}>{name}</option>))
           }
           </Select>
         </Box>
         <Box flex={1} p={2}>
-          <AddButton disabled={selectedBoard == null} width={'100%'} onClick={() => dispatch({ type: 'ADD_CURRENT_STRIKE' })}>Add Strike</AddButton>
+          <AddButton disabled={activeBoardId > 0} width={'100%'} onClick={() => dispatch({ type: 'ADD_CURRENT_STRIKE' })}>Add Strike</AddButton>
         </Box>
       </Flex>
 
       <Grid templateColumns='repeat(4, 1fr)' gap={6}>
+
+
         {
-          currentStrikes.map((cs, index) => {
-            return (
-              <GridItem w='100%' h='100%' mb='2'>
-                <StrikeSummary 
-                  cs={cs} 
-                  index={index} 
-                  dispatch={dispatch} 
-                  onStrikeSelectOpen={onStrikeSelectOpen}
-                  onStrikeSelectModalClose={onStrikeSelectModalClose}
-                />
-              </GridItem>
-            )
-          })
+
+          activeBoardId > 0 && currentRoundStrikes.length > 0 ? 
+            currentRoundStrikes.map((cs, index) => {
+              return (
+                <GridItem w='100%' h='100%' mb='2'>
+                  <RoundStrikeSummary 
+                    cs={cs} 
+                    index={index} 
+                    strategyAddress={strategyAddress}
+                  />
+                </GridItem>
+              )
+            })
+            :          
+            currentStrikes.map((cs, index) => {
+              return (
+                <GridItem w='100%' h='100%' mb='2'>
+                  <StrikeSummary 
+                    cs={cs} 
+                    index={index} 
+                    dispatch={dispatch} 
+                    onStrikeSelectOpen={onStrikeSelectOpen}
+                    onStrikeSelectModalClose={onStrikeSelectModalClose}
+                  />
+                </GridItem>
+              )
+            }) 
+
         }
+
       </Grid>
 
       <StrikesModal isOpen={isStrikeSelectModalOpen} onClose={onStrikeSelectModalClose} />
     </>
   )
 
+}
+
+const RoundStrikeSummary = ({
+  cs, 
+  index,
+  strategyAddress
+}) => {
+  return <BaseShadowBox padding={theme.padding.lg}  _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
+    <Stack spacing={4}>
+      <Box>
+        <SelectStrikeButton>
+          { `$${cs.strikePrice}` }
+        </SelectStrikeButton>
+      </Box>
+
+      <Box>
+        <Center bg={getOptionType( cs.optionType )[1]} color='white'>
+          <Box as='span' fontWeight='bold' fontSize='xs'>
+          { getOptionType( cs.optionType )[0] }
+          </Box>
+        </Center>
+      </Box>
+
+      <Box>
+        <ViewLinkButton size='xs' onClick={() => window.location.href = `https://app.lyra.finance/position/eth/${cs.positionId}?see=${strategyAddress}` } />
+      </Box>
+
+    </Stack>
+  </BaseShadowBox>
 }
 
 const StrikeSummary = ({ 
@@ -114,7 +162,6 @@ const StrikeSummary = ({
     onStrikeStrategyModalClose
   }) => {
   console.log({ cs, index })
-  const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
     <BaseShadowBox padding={theme.padding.lg}  _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>

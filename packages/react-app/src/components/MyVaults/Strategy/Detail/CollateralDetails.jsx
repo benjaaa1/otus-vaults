@@ -20,7 +20,6 @@ export const CollateralDetails = () => {
   } = useStrategyContext();
 
   const { currentStrikes } = state; 
-  console.log({ currentStrikes })
   return (
     <>
     {/* {

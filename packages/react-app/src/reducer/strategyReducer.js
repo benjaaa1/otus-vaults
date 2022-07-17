@@ -17,7 +17,7 @@ export const currentHedgeStrategy = {
   hedgePercentage: .2, 
   maxHedgeAttempts: 4,
   leverageSize: 2,
-  stopLossLimit: .001,
+  stopLossLimit: .1,
 }
 
 export const strikeTrade = {
@@ -44,10 +44,11 @@ export const strategyInitialState = {
   hedgeStrategy: currentHedgeStrategy,
   strikeStrategy: {
     0: strikeStrategy, // LONG_CALL
-    1: strikeStrategy, // LONG_PUT
-    3: strikeStrategy, // SHORT_CALL_QUOTE
-    4: strikeStrategy // SHORT_PUT_QUOTE
+    1: { ...strikeStrategy, optionType: 1 }, // LONG_PUT
+    3: { ...strikeStrategy, optionType: 3 }, // SHORT_CALL_QUOTE
+    4: { ...strikeStrategy, optionType: 4 } // SHORT_PUT_QUOTE
   },
+  currentRoundStrikes: [],
   market: 'eth', 
   needsQuotesUpdated: false,
   lyraMarket: null, 
@@ -65,6 +66,9 @@ export const strategyInitialState = {
 
 export const strategyReducer = (state, action) => {
   switch (action.type) {
+    // need to load some of these strategies, strikes
+    case 'SET_CURRENT_ROUND_STRIKES': 
+      return { ...state, currentRoundStrikes: action.payload }
     case 'UPDATE_MARKET':
       return { ...state, market: action.payload };
     case 'UPDATE_LYRA_MARKET':
@@ -76,11 +80,12 @@ export const strategyReducer = (state, action) => {
     case 'SET_SELECTED_BOARD':
       return { ...state, selectedBoard: action.payload.selectedBoard, currentStrikes: [], liveBoardStrikes: action.payload.liveBoardStrikes }; //, needsQuotesUpdated: true
     case 'UPDATE_ROUND_STRATEGY': 
-      return { ...state, strategy: { ...state.strategy, [action.field]: action.payload }}
+      console.log({ action })
+      return { ...state, vaultStrategy: { ...state.vaultStrategy, [action.payload.id]: action.payload.value }}
     case 'RESET_ROUND_STRATEGY': 
       return { ...state, vaultStrategy: vaultStrategy };
     case 'UPDATE_HEDGE_STRATEGY': 
-      return { ...state, hedgeStrategy: { ...state.hedgeStrategy, [action.field]: action.payload }}
+      return { ...state, hedgeStrategy: { ...state.hedgeStrategy, [action.payload.id]: action.payload.value }}
     case 'RESET_HEDGE_STRATEGY': 
       return { ...state, hedgeStrategy: currentHedgeStrategy };
     case 'UPDATE_STRIKE_STRATEGY':

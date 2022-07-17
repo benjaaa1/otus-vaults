@@ -52,7 +52,7 @@ import {
 import colors from "../../designSystem/colors";
 
 export const SupervisorChart = ({ data, currentPrice }) => {
-  console.log({ data, currentPrice })
+
   return (
     <LineChart
       width={340}

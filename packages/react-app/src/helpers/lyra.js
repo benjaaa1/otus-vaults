@@ -1,11 +1,6 @@
 import Lyra from '@lyrafinance/lyra-js';
 
-const LyraConfig = {
-  rpcUrl: 'https://optimism-kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925',
-  chainId: 69
-};
-
-export const lyra = new Lyra();
+export const lyra = new Lyra(69);
 
 export const getStrike = async (strikeId) => await lyra.strike('ETH', strikeId);
 

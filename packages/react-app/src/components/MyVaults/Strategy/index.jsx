@@ -11,6 +11,7 @@ import { ArrowForwardIcon } from "@chakra-ui/icons";
 import { HedgeStrategyModal } from "./Detail/StrategyModals/HedgeStrategyModal";
 import { RoundStrategyModal } from "./Detail/StrategyModals/RoundStrategyModal";
 import { StrikeStrategyModal } from "./Detail/StrategyModals/StrikeStrategyModal";
+import { CreateButton } from "../../Common/Button";
 
 export default function Strategy() {
 
@@ -57,11 +58,23 @@ const MyVaultNav = ({
 
   return (
     <Stack>
-      <Text color={colors.text.light} onClick={() => setStep(0)} fontWeight={step == 0 ? '700' : '400'} fontSize='sm'>{ step == 0 ? <ArrowForwardIcon /> : null } Current Round </Text>
-      <Text color={colors.text.light} onClick={() => setStep(1)} fontWeight={step == 1 ? '700' : '400'} fontSize='sm'>{ step == 1 ? <ArrowForwardIcon /> : null } Vault History </Text>
-      <Text color={colors.text.light} onClick={() => onStrategyOpen()} fontWeight={'700'} fontSize='sm'>Vault Strategy</Text>
-      <Text color={colors.text.light} onClick={() => onStrikeStrategyOpen()} fontWeight={'700'} fontSize='sm'>Strike Strategy</Text>
-      <Text color={colors.text.light} onClick={() => onHedgeStrategyOpen()} fontWeight={'700'} fontSize='sm'>Hedge Strategy</Text>
+      <Box mb={10}>
+        <Text p={2} color={colors.text.light} onClick={() => setStep(0)} fontWeight={step == 0 ? '700' : '400'} fontSize='sm'>{ step == 0 ? <ArrowForwardIcon /> : null } Current Round </Text>
+        <Text p={2} color={colors.text.light} onClick={() => setStep(1)} fontWeight={step == 1 ? '700' : '400'} fontSize='sm'>{ step == 1 ? <ArrowForwardIcon /> : null } Vault History </Text>
+      </Box>
+
+      <Box mt={10}>
+        <CreateButton m={1} width={'162px'} fontSize={'sm'} fontWeight={'400'} onClick={() => onStrategyOpen()}>
+          Vault Strategy
+        </CreateButton>
+        <CreateButton m={1} width={'162px'} fontSize={'sm'} fontWeight={'400'} onClick={() => onStrikeStrategyOpen()}>
+          Strike Strategies
+        </CreateButton>
+        <CreateButton m={1} width={'162px'} fontSize={'sm'} fontWeight={'400'} onClick={() => onHedgeStrategyOpen()}>
+          Hedge Strategy
+        </CreateButton>
+      </Box>
+
     </Stack>
   )
 }

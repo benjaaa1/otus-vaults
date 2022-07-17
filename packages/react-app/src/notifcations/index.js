@@ -23,8 +23,8 @@ export const MESSAGE = {
     ERROR: ''
   },
   STARTROUND: {
-    SUCCESS: '',
-    ERROR: ''
+    SUCCESS: 'Round started.',
+    ERROR: 'Failed to start round.'
   },
   TRADE: {
     SUCCESS: '',

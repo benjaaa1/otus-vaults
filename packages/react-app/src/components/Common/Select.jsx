@@ -17,7 +17,7 @@ export const Select = styled(ChakraSelect)`
 `;
 
 export const BaseMenu = ({ title, options, onClick }) => {
-  console.log({ options })
+
   return (
     <Menu>
       <MenuButton 

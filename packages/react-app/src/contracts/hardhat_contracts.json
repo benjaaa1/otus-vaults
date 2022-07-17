@@ -566,7 +566,7 @@
           ]
         },
         "L2DepositMover": {
-          "address": "0x8b1B4c6052543f8B585516c0c8AaDdb74319CE22",
+          "address": "0x74835aBAA6CB5BB1F8a065e44d8F0fCc82b3cB3e",
           "abi": [
             {
               "inputs": [],
@@ -728,7 +728,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x0651628222935D3847A0Ac2F678ff59F76613B42",
+          "address": "0x1905317B2E3a14f415e9A9Aa276f2D4BeF7f3BfC",
           "abi": [
             {
               "inputs": [
@@ -1032,7 +1032,7 @@
           ]
         },
         "OtusController": {
-          "address": "0x482524F89c7584932647d545C83159314aFbb3DF",
+          "address": "0x98E12B179F4E64AAa3D2b134D0c7FEf15e69eB66",
           "abi": [
             {
               "inputs": [
@@ -1658,7 +1658,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0xEacFF0F13BeB9ffc26F02fE4F3314da541f3AF9a",
+          "address": "0xB0398A5a20DC98c456a6Cece16C29348aEE0C8B9",
           "abi": [
             {
               "inputs": [
@@ -3262,7 +3262,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0xb9418deEaC01585f41570118d87eE057000da83d",
+          "address": "0x8A82907A3236da656823337b6e125c7666C4191B",
           "abi": [
             {
               "inputs": [
@@ -4051,6 +4051,11 @@
                 {
                   "internalType": "uint256[]",
                   "name": "positionIds",
+                  "type": "uint256[]"
+                },
+                {
+                  "internalType": "uint256[]",
+                  "name": "sizes",
                   "type": "uint256[]"
                 }
               ],

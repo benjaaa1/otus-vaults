@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   Flex, 
@@ -21,7 +21,9 @@ import { CreateButton } from "../../../../Common/Button";
 
 export const HedgeStrategyModal = ({ isOpen, onClose }) => {
 
-  const { state, dispatch } = useStrategyContext();
+  const [isLoading, setLoading] = useState(false);
+
+  const { state, dispatch, setHedgeStrategy } = useStrategyContext();
 
   const { hedgeStrategy } = state; 
 
@@ -38,6 +40,17 @@ export const HedgeStrategyModal = ({ isOpen, onClose }) => {
     leverageSize,
     stopLossLimit
   });
+
+  const save = async () => {
+    setLoading(true);
+
+    await setHedgeStrategy(); 
+
+    setLoading(false);
+    onClose(); 
+
+  }
+  
 
   const setValue = (id, value) => {
     dispatch({ type: 'UPDATE_HEDGE_STRATEGY', payload: { value, id } })
@@ -85,7 +98,7 @@ export const HedgeStrategyModal = ({ isOpen, onClose }) => {
 
           <ModalFooter>
 
-            <CreateButton onClick={onClose}>
+            <CreateButton isLoading={isLoading} onClick={save}>
               Save
             </CreateButton>
 

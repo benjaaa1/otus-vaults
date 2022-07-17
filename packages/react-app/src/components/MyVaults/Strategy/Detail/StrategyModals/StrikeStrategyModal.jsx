@@ -23,13 +23,23 @@ import { CreateButton } from "../../../../Common/Button";
 
 export const StrikeStrategyModal = ({ isOpen, onClose }) => {
 
-  const { state, dispatch } = useStrategyContext();
+  const [isLoading, setLoading] = useState(false);
+
+  const { state, dispatch, setStrikeStrategyDetail } = useStrategyContext();
 
   const { strikeStrategy } = state; 
-  console.log({ strikeStrategy })
+
   const setValue = (id, value, _optionType) => {
-    console.log({ id, value, _optionType })
     dispatch({ type: 'UPDATE_STRIKE_STRATEGY', payload: { value, id, _optionType } })
+  }
+
+  const saveAll = async () => {
+    setLoading(true);
+
+    await setStrikeStrategyDetail(); 
+
+    setLoading(false);
+    onClose(); 
   }
 
   const [step, setStep] = useState(0); 
@@ -103,7 +113,7 @@ export const StrikeStrategyModal = ({ isOpen, onClose }) => {
               Cancel
             </Button> */}
 
-            <CreateButton onClick={onClose}>
+            <CreateButton isLoading={isLoading} onClick={saveAll}>
               Save All
             </CreateButton>
           </ModalFooter>
