@@ -3,12 +3,8 @@
 		"silent": true
 	},
 	"rewrites": [
-    {
-			"source": "/portfolio/test",
-			"destination": "/index.html"
-		},
 		{
-			"source": "/(.*)",
+			"source": "(.*)",
 			"destination": "/index.html"
 		}
 	]
