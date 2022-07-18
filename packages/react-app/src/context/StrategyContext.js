@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { ethers } from "ethers";
 import { getLyraMarket, getStrike } from "../helpers/lyra";
@@ -14,7 +14,7 @@ const StrategyContext = createContext();
 
 export const StrategyProvider = ({ children }) => {
 
-  const history = useHistory();
+  let navigate = useNavigate();
 
   const { vault, strategy: strategyAddress } = useParams();
   console.log({ strategyAddress })
@@ -315,7 +315,7 @@ export const StrategyProvider = ({ children }) => {
     }
   }
 
-  const viewVault = () => history.push(`/vault/${vault}`);
+  const viewVault = () => navigate(`/vault/${vault}`);
 
   const setSelectedBoard = async (id) => {
     const { liveBoards } = state; 

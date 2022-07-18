@@ -9,10 +9,13 @@ const NavigationLinkStyle = styled(BaseLink)`
 `;
 
 export const NavigationLink = (props) => {
+  console.log({ props })
   return (
     <NavigationLinkStyle 
       {...props} 
-      style={isActive => {}}
+      isActive={(match, location) => {
+        console.log({ match, location })
+      }}
     />
   )
 }

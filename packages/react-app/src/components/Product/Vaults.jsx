@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useWeb3 from "../../hooks/useWeb3";
 import { formatUnits } from "ethers/lib/utils";
 
@@ -11,10 +11,10 @@ import { VaultButton, ViewLinkButton } from "../Common/Button";
 import useVaultStrategyState from "../../hooks/useVaultsStrategyState";
 
 export const Vaults = ({ vaults }) => {
-  const history = useHistory();
+  let navigate = useNavigate();
 
   const viewVault = (vault) => {
-    history.push(`/vault/${vault}`);
+    navigate(`/vault/${vault}`);
   }
   return <Grid templateColumns='repeat(3, 1fr)' gap={6}>
     {

@@ -1,5 +1,5 @@
 import React  from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -17,23 +17,13 @@ function App(props) {
   return (
     <PageContainer>
       <Top />
-      <Switch>
-        <Route exact path="/">
-          <Product />
-        </Route>
-        <Route exact path={`/vault/:vault`}>
-          <Vault />
-        </Route>
-        <Route path="/portfolio/test">
-          <Portfolio />   
-        </Route>
-        <Route path="/my-vaults">
-          <MyVaults />
-        </Route>
-        <Route path="/my-vault/:vault/:strategy">
-          <Strategy />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route exact path="/" element={<Product />} />
+        <Route exact path={`/vault/:vault`} element={<Vault />} />
+        <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/my-vaults" element={<MyVaults />} />
+        <Route path="/my-vault/:vault/:strategy" element={<Strategy />} />
+      </Routes>
       <ToastContainer />
     </PageContainer>
   );

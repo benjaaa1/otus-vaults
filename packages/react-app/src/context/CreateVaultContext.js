@@ -8,13 +8,13 @@ import { BigNumber, ethers } from "ethers";
 import { createVaultInitialState, createVaultReducer, HOUR_SEC, WEEK_SEC } from "../reducer/createVaultReducer";
 import { MESSAGE, Notifier, TYPE } from "../notifcations";
 import { useEventListener } from 'eth-hooks';
-import { useHistory } from "react-router-dom";
+import { useNavigate  } from "react-router-dom";
 
 const CreateVaultContext = createContext();
 
 export const CreateVaultProvider = ({ children }) => {
 
-  const history = useHistory();
+  let navigate = useNavigate();
 
   const { contracts, signer } = useWeb3({});
 
@@ -125,7 +125,7 @@ export const CreateVaultProvider = ({ children }) => {
       console.log({ userVaultInformation })
       const len = userVaultInformation.length; 
 
-      history.push(`/my-vault/${userVaultInformation[len - 1].vault}/${userVaultInformation[len - 1].strategy}`);
+      navigate(`/my-vault/${userVaultInformation[len - 1].vault}/${userVaultInformation[len - 1].strategy}`);
 
       setLoading(false);
     } catch (e) {

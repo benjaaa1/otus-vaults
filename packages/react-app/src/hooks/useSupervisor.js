@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import useWeb3 from "./useWeb3";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { ethers } from "ethers";
 import { MESSAGE, TYPE, Notifier } from "../notifcations";
 
 export default function useSupervisor() {
 
-  const history = useHistory(); 
+  let navigate = useNavigate();
 
   const { contracts, signer } = useWeb3({});
 
@@ -40,7 +40,7 @@ export default function useSupervisor() {
   }, [otusController])
 
   const viewMyVault = (vault, strategy) => {
-    history.push(`/my-vault/${vault}/${strategy}`);
+    navigate(`/my-vault/${vault}/${strategy}`);
   }
 
   return { loading, userVaults, viewMyVault }
