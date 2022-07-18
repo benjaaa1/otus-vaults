@@ -73,7 +73,7 @@ export const VaultSummary = ({ vault, viewVault }) => {
                     </Box>
                   </Center>
 
-                  <ViewLinkButton size='xs' onClick={() => window.location.href = `https://avalon.app.lyra.finance/position/eth/${strike.positionId}` } />
+                  <ViewLinkButton size='xs' onClick={() => window.location.href = `https://app.lyra.finance/position/eth/${strike.positionId}` } />
 
                 </HStack>
 

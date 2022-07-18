@@ -30,7 +30,13 @@ export default function StrategyDetail() {
   } = state; 
 
   const { activeBoardId } = strategyValue;
-  console.log({ activeBoardId })
+  console.log({ activeBoardId, strategyValue })
+  const { vaultState, activeExpiry } = strategyValue; 
+  const {
+    round,
+    lastLockedAmount, 
+    roundInProgress
+  } = vaultState; 
 
   const { isOpen: isStrikeSelectModalOpen , onOpen: onStrikeSelectOpen, onClose: onStrikeSelectModalClose } = useDisclosure()
 
@@ -43,23 +49,23 @@ export default function StrategyDetail() {
         <Box flex={1} p={2}>
 
           <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Vault Status</Text>
-          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>In Progress</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ roundInProgress ? 'In Progress' : 'Closed' }</Text>
 
         </Box>
         <Box flex={1} p={2}>
 
-          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Vault Status</Text>
-          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>In Progress</Text>
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Expiry</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{activeExpiry || 'N/A' }</Text>
 
         </Box>
         <Box flex={1} p={2}>
-          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Vault Status</Text>
-          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>In Progress</Text>
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Capital Used</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ lastLockedAmount }</Text>
         </Box>
 
         <Box flex={1} p={2}>
-          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Vault Status</Text>
-          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>In Progress</Text>
+          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Hedge Status</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>Not Available</Text>
         </Box>
 
         <Box flex={1} p={2}>

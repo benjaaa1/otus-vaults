@@ -7,8 +7,8 @@ export const createVaultInitialState = {
   market_id: null,
   optionMarket: '0xDc06D81A68948544A6B453Df55CcD172061c6d6e', 
   vaultStrategy: {
-    collatBuffer: 1.2, 
-    collatPercent: .35,
+    collatBuffer: 120, 
+    collatPercent: 35,
     minTimeToExpiry: 0,
     maxTimeToExpiry: 4,
     minTradeInterval: 10,

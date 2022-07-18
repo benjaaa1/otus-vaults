@@ -27,21 +27,16 @@ export const StrategyProvider = ({ children }) => {
   const [state, dispatch] = useReducer(strategyReducer, strategyInitialState);
 
   const {
-    strategy,
-    hedgeStrategy,
     selectedBoard,
     market, 
     lyraMarket,
-    liveBoards,
     liveStrikes,
-    liveBoardStrikes,
-    needsQuotesUpdated,
-    currentStrikes,
-    activeCurrentStrikeIndex
+    currentStrikes
   } = state;
   
   const [strategyValue, setStrategyValue] = useState({
     hasStrategy: false, 
+    activeExpiry: null,
     vaultState: { 
       round: 0,
       totalPending: 0,
@@ -93,14 +88,15 @@ export const StrategyProvider = ({ children }) => {
       try {
 
         const activeExpiry = await strategyContract.activeExpiry();
-        const formattedExpiry = parseFloat(formatUnits(activeExpiry)) * (10 ** 18) * 100; 
-        console.log({ formattedExpiry, now: Date.now() })
-        if(formattedExpiry < Date.now())  { // board not expired 
+        const formattedExpiry = parseFloat(formatUnits(activeExpiry)) * (10 ** 18) * 1000; 
+
+        if(formattedExpiry > Date.now())  { // board not expired 
           const activeBoardId = await strategyContract.activeBoardId();
-          console.log({ activeBoardId })
           const formattedActiveBoardId = Math.round(parseFloat(formatUnits(activeBoardId)) * (10 ** 18)); 
-          console.log({ formattedActiveBoardId })
           updateValue('activeBoardId', formattedActiveBoardId); 
+          const _date = new Date(formattedExpiry); 
+          const _dateS = _date.toDateString(); 
+          updateValue('activeExpiry', _dateS); 
         }
 
       } catch (error) {
@@ -112,27 +108,23 @@ export const StrategyProvider = ({ children }) => {
   useEffect(async () => {
     if(activeBoardId && activeBoardId > 0) {
 
-      const [strikes, optionTypes, positionIds, sizes] = await strategyContract.getStrikeOptionTypes();
-      console.log({ strikes, optionTypes, positionIds, sizes })
+      const [strikes, optionTypes, positionIds] = await strategyContract.getStrikeOptionTypes();
+      console.log({ strikes, optionTypes, positionIds })
 
       const strikesInfo = await Promise.all(strikes.map(async (strikeId, index) => {
-        console.log({ strikeId, strikeIdFormat: Math.round(parseFloat(formatUnits(strikeId) * (10**18))) })
         const strike = await getStrike(Math.round(parseFloat(formatUnits(strikeId) * (10**18))));
         const optionType = Math.round(parseFloat(formatUnits(optionTypes[index]) * (10 ** 18))); 
-        const size = Math.round(parseFloat(formatUnits(sizes[index]) * (10 ** 18))); 
       
         return {
           strikeId: strike.id, 
           positionId: Math.round(parseFloat(formatUnits(positionIds[index]) * (10 ** 18))),
           strikePrice: formatUnits(strike.strikePrice),
-          optionType: optionType == 3 || optionType == 4 || optionType == 5 ? optionType - 1 : optionType,
-          size
+          optionType: optionType == 3 || optionType == 4 || optionType == 5 ? optionType - 1 : optionType
         }; 
       }))
 
       dispatch({ type: 'SET_CURRENT_ROUND_STRIKES', payload: strikesInfo });
 
-      console.log({ strikesInfo }); 
     }
   }, [activeBoardId])
 
@@ -141,7 +133,6 @@ export const StrategyProvider = ({ children }) => {
       try {
 
         const vaultState = await otusVaultContract.vaultState(); 
-        console.log({ vaultState })
         updateValue('vaultState', {
           round: Math.round(parseFloat(formatUnits(vaultState.round) * (10**18))),
           lockedAmount: formatUnits(vaultState.lockedAmount),
@@ -156,74 +147,6 @@ export const StrategyProvider = ({ children }) => {
       }
     }
   }, [otusVaultContract])
-
-
-
-  // this should only be run if 
-  // has active expiery and actibe board id 
-  // useEffect(async () => {
-  //   if(strategyValue.hasStrategy && Object.values(liveBoards).length) {
-
-  //     try {
-  //       const vaultState = await otusVaultContract.vaultState(); 
-  //       const vaultParams = await otusVaultContract.vaultParams(); 
-  //       // const activeStrikeIds = await strategyContract.getActiveStrikeIds();
-  //       const currentBasePrice = await strategyContract.getSpotPriceForMarket(); 
-  //       const [strikes, optionTypes, positionIds] = await strategyContract.getStrikeOptionTypes();
-  //       console.log({ strikes, optionTypes, positionIds })
-
-  //       const strikesInfo = await Promise.all(strikes.map(async (strikeId, index) => {
-  //         console.log({ strikeId, strikeIdFormat: Math.round(parseFloat(formatUnits(strikeId) * (10**18))) })
-  //         // const strike = await getStrike(Math.round(parseFloat(formatUnits(strikeId) * (10**18))));
-  //         return {
-  //           strikeId: strikeId, 
-  //           positionId: Math.round(parseFloat(formatUnits(positionIds[index]) * (10 ** 18))),
-  //           // strikePrice: formatUnits(strike.strikePrice),
-  //           optionType: Math.round(parseFloat(formatUnits(optionTypes[index]) * (10 ** 18)))
-  //         }; 
-  //       }))
-
-  //       // const strikeToPositionIds = await Promise.all(activeStrikeIds.map(async (strikeId) => {
-  //       //   const formattedStrikeId = Math.round(parseFloat(formatUnits(strikeId)) * (10 ** 18));
-  //       //   const positionId = await strategyContract.strikeToPositionId(strikeId)
-  //       //   const formattedPositionId = Math.round(parseFloat(formatUnits(positionId)) * (10 ** 18))
-  //       //   const strategyIndex = await strategyContract.strategyToStrikeId(strikeId)
-  //       //   return { formattedStrikeId, formattedPositionId, strategyIndex: formatUnits(strategyIndex) }
-  //       // }));
-
-  //       console.log({ strikesInfo })
-
-  //       updateValue('currentPrice', Math.round(parseFloat(formatUnits(currentBasePrice)))); 
-  //       updateValue('vaultState', {
-  //         round: Math.round(parseFloat(formatUnits(vaultState.round) * (10**18))),
-  //         lockedAmount: formatUnits(vaultState.lockedAmount),
-  //         totalPending: formatUnits(vaultState.totalPending),
-  //         lastLockedAmount: formatUnits(vaultState.lastLockedAmount),
-  //         lockedAmountLeft: formatUnits(vaultState.lockedAmountLeft),
-  //         roundInProgress: vaultState.roundInProgress
-  //       }); 
-  //       updateValue('vaultParams', vaultParams);
-
-  //       const currentStrikeStrategies = await Promise.all(strikesInfo.map(async (strikeInfo, index) => {
-  //         // const formattedStrikeId = Math.round(parseFloat(formatUnits(strikeId)) * (10 ** 18));
-  //         console.log({ strikeInfo })
-  //         const currentStrikeStrategy = await strategyContract.currentStrikeStrategies(index)
-  //         return currentStrikeStrategy
-  //       }));
-
-  //       console.log({ currentStrikeStrategies })
-
-  //       // need to load combo of current strike strategies with _strike and type of option
-
-  //       // dispatch({ type: 'LOAD_CURRENT_STRIKES_POSITIONS', payload: strikePositions });
-
-  //       // console.log({ strikeToPositionIds })
-
-  //     } catch (error) {
-  //       console.log({ error })
-  //     }
-  //   }
-  // }, [liveBoards]);
 
   const setVaultStrategy = async () => {
 
@@ -241,8 +164,8 @@ export const StrategyProvider = ({ children }) => {
       } = vaultStrategy; 
 
       const formattedStrategy = {
-        collatBuffer: parseUnits(collatBuffer.toString(), 18), 
-        collatPercent: parseUnits(collatPercent.toString(), 18),
+        collatBuffer: parseUnits((collatBuffer / 100).toString(), 18), 
+        collatPercent: parseUnits((collatPercent / 100).toString(), 18),
         minTimeToExpiry: minTimeToExpiry,
         maxTimeToExpiry: maxTimeToExpiry,
         minTradeInterval: minTradeInterval,
@@ -250,7 +173,6 @@ export const StrategyProvider = ({ children }) => {
       }
 
       const response = await strategyContract.connect(signer).setStrategy(formattedStrategy); 
-      console.log({ response })
       const receipt = response.wait(); 
       Notifier(MESSAGE.VAULTSTRATEGY.SUCCESS, TYPE.SUCCESS)
 
@@ -435,34 +357,3 @@ export const useStrategyContext = () => {
 
   return context;
 };
-
-
-// const _hedge = async () => {
-//   try {
-//     const response = await otusVaultContract.connect(signer)._hedge();
-//     const receipt = response.wait();  
-//     console.log({ receipt })
-//     Notifier(MESSAGE.TRADE.SUCCESS, TYPE.SUCCESS)
-//   } catch (error) {
-//     console.log({ error })
-//     const { data } = error; 
-//     Notifier(data.message, TYPE.ERROR)
-
-//   }
-// }
-
-  // // weekly buttons
-  // const reducePosition = async () => {
-  //   try {
-  //     const positionId = 264;
-  //     const size = parseUnits('2'); 
-  //     const response = await otusVaultContract.connect(signer).reducePosition(positionId, size); 
-  //     const receipt = response.wait(); 
-  //     console.log({ receipt })
-
-  //   } catch (error) {
-  //     Notifier(MESSAGE.STARTROUND.ERROR, TYPE.ERROR)
-
-  //     console.log({ error })
-  //   }
-  // }

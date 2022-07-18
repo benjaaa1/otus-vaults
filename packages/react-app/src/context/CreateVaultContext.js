@@ -90,8 +90,8 @@ export const CreateVaultProvider = ({ children }) => {
       const { collatBuffer, collatPercent, minTimeToExpiry, maxTimeToExpiry, minTradeInterval, gwavPeriod } = vaultStrategy; 
       const formattedVaultStrategy = {
         ...vaultStrategy,
-        collatBuffer: parseUnits(collatBuffer.toString(), 18), 
-        collatPercent: parseUnits(collatPercent.toString(), 18),
+        collatBuffer: parseUnits((collatBuffer / 100).toString(), 18), 
+        collatPercent: parseUnits((collatPercent / 100).toString(), 18),
         minTimeToExpiry: minTimeToExpiry * HOUR_SEC, 
         maxTimeToExpiry: maxTimeToExpiry * WEEK_SEC,
         minTradeInterval: 60 * minTradeInterval,

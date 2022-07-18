@@ -5,8 +5,8 @@ const DAY_SEC = 24 * HOUR_SEC;
 const WEEK_SEC = 7 * DAY_SEC;
 
 export const vaultStrategy = {
-  collatBuffer: 1.2, 
-  collatPercent: .35,
+  collatBuffer: 120, 
+  collatPercent: 35,
   minTimeToExpiry: 0,
   maxTimeToExpiry: WEEK_SEC * 8,
   minTradeInterval: 600,
@@ -68,6 +68,7 @@ export const strategyReducer = (state, action) => {
   switch (action.type) {
     // need to load some of these strategies, strikes
     case 'SET_CURRENT_ROUND_STRIKES': 
+      console.log({ currentRoundStrikes: action.payload })
       return { ...state, currentRoundStrikes: action.payload }
     case 'UPDATE_MARKET':
       return { ...state, market: action.payload };

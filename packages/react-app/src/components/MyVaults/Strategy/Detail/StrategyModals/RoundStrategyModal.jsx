@@ -65,13 +65,13 @@ export const RoundStrategyModal = ({ isOpen, onClose }) => {
           
                 <Flex>
                   <Box flex='1'>
-                    <Slider name={"Collateral Buffer"} step={.1} min={1} max={2} id={"collatBuffer"} setSliderValue={setValue} sliderValue={collatBuffer} label={''} />    
+                    <Slider name={"Collateral Buffer"} step={10} min={0} max={200} id={"collatBuffer"} setSliderValue={setValue} sliderValue={collatBuffer} label={'%'} />    
                   </Box>
                 </Flex>
         
                 <Flex>
                   <Box flex='1'>
-                    <Slider name={"Collateral Percent"} step={.05} min={.25} max={1} id={"collatPercent"} setSliderValue={setValue} sliderValue={collatPercent} label={'%'} />    
+                    <Slider name={"Collateral Percent"} step={5} min={25} max={100} id={"collatPercent"} setSliderValue={setValue} sliderValue={collatPercent} label={'%'} />    
                   </Box>
                 </Flex>
                 
