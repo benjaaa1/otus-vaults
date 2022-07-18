@@ -34,7 +34,8 @@ export default function StrategyDetail() {
   const { vaultState, activeExpiry } = strategyValue; 
   const {
     round,
-    lastLockedAmount, 
+    lockedAmount, 
+    lockedAmountLeft,
     roundInProgress
   } = vaultState; 
 
@@ -60,7 +61,7 @@ export default function StrategyDetail() {
         </Box>
         <Box flex={1} p={2}>
           <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Capital Used</Text>
-          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ lastLockedAmount }</Text>
+          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>${ lockedAmount - lockedAmountLeft }</Text>
         </Box>
 
         <Box flex={1} p={2}>

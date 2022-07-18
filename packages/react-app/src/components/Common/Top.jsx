@@ -1,15 +1,22 @@
 import React from "react";
-import { Flex, Box, HStack, Spacer, Text } from '@chakra-ui/react';
+import { Flex, Box, HStack, Spacer, Text, textDecoration } from '@chakra-ui/react';
 import { Account } from "../utils";
 import { NavigationLink } from "./Link";
 import { NavContainer } from "./Container";
 import { NavLink } from "react-router-dom";
+import { useNonce } from "eth-hooks";
 
 export const Top = () => {
 
   let activeStyle = {
-    textDecoration: "underline",
+    fontWeight: '500',
   };
+
+  let style = {
+    fontWeight: '400',
+    fontFamily: `'IBM Plex Sans', sans-serif`,
+    textDecoration: 'none',
+  }
 
   return (
     <NavContainer>
@@ -31,7 +38,7 @@ export const Top = () => {
               <NavLink
                 to="/"
                 style={({ isActive }) =>
-                  isActive ? activeStyle : undefined
+                  isActive ? activeStyle : style
                 }
               >
                 Products
@@ -40,7 +47,7 @@ export const Top = () => {
               <NavLink
                 to="/portfolio"
                 style={({ isActive }) =>
-                  isActive ? activeStyle : undefined
+                  isActive ? activeStyle : style
                 }
               >
                 Portfolio
@@ -49,7 +56,7 @@ export const Top = () => {
               <NavLink
                 to="/my-vaults"
                 style={({ isActive }) =>
-                  isActive ? activeStyle : undefined
+                  isActive ? activeStyle : style
                 }
               >
                 My Vaults
