@@ -40,7 +40,7 @@ export default function useSupervisor() {
   }, [otusController])
 
   const viewMyVault = (vault, strategy) => {
-    navigate(`/my-vault/${vault}/${strategy}`);
+    navigate(`/my-vaults/${vault}/${strategy}`);
   }
 
   return { loading, userVaults, viewMyVault }

@@ -28,10 +28,6 @@ export const Top = () => {
               spacing={6}
               display={{ base: 'none', md: 'flex' }}
             >
-              {/* <NavigationLink to="/">Products</NavigationLink>
-              <NavigationLink to="/portfolio">Portfolio</NavigationLink>
-              <NavigationLink to="/my-vaults">My Vaults</NavigationLink> */}
-
               <NavLink
                 to="/"
                 style={({ isActive }) =>

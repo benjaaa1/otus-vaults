@@ -22,7 +22,7 @@ function App(props) {
         <Route exact path={`/vault/:vault`} element={<Vault />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/my-vaults" element={<MyVaults />} />
-        <Route path="/my-vault/:vault/:strategy" element={<Strategy />} />
+        <Route path="/my-vaults/:vault/:strategy" element={<Strategy />} />
       </Routes>
       <ToastContainer />
     </PageContainer>

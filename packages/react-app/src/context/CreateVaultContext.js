@@ -125,7 +125,7 @@ export const CreateVaultProvider = ({ children }) => {
       console.log({ userVaultInformation })
       const len = userVaultInformation.length; 
 
-      navigate(`/my-vault/${userVaultInformation[len - 1].vault}/${userVaultInformation[len - 1].strategy}`);
+      navigate(`/my-vaults/${userVaultInformation[len - 1].vault}/${userVaultInformation[len - 1].strategy}`);
 
       setLoading(false);
     } catch (e) {
