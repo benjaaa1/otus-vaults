@@ -16,6 +16,7 @@ packages/hardhat/cache*
 packages/**/data
 !packages/react-app/src/contracts/contracts.js
 
+.next/ 
 
 # ts
 packages/hardhat-ts/cache
