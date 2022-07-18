@@ -4,7 +4,11 @@
 	},
 	"rewrites": [
 		{
-			"source": "/(.*)/(.*)",
+			"source": "/(.*)",
+			"destination": "/index.html"
+		},
+    {
+			"source": "/portfolio/test",
 			"destination": "/index.html"
 		}
 	]
