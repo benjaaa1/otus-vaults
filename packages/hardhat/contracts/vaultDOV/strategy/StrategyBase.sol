@@ -324,14 +324,12 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
   function getStrikeOptionTypes() external view returns (
       uint[] memory strikes, 
       uint[] memory optionTypes, 
-      uint[] memory positionIds,
-      uint[] memory sizes
+      uint[] memory positionIds
     ) {
       uint len = activeStrikeIds.length; 
       strikes = new uint[](len); 
       optionTypes = new uint[](len); 
       positionIds = new uint[](len); 
-      sizes = new uint[](len); 
 
       for(uint i = 0; i < len; i++) {
         uint strikeId = activeStrikeIds[i];
@@ -340,11 +338,9 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
         optionTypes[i] = optionType; 
         uint positionId = strikeToPositionId[strikeId];
         positionIds[i] = positionId;
-        uint size = currentStrikeTrades[i].size;
-        sizes[i] = size;
       }
 
-    return (strikes, optionTypes, positionIds, sizes); 
+    return (strikes, optionTypes, positionIds); 
   }
 
   function getCurrentStrikeTrades() external view returns (StrikeTrade[] memory strikeTrades) {

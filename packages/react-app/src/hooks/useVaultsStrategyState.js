@@ -73,7 +73,9 @@ export default function useVaultStrategyState(vault) {
         
         const vs = await otusVault.vaultState(); 
         const roundPremiumCollected = await otusVault.roundPremiumCollected();
+        console.log({ roundPremiumCollected })
         const _currentAPR =  Math.round(formatUnits(roundPremiumCollected) * 52 / formatUnits(vs.lockedAmount) * 100); 
+        console.log({ _currentAPR })
         setVaultInfo(ps => {
           const { vaultState } = ps; 
           return { ...ps, vaultState: {
@@ -85,7 +87,7 @@ export default function useVaultStrategyState(vault) {
               queuedWithdrawShares: formatUnits(vs.queuedWithdrawShares),
               nextRoundReadyTimestamp: formatUnits(vs.nextRoundReadyTimestamp),
               roundInProgress: vs.roundInProgress,
-              currentAPR: _currentAPR
+              currentAPR: _currentAPR || 0
             } 
           }
         })
