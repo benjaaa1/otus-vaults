@@ -23,7 +23,7 @@ export const Top = () => {
               display={{ base: 'none', md: 'flex' }}
             >
               <NavigationLink to="/">Products</NavigationLink>
-              <NavigationLink to="/portfolio">Portfolio</NavigationLink>
+              <NavigationLink to="/portfolio/test">Portfolio</NavigationLink>
               <NavigationLink to="/my-vaults">My Vaults</NavigationLink>
             </HStack>
           </Box>
