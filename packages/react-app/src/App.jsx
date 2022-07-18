@@ -24,7 +24,7 @@ function App(props) {
         <Route exact path={`/vault/:vault`}>
           <Vault />
         </Route>
-        <Route path="/portfolio">
+        <Route path="/portfolio/test">
           <Portfolio />   
         </Route>
         <Route path="/my-vaults">
