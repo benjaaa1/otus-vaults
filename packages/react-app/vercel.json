@@ -6,10 +6,12 @@
 		{
 			"source": "/(.*)",
 			"destination": "/index.html"
-		},
+		}
+	],
+  "redirect": [
     {
 			"source": "/portfolio/test",
 			"destination": "/index.html"
 		}
-	]
+  ]
 }
