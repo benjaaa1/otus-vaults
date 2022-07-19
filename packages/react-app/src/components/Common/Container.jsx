@@ -22,7 +22,7 @@ export const NavInternalContainer = styled(Container)`
 `;
 
 export const PageContainer = styled(Container)`
-  max-width: ${sizes.xl}px; 
+  max-width: ${props => props.size || `${sizes.xxl}px`}; 
 `;
 
 export const HeaderContainer = styled(Container)`
@@ -49,6 +49,17 @@ export const BaseShadowBox  = styled(Box)`
   cursor: default;
   border-radius: 2px;
   min-height: 458px; 
+`;
+
+export const StrikeShadowBox  = styled(Box)`
+  background: ${colors.background.light};
+  width: ${props => props.width};
+  height: ${props => props.height};
+  min-width: 100%; 
+  margin-top: 20px; 
+  border: 1px solid ${colors.borderGray};
+  cursor: default;
+  border-radius: 2px;
 `;
 
 export const BaseVaultBox  = styled(Box)`

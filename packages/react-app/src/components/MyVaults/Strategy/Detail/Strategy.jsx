@@ -14,7 +14,7 @@ import {
 import { Select } from "../../../Common/Select";
 import { AddButton, SelectStrikeButton, ViewLinkButton } from "../../../Common/Button";
 import { useStrategyContext } from "../../../../context/StrategyContext"
-import { BaseShadowBox } from "../../../Common/Container";
+import { StrikeShadowBox } from "../../../Common/Container";
 import theme from "../../../../designSystem/theme";
 import StrikesModal from "./StrikesModal";
 
@@ -69,15 +69,15 @@ export default function StrategyDetail() {
           <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>Not Available</Text>
         </Box>
 
-        <Box flex={1} p={2}>
+        {/* <Box flex={1} p={2}>
           <ViewLinkButton onClick={viewVault} />
-        </Box>
+        </Box> */}
       </Flex>
 
-      <Flex minWidth='max-content' alignItems='center' p={4}>
+      <Flex alignItems='center' p={4}>
         <Box flex={2} p={2}>
         {/* isDisabled={activeBoardId > 0} only disable if trades occurred */}
-          <Select width="100%" id='market' id='board' placeholder={'Select Round Expiry'} value={activeBoardId} onChange={(e) => setSelectedBoard(e.target.value)}>
+          <Select id='market' id='board' placeholder={'Select Round Expiry'} value={activeBoardId} onChange={(e) => setSelectedBoard(e.target.value)}>
           {
             Object.values(liveBoards).map(({ name, id }) => (<option value={id}>{name}</option>))
           }
@@ -135,7 +135,7 @@ const RoundStrikeSummary = ({
   index,
   strategyAddress
 }) => {
-  return <BaseShadowBox padding={theme.padding.lg}  _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
+  return <StrikeShadowBox padding={theme.padding.lg}  _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
     <Stack spacing={4}>
       <Box>
         <SelectStrikeButton>
@@ -156,7 +156,7 @@ const RoundStrikeSummary = ({
       </Box>
 
     </Stack>
-  </BaseShadowBox>
+  </StrikeShadowBox>
 }
 
 const StrikeSummary = ({ 
@@ -171,7 +171,7 @@ const StrikeSummary = ({
   console.log({ cs, index })
 
   return (
-    <BaseShadowBox padding={theme.padding.lg}  _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
+    <StrikeShadowBox padding={theme.padding.lg}  _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
       <Stack spacing={4}>
 
         <Box>
@@ -213,7 +213,7 @@ const StrikeSummary = ({
 
       </Stack>
        
-    </BaseShadowBox>
+    </StrikeShadowBox>
   )
 }
 

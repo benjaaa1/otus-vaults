@@ -14,6 +14,7 @@ import { StrikeStrategyModal } from "./Detail/StrategyModals/StrikeStrategyModal
 import { CreateButton, CTAButton } from "../../Common/Button";
 import { BaseHeaderText } from "../../../designSystem";
 import theme from "../../../designSystem/theme";
+import sizes from "../../../designSystem/sizes";
 
 export default function Strategy() {
 
