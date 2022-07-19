@@ -11,8 +11,6 @@ export default function useSupervisor() {
 
   const { contracts, signer } = useWeb3({});
 
-  const [loading, setLoading] = useState(false); 
-
   const [userVaults, setUserVaults] = useState([]); 
 
   const otusController = contracts ? contracts['OtusController'] : "";
@@ -20,7 +18,6 @@ export default function useSupervisor() {
   useEffect(async () => {
     if(otusController) {
       try {
-        setLoading(true)
         const { userVaults, userStrategies } = await otusController.connect(signer).getUserManagerDetails();
         console.log({ userVaults, userStrategies })
 
@@ -31,10 +28,8 @@ export default function useSupervisor() {
         console.log({ userVaultInformation })
         setUserVaults(userVaultInformation)
 
-        setLoading(false);
       } catch (error) {
         console.log({ error })
-        setLoading(false);
       }
     }
   }, [otusController])
@@ -43,6 +38,6 @@ export default function useSupervisor() {
     navigate(`/my-vaults/${vault}/${strategy}`);
   }
 
-  return { loading, userVaults, viewMyVault }
+  return { userVaults, viewMyVault }
 
 }

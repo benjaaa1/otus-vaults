@@ -12,6 +12,9 @@ export default function useVaultStrategyState(vault) {
   const otusVault = contracts ? contracts['OtusVault'] : "";
   const strategy = contracts ? contracts['Strategy'] : "";
 
+  const [isLoadingVault, setLoadingVault] = useState(true); 
+  const [isLoadingStrategy, setLoadingStrategy] = useState(true); 
+
   const [vaultInfo, setVaultInfo] = useState({
     currentBasePrice: 0,
     tokenName: '',
@@ -40,6 +43,8 @@ export default function useVaultStrategyState(vault) {
   useEffect(async() => {
     if(otusVault) {
       try {
+        setLoadingVault(true);
+
         const strategyAddress = await otusVault.strategy(); 
         setContractAddresses(prev => {
           return { ...prev, Strategy: strategyAddress }
@@ -95,12 +100,17 @@ export default function useVaultStrategyState(vault) {
       } catch (error) {
         console.log({ error })
       }
+
+      setLoadingVault(false);
+
     }
   }, [otusVault])
 
   useEffect(async() => {
     if(strategy) {
       try {
+        setLoadingStrategy(true);
+
         const currentBasePrice = await strategy.getSpotPriceForMarket(); 
         
         const [strikes, optionTypes, positionIds] = await strategy.getStrikeOptionTypes();
@@ -122,9 +132,11 @@ export default function useVaultStrategyState(vault) {
       } catch (error) {
         console.log({ error })
       }
+
+      setLoadingStrategy(false);
     }
   }, [strategy])
 
-  return { vaultInfo }
+  return { vaultInfo, isLoadingStrategy }
 
 }

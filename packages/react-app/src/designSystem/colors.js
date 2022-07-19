@@ -4,7 +4,8 @@ const colors = {
     one_hover: "#ffffff",
     two: "#1c1c1c",
     two_hover: "#333",
-    three: "#84FFC4"
+    three: "#84FFC4",
+    light: "#84ffc408"
   },
   borderDark: "#333", 
   borderGray: "#333", 

@@ -1,12 +1,11 @@
 import React from "react";
-import { Flex, Box, HStack, Spacer, Text, textDecoration } from '@chakra-ui/react';
+import { Flex, Box, HStack, Spacer, Text } from '@chakra-ui/react';
 import { Account } from "../utils";
-import { NavigationLink } from "./Link";
 import { NavContainer, NavInternalContainer } from "./Container";
-import { NavLink } from "react-router-dom";
-import { useNonce } from "eth-hooks";
+import { useNavigate, NavLink } from "react-router-dom";
 
 export const Top = () => {
+  let navigate = useNavigate();
 
   let activeStyle = {
     fontWeight: '700',
@@ -25,7 +24,9 @@ export const Top = () => {
         <HStack width={'100%'}>
 
           <Box flex='1' p='2'>
-            Otus Finance
+            
+            <Text fontFamily={ `'IBM Plex Sans', sans-serif`} cursor={'pointer'} p={2} onClick={() => navigate('/')} fontWeight={'700'}>Otus Finance</Text>
+
           </Box>
 
           <Spacer />

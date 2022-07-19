@@ -22,14 +22,15 @@ export const PageContainer = styled(Container)`
 export const HeaderContainer = styled(Center)``;
 
 export const BaseShadowBox  = styled(Box)`
-  background: ${colors.background.one};
+  background: ${colors.background.light};
   width: ${props => props.width};
   height: ${props => props.height};
   min-width: 100%; 
-  padding: ${props => props.padding};
   margin-top: 20px; 
   border: 1px solid ${colors.borderGray};
   cursor: default;
+  border-radius: 2px;
+  min-height: 458px; 
 `;
 
 export const BaseVaultBox  = styled(Box)`

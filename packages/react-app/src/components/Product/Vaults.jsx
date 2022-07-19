@@ -4,7 +4,7 @@ import useWeb3 from "../../hooks/useWeb3";
 import { formatUnits } from "ethers/lib/utils";
 
 import theme from "../../designSystem/theme";
-import { Grid, GridItem, Box, Stack, Flex, Text, Center, HStack } from '@chakra-ui/react';
+import { Grid, GridItem, Box, Stack, Flex, Text, Center, HStack, Spinner } from '@chakra-ui/react';
 import { BaseShadowBox } from "../Common/Container";
 import { AssetTag, ProductTag } from "../Common/Tags";
 import { VaultButton, ViewLinkButton } from "../Common/Button"; 
@@ -30,74 +30,83 @@ export const Vaults = ({ vaults }) => {
 
 export const VaultSummary = ({ vault, viewVault }) => {
 
-  const { vaultInfo, currentBasePrice } = useVaultStrategyState(vault); 
+  const { vaultInfo, isLoadingVault, isLoadingStrategy } = useVaultStrategyState(vault); 
 
   return (
-    <BaseShadowBox padding={theme.padding.lg} _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
+    <BaseShadowBox>
       <Stack spacing={4}>
-        <Box cursor={'pointer'} onClick={viewVault}>
-          <ProductTag>
+        {
+        isLoadingVault || isLoadingStrategy ?
+          <Center minH={'400px'}>
+            <Spinner />
+          </Center> :
+          <>
+            <Box padding={theme.padding.md} cursor={'pointer'} onClick={viewVault}>
+              <ProductTag>
 
-          </ProductTag>
-          <AssetTag>
+              </ProductTag>
+              <AssetTag>
+                
+              </AssetTag>
+
+              <Text fontSize='xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ vaultInfo.name }</Text>
+
+            </Box>
+
+            <Box padding={theme.padding.md} cursor={'pointer'} onClick={viewVault}  borderBottom={'1px solid #333'}>
+              <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ vaultInfo.tokenName }</Text>
+            </Box>
             
-          </AssetTag>
-
-          <Text fontSize='xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ vaultInfo.name }</Text>
-
-        </Box>
-
-        <Box cursor={'pointer'} onClick={viewVault}  borderBottom={'1px solid #333'}>
-          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ vaultInfo.tokenName }</Text>
-        </Box>
-        
-        <Box cursor={'pointer'} onClick={viewVault}  borderBottom={'1px solid #333'}>
-          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Projected Yield</Text>
-          <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{vaultInfo.vaultState.currentAPR}%</Text>
-        </Box>
+            <Box padding={theme.padding.md} cursor={'pointer'} onClick={viewVault}  borderBottom={'1px solid #333'}>
+              <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Projected Yield</Text>
+              <Text fontSize='4xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{vaultInfo.vaultState.currentAPR}%</Text>
+            </Box>
 
 
-        <Box height={'60px'}>
-          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Strikes</Text>
-          <Flex>
-          {
-            vaultInfo.strikes.map(strike => {
-              return <Box flex={'1'}>
-                <Text fontWeight={'700'} fontSize='xs' fontFamily={`'IBM Plex Mono', monospace`}>${ strike.strikePrice }</Text>
+            <Box padding={theme.padding.md} height={'54px'}>
+              <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Strikes</Text>
+              <Flex>
+              {
+                vaultInfo.strikes.map(strike => {
+                  return <Box flex={'1'}>
+                    <Text fontWeight={'700'} fontSize='xs' fontFamily={`'IBM Plex Mono', monospace`}>${ strike.strikePrice }</Text>
 
-                <HStack>
+                    <HStack>
 
-                  <Center w='16px' h='16px' bg={getOptionType( strike.optionType )[1]} color='white'>
-                    <Box as='span' fontWeight='bold' fontSize='xs'>
-                    { getOptionType( strike.optionType )[0] }
-                    </Box>
-                  </Center>
+                      <Center w='16px' h='16px' bg={getOptionType( strike.optionType )[1]} color='white'>
+                        <Box as='span' fontWeight='bold' fontSize='xs'>
+                        { getOptionType( strike.optionType )[0] }
+                        </Box>
+                      </Center>
 
-                  <ViewLinkButton size='xs' onClick={() => window.location.href = `https://app.lyra.finance/position/eth/${strike.positionId}` } />
+                      <ViewLinkButton size='xs' onClick={() => window.location.href = `https://app.lyra.finance/position/eth/${strike.positionId}` } />
 
-                </HStack>
+                    </HStack>
 
-              </Box>
-            })
-          }
-          </Flex>
-        </Box>
+                  </Box>
+                })
+              }
+              </Flex>
+            </Box>
 
-        <Box onClick={viewVault} >
-          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Price</Text>
-          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>${ vaultInfo.currentBasePrice }</Text>
-        </Box>
-          
-        <Box onClick={viewVault} >
-          {/* <VaultButton onClick={viewVault}>{vault.substring(0, 8)}...</VaultButton> */}
-          <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Locked Amount / Max Cap.</Text>
-          <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{`${vaultInfo.vaultState.lockedAmount} / ${vaultInfo.vaultParams.cap}`}</Text>
+            <Box padding={theme.padding.md}>
+              <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Price</Text>
+              <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>${ vaultInfo.currentBasePrice }</Text>
+            </Box>
+              
+            <Box padding={theme.padding.md}>
+              {/* <VaultButton onClick={viewVault}>{vault.substring(0, 8)}...</VaultButton> */}
+              <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Locked Amount / Max Cap.</Text>
+              <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{`${vaultInfo.vaultState.lockedAmount} / ${vaultInfo.vaultParams.cap}`}</Text>
 
-        </Box>
+            </Box>
+          </>
+        }
       </Stack>
     </BaseShadowBox>
   )
 }
+
 
 const getOptionType = (id) => {
   switch (id) {
