@@ -9,7 +9,7 @@ import { useNonce } from "eth-hooks";
 export const Top = () => {
 
   let activeStyle = {
-    fontWeight: '500',
+    fontWeight: '700',
   };
 
   let style = {
