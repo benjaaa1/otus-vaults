@@ -35,7 +35,7 @@ export const VaultSummary = ({ vault, viewVault }) => {
   return (
     <BaseShadowBox padding={theme.padding.lg} _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
       <Stack spacing={4}>
-        <Box onClick={viewVault} >
+        <Box onClick={viewVault}>
           <ProductTag>
 
           </ProductTag>
