@@ -20,7 +20,7 @@ import StrikesModal from "./StrikesModal";
 
 export default function StrategyDetail() {
 
-  const { state, dispatch, strategyAddress, strategyValue, viewVault, setSelectedBoard } = useStrategyContext();
+  const { state, dispatch, strategyAddress, strategyValue, setSelectedBoard } = useStrategyContext();
 
   const {
     selectedBoard,
@@ -69,9 +69,6 @@ export default function StrategyDetail() {
           <Text fontSize='xs' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>Not Available</Text>
         </Box>
 
-        {/* <Box flex={1} p={2}>
-          <ViewLinkButton onClick={viewVault} />
-        </Box> */}
       </Flex>
 
       <Flex alignItems='center' p={4}>

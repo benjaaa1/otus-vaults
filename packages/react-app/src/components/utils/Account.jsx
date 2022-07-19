@@ -11,12 +11,15 @@ import {
 import { useLookupAddress } from "eth-hooks/dapps/ens";
 import { ChevronRightIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import useWeb3 from "../../hooks/useWeb3";
-import { ALCHEMY_KEY } from "../../constants";
+import { ALCHEMY_KEY, INFURA_ID } from "../../constants";
 import { useStaticJsonRPC } from "../../hooks";
 
-const providers = [
-  `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
-];
+// const providers = [
+//   `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+// ];
+
+const providers =[`https://optimism-kovan.infura.io/v3/${INFURA_ID}`];
+
 
 export default function Account() {
 

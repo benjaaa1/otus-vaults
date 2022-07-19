@@ -10,7 +10,7 @@ export const BaseHeaderText = styled.span`
   color: ${props => props.color };
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: ${props => props.size };
-  font-weight: 400; 
+  font-weight:  ${props => props.fontWeight || '400' };; 
   margin: 0 auto; 
   line-height: 36px; 
 `;

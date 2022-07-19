@@ -37,6 +37,8 @@ export const StrategyProvider = ({ children }) => {
   const [strategyValue, setStrategyValue] = useState({
     hasStrategy: false, 
     activeExpiry: null,
+    vaultDescription: '',
+    vaultName: '', 
     vaultState: { 
       round: 0,
       totalPending: 0,
@@ -132,6 +134,18 @@ export const StrategyProvider = ({ children }) => {
     if(otusVaultContract) {
       try {
 
+        const vaultName = await otusVaultContract.vaultName(); 
+        updateValue('vaultName', vaultName); 
+
+        const vaultDescription = await otusVaultContract.vaultDescription(); 
+        updateValue('vaultDescription', vaultDescription); 
+
+        const vaultParams = await otusVaultContract.vaultParams(); 
+        updateValue('vaultParams', {
+          cap: formatUnits(vaultParams.cap),
+          asset: vaultParams.asset
+        })
+
         const vaultState = await otusVaultContract.vaultState(); 
         updateValue('vaultState', {
           round: Math.round(parseFloat(formatUnits(vaultState.round) * (10**18))),
@@ -174,7 +188,7 @@ export const StrategyProvider = ({ children }) => {
 
       const response = await strategyContract.connect(signer).setStrategy(formattedStrategy); 
       const receipt = response.wait(); 
-      Notifier(MESSAGE.VAULTSTRATEGY.SUCCESS, TYPE.SUCCESS)
+      Notifier(MESSAGE.VAULTSTRATEGY.SUCCESS, TYPE.SUCCESS);
 
     } catch (error) {
       console.log({ error })
@@ -257,8 +271,12 @@ export const StrategyProvider = ({ children }) => {
         console.log({ selectedBoard })
         const response = await otusVaultContract.connect(signer).startNextRound(selectedBoard.id); 
         const receipt = response.wait(); 
-        console.log({ receipt })
-        Notifier(MESSAGE.STARTROUND.SUCCESS, TYPE.SUCCESS)
+
+        Notifier(MESSAGE.STARTROUND.SUCCESS, TYPE.SUCCESS);
+
+        updateValue('vaultState', {
+          roundInProgress: true
+        }); 
       }
     } catch (error) {
       Notifier(MESSAGE.STARTROUND.ERROR, TYPE.ERROR)
@@ -273,10 +291,15 @@ export const StrategyProvider = ({ children }) => {
       const receipt = response.wait();  
       console.log({ receipt })
       Notifier(MESSAGE.CLOSEROUND.SUCCESS, TYPE.SUCCESS)
+      updateValue('vaultState', {
+        roundInProgress: false
+      }); 
 
     } catch (error) {
       console.log({ error })
-      Notifier(MESSAGE.CLOSEROUND.ERROR, TYPE.ERROR)
+      const { data: { message } } = error; 
+
+      Notifier(message, TYPE.ERROR)
     }
   }
 

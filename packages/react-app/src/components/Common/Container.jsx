@@ -33,7 +33,7 @@ export const HeaderContainer = styled(Container)`
 `;
 
 export const HeaderInternalContainer = styled(Container)`
-  max-width: ${sizes.xl}px;
+  max-width: ${sizes.xxl}px;
   background: ${colors.background.one};
   padding: 4px; 
 `;
