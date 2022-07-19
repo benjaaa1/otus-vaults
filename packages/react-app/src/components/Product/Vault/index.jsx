@@ -28,7 +28,7 @@ export const Vault = () => {
             </Box>
           </Box>
           <Box flex={1}>
-
+{/* 
             <Box>
               <CTAButton bg={colors.background.three}>
                 Create a Vault
@@ -45,7 +45,7 @@ export const Vault = () => {
               <CTAButton bg={colors.background.three}>
                 Create a Vault
               </CTAButton>
-            </Box>
+            </Box> */}
 
           </Box>
         </HStack>
