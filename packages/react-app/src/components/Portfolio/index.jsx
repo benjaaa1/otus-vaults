@@ -68,9 +68,7 @@ const Portfolio = () => {
   //   }
   // }, [OtusVaultABI, vaults])
 
-  return <PageContainer>
-
-      <VStack 
+  return <VStack 
         spacing={4}
         align='stretch'
       >
@@ -92,9 +90,6 @@ const Portfolio = () => {
           </Text>
         </Box>
       </VStack>
-
-    </PageContainer>
-  
 }
 
 export default Portfolio;

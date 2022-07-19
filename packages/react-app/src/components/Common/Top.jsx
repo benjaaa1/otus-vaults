@@ -2,7 +2,7 @@ import React from "react";
 import { Flex, Box, HStack, Spacer, Text, textDecoration } from '@chakra-ui/react';
 import { Account } from "../utils";
 import { NavigationLink } from "./Link";
-import { NavContainer } from "./Container";
+import { NavContainer, NavInternalContainer } from "./Container";
 import { NavLink } from "react-router-dom";
 import { useNonce } from "eth-hooks";
 
@@ -20,6 +20,7 @@ export const Top = () => {
 
   return (
     <NavContainer>
+      <NavInternalContainer>
       <Flex minWidth='max-content' alignItems={'center'} justifyContent={'space-between'}>
         <HStack width={'100%'}>
 
@@ -74,6 +75,7 @@ export const Top = () => {
         </HStack>
 
       </Flex>
+      </NavInternalContainer>
     </NavContainer>
 
   )

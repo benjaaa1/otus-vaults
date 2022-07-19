@@ -59,8 +59,8 @@ const MyVaultNav = ({
   return (
     <Stack>
       <Box mb={10}>
-        <Text p={2} color={colors.text.light} onClick={() => setStep(0)} fontWeight={step == 0 ? '700' : '400'} fontSize='sm'>{ step == 0 ? <ArrowForwardIcon /> : null } Current Round </Text>
-        <Text p={2} color={colors.text.light} onClick={() => setStep(1)} fontWeight={step == 1 ? '700' : '400'} fontSize='sm'>{ step == 1 ? <ArrowForwardIcon /> : null } Vault History </Text>
+        <Text fontFamily={ `'IBM Plex Sans', sans-serif`} cursor={'pointer'} p={2} color={colors.text.light} onClick={() => setStep(0)} fontWeight={step == 0 ? '700' : '400'} fontSize='sm'>{ step == 0 ? <ArrowForwardIcon /> : null } Current Round </Text>
+        <Text fontFamily={ `'IBM Plex Sans', sans-serif`} cursor={'pointer'} p={2} color={colors.text.light} onClick={() => setStep(1)} fontWeight={step == 1 ? '700' : '400'} fontSize='sm'>{ step == 1 ? <ArrowForwardIcon /> : null } Vault History </Text>
       </Box>
 
       <Box mt={10}>

@@ -35,7 +35,7 @@ export const VaultSummary = ({ vault, viewVault }) => {
   return (
     <BaseShadowBox padding={theme.padding.lg} _hover={{ boxShadow: '2px 2px 2px #a8a8a8' }}>
       <Stack spacing={4}>
-        <Box onClick={viewVault}>
+        <Box cursor={'pointer'} onClick={viewVault}>
           <ProductTag>
 
           </ProductTag>
@@ -47,17 +47,17 @@ export const VaultSummary = ({ vault, viewVault }) => {
 
         </Box>
 
-        <Box onClick={viewVault}  borderBottom={'1px solid #333'}>
+        <Box cursor={'pointer'} onClick={viewVault}  borderBottom={'1px solid #333'}>
           <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{ vaultInfo.tokenName }</Text>
         </Box>
         
-        <Box onClick={viewVault}  borderBottom={'1px solid #333'}>
+        <Box cursor={'pointer'} onClick={viewVault}  borderBottom={'1px solid #333'}>
           <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Current Projected Yield</Text>
           <Text fontSize='2xl' fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>{vaultInfo.vaultState.currentAPR}%</Text>
         </Box>
 
 
-        <Box>
+        <Box height={'60px'}>
           <Text fontSize='xs' fontWeight={'400'} fontFamily={`'IBM Plex Sans', sans-serif`}>Strikes</Text>
           <Flex>
           {

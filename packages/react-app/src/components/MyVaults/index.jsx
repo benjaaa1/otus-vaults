@@ -15,7 +15,7 @@ const MyVaults = () => {
   const { loading, userVaults, viewMyVault } = useSupervisor();
   console.log({ userVaults })
   return (
-    <PageContainer>
+    <>
       {
         loading ? 
           <Center>
@@ -40,7 +40,7 @@ const MyVaults = () => {
       }
       <CreateVaultModal isOpen={isOpen} onClose={onClose} />
 
-    </PageContainer>
+    </>
   );
 }
 

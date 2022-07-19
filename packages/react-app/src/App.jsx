@@ -15,17 +15,19 @@ import Portfolio from "./components/Portfolio";
 function App(props) {
 
   return (
-    <PageContainer>
+    <>
       <Top />
-      <Routes>
-        <Route exact path="/" element={<Product />} />
-        <Route exact path={`/vault/:vault`} element={<Vault />} />
-        <Route path="/portfolio" element={<Portfolio />} />
-        <Route path="/my-vaults" element={<MyVaults />} />
-        <Route path="/my-vaults/:vault/:strategy" element={<Strategy />} />
-      </Routes>
-      <ToastContainer />
-    </PageContainer>
+      <PageContainer>
+        <Routes>
+          <Route exact path="/" element={<Product />} />
+          <Route exact path={`/vault/:vault`} element={<Vault />} />
+          <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/my-vaults" element={<MyVaults />} />
+          <Route path="/my-vaults/:vault/:strategy" element={<Strategy />} />
+        </Routes>
+        <ToastContainer />
+      </PageContainer>
+    </>
   );
 }
 

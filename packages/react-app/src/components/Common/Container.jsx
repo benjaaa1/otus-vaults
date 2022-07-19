@@ -6,12 +6,13 @@ import sizes from "../../designSystem/sizes";
 import theme from "../../designSystem/theme";
 
 export const NavContainer = styled(Container)`
+  border-bottom: 1px solid ${colors.borderGray};
+`;
+
+export const NavInternalContainer = styled(Container)`
   max-width: ${sizes.xxl}px;
-  margin-top: ${theme.margin.md};
-  margin-bottom: ${theme.margin.md};
-  border: 1px solid ${colors.borderGray};
   background: ${colors.background.one};
-  padding: 14px; 
+  padding: 4px; 
 `;
 
 export const PageContainer = styled(Container)`
@@ -28,7 +29,7 @@ export const BaseShadowBox  = styled(Box)`
   padding: ${props => props.padding};
   margin-top: 20px; 
   border: 1px solid ${colors.borderGray};
-  cursor: pointer;
+  cursor: default;
 `;
 
 export const BaseVaultBox  = styled(Box)`

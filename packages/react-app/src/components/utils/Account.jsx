@@ -35,10 +35,10 @@ export default function Account() {
   } 
 
   return !address ?
-        <Button onClick={() => loadWeb3Modal()} rightIcon={<ChevronRightIcon />}>
+        <Button bg={'#333'} onClick={() => loadWeb3Modal()} rightIcon={<ChevronRightIcon />}>
           Connect
         </Button> :
-        <Menu>
+        <Menu bg={'#333'}>
           <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
             {displayAddress}
           </MenuButton>

@@ -35,7 +35,7 @@ const Product = () => {
     }
   }, [otusController])
 
-  return <PageContainer>
+  return <>
       <HeaderContainer p="10">
         <VStack spacing={2}>
           <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.md}>
@@ -49,8 +49,7 @@ const Product = () => {
       <Vaults vaults={vaults} />
 
       <CreateVaultModal isOpen={isOpen} onClose={onClose} />
-
-    </PageContainer>
+    </>
   
 }
 
