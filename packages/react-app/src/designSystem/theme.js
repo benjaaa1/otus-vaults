@@ -14,7 +14,8 @@ const theme = {
     xs: "10px",
     sm: "12px",
     md: "16px",
-    lg: "32px",
+    lg: "24px",
+    xl: "32px",
   },
   border: {
     radiusBig: "8px",

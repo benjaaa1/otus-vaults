@@ -5,19 +5,18 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { Top } from "./components/Common/Top";
-import { PageContainer } from "./components/Common/Container";
 import Product from "./components/Product";
 import { Vault } from "./components/Product/Vault";
 import Strategy from "./components/MyVaults/Strategy";
 import MyVaults from "./components/MyVaults";
 import Portfolio from "./components/Portfolio";
+import { Footer } from "./components/Common/Footer";
 
 function App(props) {
 
   return (
     <>
-      <Top />
-      <PageContainer>
+        <Top />
         <Routes>
           <Route exact path="/" element={<Product />} />
           <Route exact path={`/vault/:vault`} element={<Vault />} />
@@ -25,8 +24,8 @@ function App(props) {
           <Route path="/my-vaults" element={<MyVaults />} />
           <Route path="/my-vaults/:vault/:strategy" element={<Strategy />} />
         </Routes>
+        <Footer />
         <ToastContainer />
-      </PageContainer>
     </>
   );
 }

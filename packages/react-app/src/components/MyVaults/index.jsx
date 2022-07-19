@@ -1,11 +1,14 @@
 import React from "react";
 import useSupervisor from "../../hooks/useSupervisor";
 
-import { Grid, GridItem, Stack, Center, Flex, Spinner, Box, useDisclosure } from '@chakra-ui/react'
+import { Grid, GridItem, Stack, Center, Flex, Spinner, Box, useDisclosure, HStack } from '@chakra-ui/react'
 import { CTAButton } from "../Common/Button";
 import { CreateVaultModal } from "./Flow/CreateModal";
 import colors from "../../designSystem/colors";
 import { VaultSummary } from "../Product/Vaults";
+import { HeaderContainer, HeaderInternalContainer, PageContainer } from "../Common/Container";
+import { BaseHeaderText } from "../../designSystem";
+import theme from "../../designSystem/theme";
 
 const MyVaults = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -14,10 +17,27 @@ const MyVaults = () => {
 
   return (
     <>
-      <>
-        <CTAButton bg={colors.background.three} onClick={onOpen}>
-          Create a Vault
-        </CTAButton>
+      <HeaderContainer>
+        <HeaderInternalContainer>
+          <HStack spacing={6}>
+            <Box flex={1}>
+              <Box>
+                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                  Build and Manage your own permissionless options vault for any asset. 
+                </BaseHeaderText>
+              </Box>
+              <Box mt={'18'}>
+                <CTAButton bg={colors.background.three} onClick={onOpen}>
+                  Create a Vault
+                </CTAButton>
+              </Box>
+            </Box>
+          </HStack>
+        </HeaderInternalContainer>
+      </HeaderContainer>
+
+      <PageContainer>
+
         <Grid templateColumns='repeat(3, 1fr)' gap={6}>
         {
           userVaults.map(({vault, strategy}) => {
@@ -29,10 +49,13 @@ const MyVaults = () => {
           })
         }
         </Grid>
-      </>
-      <CreateVaultModal isOpen={isOpen} onClose={onClose} />
+
+        <CreateVaultModal isOpen={isOpen} onClose={onClose} />
+
+      </PageContainer>
 
     </>
+
   );
 }
 

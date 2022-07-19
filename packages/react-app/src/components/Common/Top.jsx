@@ -35,7 +35,7 @@ export const Top = () => {
             <HStack
               as={'nav'}
               spacing={6}
-              display={{ base: 'none', md: 'flex' }}
+              display={{ md: 'flex' }}
             >
               <NavLink
                 to="/"
@@ -69,7 +69,7 @@ export const Top = () => {
 
           <Spacer />
 
-          <Box flex='1' p='2' alignContent={'end'}>
+          <Box flex='1' p='2' alignItems={'end'}>
             <Account />
           </Box >
 

@@ -9,6 +9,12 @@ export const NavContainer = styled(Container)`
   border-bottom: 1px solid ${colors.borderGray};
 `;
 
+export const FooterNavContainer = styled(Container)`
+  border-top: 1px solid ${colors.borderGray};
+  margin-top: 100px; 
+  padding: 8px; 
+`;
+
 export const NavInternalContainer = styled(Container)`
   max-width: ${sizes.xxl}px;
   background: ${colors.background.one};
@@ -19,7 +25,19 @@ export const PageContainer = styled(Container)`
   max-width: ${sizes.xl}px; 
 `;
 
-export const HeaderContainer = styled(Center)``;
+export const HeaderContainer = styled(Container)`
+  border-bottom: 1px solid ${colors.borderGray};
+  margin-bottom: ${props => props.mb || '100px'};
+  margin-top: ${props => props.mt || '100px'};
+  padding-bottom: ${props => props.pb || '100px'}; 
+`;
+
+export const HeaderInternalContainer = styled(Container)`
+  max-width: ${sizes.xl}px;
+  background: ${colors.background.one};
+  padding: 4px; 
+`;
+
 
 export const BaseShadowBox  = styled(Box)`
   background: ${colors.background.light};
@@ -47,10 +65,12 @@ export const VaultStrategyBox  = styled(Box)`
   padding: ${props => props.padding};
   background: ${colors.background.one};
   border: 1px solid ${colors.borderGray};
+  border-radius: 2px;
 `;
 
 export const StrategyBox  = styled(Box)`
   padding: ${props => props.padding};
   background: ${colors.background.one};
   border: 1px solid ${colors.borderGray};
+  border-radius: 2px;
 `;

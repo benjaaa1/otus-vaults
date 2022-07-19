@@ -1,7 +1,7 @@
-import { Flex, Box } from "@chakra-ui/react";
+import { Flex, Box, HStack } from "@chakra-ui/react";
 import React from "react";
 import { useParams } from "react-router-dom";
-import { BaseDepositBox, BaseShadowBox, BaseVaultBox } from "../../Common/Container";
+import { BaseDepositBox, BaseShadowBox, BaseVaultBox, HeaderContainer, HeaderInternalContainer, PageContainer } from "../../Common/Container";
 import { StrategyVault } from "./StrategyVault";
 import { Performance } from "./Performance";
 import { Risks } from "./Risks";
@@ -10,10 +10,48 @@ import { UserActions } from "./UserActions";
 import { Tab, Tabs, TabList, TabPanels, TabPanel } from "@chakra-ui/react";
 import colors from "../../../designSystem/colors";
 import theme from "../../../designSystem/theme";
+import { BaseHeaderText } from "../../../designSystem";
+import { CTAButton } from "../../Common/Button";
 
 export const Vault = () => {
 
   return (
+    <>
+    <HeaderContainer mt={'40px'} mb={'40px'} pb={'40px'}>
+      <HeaderInternalContainer>
+        <HStack spacing={6}>
+          <Box flex={1}>
+            <Box>
+              <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                Vault & Strategy Manager
+              </BaseHeaderText>
+            </Box>
+          </Box>
+          <Box flex={1}>
+
+            <Box>
+              <CTAButton bg={colors.background.three}>
+                Create a Vault
+              </CTAButton>
+            </Box>
+
+            <Box>
+              <CTAButton bg={colors.background.three}>
+                Create a Vault
+              </CTAButton>
+            </Box>
+
+            <Box>
+              <CTAButton bg={colors.background.three}>
+                Create a Vault
+              </CTAButton>
+            </Box>
+
+          </Box>
+        </HStack>
+      </HeaderInternalContainer>
+    </HeaderContainer>
+    <PageContainer>
     <Flex>
       <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
 
@@ -45,5 +83,7 @@ export const Vault = () => {
         <UserActions />
       </BaseDepositBox>
     </Flex>
+    </PageContainer>
+    </>
   );
 }

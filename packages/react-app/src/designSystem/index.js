@@ -8,12 +8,11 @@ import sizes from "./sizes";
 
 export const BaseHeaderText = styled.span`
   color: ${props => props.color };
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: ${props => props.size };
   font-weight: 400; 
   margin: 0 auto; 
-  padding: ${theme.padding.sm}
-  max-width: ${sizes.lg}px; 
+  line-height: 36px; 
 `;
 
 export const BaseLink = styled(Link)`

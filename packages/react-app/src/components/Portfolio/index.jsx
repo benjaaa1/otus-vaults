@@ -7,11 +7,12 @@ import {
   useDisclosure,
   StackDivider,
   Box,
+  HStack,
 } from '@chakra-ui/react';
 
 import theme from "../../designSystem/theme";
 import colors from "../../designSystem/colors";
-import { HeaderContainer, PageContainer } from "../Common/Container";
+import { HeaderContainer, HeaderInternalContainer, PageContainer } from "../Common/Container";
 import { BaseHeaderText } from "../../designSystem";
 
 // import { Contract, Provider } from 'ethers-multicall';
@@ -68,28 +69,40 @@ const Portfolio = () => {
   //   }
   // }, [OtusVaultABI, vaults])
 
-  return <VStack 
-        spacing={4}
-        align='stretch'
-      >
-        <Box p={4} bg={colors.background.two}>
-          <Text textTransform={'uppercase'} color={colors.text.light} fontSize={'sm'} fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>
-          Portfolio Summary
-          </Text>
-        </Box>
+  return <>
+      <HeaderContainer  mt={'40px'} mb={'40px'} pb={'40px'}>
+        <HeaderInternalContainer>
+          <HStack spacing={6}>
+            <Box flex={1}>
+              <Box>
+                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                  Portfolio Summary
+                </BaseHeaderText>
+              </Box>
+            </Box>
+          </HStack>
+        </HeaderInternalContainer>
+      </HeaderContainer>
+      <PageContainer>     
+        <VStack 
+          spacing={4}
+          align='stretch'
+        >
+          <Box p={4} textTransform={'uppercase'} bg={colors.background.two}>
+            <Text color={colors.text.light} fontSize={'sm'} fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>
+            Positions
+            </Text>
+          </Box>
 
-        <Box p={4} textTransform={'uppercase'} bg={colors.background.two}>
-          <Text color={colors.text.light} fontSize={'sm'} fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>
-          Positions
-          </Text>
-        </Box>
+          <Box p={4} textTransform={'uppercase'} bg={colors.background.two}>
+            <Text color={colors.text.light} fontSize={'sm'} fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>
+            Transaction History
+            </Text>
+          </Box>
+        </VStack>
+      </PageContainer>
+  </>
 
-        <Box p={4} textTransform={'uppercase'} bg={colors.background.two}>
-          <Text color={colors.text.light} fontSize={'sm'} fontWeight={'700'} fontFamily={`'IBM Plex Mono', monospace`}>
-          Transaction History
-          </Text>
-        </Box>
-      </VStack>
 }
 
 export default Portfolio;

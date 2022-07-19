@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef,  useEffect, useState } from "react";
 import useWeb3 from "../../hooks/useWeb3";
 
 import {
   VStack,
+  Box,
   useDisclosure,
+  HStack,
 } from '@chakra-ui/react';
 
 import theme from "../../designSystem/theme";
 import colors from "../../designSystem/colors";
-import { HeaderContainer, PageContainer } from "../Common/Container";
+import { HeaderContainer, HeaderInternalContainer, PageContainer } from "../Common/Container";
 import { BaseHeaderText } from "../../designSystem";
 import { CTAButton } from "../Common/Button";
 import { Vaults } from "./Vaults"; 
@@ -35,18 +37,46 @@ const Product = () => {
     }
   }, [otusController])
 
+  const myRef = useRef(null)
+
+  const executeScroll = () => myRef.current.scrollIntoView()    
+
   return <>
-      <HeaderContainer p="10">
-        <VStack spacing={2}>
-          <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.md}>
-            Join one of the many vaults or create your own and implement your own strategy, have your community join your vault and earn performance and management fees. 
-          </BaseHeaderText>
-          <CTAButton bg={colors.background.three} onClick={onOpen}>
-            Create a Vault
-          </CTAButton>
-        </VStack>
+      <HeaderContainer>
+        <HeaderInternalContainer>
+          <HStack spacing={6}>
+            <Box flex={1}>
+              <Box>
+                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                  Earn with managed vaults, choose by asset or by historical performance.
+                </BaseHeaderText>
+              </Box>
+              <Box mt={'18'}>
+                <CTAButton bg={colors.background.two} color={colors.text.light} onClick={executeScroll}>
+                  View Vaults
+                </CTAButton>
+              </Box>
+            </Box>
+            <Box flex={1}>
+              <Box>
+                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                  Build and Manage your own permissionless options vault for any asset. 
+                </BaseHeaderText>
+              </Box>
+              <Box mt={'18'}>
+                <CTAButton bg={colors.background.three} onClick={onOpen}>
+                  Create a Vault
+                </CTAButton>
+              </Box>
+            </Box>
+          </HStack>
+        </HeaderInternalContainer>
       </HeaderContainer>
-      <Vaults vaults={vaults} />
+      <PageContainer ref={myRef}>
+     
+        <Vaults vaults={vaults} />
+
+      </PageContainer>
 
       <CreateVaultModal isOpen={isOpen} onClose={onClose} />
     </>

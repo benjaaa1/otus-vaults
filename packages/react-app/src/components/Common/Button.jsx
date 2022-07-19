@@ -1,9 +1,13 @@
-import { Button, IconButton } from '@chakra-ui/react'
+import { Button as ChakraButton, IconButton } from '@chakra-ui/react'
 import { ArrowForwardIcon, CloseIcon, PlusSquareIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 import styled from "styled-components";
 import { BaseButton, BaseIconButton } from "../../designSystem";
 import colors from "../../designSystem/colors";
 import theme from "../../designSystem/theme";
+
+const Button = (props) => {
+  return <ChakraButton {...props} borderRadius={'2px'} />
+}
 
 export const SelectStrikeButton = (props) => (<Button {...props} fontSize={'sm'} border={`1px solid ${colors.borderGray}`} fontWeight={'400'} bg={colors.background.one} color={colors.text.dark} _hover={{ background: colors.background.three, color: colors.text.dark }} />)
 

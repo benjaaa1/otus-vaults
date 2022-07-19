@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
-import { Flex, Box, Stack, Text, useDisclosure } from '@chakra-ui/react';
+import { Flex, Box, Stack, Text, useDisclosure, HStack } from '@chakra-ui/react';
 import StrategyDetail from "./Detail/Strategy";
 import VaultDetail from "./Detail/Vault";
-import { StrategyBox, VaultStrategyBox } from "../../Common/Container";
+import { HeaderInternalContainer, HeaderContainer, PageContainer, StrategyBox, VaultStrategyBox } from "../../Common/Container";
 import { StrategyProvider } from "../../../context/StrategyContext";
 import colors from "../../../designSystem/colors";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
@@ -11,7 +11,9 @@ import { ArrowForwardIcon } from "@chakra-ui/icons";
 import { HedgeStrategyModal } from "./Detail/StrategyModals/HedgeStrategyModal";
 import { RoundStrategyModal } from "./Detail/StrategyModals/RoundStrategyModal";
 import { StrikeStrategyModal } from "./Detail/StrategyModals/StrikeStrategyModal";
-import { CreateButton } from "../../Common/Button";
+import { CreateButton, CTAButton } from "../../Common/Button";
+import { BaseHeaderText } from "../../../designSystem";
+import theme from "../../../designSystem/theme";
 
 export default function Strategy() {
 
@@ -22,29 +24,65 @@ export default function Strategy() {
   const [step, setStep] = useState(0); 
 
   return <StrategyProvider>
-    <Flex>
-      
+        <HeaderContainer mt={'40px'} mb={'40px'} pb={'40px'}>
+        <HeaderInternalContainer>
+          <HStack spacing={6}>
+            <Box flex={1}>
+              <Box>
+                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                  Vault & Strategy Manager
+                </BaseHeaderText>
+              </Box>
+            </Box>
+            <Box flex={1}>
 
-        <Box flex={1} bg={colors.background.two} minWidth={'200px'} minHeight={'600px'} p={4} mt="4">
-            <MyVaultNav
-              onHedgeStrategyOpen={onHedgeStrategyOpen}
-              onStrategyOpen={onStrategyOpen}
-              onStrikeStrategyOpen={onStrikeStrategyOpen}
-              step={step} 
-              setStep={setStep} 
-            />
-        </Box>
+              <Box>
+                <CTAButton bg={colors.background.three}>
+                  Create a Vault
+                </CTAButton>
+              </Box>
+
+              <Box>
+                <CTAButton bg={colors.background.three}>
+                  Create a Vault
+                </CTAButton>
+              </Box>
+
+              <Box>
+                <CTAButton bg={colors.background.three}>
+                  Create a Vault
+                </CTAButton>
+              </Box>
+
+            </Box>
+          </HStack>
+        </HeaderInternalContainer>
+      </HeaderContainer>
+      <PageContainer>
+        <Flex>
+          
+
+            <Box flex={1} bg={colors.background.two} minWidth={'200px'} minHeight={'600px'} p={4} mt="4">
+                <MyVaultNav
+                  onHedgeStrategyOpen={onHedgeStrategyOpen}
+                  onStrategyOpen={onStrategyOpen}
+                  onStrikeStrategyOpen={onStrikeStrategyOpen}
+                  step={step} 
+                  setStep={setStep} 
+                />
+            </Box>
+            
+            <MyVaultStrategy step={step} />
+
         
-        <MyVaultStrategy step={step} />
+        </Flex>
 
-     
-    </Flex>
+        <HedgeStrategyModal isOpen={isHedgeStrategyModalOpen} onClose={onHedgeStrategyModalClose} />
+        <RoundStrategyModal isOpen={isStrategyModalOpen} onClose={onStrategyModalClose} />
+        <StrikeStrategyModal isOpen={isStrikeStrategyModalOpen} onClose={onStrikeStrategyModalClose} />
 
-    <HedgeStrategyModal isOpen={isHedgeStrategyModalOpen} onClose={onHedgeStrategyModalClose} />
-    <RoundStrategyModal isOpen={isStrategyModalOpen} onClose={onStrategyModalClose} />
-    <StrikeStrategyModal isOpen={isStrikeStrategyModalOpen} onClose={onStrikeStrategyModalClose} />
-
-  </StrategyProvider>;
+      </PageContainer>
+  </StrategyProvider>
 
 }
 
