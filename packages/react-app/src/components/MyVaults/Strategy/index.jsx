@@ -36,7 +36,7 @@ export default function Strategy() {
             </Box>
             <Box flex={1}>
 
-              <Box>
+              {/* <Box>
                 <CTAButton bg={colors.background.three}>
                   Create a Vault
                 </CTAButton>
@@ -52,7 +52,7 @@ export default function Strategy() {
                 <CTAButton bg={colors.background.three}>
                   Create a Vault
                 </CTAButton>
-              </Box>
+              </Box> */}
 
             </Box>
           </HStack>
