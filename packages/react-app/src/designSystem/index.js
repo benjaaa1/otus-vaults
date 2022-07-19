@@ -3,6 +3,7 @@ import { Button } from '@chakra-ui/react'
 import { Link } from "react-router-dom";
 import colors from "./colors";
 import theme from "./theme";
+import sizes from "./sizes";
 
 
 export const BaseHeaderText = styled.span`
@@ -10,9 +11,9 @@ export const BaseHeaderText = styled.span`
   font-family: 'IBM Plex Mono', monospace;
   font-size: ${props => props.size };
   font-weight: 400; 
-  text-align: center;
   margin: 0 auto; 
   padding: ${theme.padding.sm}
+  max-width: ${sizes.lg}px; 
 `;
 
 export const BaseLink = styled(Link)`

@@ -16,7 +16,7 @@ export const NavInternalContainer = styled(Container)`
 `;
 
 export const PageContainer = styled(Container)`
-  max-width: ${sizes.xxl}px; 
+  max-width: ${sizes.xl}px; 
 `;
 
 export const HeaderContainer = styled(Center)``;
