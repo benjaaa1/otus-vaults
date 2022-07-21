@@ -11,8 +11,8 @@ export const UserActions = () => {
   return (
     <Tabs isFitted>
       <TabList mb='2em'>
-        <Tab color={colors.text.light} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none', fontWeight: '700' }}>Deposit</Tab>
-        <Tab color={colors.text.light} sx={{ textTransform: 'uppercase', fontFamily: theme.font.header, textDecoration: 'none', fontWeight: '700' }}>Withdraw</Tab>
+        <Tab variantColor="red" color={colors.text.light} sx={{ fontSize: 'sm', fontFamily: theme.font.sans, textDecoration: 'none', fontWeight: '700' }}>Deposit</Tab>
+        <Tab color={colors.text.light} sx={{  fontSize: 'sm',  fontFamily: theme.font.sans, textDecoration: 'none', fontWeight: '700' }}>Withdraw</Tab>
       </TabList>
       <TabPanels>
         <TabPanel>

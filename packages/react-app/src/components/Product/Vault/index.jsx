@@ -18,8 +18,20 @@ export const Vault = () => {
   
   const { vault } = useParams();
 
-  const { vaultInfo } = useVaultStrategyState(vault)
-  console.log({ vaultInfo })
+  const { vaultInfo, isLoadingVault } = useVaultStrategyState(vault); 
+  console.log({ vaultInfo, isLoadingVault });
+
+  const {
+    tokenName, 
+    tokenSymbol,  
+    name,
+    description, 
+    isPublic,
+    vaultState, 
+    vaultParams, 
+    strikes
+  } = vaultInfo; 
+
   return (
     <>
     <HeaderContainer mt={'40px'} mb={'40px'} pb={'40px'}>
@@ -28,9 +40,23 @@ export const Vault = () => {
           <Box flex={1}>
             <Box>
               <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
-                Vault & Strategy Manager
+                { name }
               </BaseHeaderText>
             </Box>
+            <Box mt={6} as='button' borderRadius='2px' bg='purple' color='white' px={4} h={8} fontWeight={'700'}>
+              ETH
+            </Box>
+            <Box>
+              <BaseHeaderText color={colors.buttons.primary} fontWeight={'700'} size={theme.fontSize.lg} width="60%">
+                { tokenName } - { tokenSymbol }
+              </BaseHeaderText>
+            </Box>
+            <Box>
+              <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.md} width="60%">
+                { description }
+              </BaseHeaderText>
+            </Box>
+            
           </Box>
           <Box flex={1}>
 {/* 
@@ -59,6 +85,68 @@ export const Vault = () => {
     <PageContainer>
     <Flex>
       <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
+        <HStack spacing={6}>
+
+
+            <Box flex={1}>
+              <Box>
+                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                  Strategy
+                </BaseHeaderText>
+              </Box>
+              
+            </Box>
+
+
+        </HStack>
+      </BaseVaultBox>
+
+      <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
+        <HStack spacing={6}>
+
+            <Box flex={1}>
+              <Box>
+                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                  Performance
+                </BaseHeaderText>
+              </Box>
+            </Box>
+
+        </HStack>
+      </BaseVaultBox>
+
+
+      <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
+        <HStack spacing={6}>
+
+            <Box flex={1}>
+              <Box>
+                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                  Transactions
+                </BaseHeaderText>
+              </Box>
+            </Box>
+
+        </HStack>
+      </BaseVaultBox>
+
+      
+      <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
+        <HStack spacing={6}>
+
+            <Box flex={1}>
+              <Box>
+                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
+                  Risks
+                </BaseHeaderText>
+              </Box>
+            </Box>
+
+        </HStack>
+      </BaseVaultBox>
+      
+            
+          {/* <Box flex={1}>
 
         <Tabs isFitted>
           <TabList mb='2em'>
@@ -83,7 +171,7 @@ export const Vault = () => {
           </TabPanels>
         </Tabs>
 
-      </BaseVaultBox>
+      </BaseVaultBox> */}
       <BaseDepositBox flex="1" p="4" mt="4" ml="4" height={'400px'}>
         <UserActions />
       </BaseDepositBox>

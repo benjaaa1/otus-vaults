@@ -4,17 +4,29 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import "./index.css";
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import colors from "./designSystem/colors";
 
 const customTheme = extendTheme({
 
   components: {
+    Tabs: {
+      baseStyle: {
+        tab: {
+          _selected: {
+            bg: colors.background.three,
+            color: colors.text.light
+          }
+        }
+      }
+    },
     Select: {
       sizes: {
         md: {
           field: {
             fontSize: '14px',
             borderRadius: 'none',
-            color: '#333'
+            color: '#333',
+            background: '#fff'
           },
         },
       },
