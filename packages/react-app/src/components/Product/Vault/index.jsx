@@ -10,7 +10,7 @@ import { UserActions } from "./UserActions";
 import { Tab, Tabs, TabList, TabPanels, TabPanel } from "@chakra-ui/react";
 import colors from "../../../designSystem/colors";
 import theme from "../../../designSystem/theme";
-import { BaseHeaderText } from "../../../designSystem";
+import { BaseHeaderText, BaseVaultHeaderText } from "../../../designSystem";
 import { CTAButton } from "../../Common/Button";
 import useVaultStrategyState from "../../../hooks/useVaultsStrategyState";
 
@@ -84,94 +84,71 @@ export const Vault = () => {
     </HeaderContainer>
     <PageContainer>
     <Flex>
-      <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
-        <HStack spacing={6}>
+
+      <Box flex='2'>
+
+        <BaseVaultBox p="4" mt="4">
+          <HStack spacing={6}>
 
 
-            <Box flex={1}>
-              <Box>
-                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
-                  Strategy
-                </BaseHeaderText>
+              <Box flex={1}>
+                <Box>
+                  <BaseVaultHeaderText color={colors.buttons.primary} size={theme.fontSize.sm} width="60%">
+                    Strategy
+                  </BaseVaultHeaderText>
+                </Box>
+                
               </Box>
-              
-            </Box>
 
 
-        </HStack>
-      </BaseVaultBox>
+          </HStack>
+        </BaseVaultBox>
 
-      <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
-        <HStack spacing={6}>
+        <BaseVaultBox p="4" mt="4">
+          <HStack spacing={6}>
 
-            <Box flex={1}>
-              <Box>
-                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
-                  Performance
-                </BaseHeaderText>
+              <Box flex={1}>
+                <Box>
+                  <BaseVaultHeaderText color={colors.buttons.primary} size={theme.fontSize.sm} width="60%">
+                    Performance
+                  </BaseVaultHeaderText>
+                </Box>
               </Box>
-            </Box>
 
-        </HStack>
-      </BaseVaultBox>
+          </HStack>
+        </BaseVaultBox>
 
 
-      <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
-        <HStack spacing={6}>
+        <BaseVaultBox p="4" mt="4">
+          <HStack spacing={6}>
 
-            <Box flex={1}>
-              <Box>
-                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
-                  Transactions
-                </BaseHeaderText>
+              <Box flex={1}>
+                <Box>
+                  <BaseVaultHeaderText color={colors.buttons.primary} size={theme.fontSize.sm} width="60%">
+                    Transactions
+                  </BaseVaultHeaderText>
+                </Box>
               </Box>
-            </Box>
 
-        </HStack>
-      </BaseVaultBox>
+          </HStack>
+        </BaseVaultBox>
 
-      
-      <BaseVaultBox flex="2" p="4" mt="4" minHeight={'600px'}>
-        <HStack spacing={6}>
+        <BaseVaultBox p="4" mt="4">
+          <HStack spacing={6}>
 
-            <Box flex={1}>
-              <Box>
-                <BaseHeaderText color={colors.buttons.primary} size={theme.fontSize.lg} width="60%">
-                  Risks
-                </BaseHeaderText>
+              <Box flex={1}>
+                <Box>
+                  <BaseVaultHeaderText color={colors.buttons.primary} size={theme.fontSize.sm} width="60%">
+                    Risks
+                  </BaseVaultHeaderText>
+                </Box>
               </Box>
-            </Box>
 
-        </HStack>
-      </BaseVaultBox>
-      
-            
-          {/* <Box flex={1}>
+          </HStack>
+        </BaseVaultBox>
 
-        <Tabs isFitted>
-          <TabList mb='2em'>
-            <Tab color={colors.text.dark} sx={{ fontWeight: '700', fontFamily: theme.font.header, textDecoration: 'none' }}>Strategy</Tab>
-            <Tab color={colors.text.dark} sx={{ fontWeight: '700', fontFamily: theme.font.header, textDecoration: 'none' }}>Performance</Tab>
-            <Tab color={colors.text.dark} sx={{ fontWeight: '700', fontFamily: theme.font.header, textDecoration: 'none' }}>Transaction</Tab>
-            <Tab color={colors.text.dark} sx={{ fontWeight: '700', fontFamily: theme.font.header, textDecoration: 'none' }}>Risks</Tab>
-          </TabList>
-          <TabPanels>
-            <TabPanel>
-              <StrategyVault />
-            </TabPanel>
-            <TabPanel>
-              <Performance />
-            </TabPanel>
-            <TabPanel>
-              <Transactions />
-            </TabPanel>
-            <TabPanel>
-              <Risks />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+      </Box>
 
-      </BaseVaultBox> */}
       <BaseDepositBox flex="1" p="4" mt="4" ml="4" height={'400px'}>
         <UserActions />
       </BaseDepositBox>

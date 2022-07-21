@@ -6,6 +6,15 @@ import theme from "./theme";
 import sizes from "./sizes";
 
 
+export const BaseVaultHeaderText = styled.span`
+  color: ${props => props.color };
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: ${props => props.size };
+  font-weight: 700;
+  margin: 0 auto; 
+  line-height: 28px; 
+`;
+
 export const BaseHeaderText = styled.span`
   color: ${props => props.color };
   font-family: 'IBM Plex Sans', sans-serif;
