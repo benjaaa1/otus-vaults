@@ -2,7 +2,7 @@ const colors = {
   background: {
     one: "#ffffff",
     one_hover: "#ffffff",
-    two: "#333",
+    two: "#1c1c1c",
     two_hover: "#333",
     three: "#84FFC4",
     light: "#84ffc408"

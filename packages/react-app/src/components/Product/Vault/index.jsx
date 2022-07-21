@@ -12,9 +12,14 @@ import colors from "../../../designSystem/colors";
 import theme from "../../../designSystem/theme";
 import { BaseHeaderText } from "../../../designSystem";
 import { CTAButton } from "../../Common/Button";
+import useVaultStrategyState from "../../../hooks/useVaultsStrategyState";
 
 export const Vault = () => {
+  
+  const { vault } = useParams();
 
+  const { vaultInfo } = useVaultStrategyState(vault)
+  console.log({ vaultInfo })
   return (
     <>
     <HeaderContainer mt={'40px'} mb={'40px'} pb={'40px'}>
