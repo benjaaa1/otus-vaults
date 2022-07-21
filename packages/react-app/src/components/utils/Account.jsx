@@ -38,11 +38,11 @@ export default function Account() {
   } 
 
   return !address ?
-        <Button bg={'#333'} onClick={() => loadWeb3Modal()} rightIcon={<ChevronRightIcon />}>
+        <Button bg={'#333'} color={'#ffffff'} onClick={() => loadWeb3Modal()} rightIcon={<ChevronRightIcon />}>
           Connect
         </Button> :
-        <Menu bg={'#333'}>
-          <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+        <Menu>
+          <MenuButton bg={'#333'} color={'#ffffff'} as={Button} rightIcon={<ChevronDownIcon />}>
             {displayAddress}
           </MenuButton>
           <MenuList>
