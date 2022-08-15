@@ -487,22 +487,35 @@ contract Strategy is StrategyBase {
    *****************************************************/
 
   /**
-   * @notice simple future hedge based on strategy
+   * @notice delta hedging using synthetix futures based on strategy
    * @param optionType option type - direction to hedge
    * @param lockedAmountLeft Use reserved amount for hedging
    * @param hedgeAttempts current hedge attempts in hedging
    */
+
+  Hedge How?	Hedge When Delta Over *Number*	8
+Hedge When?	Starting Time	0 hours
+Hedge Every?	By Hours	6 hours
+Hedge Times?	The Attempts Allowed	6
+
+  struct DeltaHedgeDetail {
+    uint maxNetDelta; // 3 if current net delta is 4, need to get it to 3 again by buying = > 1 share of base asset - keeper will keep track of this and will be rechecked (net delta) here
+    uint minNetDelta; // -3 if current net delta is -4, need to get it to -3 or under by selling = > 1 share of base asset - keeper will keep track of this and will be rechecked here
+    uint minTimestamp; 
+    uint hourPeriod; 
+    uint maxHedgeAttempts; 
+  }
   function _deltaHedge(
+    uint netDelta, 
     uint optionType,
-    uint lockedAmountLeft,
+    uint hedgeFunds,
     uint hedgeAttempts
   ) external onlyVault {
     // need to track by optiontype
-    StrikeHedgeDetail memory currentHedgeStrategy = currentHedgeStrategies[optionType];
-    require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
+    DeltaHedgeDetail memory deltaHedgeStrategy = deltaHedgeStrategies[optionType];
+    require(deltaHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
 
     // check futures positions
-
     // through kwenta
     if (hedgeAttempts == 0) {
       // first time hedging
@@ -516,7 +529,7 @@ contract Strategy is StrategyBase {
         "susd transfer to from vault failed"
       );
 
-      _transferMargin(int(lockedAmountLeft));
+      _transferMargin(int(hedgeFunds));
     }
 
     // check current hedge balance in synthetix
@@ -524,9 +537,13 @@ contract Strategy is StrategyBase {
     require(marginRemaining > 0, "Remaining margin is 0");
 
     uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
-    uint size = (marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize)).divideDecimal(spotPrice);
 
-    _modifyPosition(-int(size));
+    uint currentNetDelta = _checkNetDelta(); // 3.8 or -3.2 and spot price is 2000 usd for eth, then i need 7800 usd in total + fees 
+    // if margin total is around 3000 usd and need 7800 => 7800 / 3000 = 2.6x leverage is neeeded 
+    int fundsRequiredSUSD = currentNetDelta.multiplyDecimal(spotPrice); // 3.8 delta * 2000 spot price = 7800 / marginRemaining (5000) == ; 
+    int size = fundsRequiredSUSD.multiplyDecimal(marginRemaining);
+
+    _modifyPosition(size);
   }
 
   /*****************************************************
@@ -596,5 +613,38 @@ contract Strategy is StrategyBase {
   function withdrawSUSDSNX() public {
     uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
     IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(this), msg.sender, balance);
+  }
+
+  /*****************************************************
+   *  SYNTHETIX FUTURES HEDGING HELPER
+   *****************************************************/
+
+  function _checkNetDelta() internal return (uint netDelta) {
+
+    uint[] positionIds = new uint[](len);
+    uint _len = activeStrikeIds.length;
+
+    for (uint i = 0; i < _len; i++) {
+      uint positionId = strikeToPositionId[strikeId];
+      positionIds[i] = positionId;
+
+    }
+
+    OptionPosition[] memory positions = getPositions(positionIds);
+    uint _positionsLen = positions.length;
+    uint[] strikeIds = new uint[](_positionsLen);
+
+    for (uint i = 0; i < _positionsLen; i++) {
+      strikeIds[i] = positions[i].strikeId;
+    }
+
+    int[] deltas = getDeltas(strikeIds); 
+
+    int netDelta;
+
+    for (uint i = 0; i < deltas.length; i++) {
+      netDelta =+ deltas[i];
+    }
+
   }
 }
