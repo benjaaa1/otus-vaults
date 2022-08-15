@@ -18,8 +18,30 @@ export const Top = () => {
   }
 
   return (
+
+
+
     <NavContainer>
       <NavInternalContainer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
       <Flex minWidth='max-content' alignItems={'center'} justifyContent={'space-between'}>
         <HStack width={'100%'}>
 

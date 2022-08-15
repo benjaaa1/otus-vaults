@@ -1,4 +1,3 @@
-
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
@@ -12,123 +11,109 @@ import {StrategyBase} from "./vaultDOV/strategy/StrategyBase.sol";
 import {Vault} from "./libraries/Vault.sol";
 
 interface ISupervisor {
-	function initialize() external; 
+  function initialize() external;
 }
 
 interface IOtusVault {
-	function initialize(
-		address _owner,
-		Vault.VaultInformation memory _vaultInfo,
-		Vault.VaultParams memory _vaultParams,
-		address _strategy,
-		address _keeper
-	) external; 
+  function initialize(
+    address _owner,
+    Vault.VaultInformation memory _vaultInfo,
+    Vault.VaultParams memory _vaultParams,
+    address _strategy,
+    address _keeper
+  ) external;
 }
 
 interface IStrategy {
-	function initialize(
-    address _owner, 
-    address _vault, 
-		address[] memory marketAddressess,
-		StrategyBase.StrategyDetail memory _currentStrategy
-	) external; 
+  function initialize(
+    address _owner,
+    address _vault,
+    address[] memory marketAddressess,
+    StrategyBase.StrategyDetail memory _currentStrategy
+  ) external;
 }
 
 interface IL2DepositMover {
-	function initialize(
-    address _owner, 
-    address _vault
-	) external; 
+  function initialize(address _owner, address _vault) external;
 }
 
 /**
- * @dev should move mapping to use 
+ * @title OtusCloneFactory
+ * @author Otus
+ * @dev - Handles cloning the different vault and strategy contracts available to users
  */
-
 contract OtusCloneFactory {
-	/// @notice Stores the Otus vault contract implementation address
-	address public immutable otusVault;
-	/// @notice Stores the Strategy contract implementation address 
-	address public immutable strategy;  
-	/// @notice Stores the Strategy contract implementation address 
-	address public immutable l2DepositMover;  
+  /// @notice Stores the Otus vault contract implementation address
+  address public immutable otusVault;
+  /// @notice Stores the Strategy contract implementation address
+  address public immutable strategy;
+  /// @notice Stores the Strategy contract implementation address
+  address public immutable l2DepositMover;
 
-	address public immutable otusController;  
+  address public immutable otusController;
 
   /************************************************
    *  EVENTS
    ***********************************************/
 
-	event NewVaultClone(address _clone, address _owner);
-	event NewStrategyClone(address _clone, address _owner);
+  event NewVaultClone(address _clone, address _owner);
+  event NewStrategyClone(address _clone, address _owner);
 
   /**
    * @notice Initializes the contract with immutable variables
    */
-	constructor(
-			address _otusVault, 
-			address _strategyAddress, 
-			address _l2DepositMover,
-			address _otusController
-		) {
-			otusVault = _otusVault; 
-			strategy = _strategyAddress;
-			l2DepositMover =_l2DepositMover; 
-			otusController = _otusController;
-	}
+  constructor(
+    address _otusVault,
+    address _strategyAddress,
+    address _l2DepositMover,
+    address _otusController
+  ) {
+    otusVault = _otusVault;
+    strategy = _strategyAddress;
+    l2DepositMover = _l2DepositMover;
+    otusController = _otusController;
+  }
 
-	function cloneVault() public returns (address otusVaultClone) {
-		require(msg.sender == otusController, "Not allowed to create");
-		otusVaultClone = Clones.clone(otusVault);
-		emit NewVaultClone(otusVaultClone, msg.sender);
-	}
+  function cloneVault() public returns (address otusVaultClone) {
+    require(msg.sender == otusController, "Not allowed to create");
+    otusVaultClone = Clones.clone(otusVault);
+    emit NewVaultClone(otusVaultClone, msg.sender);
+  }
 
-	function cloneStrategy() public returns (address strategyClone) {
-		require(msg.sender == otusController, "Not allowed to create");
-		strategyClone = Clones.clone(strategy);
-		emit NewStrategyClone(strategyClone, msg.sender);
-	}
+  function cloneStrategy() public returns (address strategyClone) {
+    require(msg.sender == otusController, "Not allowed to create");
+    strategyClone = Clones.clone(strategy);
+    emit NewStrategyClone(strategyClone, msg.sender);
+  }
 
-	function _initializeClonedVault(
-		address _otusVaultClone,
-		address _owner,
-		Vault.VaultInformation memory _vaultInfo,
-		Vault.VaultParams memory _vaultParams,
-		address _strategy,
-		address _keeper
-	) public {
-		require(msg.sender == otusController, "Not allowed to create");
-		IOtusVault(_otusVaultClone).initialize(
-			_owner,
-			_vaultInfo,
-			_vaultParams,
-			_strategy,
-			_keeper
-		);
-
-	}
+  function _initializeClonedVault(
+    address _otusVaultClone,
+    address _owner,
+    Vault.VaultInformation memory _vaultInfo,
+    Vault.VaultParams memory _vaultParams,
+    address _strategy,
+    address _keeper
+  ) public {
+    require(msg.sender == otusController, "Not allowed to create");
+    IOtusVault(_otusVaultClone).initialize(_owner, _vaultInfo, _vaultParams, _strategy, _keeper);
+  }
 
   /**
    * @notice Clones strategy contract if supervisor has a vault created
    */
-	function _initializeClonedStrategy(
-		address _owner,
-		address _vault,
-		address _strategy,
-		address[] memory marketAddresses,
+  function _initializeClonedStrategy(
+    address _owner,
+    address _vault,
+    address _strategy,
+    address[] memory marketAddresses,
     StrategyBase.StrategyDetail memory _currentStrategy
-	 ) public {
-		require(msg.sender == otusController, "Not allowed to create");
-		require(marketAddresses[0] != address(0), "Failed to get quote asset");
-		require(_vault != address(0), "_vault must be non zero address");
+  ) public {
+    require(msg.sender == otusController, "Not allowed to create");
+    require(marketAddresses[0] != address(0), "Failed to get quote asset");
+    require(_vault != address(0), "_vault must be non zero address");
 
-		IStrategy(_strategy).initialize(
-			_owner,
-			_vault,  
-			marketAddresses,
-			_currentStrategy
-		);
+    IStrategy(_strategy).initialize(_owner, _vault, marketAddresses, _currentStrategy);
 
-		emit NewStrategyClone(_strategy, msg.sender);
-	}
+    emit NewStrategyClone(_strategy, msg.sender);
+  }
 }

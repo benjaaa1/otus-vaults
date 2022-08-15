@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import {StrategyBase} from "./vaultDOV/strategy/StrategyBase.sol";
 
-import {IOtusCloneFactory} from "./interfaces/IOtusCloneFactory.sol"; 
-import {IFuturesMarketManager} from "./interfaces/IFuturesMarketManager.sol"; 
+import {IOtusCloneFactory} from "./interfaces/IOtusCloneFactory.sol";
+import {IFuturesMarketManager} from "./interfaces/IFuturesMarketManager.sol";
 import {LyraRegistry} from "@lyrafinance/protocol/contracts/periphery/LyraRegistry.sol";
 import {OptionGreekCache} from "@lyrafinance/protocol/contracts/OptionGreekCache.sol";
 import {LiquidityPool} from "@lyrafinance/protocol/contracts/LiquidityPool.sol";
@@ -21,29 +21,33 @@ import {ShortCollateral} from "@lyrafinance/protocol/contracts/ShortCollateral.s
 import {OptionMarket} from "@lyrafinance/protocol/contracts/OptionMarket.sol";
 import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
 import {IERC20} from "openzeppelin-contracts-4.4.1/token/ERC20/IERC20.sol";
-  
+
 // libraries
 import {Vault} from "./libraries/Vault.sol";
 
+/**
+ * @title OtusController
+ * @author Otus
+ * @dev - Stores created vaults and strategies with owners
+ */
 contract OtusController is Ownable {
-  
-  IFuturesMarketManager immutable public futuresMarketManager;
-  LyraRegistry public lyraRegistry; 
-  address public keeper;  
-  
-  address public otusCloneFactory;  
+  IFuturesMarketManager public immutable futuresMarketManager;
+  LyraRegistry public lyraRegistry;
+  address public keeper;
 
-  mapping(address => address[]) public marketAddress; 
-  mapping(address => address) public futuresMarketByAsset; 
+  address public otusCloneFactory;
 
-	mapping(address => address[]) public vaults; 
+  mapping(address => address[]) public marketAddress;
+  mapping(address => address) public futuresMarketByAsset;
 
-	mapping(address => address) public strategies;
+  mapping(address => address[]) public vaults;
 
-	mapping(address => address) public vaultBridge; 
-  
+  mapping(address => address) public strategies;
+
+  mapping(address => address) public vaultBridge;
+
   mapping(address => bool) public vaultsStatus;
-  address[] public vaultsList; 
+  address[] public vaultsList;
 
   /************************************************
    *  EVENTS
@@ -52,23 +56,27 @@ contract OtusController is Ownable {
   event VaultCreated(address indexed user, address indexed vault, address strategy);
 
   /************************************************
-  *  CONSTRUCTOR & INITIALIZATION
-  ***********************************************/
+   *  CONSTRUCTOR & INITIALIZATION
+   ***********************************************/
 
-  constructor(address _lyraRegistry, address _futuresMarketManager, address _keeper) Ownable() {
+  constructor(
+    address _lyraRegistry,
+    address _futuresMarketManager,
+    address _keeper
+  ) Ownable() {
     lyraRegistry = LyraRegistry(_lyraRegistry);
     futuresMarketManager = IFuturesMarketManager(_futuresMarketManager);
-    keeper = _keeper; 
+    keeper = _keeper;
   }
 
   function setOtusCloneFactory(address _otusCloneFactory) public onlyOwner {
     require(_otusCloneFactory != address(0), "Must be a contract address");
-    otusCloneFactory = _otusCloneFactory; 
+    otusCloneFactory = _otusCloneFactory;
   }
 
   // /**
-	// * @notice Create Delta Neutral Vault controlled
-	// */
+  // * @notice Create Delta Neutral Vault controlled
+  // */
   // function createDeltraNeutralVault(
   //   address market,
   //   Vault.VaultInformation memory _vaultInfo,
@@ -80,29 +88,28 @@ contract OtusController is Ownable {
   // }
 
   /**
-	* @notice Create Options Vault controlled
-	*/
-  function createOptionsVault(		
-      address _optionMarket,
-      Vault.VaultInformation memory _vaultInfo,
-      Vault.VaultParams memory _vaultParams,
-      StrategyBase.StrategyDetail memory currentStrategy
-    ) external {
-
+   * @notice Create Options Vault controlled
+   */
+  function createOptionsVault(
+    address _optionMarket,
+    Vault.VaultInformation memory _vaultInfo,
+    Vault.VaultParams memory _vaultParams,
+    StrategyBase.StrategyDetail memory currentStrategy
+  ) external {
     // create vault
     address vault = IOtusCloneFactory(otusCloneFactory).cloneVault();
     // add vault created to mapping
- 		address[] memory _vaults = vaults[msg.sender]; 
-    uint len = _vaults.length; 
+    address[] memory _vaults = vaults[msg.sender];
+    uint len = _vaults.length;
 
-    require(len < 9, "Max 9 vaults created"); 
+    require(len < 9, "Max 9 vaults created");
     vaults[msg.sender].push(vault);
-		require(vault != address(0), "Vault not created"); 
+    require(vault != address(0), "Vault not created");
 
     // create strategy clone
-    address strategy = IOtusCloneFactory(otusCloneFactory).cloneStrategy(); 
-    require(strategy != address(0), "Strategy not created"); 
-		strategies[vault] = strategy;
+    address strategy = IOtusCloneFactory(otusCloneFactory).cloneStrategy();
+    require(strategy != address(0), "Strategy not created");
+    strategies[vault] = strategy;
 
     // initialize vault
     IOtusCloneFactory(otusCloneFactory)._initializeClonedVault(
@@ -112,34 +119,33 @@ contract OtusController is Ownable {
       _vaultParams,
       strategy,
       keeper
-    ); 
+    );
 
- 		address[] memory marketAddresses = getOptionMarketDetails(_optionMarket); 
+    address[] memory marketAddresses = getOptionMarketDetails(_optionMarket);
 
-    //initialize strategy 
+    //initialize strategy
     IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(
       msg.sender,
-      vault, 
+      vault,
       strategy,
       marketAddresses,
       currentStrategy
-    ); 
+    );
 
-		_addVault(vault);
+    _addVault(vault);
 
     emit VaultCreated(msg.sender, vault, strategy);
-
   }
 
   /**
-	* @notice Set options keeper
-	*/
-	function setKeeper(address _keeper) external onlyOwner {
-		keeper = _keeper; 
-	} 
+   * @notice Set options keeper
+   */
+  function setKeeper(address _keeper) external onlyOwner {
+    keeper = _keeper;
+  }
 
   function setFuturesMarkets(address _baseAsset, bytes32 _synth) external {
-    futuresMarketByAsset[_baseAsset] = futuresMarketManager.marketForKey(_synth); 
+    futuresMarketByAsset[_baseAsset] = futuresMarketManager.marketForKey(_synth);
   }
 
   function getFuturesMarket(bytes32 _synth) public view returns (address futuresMarket) {
@@ -151,7 +157,6 @@ contract OtusController is Ownable {
   }
 
   function setOptionMarketDetails(address _optionMarket) public {
-
     (
       LiquidityPool liquidityPool,
       LiquidityToken liquidityToken,
@@ -164,9 +169,9 @@ contract OtusController is Ownable {
       GWAVOracle gwavOracle,
       IERC20 quoteAsset,
       IERC20 baseAsset
-    ) = lyraRegistry.marketAddresses(OptionMarket(_optionMarket)); 
-    
-    address[] memory marketAddresses = new address[](10); 
+    ) = lyraRegistry.marketAddresses(OptionMarket(_optionMarket));
+
+    address[] memory marketAddresses = new address[](10);
     marketAddresses[0] = address(quoteAsset);
     marketAddresses[1] = address(baseAsset);
     marketAddresses[2] = address(optionToken);
@@ -176,7 +181,7 @@ contract OtusController is Ownable {
     marketAddresses[6] = address(optionMarketPricer);
     marketAddresses[7] = address(greekCache);
     marketAddresses[8] = futuresMarketByAsset[address(baseAsset)];
-    marketAddresses[9] = address(gwavOracle); 
+    marketAddresses[9] = address(gwavOracle);
     marketAddress[_optionMarket] = marketAddresses;
   }
 
@@ -187,44 +192,43 @@ contract OtusController is Ownable {
   function getUserManagerDetails() public view returns (address[] memory userVaults, address[] memory userStrategies) {
     address _msgSender = msg.sender;
     userVaults = _getVaults(_msgSender);
-    userStrategies = _getStrategies(userVaults); 
+    userStrategies = _getStrategies(userVaults);
   }
 
-	function _getVaults(address _msgSender) public view returns (address[] memory userVaults) {
-		userVaults = vaults[_msgSender]; 
-	}
+  function _getVaults(address _msgSender) public view returns (address[] memory userVaults) {
+    userVaults = vaults[_msgSender];
+  }
 
-	function _getStrategies(address[] memory userVaults) public view returns (address[] memory userStrategies) {
-    uint len = userVaults.length; 
-    userStrategies = new address[](len); 
+  function _getStrategies(address[] memory userVaults) public view returns (address[] memory userStrategies) {
+    uint len = userVaults.length;
+    userStrategies = new address[](len);
 
-    for(uint i = 0; i < len; i++) {
+    for (uint i = 0; i < len; i++) {
       userStrategies[i] = strategies[userVaults[i]];
     }
-	}
+  }
 
   function _addVault(address _otusVault) public {
-    vaultsList.push(_otusVault); 
-    vaultsStatus[_otusVault] = true; 
+    vaultsList.push(_otusVault);
+    vaultsStatus[_otusVault] = true;
   }
 
   function _setVaultStatus(address _otusVault, bool status) public {
-    vaultsStatus[_otusVault] = status; 
+    vaultsStatus[_otusVault] = status;
   }
 
   function getActiveVaults() public view returns (address[] memory) {
     uint len = vaultsList.length;
-    address[] memory activeVaults = new address[](len); 
+    address[] memory activeVaults = new address[](len);
 
-    for(uint i = 0; i < len; i++) {
-      address _vault = vaultsList[i]; 
+    for (uint i = 0; i < len; i++) {
+      address _vault = vaultsList[i];
       bool active = vaultsStatus[_vault];
-      if(active) {
-        activeVaults[i] = _vault; 
+      if (active) {
+        activeVaults[i] = _vault;
       }
     }
 
-    return activeVaults; 
-
+    return activeVaults;
   }
 }

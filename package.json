@@ -18,6 +18,9 @@
       }
     },
     "lint-staged": {
+      "packages/hardhat/contracts/**/*.sol": [
+        "yarn prettier:sol"
+      ],
       "*.{js,jsx}": [
         "prettier --write",
         "eslint --fix",
@@ -50,11 +53,11 @@
         "test-kovan": "yarn workspace @otus-finance/hardhat test-kovan",
         "lint": "yarn run lint:sol && yarn run lint:ts",
         "lint:fix": "yarn run lint:sol:fix && yarn run lint:ts:fix",
-        "lint:sol": "solhint \\\"packages/hardhatcontracts/*.sol\\\" \\\"packages/hardhatcontracts/periphery/*.sol\\\" \\\"packages/hardhatcontracts/libraries/*.sol\\\"",
+        "lint:sol": "solhint \\\"packages/hardhat/contracts/*.sol\\\" \\\"packages/hardha/contracts/periphery/*.sol\\\" \\\"packages/hardhat/contracts/libraries/*.sol\\\"",
         "lint:sol:fix": "yarn lint:sol --fix",
         "lint:ts": "eslint --config ./.eslintrc.json --ignore-path ./.eslintignore --ext .js,.ts .",
         "lint:ts:fix": "yarn lint:ts --fix",
-        "prettier:sol": "prettier --config .prettierrc --write \"packages/hardhatcontracts/**/*.sol\"",
+        "prettier:sol": "prettier --config .prettierrc --write \"packages/hardhat/contracts/**/*.sol\"",
         "prettier:ts": "prettier --config .prettierrc --write \"**/*.{js,ts}\"",
         "prettier:json:md": "prettier --config .prettierrc --write \"**/*.{json,md}\"",
         "prettier": "yarn prettier:sol && yarn prettier:ts",

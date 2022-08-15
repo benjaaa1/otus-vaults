@@ -8,15 +8,20 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
 
 // Libraries
-import '../../synthetix/SignedSafeDecimalMath.sol';
-import '../../synthetix/SafeDecimalMath.sol';
-import '../../synthetix/SignedSafeMath.sol';
+import "../../synthetix/SignedSafeDecimalMath.sol";
+import "../../synthetix/SafeDecimalMath.sol";
+import "../../synthetix/SignedSafeMath.sol";
 
-// Vault 
+// Vault
 import {Vault} from "../../libraries/Vault.sol";
 import {OtusVault} from "../OtusVault.sol";
 import {StrategyBase} from "./StrategyBase.sol";
 
+/**
+ * @title Strategy
+ * @author Lyra
+ * @dev Executes strategy for vault based on settings - supports multiple forms of hedges
+ */
 contract Strategy is StrategyBase {
   using SafeMath for uint;
   using SafeDecimalMath for uint;
@@ -25,20 +30,20 @@ contract Strategy is StrategyBase {
 
   address public vault;
   OtusVault public otusVault;
-  
+
   /************************************************
    *  EVENTS
    ***********************************************/
 
   event HedgeClosePosition(address closer);
 
-  event HedgeModifyPosition(address closer, uint marginDelta, uint256 hedgeAttempt);
+  event HedgeModifyPosition(address closer, uint marginDelta, uint hedgeAttempt);
 
   /************************************************
    *  Modifiers
    ***********************************************/
 
-  modifier onlyVault {
+  modifier onlyVault() {
     require(msg.sender == vault, "NOT_VAULT");
     _;
   }
@@ -50,79 +55,70 @@ contract Strategy is StrategyBase {
   constructor(address _synthetixAdapter) StrategyBase(_synthetixAdapter) {}
 
   function initialize(
-    address _owner, 
-    address _vault, 
+    address _owner,
+    address _vault,
     address[] memory marketAddresses,
     StrategyDetail memory _currentStrategy
-  ) external { 
-
-    baseInitialize(
-      _owner, 
-      _vault,
-      marketAddresses,
-      _currentStrategy
-    ); 
+  ) external {
+    baseInitialize(_owner, _vault, marketAddresses, _currentStrategy);
 
     vault = _vault;
   }
 
   /************************************************
-  *  SETTERS
-  ***********************************************/
+   *  SETTERS
+   ***********************************************/
 
   /**
-  * @dev update the strategy for the new round.
-  * strategy should be updated weekly after previous round ends 
-  * quoteAsset usually USD baseAsset usually ETH
-  */
+   * @dev update the strategy for the new round.
+   * strategy should be updated weekly after previous round ends
+   * quoteAsset usually USD baseAsset usually ETH
+   */
   function setStrategy(StrategyDetail memory _currentStrategy) external onlyOwner {
-    (, , , , , , , bool roundInProgress,) = OtusVault(vault).vaultState();
+    (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
     currentStrategy = _currentStrategy;
   }
 
   function setHedgeStrategy(StrikeHedgeDetail[] memory _hedgeStrategies) external onlyOwner {
-    (, , , , , , , bool roundInProgress,) = OtusVault(vault).vaultState();
+    (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
 
-    uint len = _hedgeStrategies.length; 
+    uint len = _hedgeStrategies.length;
     StrikeHedgeDetail memory currentHedgeStrategy;
 
-    for(uint i = 0; i < len; i++) {
+    for (uint i = 0; i < len; i++) {
       currentHedgeStrategy = _hedgeStrategies[i];
       currentHedgeStrategies[currentHedgeStrategy.optionType] = currentHedgeStrategy;
     }
   }
 
   /**
-  * @dev update for buy call, sell call, buy put, sell put
-  */
+   * @dev update for buy call, sell call, buy put, sell put
+   */
 
   function setStrikeStrategyDetail(StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
-    (, , , , , , , bool roundInProgress,) = OtusVault(vault).vaultState();
+    (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
 
-    uint len = _currentStrikeStrategies.length; 
+    uint len = _currentStrikeStrategies.length;
     StrikeStrategyDetail memory currentStrikeStrategy;
 
-    for(uint i = 0; i < len; i++) {
+    for (uint i = 0; i < len; i++) {
       currentStrikeStrategy = _currentStrikeStrategies[i];
       currentStrikeStrategies[currentStrikeStrategy.optionType] = currentStrikeStrategy;
     }
-
   }
 
   function getCurrentStrikeStrategies() public view returns (StrikeStrategyDetail[] memory _currentStrikeStrategies) {
-
     _currentStrikeStrategies = new StrikeStrategyDetail[](StrikeStrategiesPossible);
     StrikeStrategyDetail memory _strikeStrategy;
 
-    for(uint i = 0; i < StrikeStrategiesPossible; i++) {
+    for (uint i = 0; i < StrikeStrategiesPossible; i++) {
       _strikeStrategy = currentStrikeStrategies[i];
-    
     }
 
-    return _currentStrikeStrategies; 
+    return _currentStrikeStrategies;
   }
 
   ///////////////////
@@ -138,18 +134,21 @@ contract Strategy is StrategyBase {
     Board memory board = getBoard(boardId);
     require(_isValidExpiry(board.expiry), "invalid board");
     activeExpiry = board.expiry;
-    activeBoardId = boardId; 
+    activeBoardId = boardId;
   }
 
   /**
-  * @notice sell a fix aomunt of options and collect premium
-  * @dev the vault should pass in a strike id, and the strategy would verify if the strike is valid on-chain.
-  * @param _strike lyra strikeId to trade
-  * @return positionId
-  * @return premiumReceived
-  * @return capitalUsed
-  */
-  function doTrade(StrikeTrade memory _strike) external onlyVault returns (
+   * @notice sell a fix aomunt of options and collect premium
+   * @dev the vault should pass in a strike id, and the strategy would verify if the strike is valid on-chain.
+   * @param _strike lyra strikeId to trade
+   * @return positionId
+   * @return premiumReceived
+   * @return capitalUsed
+   */
+  function doTrade(StrikeTrade memory _strike)
+    external
+    onlyVault
+    returns (
       uint positionId,
       uint premiumReceived,
       uint capitalUsed
@@ -158,19 +157,16 @@ contract Strategy is StrategyBase {
     uint strikeId = _strike.strikeId;
     uint size = _strike.size;
     uint optionType = _strike.optionType;
-    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType]; 
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
 
-    require(
-      validateTimeIntervalByOptionType(strikeId, optionType),
-      "min time interval not passed for option type"
-    );
+    require(validateTimeIntervalByOptionType(strikeId, optionType), "min time interval not passed for option type");
 
     require(_isValidVolVariance(strikeId, optionType), "vol variance exceeded");
 
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
     require(isValidStrike(strike, optionType), "invalid strike");
 
-    if(_isLong(currentStrikeStrategy.optionType)) {
+    if (_isLong(currentStrikeStrategy.optionType)) {
       uint maxPremium = _getPremiumLimit(strike, false, _strike);
 
       require(
@@ -180,7 +176,7 @@ contract Strategy is StrategyBase {
 
       (positionId, premiumReceived) = _buyStrike(strike, size, currentStrikeStrategy, maxPremium);
 
-      capitalUsed = maxPremium; 
+      capitalUsed = maxPremium;
     } else {
       (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike, size, optionType);
 
@@ -197,7 +193,6 @@ contract Strategy is StrategyBase {
     currentStrikeTrades.push(_strike);
   }
 
-  
   /**
    * @dev convert premium in quote asset into collateral asset and send it back to the vault.
    */
@@ -205,24 +200,23 @@ contract Strategy is StrategyBase {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
     uint quoteBal = quoteAsset.balanceOf(address(this));
 
-    StrikeTrade memory currentStrikeTrade; 
+    StrikeTrade memory currentStrikeTrade;
 
-    bool hasBaseCollat = false; 
-    bool hasQuoteCollat = false; 
+    bool hasBaseCollat = false;
+    bool hasQuoteCollat = false;
 
-    for(uint i = 0; i < currentStrikeTrades.length; i++) {
-      currentStrikeTrade = currentStrikeTrades[i]; 
+    for (uint i = 0; i < currentStrikeTrades.length; i++) {
+      currentStrikeTrade = currentStrikeTrades[i];
 
-      // base asset might not be needed if we only use usd 
+      // base asset might not be needed if we only use usd
       if (_isBaseCollat(currentStrikeTrade.optionType)) {
-        hasBaseCollat = true; 
+        hasBaseCollat = true;
       } else {
-        hasQuoteCollat = true; 
+        hasQuoteCollat = true;
       }
-
     }
-    
-    if(hasBaseCollat) {
+
+    if (hasBaseCollat) {
       // exchange quote asset to base asset, and send base asset back to vault
       uint baseBal = baseAsset.balanceOf(address(this));
       uint minQuoteExpected = quoteBal.divideDecimal(exchangeParams.spotPrice).multiplyDecimal(
@@ -232,7 +226,7 @@ contract Strategy is StrategyBase {
       require(baseAsset.transfer(address(vault), baseBal + baseReceived), "failed to return funds from strategy");
     }
 
-    if(hasQuoteCollat) {
+    if (hasQuoteCollat) {
       // send quote balance directly
       require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
     }
@@ -246,11 +240,11 @@ contract Strategy is StrategyBase {
    * only add collateral if the additional sell will make the position out of buffer range
    * never remove collateral from an existing position
    */
-  function getRequiredCollateral(Strike memory strike, uint _size, uint _optionType)
-    public
-    view
-    returns (uint collateralToAdd, uint setCollateralTo)
-  {
+  function getRequiredCollateral(
+    Strike memory strike,
+    uint _size,
+    uint _optionType
+  ) public view returns (uint collateralToAdd, uint setCollateralTo) {
     uint sellAmount = _size;
     ExchangeRateParams memory exchangeParams = getExchangeParams();
 
@@ -274,14 +268,14 @@ contract Strategy is StrategyBase {
 
     // get targetCollat for this trade instance
     // prevents vault from adding excess collat just to meet targetCollat
-    uint targetCollat = existingCollateral + _getFullCollateral(strike.strikePrice, sellAmount, _optionType).multiplyDecimal(currentStrategy.collatPercent);
+    uint targetCollat = existingCollateral +
+      _getFullCollateral(strike.strikePrice, sellAmount, _optionType).multiplyDecimal(currentStrategy.collatPercent);
 
     // if excess collateral, keep in position to encourage more option selling
     setCollateralTo = _max(_max(minBufferCollateral, targetCollat), existingCollateral);
 
     // existingCollateral is never > setCollateralTo
     collateralToAdd = setCollateralTo - existingCollateral;
-
   }
 
   /**
@@ -295,12 +289,12 @@ contract Strategy is StrategyBase {
    */
   function _sellStrike(
     Strike memory strike,
-    uint _size, 
+    uint _size,
     uint setCollateralTo,
     StrikeStrategyDetail memory currentStrikeStrategy,
     StrikeTrade memory currentStrikeTrade
   ) internal returns (uint, uint) {
-    uint strategyIndex = activeStrikeIds.length; 
+    uint strategyIndex = activeStrikeIds.length;
 
     // get minimum expected premium based on minIv
     uint minExpectedPremium = _getPremiumLimit(strike, true, currentStrikeTrade);
@@ -312,7 +306,7 @@ contract Strategy is StrategyBase {
         positionId: strikeToPositionId[strike.id],
         iterations: 1,
         optionType: optionType,
-        amount: _size, // size should be different depending on strategy 
+        amount: _size, // size should be different depending on strategy
         setCollateralTo: setCollateralTo,
         minTotalCost: minExpectedPremium,
         maxTotalCost: type(uint).max,
@@ -340,11 +334,11 @@ contract Strategy is StrategyBase {
   //  */
   function _buyStrike(
     Strike memory strike,
-    uint _size, 
+    uint _size,
     StrikeStrategyDetail memory currentStrikeStrategy,
     uint maxPremium
   ) internal returns (uint, uint) {
-    uint strategyIndex = activeStrikeIds.length; 
+    uint strategyIndex = activeStrikeIds.length;
 
     OptionType optionType = OptionType(currentStrikeStrategy.optionType);
     // perform trade to long
@@ -372,14 +366,10 @@ contract Strategy is StrategyBase {
     return (result.positionId, result.totalCost);
   }
 
-
   /**
    * @dev use premium in strategy to reduce position size if collateral ratio is out of range
    */
-  function reducePosition(
-    uint positionId,
-    uint closeAmount
-  ) external onlyVault {
+  function reducePosition(uint positionId, uint closeAmount) external onlyVault {
     OptionPosition memory position = getPositions(_toDynamic(positionId))[0];
     Strike memory strike = getStrikes(_toDynamic(position.strikeId))[0];
     require(strikeToPositionId[position.strikeId] == positionId, "invalid positionId");
@@ -391,7 +381,7 @@ contract Strategy is StrategyBase {
     );
 
     uint currentStrikeTradeIndex = strikeIdToTrade[position.strikeId];
-    StrikeTrade memory currentStrikeTrade = currentStrikeTrades[currentStrikeTradeIndex]; 
+    StrikeTrade memory currentStrikeTrade = currentStrikeTrades[currentStrikeTradeIndex];
 
     // closes excess position with premium balance
     uint maxExpectedPremium = _getPremiumLimit(strike, false, currentStrikeTrade);
@@ -437,7 +427,13 @@ contract Strategy is StrategyBase {
     uint _optionType
   ) public view returns (uint closeAmount) {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
-    uint minCollatPerAmount = _getBufferCollateral(strikePrice, strikeExpiry, exchangeParams.spotPrice, 1e18, _optionType);
+    uint minCollatPerAmount = _getBufferCollateral(
+      strikePrice,
+      strikeExpiry,
+      exchangeParams.spotPrice,
+      1e18,
+      _optionType
+    );
 
     closeAmount = position.collateral < minCollatPerAmount.multiplyDecimal(position.amount)
       ? position.amount - position.collateral.divideDecimal(minCollatPerAmount)
@@ -448,47 +444,56 @@ contract Strategy is StrategyBase {
    *  KEEPER ACTIONS -  HEDGE WITH SYNTHETIX FUTURES
    *****************************************************/
 
-  function _hedge(uint optionType, uint lockedAmountLeft, uint hedgeAttempts) external onlyVault  {
-    // need to track by optiontype 
+  function _hedge(
+    uint optionType,
+    uint lockedAmountLeft,
+    uint hedgeAttempts
+  ) external onlyVault {
+    // need to track by optiontype
     StrikeHedgeDetail memory currentHedgeStrategy = currentHedgeStrategies[optionType];
-    require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts); 
+    require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
 
-    // check futures positions 
+    // check futures positions
 
     // through kwenta
-    if(hedgeAttempts == 0) { // first time hedging
+    if (hedgeAttempts == 0) {
+      // first time hedging
       require(
         // need to use kwenta / synthetix susd collateralAssetTest
-        IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(vault), address(this), lockedAmountLeft),
+        IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(
+          address(vault),
+          address(this),
+          lockedAmountLeft
+        ),
         "susd transfer to from vault failed"
       );
 
-      _transferMargin(int(lockedAmountLeft)); 
+      _transferMargin(int(lockedAmountLeft));
     }
 
-    // check current hedge balance in synthetix 
-    (uint marginRemaining, bool invalid) = _remainingMargin(); 
+    // check current hedge balance in synthetix
+    (uint marginRemaining, bool invalid) = _remainingMargin();
     require(marginRemaining > 0, "Remaining margin is 0");
 
     uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
     uint size = (marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize)).divideDecimal(spotPrice);
 
-    _modifyPosition(-int(size)); 
-  } 
+    _modifyPosition(-int(size));
+  }
 
-  function _closeHedge() external onlyVault  {
+  function _closeHedge() external onlyVault {
     // need to track by optiontype no more global active short
-    (,, uint128 margin, uint128 lastPrice, int128 size) = _positions(); 
+    (, , uint128 margin, uint128 lastPrice, int128 size) = _positions();
     _closePosition();
   }
 
   function closeHedgeEndOfRound() public {
-    _withdrawAllMargin(); 
+    _withdrawAllMargin();
   }
 
   /**
-  * @dev - used for testing
-  */
+   * @dev - used for testing
+   */
   function withdrawSUSDSNX() public {
     uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
     IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(this), msg.sender, balance);

@@ -5,30 +5,29 @@ pragma solidity 0.8.9;
 import "hardhat/console.sol";
 
 // Libraries
-import {BlackScholes} from '@lyrafinance/protocol/contracts/libraries/BlackScholes.sol';
-import {DecimalMath} from '@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol';
-import '../interfaces/IFuturesMarket.sol';
+import {BlackScholes} from "@lyrafinance/protocol/contracts/libraries/BlackScholes.sol";
+import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
+import "../interfaces/IFuturesMarket.sol";
 
 // Inherited
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // Interfaces
-import {OptionToken} from '@lyrafinance/protocol/contracts/OptionToken.sol';
-import {OptionMarket} from '@lyrafinance/protocol/contracts/OptionMarket.sol';
-import {LiquidityPool} from '@lyrafinance/protocol/contracts/LiquidityPool.sol';
-import {ShortCollateral} from '@lyrafinance/protocol/contracts/ShortCollateral.sol';
-import {OptionGreekCache} from '@lyrafinance/protocol/contracts/OptionGreekCache.sol';
-import {SynthetixAdapter} from '@lyrafinance/protocol/contracts/SynthetixAdapter.sol';
-import {BasicFeeCounter} from '@lyrafinance/protocol/contracts/periphery/BasicFeeCounter.sol';
-import {OptionMarketPricer} from '@lyrafinance/protocol/contracts/OptionMarketPricer.sol';
+import {OptionToken} from "@lyrafinance/protocol/contracts/OptionToken.sol";
+import {OptionMarket} from "@lyrafinance/protocol/contracts/OptionMarket.sol";
+import {LiquidityPool} from "@lyrafinance/protocol/contracts/LiquidityPool.sol";
+import {ShortCollateral} from "@lyrafinance/protocol/contracts/ShortCollateral.sol";
+import {OptionGreekCache} from "@lyrafinance/protocol/contracts/OptionGreekCache.sol";
+import {SynthetixAdapter} from "@lyrafinance/protocol/contracts/SynthetixAdapter.sol";
+import {BasicFeeCounter} from "@lyrafinance/protocol/contracts/periphery/BasicFeeCounter.sol";
+import {OptionMarketPricer} from "@lyrafinance/protocol/contracts/OptionMarketPricer.sol";
 
 /**
- * @title LyraAdapter 
+ * @title LyraAdapter
  * @author Lyra
  * @dev LyraAdapter but inherits from OwnerUpgradable - Provides helpful functions for the vault adapter
  */
-
 contract LyraAdapter is OwnableUpgradeable {
   using DecimalMath for uint;
 
@@ -61,7 +60,7 @@ contract LyraAdapter is OwnableUpgradeable {
   }
 
   enum OptionType {
-    LONG_CALL, 
+    LONG_CALL,
     LONG_PUT,
     SHORT_CALL_BASE,
     SHORT_CALL_QUOTE,
@@ -126,30 +125,31 @@ contract LyraAdapter is OwnableUpgradeable {
   OptionMarket public optionMarket;
   LiquidityPool internal liquidityPool;
   ShortCollateral internal shortCollateral;
-  SynthetixAdapter immutable internal synthetixAdapter;
+  SynthetixAdapter internal immutable synthetixAdapter;
   OptionMarketPricer internal optionPricer;
   OptionGreekCache internal greekCache;
+
   // BasicFeeCounter internal feeCounter;
 
-/**
+  /**
    * @dev Assigns all lyra contracts
    * @param _synthetixAdapter SynthetixAdapter address
    * @dev _optionPricer OptionMarketPricer address
    * @dev _greekCache greekCache address
    * @dev _feeCounter Fee counter address
- */
+   */
   constructor(address _synthetixAdapter) {
     synthetixAdapter = SynthetixAdapter(_synthetixAdapter);
   }
 
   /**
-  * @dev
+   * @dev
    * @param _optionToken OptionToken Address
    * @param _optionMarket OptionMarket Address
    * @param _liquidityPool LiquidityPool address
    * @param _shortCollateral ShortCollateral address
-  */
-  function optionInitialize (
+   */
+  function optionInitialize(
     address _owner,
     address _optionToken,
     address _optionMarket,
@@ -158,8 +158,8 @@ contract LyraAdapter is OwnableUpgradeable {
     address _optionPricer,
     address _greekCache
   ) internal initializer {
-    optionToken = OptionToken(_optionToken); // option token will be different 
-    optionMarket = OptionMarket(_optionMarket); // option market will be different 
+    optionToken = OptionToken(_optionToken); // option token will be different
+    optionMarket = OptionMarket(_optionMarket); // option market will be different
     liquidityPool = LiquidityPool(_liquidityPool); // liquidity pool will be different
     shortCollateral = ShortCollateral(_shortCollateral); // short collateral will be different
     optionPricer = OptionMarketPricer(_optionPricer);
@@ -175,7 +175,7 @@ contract LyraAdapter is OwnableUpgradeable {
 
   // setTrustedCounter must be set for approved addresses
   function openPosition(TradeInputParameters memory params) internal returns (TradeResult memory) {
-    OptionMarket.TradeInputParameters memory convertedParams = _convertParams(params); 
+    OptionMarket.TradeInputParameters memory convertedParams = _convertParams(params);
     OptionMarket.Result memory result = optionMarket.openPosition(convertedParams);
 
     if (params.rewardRecipient != address(0)) {
@@ -205,7 +205,7 @@ contract LyraAdapter is OwnableUpgradeable {
   //////////////
 
   function getSpotPriceForMarket() public view returns (uint spotPrice) {
-    spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket)); 
+    spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
   }
 
   function exchangeFromExactQuote(uint amountQuote, uint minBaseReceived) internal returns (uint baseReceived) {

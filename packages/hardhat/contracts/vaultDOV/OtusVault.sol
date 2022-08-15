@@ -15,6 +15,11 @@ import {Vault} from "../libraries/Vault.sol";
 import {Strategy} from "./strategy/Strategy.sol";
 import {StrategyBase} from "./strategy/StrategyBase.sol";
 
+/**
+ * @title OtusVault
+ * @author Lyra
+ * @dev - Allows for maintaining vault, hedge state for different assets
+ */
 contract OtusVault is BaseVault {
   using SafeMath for uint;
 

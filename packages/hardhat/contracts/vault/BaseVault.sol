@@ -13,6 +13,11 @@ import {Vault} from "../libraries/Vault.sol";
 import {VaultLifeCycle} from "../libraries/VaultLifeCycle.sol";
 import {ShareMath} from "../libraries/ShareMath.sol";
 
+/**
+ * @title BaseVault
+ * @author Lyra
+ * @dev Vault share accounting made upgradaeable to be able to clone
+ */
 contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgradeable {
   using SafeERC20 for IERC20;
   using SafeMath for uint;
@@ -48,7 +53,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   /// @notice Management fee charged on entire AUM in rollToNextOption. Only charged when there is no loss.
   uint public managementFee;
 
-  /// @notice Fees collected; 
+  /// @notice Fees collected;
   uint fees;
 
   // Gap is left to avoid storage collisions. Though RibbonVault is not upgradeable, we add this as a safety measure.
@@ -89,9 +94,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   /************************************************
    *  CONSTRUCTOR & INITIALIZATION
    ***********************************************/
-  constructor(
-    uint _roundDuration
-  ) {
+  constructor(uint _roundDuration) {
     uint _roundPerYear = uint(365 days).mul(Vault.FEE_MULTIPLIER).div(_roundDuration);
     roundPerYear = _roundPerYear;
   }
@@ -107,7 +110,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     uint _managementFee,
     Vault.VaultParams memory _vaultParams
   ) internal initializer {
-
     __ReentrancyGuard_init();
     __ERC20_init(_tokenName, _tokenSymbol);
     __Ownable_init();
@@ -118,7 +120,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     performanceFee = _performanceFee;
     managementFee = _managementFee;
-    
+
     uint assetBalance = IERC20(vaultParams.asset).balanceOf(address(this));
 
     ShareMath.assertUint104(assetBalance);
@@ -186,8 +188,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    ***********************************************/
 
   /**
-  * TEST METHODS
-  */
+   * TEST METHODS
+   */
 
   function depositSNXSUSD(uint amount) external nonReentrant {
     // uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(msg.sender);
@@ -200,7 +202,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).safeTransferFrom(address(this), msg.sender, balance);
   }
 
-
   /**
    * @notice Deposits the `asset` from msg.sender.
    * @param amount is the amount of `asset` to deposit
@@ -208,7 +209,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   function deposit(uint amount) external nonReentrant {
     require(amount > 0, "!amount");
     _depositFor(amount, msg.sender);
-    // asset is quote asset 
+    // asset is quote asset
     IERC20(vaultParams.asset).safeTransferFrom(msg.sender, address(this), amount);
   }
 
@@ -411,17 +412,23 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    * @return queuedWithdrawAmount is the new queued withdraw amount for this round
    */
 
-   /**
-    * Need to check if address is auto compounding or if they're letting premium stay on the side
-    */
+  /**
+   * Need to check if address is auto compounding or if they're letting premium stay on the side
+   */
   function _rollToNextRound(uint lastQueuedWithdrawAmount) internal returns (uint, uint) {
-    (uint currentBalance, uint lockedBalance, uint queuedWithdrawAmount, uint newPricePerShare, uint mintShares) = VaultLifeCycle.rollover(
-      totalSupply(),
-      vaultParams.asset,
-      vaultParams.decimals,
-      uint(vaultState.totalPending),
-      vaultState.queuedWithdrawShares
-    );
+    (
+      uint currentBalance,
+      uint lockedBalance,
+      uint queuedWithdrawAmount,
+      uint newPricePerShare,
+      uint mintShares
+    ) = VaultLifeCycle.rollover(
+        totalSupply(),
+        vaultParams.asset,
+        vaultParams.decimals,
+        uint(vaultState.totalPending),
+        vaultState.queuedWithdrawShares
+      );
 
     // Finalize the pricePerShare at the end of the round
     uint currentRound = vaultState.round;
@@ -433,8 +440,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     // Take management / performance fee from previous round and deduct
     lockedBalance = lockedBalance.sub(_collectVaultFees(lockedBalance.add(withdrawAmountDiff)));
     // take fees from premium collected here / profit made in week
-    uint256 pastRoundProfit = currentBalance - vaultState.lastLockedAmount; 
-    
+    uint pastRoundProfit = currentBalance - vaultState.lastLockedAmount;
+
     fees += _collectVaultFees(pastRoundProfit);
 
     // update round info

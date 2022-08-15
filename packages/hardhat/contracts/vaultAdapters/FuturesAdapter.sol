@@ -5,35 +5,33 @@ pragma solidity 0.8.9;
 import "hardhat/console.sol";
 
 // Libraries
-import '../interfaces/IFuturesMarket.sol';
+import "../interfaces/IFuturesMarket.sol";
 
 // Inherited
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @title FuturesAdapter 
+ * @title FuturesAdapter
  * @author Otus
  * @dev Provides helpful functions for the vault to integrate with Synthetix FuturesMarket / Perp V2
  */
-
 contract FuturesAdapter {
-
   ///////////////
   // Variables //
   ///////////////
 
-  IFuturesMarket internal futuresMarket; 
+  IFuturesMarket internal futuresMarket;
 
   /**
-  * @dev Assign synthetix futures contracts
-  */
+   * @dev Assign synthetix futures contracts
+   */
   constructor() {}
 
   /**
-  * @dev
-  * @param _futuresMarket futures market address
-  */
-  function futuresInitialize (address _futuresMarket) internal {
+   * @dev
+   * @param _futuresMarket futures market address
+   */
+  function futuresInitialize(address _futuresMarket) internal {
     futuresMarket = IFuturesMarket(_futuresMarket);
   }
 
@@ -47,48 +45,57 @@ contract FuturesAdapter {
   // Futures Market Actions //
   ////////////////////////////
 
-
   ///////////////////////
   // Market Operations //
   ///////////////////////
 
   function _transferMargin(int marginDelta) internal {
-    futuresMarket.transferMargin(marginDelta); 
+    futuresMarket.transferMargin(marginDelta);
   }
 
   function _withdrawAllMargin() internal {
-    futuresMarket.withdrawAllMargin(); 
+    futuresMarket.withdrawAllMargin();
   }
 
   function _modifyPosition(int sizeDelta) internal {
-    futuresMarket.modifyPosition(sizeDelta); 
+    futuresMarket.modifyPosition(sizeDelta);
   }
 
   function _closePosition() internal {
-    futuresMarket.closePosition(); 
+    futuresMarket.closePosition();
   }
 
   function _liquidatePosition() internal {
-    futuresMarket.liquidatePosition(address(this)); 
+    futuresMarket.liquidatePosition(address(this));
   }
 
   //////////////////////////////
   // Market Position Details  //
   //////////////////////////////
 
-  function _positions() internal view returns (uint64 id, uint64 fundingIndex, uint128 margin, uint128 lastPrice, int128 size) {
-    (id, fundingIndex, margin, lastPrice, size) = futuresMarket.positions(address(this)); 
+  function _positions()
+    internal
+    view
+    returns (
+      uint64 id,
+      uint64 fundingIndex,
+      uint128 margin,
+      uint128 lastPrice,
+      int128 size
+    )
+  {
+    (id, fundingIndex, margin, lastPrice, size) = futuresMarket.positions(address(this));
   }
 
   function _profitLoss() internal view returns (int value, bool invalid) {
-    (value, invalid) = futuresMarket.profitLoss(address(this)); 
+    (value, invalid) = futuresMarket.profitLoss(address(this));
   }
 
   function _remainingMargin() internal view returns (uint marginRemaining, bool invalid) {
-    (marginRemaining, invalid) = futuresMarket.remainingMargin(address(this)); 
+    (marginRemaining, invalid) = futuresMarket.remainingMargin(address(this));
   }
 
   function _orderFee(int sizeDelta) internal view returns (uint fee, bool invalid) {
-    (fee, invalid) = futuresMarket.orderFee(sizeDelta); 
+    (fee, invalid) = futuresMarket.orderFee(sizeDelta);
   }
 }

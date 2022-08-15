@@ -1,5 +1,5 @@
 Arguments: 
-  /home/benotus/.nvm/versions/node/v16.14.2/bin/node /usr/local/bin/yarn add @lyrafinance/protocol
+  /home/benotus/.nvm/versions/node/v16.14.2/bin/node /usr/local/bin/yarn add surya
 
 PATH: 
   /home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/home/benotus/.nvm/versions/node/v16.14.2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA NvDLISR:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/bin/:/mnt/c/Program Files/Git/cmd/:/mnt/c/Program Files (x86)/Nodist/bin:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/ProgramData/DockerDesktop/version-bin:/mnt/c/Program Files (x86)/GnuPG/bin:/mnt/c/Program Files/GitHub CLI/:/mnt/c/Users/Befig/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Befig/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/Befig/AppData/Local/GitHubDesktop/bin:/mnt/c/ProgramData/chocolatey/bin:/snap/bin
@@ -42,7 +42,7 @@ npm manifest:
       "dotenv": "^8.2.0",
       "ethereum-waffle": "^3.1.1",
       "hardhat": "^2.9.2",
-      "hardhat-dependency-compiler": "^1.1.2",
+      "hardhat-dependency-compiler": "^1.1.3",
       "hardhat-deploy": "^0.9.0",
       "node-watch": "^0.7.0",
       "qrcode-terminal": "^0.12.0",
@@ -58,8 +58,8 @@ npm manifest:
       "test-kovan": "hardhat test --network kovanOptimism",
       "clean": "hardhat clean && rimraf ./cache && rimraf ./artifacts && rimraf ./cache-ovm && rimraf ./artifacts-ovm && rimraf ./typechain-types",
       "compile": "hardhat compile",
-      "deploy": "hardhat deploy --export-all ../react-app/src/contracts/hardhat_contracts.json && yarn export-keepers",
-      "export-keepers": "cp -R ../react-app/src/contracts/hardhat_contracts.json ../../../Otus-DOV-Keeper/src/contracts/hardhat_contracts.json && yarn export-keepers",
+      "deploy": "hardhat deploy --export-all ../react-app/src/contracts/hardhat_contracts.json",
+      "export-keepers": "cp -R ../react-app/src/contracts/hardhat_contracts.json ../../../Otus-DOV-Keeper/src/contracts/hardhat_contracts.json",
       "postdeploy": "hardhat run scripts/publish.js",
       "mint": "hardhat run scripts/mint.js",
       "registry": "hardhat run scripts/registry.js",
@@ -3675,10 +3675,10 @@ Lockfile:
       graphql-request "^4.2.0"
       node-fetch "^2.6.1"
   
-  "@lyrafinance/protocol@^0.1.1-alpha":
-    version "0.1.1-alpha"
-    resolved "https://registry.yarnpkg.com/@lyrafinance/protocol/-/protocol-0.1.1-alpha.tgz#3df3326e3eb0988784e9979f25ab3a8c90060915"
-    integrity sha512-LYkyxQpaeBeOoUm1Zen7Bk6vmqfpdFS8xrAjLHdHASkIEJK/cnP/xvRCPx/lxr8h8h5EBT7NYbNxRUWqVVwvlQ==
+  "@lyrafinance/protocol@^0.1.2-alpha":
+    version "0.1.2-alpha"
+    resolved "https://registry.yarnpkg.com/@lyrafinance/protocol/-/protocol-0.1.2-alpha.tgz#59e3e066666513a9a38ce2553a27c93d2c634863"
+    integrity sha512-J83MGQyNxuD/q+wC93HzwfLdNFCK/pJiSiIm+caqH3TA4TzPvIjYkbtIwAmd/RgyqkFP/MYbtN7/S9b8en+Wow==
     dependencies:
       "@ethersproject/abi" "^5.4.0"
       "@ethersproject/abstract-provider" "^5.6.0"
@@ -13024,6 +13024,11 @@ Lockfile:
     version "1.1.2"
     resolved "https://registry.yarnpkg.com/hardhat-dependency-compiler/-/hardhat-dependency-compiler-1.1.2.tgz#02867b7c6dd3de4924d9d3d6593feab8408f1eeb"
     integrity sha512-LVnsPSZnGvzWVvlpewlkPKlPtFP/S9V41RC1fd/ygZc4jkG8ubNlfE82nwiGw5oPueHSmFi6TACgmyrEOokK8w==
+  
+  hardhat-dependency-compiler@^1.1.3:
+    version "1.1.3"
+    resolved "https://registry.yarnpkg.com/hardhat-dependency-compiler/-/hardhat-dependency-compiler-1.1.3.tgz#1e49e23f68878bd713f860c66648a711bc4a4a79"
+    integrity sha512-bCDqsOxGST6WkbMvj4lPchYWidNSSBm5CFnkyAex1T11cGmr9otZTGl81W6f9pmrtBXbKCvr3OSuNJ6Q394sAw==
   
   hardhat-deploy@^0.11.10:
     version "0.11.10"
