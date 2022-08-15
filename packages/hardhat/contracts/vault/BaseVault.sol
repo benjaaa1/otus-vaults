@@ -135,10 +135,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   /**
    * @notice Sets the new fee recipient
    * @param newFeeRecipient is the address of the new fee recipient
-   * This may be need to handle multipleuou
-   
-    recipients at times
-   * One for manager other for dao 
+   * @dev This may be need to handle multiple recipients at times
    */
   function setFeeRecipient(address newFeeRecipient) external onlyOwner {
     require(newFeeRecipient != address(0), "!newFeeRecipient");

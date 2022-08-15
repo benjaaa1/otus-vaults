@@ -49,22 +49,39 @@ contract FuturesAdapter {
   // Market Operations //
   ///////////////////////
 
+  /**
+   * @notice Transfers to margin from deposits
+   * @param marginDelta is the amount of funds transfering
+   */
   function _transferMargin(int marginDelta) internal {
     futuresMarket.transferMargin(marginDelta);
   }
 
+  /**
+   * @notice Withdraws all margin from synthetix futures
+   */
   function _withdrawAllMargin() internal {
     futuresMarket.withdrawAllMargin();
   }
 
+  /**
+   * @notice Modifies the margin size used
+   * @param sizeDelta is the leverage size
+   */
   function _modifyPosition(int sizeDelta) internal {
     futuresMarket.modifyPosition(sizeDelta);
   }
 
+  /**
+   * @notice Closes any futures positions
+   */
   function _closePosition() internal {
     futuresMarket.closePosition();
   }
 
+  /**
+   * @notice liquidates positions
+   */
   function _liquidatePosition() internal {
     futuresMarket.liquidatePosition(address(this));
   }
@@ -73,6 +90,14 @@ contract FuturesAdapter {
   // Market Position Details  //
   //////////////////////////////
 
+  /**
+   * @notice View all positions held by vault
+   * @return id synthetix futures id of position
+   * @return fundingIndex index of position
+   * @return margin of position
+   * @return lastPrice of asset in synthetix
+   * @return size
+   */
   function _positions()
     internal
     view
@@ -87,14 +112,29 @@ contract FuturesAdapter {
     (id, fundingIndex, margin, lastPrice, size) = futuresMarket.positions(address(this));
   }
 
+  /**
+   * @notice View pnl of vault
+   * @return value
+   * @return invalid
+   */
   function _profitLoss() internal view returns (int value, bool invalid) {
     (value, invalid) = futuresMarket.profitLoss(address(this));
   }
 
+  /**
+   * @notice Remaining margin available
+   * @return marginRemaining
+   * @return invalid
+   */
   function _remainingMargin() internal view returns (uint marginRemaining, bool invalid) {
     (marginRemaining, invalid) = futuresMarket.remainingMargin(address(this));
   }
 
+  /**
+   * @notice Calculate fee amount for trade
+   * @return fee
+   * @return invalid
+   */
   function _orderFee(int sizeDelta) internal view returns (uint fee, bool invalid) {
     (fee, invalid) = futuresMarket.orderFee(sizeDelta);
   }

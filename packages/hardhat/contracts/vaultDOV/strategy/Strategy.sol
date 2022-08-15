@@ -52,8 +52,19 @@ contract Strategy is StrategyBase {
    *  ADMIN
    ***********************************************/
 
+  /**
+   * @notice Assigns all lyra contracts
+   * @param _synthetixAdapter SynthetixAdapter address
+   */
   constructor(address _synthetixAdapter) StrategyBase(_synthetixAdapter) {}
 
+  /**
+   * @notice Initializer strategy
+   * @param _owner owner of strategy
+   * @param _vault vault that owns strategy
+   * @param marketAddresses list of lyra & snx addresses
+   * @param _currentStrategy vault strategy settings
+   */
   function initialize(
     address _owner,
     address _vault,
@@ -61,7 +72,6 @@ contract Strategy is StrategyBase {
     StrategyDetail memory _currentStrategy
   ) external {
     baseInitialize(_owner, _vault, marketAddresses, _currentStrategy);
-
     vault = _vault;
   }
 
@@ -70,9 +80,8 @@ contract Strategy is StrategyBase {
    ***********************************************/
 
   /**
-   * @dev update the strategy for the new round.
-   * strategy should be updated weekly after previous round ends
-   * quoteAsset usually USD baseAsset usually ETH
+   * @notice Update the strategy for the new round
+   * @param _currentStrategy vault strategy settings
    */
   function setStrategy(StrategyDetail memory _currentStrategy) external onlyOwner {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
@@ -80,6 +89,11 @@ contract Strategy is StrategyBase {
     currentStrategy = _currentStrategy;
   }
 
+  /**
+   * @notice Update the strike hedge strategy
+   * @param _hedgeStrategies vault strategy settings
+   * @dev should be able to accept multiple strategy types (1 click / delta / auto simple)
+   */
   function setHedgeStrategy(StrikeHedgeDetail[] memory _hedgeStrategies) external onlyOwner {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
@@ -94,9 +108,9 @@ contract Strategy is StrategyBase {
   }
 
   /**
-   * @dev update for buy call, sell call, buy put, sell put
+   * @notice Update the strike strategy by option
+   * @param _currentStrikeStrategies different strike strategies for each option type supported
    */
-
   function setStrikeStrategyDetail(StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
@@ -110,6 +124,10 @@ contract Strategy is StrategyBase {
     }
   }
 
+  /**
+   * @notice Get the strike strategy by option
+   * @return _currentStrikeStrategies list of different strike strategy by option
+   */
   function getCurrentStrikeStrategies() public view returns (StrikeStrategyDetail[] memory _currentStrikeStrategies) {
     _currentStrikeStrategies = new StrikeStrategyDetail[](StrikeStrategiesPossible);
     StrikeStrategyDetail memory _strikeStrategy;
@@ -126,8 +144,8 @@ contract Strategy is StrategyBase {
   ///////////////////
 
   /**
-   * @dev set the board id that will be traded for the next round
-   * @param boardId lyra board Id.
+   * @notice Set boardId for vault
+   * @param boardId lyra board id
    */
   function setBoard(uint boardId) external {
     require(boardId > 0, "Board Id incorrect");
@@ -138,9 +156,9 @@ contract Strategy is StrategyBase {
   }
 
   /**
-   * @notice sell a fix aomunt of options and collect premium
-   * @dev the vault should pass in a strike id, and the strategy would verify if the strike is valid on-chain.
-   * @param _strike lyra strikeId to trade
+   * @notice Sell or buy options from vault
+   * @dev sell a fix aomunt of options and collect premium or buy a fix amount and pay the price
+   * @param _strike lyra strike details to trade
    * @return positionId
    * @return premiumReceived
    * @return capitalUsed
@@ -194,6 +212,7 @@ contract Strategy is StrategyBase {
   }
 
   /**
+   * @notice Return funds to vault and clera strikes
    * @dev convert premium in quote asset into collateral asset and send it back to the vault.
    */
   function returnFundsAndClearStrikes() external onlyVault {
@@ -235,10 +254,15 @@ contract Strategy is StrategyBase {
   }
 
   /**
+   * @notice Return funds to vault and clera strikes
    * @dev calculate required collateral to add in the next trade.
-   * sell size is fixed as currentStrategy.size
    * only add collateral if the additional sell will make the position out of buffer range
    * never remove collateral from an existing position
+   * @param strike strike to trade
+   * @param _size expected size
+   * @param _optionType optiontype of trade
+   * @return collateralToAdd
+   * @return setCollateralTo
    */
   function getRequiredCollateral(
     Strike memory strike,
@@ -279,13 +303,14 @@ contract Strategy is StrategyBase {
   }
 
   /**
-   * @dev perform the trade
+   * @notice perform the sell
    * @param strike strike detail
-   * @param _size target collateral amount
+   * @param _size target size
    * @param setCollateralTo target collateral amount
-   * @param currentStrikeStrategy target collateral amount
-   * @return positionId
-   * @return premiumReceived
+   * @param currentStrikeStrategy strategy of strike's optiontype to trade
+   * @param currentStrikeTrade details of striketrade
+   * @return positionId lyra position id
+   * @return totalCost the premium received from selling
    */
   function _sellStrike(
     Strike memory strike,
@@ -324,14 +349,15 @@ contract Strategy is StrategyBase {
     return (result.positionId, result.totalCost);
   }
 
-  //   /**
-  //  * @dev perform the trade
-  //  * @param strike strike detail
-  //  * @param maxPremium max premium willing to spend for this trade
-  //  * @param lyraRewardRecipient address to receive lyra trading reward
-  //  * @return positionId
-  //  * @return premiumReceived
-  //  */
+  /**
+   * @notice perform the buy
+   * @param strike strike detail
+   * @param _size target size
+   * @param currentStrikeStrategy strategy of strike's optiontype to trade
+   * @param maxPremium total cost acceptable
+   * @return positionId
+   * @return totalCost
+   */
   function _buyStrike(
     Strike memory strike,
     uint _size,
@@ -367,7 +393,10 @@ contract Strategy is StrategyBase {
   }
 
   /**
+   * @notice reduce size of lyra options position
    * @dev use premium in strategy to reduce position size if collateral ratio is out of range
+   * @param positionId lyra position id
+   * @param closeAmount amount closing
    */
   function reducePosition(uint positionId, uint closeAmount) external onlyVault {
     OptionPosition memory position = getPositions(_toDynamic(positionId))[0];
@@ -418,7 +447,12 @@ contract Strategy is StrategyBase {
   }
 
   /**
+   * @notice get allowed close amount
    * @dev calculates the position amount required to stay above the buffer collateral
+   * @param position lyra position id
+   * @param strikePrice strike price
+   * @param strikeExpiry strike expiry
+   * @param _optionType option type
    */
   function getAllowedCloseAmount(
     OptionPosition memory position,
@@ -441,9 +475,70 @@ contract Strategy is StrategyBase {
   }
 
   /******************************************************
-   *  KEEPER ACTIONS -  HEDGE WITH SYNTHETIX FUTURES
+   * HEDGE WITH SYNTHETIX FUTURES
    *****************************************************/
 
+  /******************************************************
+   *  STATIC HEDGE - DELTA HEDGE - CONTROLLED BY OWNER
+   *****************************************************/
+
+  /*****************************************************
+   *  DELTA HEDGE - KEEPER
+   *****************************************************/
+
+  /**
+   * @notice simple future hedge based on strategy
+   * @param optionType option type - direction to hedge
+   * @param lockedAmountLeft Use reserved amount for hedging
+   * @param hedgeAttempts current hedge attempts in hedging
+   */
+  function _deltaHedge(
+    uint optionType,
+    uint lockedAmountLeft,
+    uint hedgeAttempts
+  ) external onlyVault {
+    // need to track by optiontype
+    StrikeHedgeDetail memory currentHedgeStrategy = currentHedgeStrategies[optionType];
+    require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
+
+    // check futures positions
+
+    // through kwenta
+    if (hedgeAttempts == 0) {
+      // first time hedging
+      require(
+        // need to use kwenta / synthetix susd collateralAssetTest
+        IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(
+          address(vault),
+          address(this),
+          lockedAmountLeft
+        ),
+        "susd transfer to from vault failed"
+      );
+
+      _transferMargin(int(lockedAmountLeft));
+    }
+
+    // check current hedge balance in synthetix
+    (uint marginRemaining, bool invalid) = _remainingMargin();
+    require(marginRemaining > 0, "Remaining margin is 0");
+
+    uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
+    uint size = (marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize)).divideDecimal(spotPrice);
+
+    _modifyPosition(-int(size));
+  }
+
+  /*****************************************************
+   *  SIMPLE FUTURES HEDGE -  KEEPER
+   *****************************************************/
+
+  /**
+   * @notice simple future hedge based on strategy
+   * @param optionType option type - direction to hedge
+   * @param lockedAmountLeft Use reserved amount for hedging
+   * @param hedgeAttempts current hedge attempts in hedging
+   */
   function _hedge(
     uint optionType,
     uint lockedAmountLeft,
@@ -481,6 +576,10 @@ contract Strategy is StrategyBase {
     _modifyPosition(-int(size));
   }
 
+  /*****************************************************
+   *  CLOSE HEDGE
+   *****************************************************/
+
   function _closeHedge() external onlyVault {
     // need to track by optiontype no more global active short
     (, , uint128 margin, uint128 lastPrice, int128 size) = _positions();
@@ -491,9 +590,9 @@ contract Strategy is StrategyBase {
     _withdrawAllMargin();
   }
 
-  /**
-   * @dev - used for testing
-   */
+  /*****************************************************
+   *  SYNTHETIX FUTURES HEDGING
+   *****************************************************/
   function withdrawSUSDSNX() public {
     uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
     IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(this), msg.sender, balance);

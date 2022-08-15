@@ -132,22 +132,21 @@ contract LyraAdapter is OwnableUpgradeable {
   // BasicFeeCounter internal feeCounter;
 
   /**
-   * @dev Assigns all lyra contracts
+   * @notice Assigns all lyra contracts
    * @param _synthetixAdapter SynthetixAdapter address
-   * @dev _optionPricer OptionMarketPricer address
-   * @dev _greekCache greekCache address
-   * @dev _feeCounter Fee counter address
    */
   constructor(address _synthetixAdapter) {
     synthetixAdapter = SynthetixAdapter(_synthetixAdapter);
   }
 
   /**
-   * @dev
+   * @notice Initializer with addresses
    * @param _optionToken OptionToken Address
    * @param _optionMarket OptionMarket Address
    * @param _liquidityPool LiquidityPool address
    * @param _shortCollateral ShortCollateral address
+   * @param _optionPricer OptionPricer address
+   * @param _greekCache GreekCache address
    */
   function optionInitialize(
     address _owner,
@@ -173,7 +172,11 @@ contract LyraAdapter is OwnableUpgradeable {
   // Market Actions //
   ////////////////////
 
-  // setTrustedCounter must be set for approved addresses
+  /**
+   * @notice open a position in lyra mm
+   * @param params params to open trade on lyra
+   * @return result of opening trade
+   */
   function openPosition(TradeInputParameters memory params) internal returns (TradeResult memory) {
     OptionMarket.TradeInputParameters memory convertedParams = _convertParams(params);
     OptionMarket.Result memory result = optionMarket.openPosition(convertedParams);
@@ -184,6 +187,11 @@ contract LyraAdapter is OwnableUpgradeable {
     return TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});
   }
 
+  /**
+   * @notice close a position in lyra mm
+   * @param params params to close trade on lyra
+   * @return result of trade
+   */
   function closePosition(TradeInputParameters memory params) internal returns (TradeResult memory) {
     OptionMarket.Result memory result = optionMarket.closePosition(_convertParams(params));
     if (params.rewardRecipient != address(0)) {
@@ -192,6 +200,11 @@ contract LyraAdapter is OwnableUpgradeable {
     return TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});
   }
 
+  /**
+   * @notice forceclose a position in lyra mm
+   * @param params params to close trade on lyra
+   * @return result of trade
+   */
   function forceClosePosition(TradeInputParameters memory params) internal returns (TradeResult memory) {
     OptionMarket.Result memory result = optionMarket.forceClosePosition(_convertParams(params));
     if (params.rewardRecipient != address(0)) {
@@ -204,15 +217,31 @@ contract LyraAdapter is OwnableUpgradeable {
   // Exchange //
   //////////////
 
+  /**
+   * @notice helper to get price of asset
+   * @return spotPrice
+   */
   function getSpotPriceForMarket() public view returns (uint spotPrice) {
     spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
   }
 
+  /**
+   * @notice helper to exchange with a min
+   * @param amountQuote expected quote
+   * @param minBaseReceived minimum acceptable
+   * @return baseReceived
+   */
   function exchangeFromExactQuote(uint amountQuote, uint minBaseReceived) internal returns (uint baseReceived) {
     baseReceived = synthetixAdapter.exchangeFromExactQuote(address(optionMarket), amountQuote);
     require(baseReceived >= minBaseReceived, "base received too low");
   }
 
+  /**
+   * @notice helper to exchange to exact quote
+   * @param amountQuote exact quote
+   * @param maxBaseUsed max base used for quote
+   * @return quoteReceived
+   */
   function exchangeToExactQuote(uint amountQuote, uint maxBaseUsed) internal returns (uint quoteReceived) {
     SynthetixAdapter.ExchangeParams memory exchangeParams = synthetixAdapter.getExchangeParams(address(optionMarket));
     (, quoteReceived) = synthetixAdapter.exchangeToExactQuoteWithLimit(
@@ -223,11 +252,23 @@ contract LyraAdapter is OwnableUpgradeable {
     );
   }
 
+  /**
+   * @notice helper to exchange to min base
+   * @param amountBase exact base
+   * @param minQuoteReceived min quote received acceptable
+   * @return quoteReceived
+   */
   function exchangeFromExactBase(uint amountBase, uint minQuoteReceived) internal returns (uint quoteReceived) {
     quoteReceived = synthetixAdapter.exchangeFromExactBase(address(optionMarket), amountBase);
     require(quoteReceived >= minQuoteReceived, "quote received too low");
   }
 
+  /**
+   * @notice helper to exchange to base
+   * @param amountBase exact base
+   * @param maxQuoteUsed max quote used acceptable
+   * @return baseReceived
+   */
   function exchangeToExactBase(uint amountBase, uint maxQuoteUsed) internal returns (uint baseReceived) {
     SynthetixAdapter.ExchangeParams memory exchangeParams = synthetixAdapter.getExchangeParams(address(optionMarket));
     (, baseReceived) = synthetixAdapter.exchangeToExactBaseWithLimit(
@@ -242,7 +283,14 @@ contract LyraAdapter is OwnableUpgradeable {
   // Option Token Actions //
   //////////////////////////
 
-  // option token spilt
+  /**
+   * @notice helper to exchange to base
+   * @param positionId the lyra positionId of the original position to be split
+   * @param newAmount the amount in the new position
+   * @param newCollateral the amount of collateral for the new position
+   * @param recipient recipient of new position
+   * @return newPositionId
+   */
   function splitPosition(
     uint positionId,
     uint newAmount,
@@ -252,7 +300,10 @@ contract LyraAdapter is OwnableUpgradeable {
     newPositionId = optionToken.split(positionId, newAmount, newCollateral, recipient);
   }
 
-  // option token merge
+  /**
+   * @notice Merge position ids
+   * @param positionIds list of ids to merge to 1 position
+   */
   function mergePositions(uint[] memory positionIds) internal {
     optionToken.merge(positionIds);
   }
