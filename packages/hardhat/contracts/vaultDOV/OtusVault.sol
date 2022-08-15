@@ -44,9 +44,11 @@ contract OtusVault is BaseVault {
    *   HEDGE TRACKING
    ************************************************/
 
+  uint public reservedHedgeFunds;
   bool public hasFuturesHedge;
   mapping(uint => uint) public hedgeAttemptsByOptionType;
   mapping(uint => bool) public activeHedgeByOptionType;
+  uint public deltaHedgeAttempts;
 
   /************************************************
    *  EVENTS
@@ -82,6 +84,11 @@ contract OtusVault is BaseVault {
   /**
    * @notice Initializes contract on clone
    * @dev Should only be called by owner and only once
+   * @param _owner owner of vault
+   * @param _vaultInfo basic vault information
+   * @param _vaultParams vault share information
+   * @param _strategy address of strategy
+   * @param _keeper address of keeper
    */
   function initialize(
     address _owner,
@@ -114,6 +121,10 @@ contract OtusVault is BaseVault {
    *  SETTERS
    ***********************************************/
 
+  /**
+   * @notice Set and update keeper address
+   * @param _keeper address of keeper
+   */
   function setKeeper(address _keeper) public onlyOwner {
     keeper = _keeper;
     emit KeeperUpdated(msg.sender, _keeper);
@@ -124,7 +135,7 @@ contract OtusVault is BaseVault {
    ***********************************************/
 
   /**
-   * @notice Closes the current round, enable user to deposit for the next round
+   * @notice  Closes the current round, enable user to deposit for the next round
    */
   function closeRound() external onlyOwner {
     uint104 lockAmount = vaultState.lockedAmount;
@@ -145,6 +156,9 @@ contract OtusVault is BaseVault {
     emit RoundClosed(vaultState.round, lockAmount);
   }
 
+  /**
+   * @notice Initializes contract on clone
+   */
   function _clearHedges() internal {
     // withdraw all margin from futures market
     // _strategy.closeHedgeEndOfRound();
@@ -159,6 +173,7 @@ contract OtusVault is BaseVault {
 
   /**
    * @notice Start the next/new round
+   * @param boardId set the boardId for next round
    */
   function startNextRound(uint boardId) external onlyOwner {
     //can't start next round before outstanding expired positions are settled.
@@ -180,6 +195,8 @@ contract OtusVault is BaseVault {
 
   /**
    * @notice Start the trade for the next/new round depending on strategy
+   * @param _strikes selected strikes to trade
+   * @return positionIds lyra position ids
    */
   function trade(StrategyBase.StrikeTrade[] memory _strikes) external onlyOwner returns (uint[] memory positionIds) {
     // can trade during round as long as lockedAmount is greater than 0
@@ -210,8 +227,11 @@ contract OtusVault is BaseVault {
     emit Trade(address(this), positionIds, vaultState.round, premiumReceived);
   }
 
-  /// @dev anyone close part of the position with premium made by the strategy if a position is dangerous
-  /// @param positionId the positiion to close
+  /**
+   * @notice Reduce position by keeper if position dangerous
+   * @param positionId lyra position id
+   * @param closeAmount total amount to reduce
+   */
   function reducePosition(uint positionId, uint closeAmount) external onlyKeeper {
     IStrategy(strategy).reducePosition(positionId, closeAmount);
   }
@@ -221,18 +241,10 @@ contract OtusVault is BaseVault {
    ***********************************************/
 
   /**
-   * @dev this should be executed after the vault execute trade on OptionMarket and by keeper
-  //  */
-  // function hedge(uint optionType) external returns (uint) {
-  //   return optionType;
-  // }
-
-  // 3 types of hedges
-  // simple 1 click hedge
-  // auto simple hedge
-  // auto delta hedge
-
-  function hedge(uint optionType) external onlyKeeper {
+   * @notice Simple hedge based on pricing of base asset
+   * @param optionType hedge by optiontype
+   */
+  function simpleHedge(uint optionType) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
     require(hasFuturesHedge, "Vault is not hedging strikes");
     require(activeHedgeByOptionType[optionType] == false, "Vault has hedge for option type");
@@ -240,24 +252,49 @@ contract OtusVault is BaseVault {
     uint hedgeAttempts = hedgeAttemptsByOptionType[optionType];
 
     // locked amout left has to be
-    IStrategy(strategy)._hedge(optionType, vaultState.lockedAmountLeft, hedgeAttempts);
+    IStrategy(strategy)._hedge(optionType, reservedHedgeFunds, hedgeAttempts);
 
     // track by option type hedge attempts
     hedgeAttemptsByOptionType[optionType] = hedgeAttempts + 1;
     activeHedgeByOptionType[optionType] = true;
   }
 
-  function closeHedge(uint optionType) external onlyKeeper {
-    require(activeHedgeByOptionType[optionType], "Vault has no active hedge for option type");
-    IStrategy(strategy)._closeHedge();
-    activeHedgeByOptionType[optionType] = false;
+  /**
+   * @notice delta hedge based on strategy settings
+   */
+  function deltaHedge() external onlyKeeper {
+    require(vaultState.roundInProgress, "Round closed");
+
+    // transfer funds to synthetix futures margin
+    if (deltaHedgeAttempts == 0) {
+      IStrategy(strategy)._transferFunds(reservedHedgeFunds);
+    }
+
+    IStrategy(strategy)._deltaHedge(deltaHedgeAttempts);
   }
 
   /**
-   * @dev - used for testing
+   * @notice delta hedge based on user set min. delta to hedge
+   * @param deltaToHedge set by user to minimize delta exposure
    */
-  function withdrawSUSDSNX() public {
-    uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
-    // IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57000737919682).transferFrom(address(this), msg.sender, balance);
+  function staticDeltaHedge(int deltaToHedge) external onlyOwner {
+    require(vaultState.roundInProgress, "Round closed");
+
+    // transfer funds to synthetix futures margin
+    if (deltaHedgeAttempts == 0) {
+      IStrategy(strategy)._transferFunds(reservedHedgeFunds);
+    }
+
+    IStrategy(strategy)._staticDeltaHedge(deltaHedgeAttempts, deltaToHedge);
+  }
+
+  /**
+   * @notice Close hedge by option type
+   * @param optionType close hedge for optiontype
+   */
+  function closeHedgeByOptionType(uint optionType) external onlyKeeper {
+    require(activeHedgeByOptionType[optionType], "Vault has no active hedge for option type");
+    IStrategy(strategy)._closeHedge();
+    activeHedgeByOptionType[optionType] = false;
   }
 }

@@ -478,27 +478,17 @@ contract Strategy is StrategyBase {
    * HEDGE WITH SYNTHETIX FUTURES
    *****************************************************/
 
-  /******************************************************
-   *  STATIC HEDGE - DELTA HEDGE - CONTROLLED BY OWNER
-   *****************************************************/
-
   /*****************************************************
    *  DELTA HEDGE - KEEPER
    *****************************************************/
 
   /**
    * @notice delta hedging using synthetix futures based on strategy
-   * @param hedgeFunds Use reserved amount for hedging
    * @param hedgeAttempts current hedge attempts in hedging
    */
-  function _deltaHedge(uint hedgeFunds, uint hedgeAttempts) external onlyVault {
+  function _deltaHedge(uint hedgeAttempts) external onlyVault {
     // need to track by optiontype
     require(deltaHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
-
-    // transfer funds to synthetix futures margin
-    if (hedgeAttempts == 0) {
-      _transferFunds(hedgeFunds);
-    }
 
     // check current hedge balance in synthetix
     (uint marginRemaining, bool invalid) = _remainingMargin();
@@ -514,6 +504,30 @@ contract Strategy is StrategyBase {
     _modifyPosition(size);
   }
 
+  /******************************************************
+   *  STATIC HEDGE - DELTA HEDGE - CONTROLLED BY OWNER
+   *****************************************************/
+
+  /**
+   * @notice static delta hedging using synthetix futures based on strategy
+   * @param deltaHedgeAttempts current hedge attempts in hedging
+   * @param deltaToHedge set by user
+   */
+  function _staticDeltaHedge(uint deltaHedgeAttempts, int deltaToHedge) external onlyVault {
+    require(deltaHedgeStrategy.maxHedgeAttempts <= deltaHedgeAttempts);
+    // check current hedge balance in synthetix
+    (uint marginRemaining, bool invalid) = _remainingMargin();
+    require(marginRemaining > 0, "Remaining margin is 0");
+
+    uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
+
+    // 3.8 delta * 2000 spot price = 7800 / marginRemaining (5000) == ;
+    int fundsRequiredSUSD = deltaToHedge.multiplyDecimal(int(spotPrice));
+    int size = fundsRequiredSUSD.multiplyDecimal(int(marginRemaining));
+
+    _modifyPosition(size);
+  }
+
   /*****************************************************
    *  SIMPLE FUTURES HEDGE -  KEEPER
    *****************************************************/
@@ -521,12 +535,11 @@ contract Strategy is StrategyBase {
   /**
    * @notice simple future hedge based on strategy
    * @param optionType option type - direction to hedge
-   * @param lockedAmountLeft Use reserved amount for hedging
    * @param hedgeAttempts current hedge attempts in hedging
    */
   function _hedge(
     uint optionType,
-    uint lockedAmountLeft,
+    uint reservedHedgeFunds,
     uint hedgeAttempts
   ) external onlyVault {
     // need to track by optiontype
@@ -535,7 +548,7 @@ contract Strategy is StrategyBase {
 
     // transfer funds to synthetix futures margin
     if (hedgeAttempts == 0) {
-      _transferFunds(lockedAmountLeft);
+      _transferFunds(reservedHedgeFunds);
     }
 
     // check current hedge balance in synthetix
@@ -574,7 +587,7 @@ contract Strategy is StrategyBase {
    *  SYNTHETIX FUTURES HEDGING HELPER
    *****************************************************/
 
-  function _checkNetDelta() internal returns (int netDelta) {
+  function _checkNetDelta() public view returns (int netDelta) {
     uint _len = activeStrikeIds.length;
     uint[] memory positionIds = new uint[](_len);
 
@@ -599,7 +612,7 @@ contract Strategy is StrategyBase {
     }
   }
 
-  function _transferFunds(uint amount) internal {
+  function _transferFunds(uint amount) public onlyOwner {
     // check futures positions
     // first time hedging
     require(
