@@ -7,7 +7,7 @@ import "hardhat/console.sol";
 import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
 import {SignedDecimalMath} from "@lyrafinance/protocol/contracts/synthetix/SignedDecimalMath.sol";
 import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
-import '../../synthetix/SafeDecimalMath.sol';
+import "../../synthetix/SafeDecimalMath.sol";
 
 // Inherited
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -17,382 +17,460 @@ import {LyraAdapter} from "../../vaultAdapters/LyraAdapter.sol";
 import {FuturesAdapter} from "../../vaultAdapters/FuturesAdapter.sol";
 
 /**
- * @title StrategyBase 
+ * @title StrategyBase
  * @author Lyra
  * @dev StrategyBase
  */
 
 contract StrategyBase is FuturesAdapter, LyraAdapter {
-  using SafeDecimalMath for uint;
+    using SafeDecimalMath for uint;
 
-  ///////////////
-  // Variables //
-  ///////////////
+    ///////////////
+    // Variables //
+    ///////////////
 
-  GWAVOracle public gwavOracle;
+    GWAVOracle public gwavOracle;
 
-  IERC20 internal quoteAsset;
-  IERC20 internal baseAsset;
+    IERC20 internal quoteAsset;
+    IERC20 internal baseAsset;
 
-  uint public activeExpiry;
-  uint public activeBoardId;
+    uint public activeExpiry;
+    uint public activeBoardId;
 
-  uint[] public activeStrikeIds;
-  mapping(uint => uint) public strikeToPositionId;
-  mapping(uint => uint) public strikeIdToTrade;
+    uint[] public activeStrikeIds;
+    mapping(uint => uint) public strikeToPositionId;
+    mapping(uint => uint) public strikeIdToTrade;
 
-  mapping(uint => uint) public lastTradeTimestamp;
-  mapping(uint => uint) public lastTradeOptionType;
+    mapping(uint => uint) public lastTradeTimestamp;
+    mapping(uint => uint) public lastTradeOptionType;
 
     // strategies can be updated by different strategizers
-  struct StrategyDetail {
-    uint collatBuffer; // slider - multiple of vaultAdapter.minCollateral(): 1.1 -> 110% * minCollat
-    uint collatPercent; // slider - partial collateral: 0.9 -> 90% * fullCollat
-    uint minTimeToExpiry; // slider 
-    uint maxTimeToExpiry; // slider
-    uint minTradeInterval; // slider
-    uint gwavPeriod; // slider
-  }
-
-  struct StrikeStrategyDetail {
-    int targetDelta; // slider
-    uint maxDeltaGap; // slider
-    uint minVol; // slider
-    uint maxVol; // slider
-    uint maxVolVariance; // slider
-    uint optionType; 
-  }
-
-  struct StrikeTrade {
-    uint optionType; 
-    uint strikeId;
-    uint size; 
-    bool futuresHedge;
-  }
-
-  struct StrikeHedgeDetail {
-    uint hedgePercentage; // 20% + collatPercent == 100%
-    uint maxHedgeAttempts; // ~6 dependent on fees mostly 
-    uint leverageSize; // 150% ~ 1.5x 200% 2x 
-    uint stopLossLimit; // .001 1%
-    uint optionType; 
-  }
-
-  StrikeTrade[] public currentStrikeTrades; 
-  // Round settings
-  StrategyDetail public currentStrategy; 
-  // option type => strike strategy
-  mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
-  uint public immutable StrikeStrategiesPossible = 4;
-  // option type => hedge
-  mapping(uint => StrikeHedgeDetail) public currentHedgeStrategies; 
-
-  constructor(address _synthetixAdapter) FuturesAdapter() LyraAdapter(_synthetixAdapter)  {}
-
-  /**
-  * @dev
-  * @param _owner _owner address
-  * @param _vault _vault address
-  * @param marketAddresses marketAddresses
-  */
-  function baseInitialize (
-    address _owner,
-    address _vault,
-    address[] memory marketAddresses,
-    StrategyDetail memory _currentStrategy
-  ) internal {
-
-    gwavOracle = GWAVOracle(marketAddresses[9]);
-    currentStrategy = _currentStrategy;
-
-    address _futuresMarket = marketAddresses[8]; 
-    address _optionMarket = marketAddresses[3];	// marketAddress.optionMarket, 
-    address _quoteAsset = marketAddresses[0];  // quote asset
-    address _baseAsset = marketAddresses[1];  // base asset
-    
-    if (address(quoteAsset) != address(0)) {
-      quoteAsset.approve(_optionMarket, 0);
-      quoteAsset.approve(_optionMarket, 0);
-    }
-    if (address(baseAsset) != address(0)) {
-      baseAsset.approve(_futuresMarket, 0);
-      baseAsset.approve(_futuresMarket, 0);
+    struct StrategyDetail {
+        uint collatBuffer;
+        uint collatPercent;
+        uint minTimeToExpiry;
+        uint maxTimeToExpiry;
+        uint minTradeInterval;
+        uint gwavPeriod;
     }
 
-    quoteAsset = IERC20(_quoteAsset);
-    baseAsset = IERC20(_baseAsset);
-
-    // Do approvals
-    quoteAsset.approve(_vault, type(uint).max);
-    baseAsset.approve(_vault, type(uint).max);
-
-    quoteAsset.approve(_optionMarket, type(uint).max);
-    baseAsset.approve(_optionMarket, type(uint).max);
-
-    quoteAsset.approve(_futuresMarket, type(uint).max);
-    baseAsset.approve(_futuresMarket, type(uint).max);
-    
-    // susd test on synthetix different than lyra
-    // IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).approve(_futuresMarket, type(uint).max);
-
-    futuresInitialize(marketAddresses[8]);
-
-    optionInitialize(
-      _owner,
-      marketAddresses[2],	// marketAddress.optionToken,
-      marketAddresses[3],	// marketAddress.optionMarket,
-      marketAddresses[4],	// marketAddress.liquidityPool,
-      marketAddresses[5],	// marketAddress.shortCollateral,
-      marketAddresses[6],  // optionPricer
-      marketAddresses[7]  // greekCache
-    );
-
-  }
-
-  //////////////////////////////
-  // Active Strike Management //
-  //////////////////////////////
-
-  /**
-   * @dev add strike id to activeStrikeIds array
-   */
-  function _addActiveStrike(uint strikeId, uint tradedPositionId, uint currentStrikeTradeIndex) internal {
-    if (!_isActiveStrike(strikeId)) {
-      strikeToPositionId[strikeId] = tradedPositionId;
-      strikeIdToTrade[strikeId] = currentStrikeTradeIndex;
-      activeStrikeIds.push(strikeId);
-    }
-  }
-
-  /**
-   * @dev remove position data opened in the current round.
-   * this can only be called after the position is settled by lyra
-   **/
-  function _clearAllActiveStrikes() internal {
-    if (activeStrikeIds.length != 0) {
-      for (uint i = 0; i < activeStrikeIds.length; i++) {
-        uint strikeId = activeStrikeIds[i];
-        OptionPosition memory position = getPositions(_toDynamic(strikeToPositionId[strikeId]))[0];
-        // revert if position state is not settled
-        require(position.state != PositionState.ACTIVE, "cannot clear active position");
-        delete strikeToPositionId[strikeId];
-        delete strikeIdToTrade[strikeId];
-        delete lastTradeTimestamp[i];
-        delete lastTradeOptionType[i];
-      }
-      delete activeStrikeIds;
-      delete currentStrikeTrades; 
-    }
-  }
-
-  function _clearCurrentStrikeTrades() public {
-    delete currentStrikeTrades; 
-  }
-
-  function _isActiveStrike(uint strikeId) internal view returns (bool isActive) {
-    isActive = strikeToPositionId[strikeId] != 0;
-  }
-
-  
-  function validateTimeIntervalByOptionType(uint strikeId, uint _optionType) internal view returns (bool) {
-    
-    bool valid = true; 
-
-    if (
-      lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <= block.timestamp && 
-      lastTradeOptionType[strikeId] == _optionType + 1) { 
-        valid = false; 
+    struct StrikeStrategyDetail {
+        int targetDelta;
+        uint maxDeltaGap;
+        uint minVol;
+        uint maxVol;
+        uint maxVolVariance;
+        uint optionType;
     }
 
-    return valid; 
-  }
-
-  //////////////////
-  // View Strikes //
-  //////////////////
-
-  /**
-  * @dev verify if the strike is valid for the strategy
-  * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
-  */
-  function isValidStrike(Strike memory strike, uint optionType) public view returns (bool isValid) {
-       
-    if (activeExpiry != strike.expiry) {
-      return false;
+    struct StrikeTrade {
+        uint optionType;
+        uint strikeId;
+        uint size;
+        bool futuresHedge;
     }
 
-    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
+    struct StrikeHedgeDetail {
+        uint hedgePercentage; // 20% + collatPercent == 100%
+        uint maxHedgeAttempts; // ~6 dependent on fees mostly
+        uint leverageSize; // 150% ~ 1.5x 200% 2x
+        uint stopLossLimit; // .001 1%
+        uint optionType;
+        /** NEW HEDGE OPTION */
+        uint period; // 15 min 1 hour 4 hours 12 hours 24 hours hedge attempt allowed once per period
+    }
 
-    uint[] memory strikeId = _toDynamic(strike.id);
-    uint vol = getVols(strikeId)[0];
-    int callDelta = getDeltas(strikeId)[0];
-    int delta = _isCall(currentStrikeStrategy.optionType) ? callDelta : callDelta - SignedDecimalMath.UNIT;
-    uint deltaGap = _abs(currentStrikeStrategy.targetDelta - delta);
+    StrikeTrade[] public currentStrikeTrades;
+    // Round settings
+    StrategyDetail public currentStrategy;
+    // option type => strike strategy
+    mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
+    uint public immutable StrikeStrategiesPossible = 4;
+    // option type => hedge
+    mapping(uint => StrikeHedgeDetail) public currentHedgeStrategies;
 
-    return vol >= currentStrikeStrategy.minVol && vol <= currentStrikeStrategy.maxVol && deltaGap < currentStrikeStrategy.maxDeltaGap;
-  }
+    constructor(address _synthetixAdapter)
+        FuturesAdapter()
+        LyraAdapter(_synthetixAdapter)
+    {}
 
-  /**
-   * @dev check if the vol variance for the given strike is within certain range
-   */
-  function _isValidVolVariance(uint strikeId, uint optionType) internal view returns (bool isValid) {
-    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
+    /**
+     * @dev
+     * @param _owner _owner address
+     * @param _vault _vault address
+     * @param marketAddresses marketAddresses
+     */
+    function baseInitialize(
+        address _owner,
+        address _vault,
+        address[] memory marketAddresses,
+        StrategyDetail memory _currentStrategy
+    ) internal {
+        gwavOracle = GWAVOracle(marketAddresses[9]);
+        currentStrategy = _currentStrategy;
 
-    uint volGWAV = gwavOracle.volGWAV(strikeId, currentStrategy.gwavPeriod);
-    uint volSpot = getVols(_toDynamic(strikeId))[0];
+        address _futuresMarket = marketAddresses[8];
+        address _optionMarket = marketAddresses[3]; // marketAddress.optionMarket,
+        address _quoteAsset = marketAddresses[0]; // quote asset
+        address _baseAsset = marketAddresses[1]; // base asset
 
-    uint volDiff = (volGWAV >= volSpot) ? volGWAV - volSpot : volSpot - volGWAV;
+        if (address(quoteAsset) != address(0)) {
+            quoteAsset.approve(_optionMarket, 0);
+            quoteAsset.approve(_optionMarket, 0);
+        }
+        if (address(baseAsset) != address(0)) {
+            baseAsset.approve(_futuresMarket, 0);
+            baseAsset.approve(_futuresMarket, 0);
+        }
 
-    return isValid = volDiff < currentStrikeStrategy.maxVolVariance;
-  }
+        quoteAsset = IERC20(_quoteAsset);
+        baseAsset = IERC20(_baseAsset);
 
-  /**
-   * @dev check if the expiry of the board is valid according to the strategy
-   */
-  function _isValidExpiry(uint expiry) internal view returns (bool isValid) {
-    uint secondsToExpiry = _getSecondsToExpiry(expiry);
+        // Do approvals
+        quoteAsset.approve(_vault, type(uint).max);
+        baseAsset.approve(_vault, type(uint).max);
 
-    isValid = (secondsToExpiry >= currentStrategy.minTimeToExpiry && secondsToExpiry <= currentStrategy.maxTimeToExpiry);
-  }
+        quoteAsset.approve(_optionMarket, type(uint).max);
+        baseAsset.approve(_optionMarket, type(uint).max);
 
-   /////////////////////////////
-  // Trade Parameter Helpers //
-  /////////////////////////////
+        quoteAsset.approve(_futuresMarket, type(uint).max);
+        baseAsset.approve(_futuresMarket, type(uint).max);
 
-  function _getFullCollateral(uint strikePrice, uint amount, uint _optionType) internal view returns (uint fullCollat) {
-    // calculate required collat based on collatBuffer and collatPercent
-    fullCollat = _isBaseCollat(_optionType) ? amount : amount.multiplyDecimal(strikePrice);
+        // susd test on synthetix different than lyra
+        // IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).approve(_futuresMarket, type(uint).max);
 
-  }
+        futuresInitialize(marketAddresses[8]);
 
-  /**
-   * @dev get amount of collateral needed for shorting {amount} of strike, according to the strategy
-   */
-  function _getBufferCollateral(
-    uint strikePrice,
-    uint expiry,
-    uint spotPrice,
-    uint amount,
-    uint _optionType
-  ) internal view returns (uint) {
+        optionInitialize(
+            _owner,
+            marketAddresses[2], // marketAddress.optionToken,
+            marketAddresses[3], // marketAddress.optionMarket,
+            marketAddresses[4], // marketAddress.liquidityPool,
+            marketAddresses[5], // marketAddress.shortCollateral,
+            marketAddresses[6], // optionPricer
+            marketAddresses[7] // greekCache
+        );
+    }
 
-    uint minCollat = getMinCollateral(OptionType(_optionType), strikePrice, expiry, spotPrice, amount);
-    require(minCollat > 0, "min collat must be more");
-    uint minCollatWithBuffer = minCollat.multiplyDecimal(currentStrategy.collatBuffer);
+    //////////////////////////////
+    // Active Strike Management //
+    //////////////////////////////
 
-    uint fullCollat = _getFullCollateral(strikePrice, amount, _optionType);
-    require(fullCollat > 0, "fullCollat collat must be more");
+    /**
+     * @dev add strike id to activeStrikeIds array
+     */
+    function _addActiveStrike(
+        uint strikeId,
+        uint tradedPositionId,
+        uint currentStrikeTradeIndex
+    ) internal {
+        if (!_isActiveStrike(strikeId)) {
+            strikeToPositionId[strikeId] = tradedPositionId;
+            strikeIdToTrade[strikeId] = currentStrikeTradeIndex;
+            activeStrikeIds.push(strikeId);
+        }
+    }
 
-    return _min(minCollatWithBuffer, fullCollat);
+    /**
+     * @dev remove position data opened in the current round.
+     * this can only be called after the position is settled by lyra
+     **/
+    function _clearAllActiveStrikes() internal {
+        if (activeStrikeIds.length != 0) {
+            for (uint i = 0; i < activeStrikeIds.length; i++) {
+                uint strikeId = activeStrikeIds[i];
+                OptionPosition memory position = getPositions(
+                    _toDynamic(strikeToPositionId[strikeId])
+                )[0];
+                // revert if position state is not settled
+                require(
+                    position.state != PositionState.ACTIVE,
+                    "cannot clear active position"
+                );
+                delete strikeToPositionId[strikeId];
+                delete strikeIdToTrade[strikeId];
+                delete lastTradeTimestamp[i];
+                delete lastTradeOptionType[i];
+            }
+            delete activeStrikeIds;
+            delete currentStrikeTrades;
+        }
+    }
 
-  }
+    function _clearCurrentStrikeTrades() public {
+        delete currentStrikeTrades;
+    }
 
-  function _getPremiumLimit(
-      Strike memory strike, 
-      bool isMin, 
-      StrikeTrade memory currentStrikeTrade
+    function _isActiveStrike(uint strikeId)
+        internal
+        view
+        returns (bool isActive)
+    {
+        isActive = strikeToPositionId[strikeId] != 0;
+    }
+
+    function validateTimeIntervalByOptionType(uint strikeId, uint _optionType)
+        internal
+        view
+        returns (bool)
+    {
+        bool valid = true;
+
+        if (
+            lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <=
+            block.timestamp &&
+            lastTradeOptionType[strikeId] == _optionType + 1
+        ) {
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    //////////////////
+    // View Strikes //
+    //////////////////
+
+    /**
+     * @dev verify if the strike is valid for the strategy
+     * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
+     */
+    function isValidStrike(Strike memory strike, uint optionType)
+        public
+        view
+        returns (bool isValid)
+    {
+        if (activeExpiry != strike.expiry) {
+            return false;
+        }
+
+        StrikeStrategyDetail
+            memory currentStrikeStrategy = currentStrikeStrategies[optionType];
+
+        uint[] memory strikeId = _toDynamic(strike.id);
+        uint vol = getVols(strikeId)[0];
+        int callDelta = getDeltas(strikeId)[0];
+        int delta = _isCall(currentStrikeStrategy.optionType)
+            ? callDelta
+            : callDelta - SignedDecimalMath.UNIT;
+        uint deltaGap = _abs(currentStrikeStrategy.targetDelta - delta);
+
+        return
+            vol >= currentStrikeStrategy.minVol &&
+            vol <= currentStrikeStrategy.maxVol &&
+            deltaGap < currentStrikeStrategy.maxDeltaGap;
+    }
+
+    /**
+     * @dev check if the vol variance for the given strike is within certain range
+     */
+    function _isValidVolVariance(uint strikeId, uint optionType)
+        internal
+        view
+        returns (bool isValid)
+    {
+        StrikeStrategyDetail
+            memory currentStrikeStrategy = currentStrikeStrategies[optionType];
+
+        uint volGWAV = gwavOracle.volGWAV(strikeId, currentStrategy.gwavPeriod);
+        uint volSpot = getVols(_toDynamic(strikeId))[0];
+
+        uint volDiff = (volGWAV >= volSpot)
+            ? volGWAV - volSpot
+            : volSpot - volGWAV;
+
+        return isValid = volDiff < currentStrikeStrategy.maxVolVariance;
+    }
+
+    /**
+     * @dev check if the expiry of the board is valid according to the strategy
+     */
+    function _isValidExpiry(uint expiry) internal view returns (bool isValid) {
+        uint secondsToExpiry = _getSecondsToExpiry(expiry);
+
+        isValid = (secondsToExpiry >= currentStrategy.minTimeToExpiry &&
+            secondsToExpiry <= currentStrategy.maxTimeToExpiry);
+    }
+
+    /////////////////////////////
+    // Trade Parameter Helpers //
+    /////////////////////////////
+
+    function _getFullCollateral(
+        uint strikePrice,
+        uint amount,
+        uint _optionType
+    ) internal view returns (uint fullCollat) {
+        // calculate required collat based on collatBuffer and collatPercent
+        fullCollat = _isBaseCollat(_optionType)
+            ? amount
+            : amount.multiplyDecimal(strikePrice);
+    }
+
+    /**
+     * @dev get amount of collateral needed for shorting {amount} of strike, according to the strategy
+     */
+    function _getBufferCollateral(
+        uint strikePrice,
+        uint expiry,
+        uint spotPrice,
+        uint amount,
+        uint _optionType
+    ) internal view returns (uint) {
+        uint minCollat = getMinCollateral(
+            OptionType(_optionType),
+            strikePrice,
+            expiry,
+            spotPrice,
+            amount
+        );
+        require(minCollat > 0, "min collat must be more");
+        uint minCollatWithBuffer = minCollat.multiplyDecimal(
+            currentStrategy.collatBuffer
+        );
+
+        uint fullCollat = _getFullCollateral(strikePrice, amount, _optionType);
+        require(fullCollat > 0, "fullCollat collat must be more");
+
+        return _min(minCollatWithBuffer, fullCollat);
+    }
+
+    function _getPremiumLimit(
+        Strike memory strike,
+        bool isMin,
+        StrikeTrade memory currentStrikeTrade
     ) public view returns (uint limitPremium) {
-    ExchangeRateParams memory exchangeParams = getExchangeParams();
-    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeTrade.optionType];
+        ExchangeRateParams memory exchangeParams = getExchangeParams();
+        StrikeStrategyDetail
+            memory currentStrikeStrategy = currentStrikeStrategies[
+                currentStrikeTrade.optionType
+            ];
 
-    uint limitVol = isMin ? currentStrikeStrategy.minVol : currentStrikeStrategy.maxVol;
-    (uint minCallPremium, uint minPutPremium) = getPurePremium(
-      _getSecondsToExpiry(strike.expiry),
-      limitVol,
-      exchangeParams.spotPrice,
-      strike.strikePrice
-    );
+        uint limitVol = isMin
+            ? currentStrikeStrategy.minVol
+            : currentStrikeStrategy.maxVol;
+        (uint minCallPremium, uint minPutPremium) = getPurePremium(
+            _getSecondsToExpiry(strike.expiry),
+            limitVol,
+            exchangeParams.spotPrice,
+            strike.strikePrice
+        );
 
-    limitPremium = _isCall(currentStrikeStrategy.optionType)
-      ? minCallPremium.multiplyDecimal(currentStrikeTrade.size)
-      : minPutPremium.multiplyDecimal(currentStrikeTrade.size);
-  }
-
-  /**
-   * @dev use latest optionMarket delta cutoff to determine whether trade delta is out of bounds
-   */
-  function _isOutsideDeltaCutoff(uint strikeId) internal view returns (bool) {
-    MarketParams memory marketParams = getMarketParams();
-    int callDelta = getDeltas(_toDynamic(strikeId))[0];
-    return callDelta > (int(DecimalMath.UNIT) - marketParams.deltaCutOff) || callDelta < marketParams.deltaCutOff;
-  }
-
-  //////////
-  // View //
-  //////////
-
-  function getStrikeOptionTypes() external view returns (
-      uint[] memory strikes, 
-      uint[] memory optionTypes, 
-      uint[] memory positionIds
-    ) {
-      uint len = activeStrikeIds.length; 
-      strikes = new uint[](len); 
-      optionTypes = new uint[](len); 
-      positionIds = new uint[](len); 
-
-      for(uint i = 0; i < len; i++) {
-        uint strikeId = activeStrikeIds[i];
-        strikes[i] = strikeId;
-        uint optionType = lastTradeOptionType[strikeId];
-        optionTypes[i] = optionType; 
-        uint positionId = strikeToPositionId[strikeId];
-        positionIds[i] = positionId;
-      }
-
-    return (strikes, optionTypes, positionIds); 
-  }
-
-  function getCurrentStrikeTrades() external view returns (StrikeTrade[] memory strikeTrades) {
-    uint len = currentStrikeTrades.length; 
-    strikeTrades = new StrikeTrade[](len); 
-
-    for(uint i = 0; i < len; i++) {
-      StrikeTrade memory strikeTrade = currentStrikeTrades[i];
-      strikeTrades[i] = strikeTrade;
+        limitPremium = _isCall(currentStrikeStrategy.optionType)
+            ? minCallPremium.multiplyDecimal(currentStrikeTrade.size)
+            : minPutPremium.multiplyDecimal(currentStrikeTrade.size);
     }
 
-    return strikeTrades; 
-  }
-  
-  //////////
-  // Misc //
-  //////////
-
-  function _isBaseCollat(uint _optionType) internal view returns (bool isBase) {
-    isBase = (OptionType(_optionType) == OptionType.SHORT_CALL_BASE) ? true : false;
-  }
-
-  function _isCall(uint _optionType) public view returns (bool isCall) {
-    isCall = (OptionType(_optionType) == OptionType.SHORT_PUT_QUOTE) ? false : true;
-  }
-
-  function _isLong(uint _optionType) public view returns (bool isLong) {
-    if(OptionType(_optionType) == OptionType.LONG_CALL ||  OptionType(_optionType) == OptionType.LONG_PUT) {
-      isLong = true; 
+    /**
+     * @dev use latest optionMarket delta cutoff to determine whether trade delta is out of bounds
+     */
+    function _isOutsideDeltaCutoff(uint strikeId) internal view returns (bool) {
+        MarketParams memory marketParams = getMarketParams();
+        int callDelta = getDeltas(_toDynamic(strikeId))[0];
+        return
+            callDelta > (int(DecimalMath.UNIT) - marketParams.deltaCutOff) ||
+            callDelta < marketParams.deltaCutOff;
     }
-  }
 
-  function _getSecondsToExpiry(uint expiry) internal view returns (uint) {
-    require(block.timestamp <= expiry, "timestamp expired");
-    return expiry - block.timestamp;
-  }
+    //////////
+    // View //
+    //////////
 
-  function _abs(int val) internal pure returns (uint) {
-    return val >= 0 ? uint(val) : uint(-val);
-  }
+    function getStrikeOptionTypes()
+        external
+        view
+        returns (
+            uint[] memory strikes,
+            uint[] memory optionTypes,
+            uint[] memory positionIds
+        )
+    {
+        uint len = activeStrikeIds.length;
+        strikes = new uint[](len);
+        optionTypes = new uint[](len);
+        positionIds = new uint[](len);
 
-  function _min(uint x, uint y) internal pure returns (uint) {
-    return (x < y) ? x : y;
-  }
+        for (uint i = 0; i < len; i++) {
+            uint strikeId = activeStrikeIds[i];
+            strikes[i] = strikeId;
+            uint optionType = lastTradeOptionType[strikeId];
+            optionTypes[i] = optionType;
+            uint positionId = strikeToPositionId[strikeId];
+            positionIds[i] = positionId;
+        }
 
-  function _max(uint x, uint y) internal pure returns (uint) {
-    return (x > y) ? x : y;
-  }
+        return (strikes, optionTypes, positionIds);
+    }
 
-  // temporary fix - eth core devs promised Q2 2022 fix
-  function _toDynamic(uint val) internal pure returns (uint[] memory dynamicArray) {
-    dynamicArray = new uint[](1);
-    dynamicArray[0] = val;
-  }
+    function getCurrentStrikeTrades()
+        external
+        view
+        returns (StrikeTrade[] memory strikeTrades)
+    {
+        uint len = currentStrikeTrades.length;
+        strikeTrades = new StrikeTrade[](len);
+
+        for (uint i = 0; i < len; i++) {
+            StrikeTrade memory strikeTrade = currentStrikeTrades[i];
+            strikeTrades[i] = strikeTrade;
+        }
+
+        return strikeTrades;
+    }
+
+    //////////
+    // Misc //
+    //////////
+
+    function _isBaseCollat(uint _optionType)
+        internal
+        view
+        returns (bool isBase)
+    {
+        isBase = (OptionType(_optionType) == OptionType.SHORT_CALL_BASE)
+            ? true
+            : false;
+    }
+
+    function _isCall(uint _optionType) public view returns (bool isCall) {
+        isCall = (OptionType(_optionType) == OptionType.SHORT_PUT_QUOTE)
+            ? false
+            : true;
+    }
+
+    function _isLong(uint _optionType) public view returns (bool isLong) {
+        if (
+            OptionType(_optionType) == OptionType.LONG_CALL ||
+            OptionType(_optionType) == OptionType.LONG_PUT
+        ) {
+            isLong = true;
+        }
+    }
+
+    function _getSecondsToExpiry(uint expiry) internal view returns (uint) {
+        require(block.timestamp <= expiry, "timestamp expired");
+        return expiry - block.timestamp;
+    }
+
+    function _abs(int val) internal pure returns (uint) {
+        return val >= 0 ? uint(val) : uint(-val);
+    }
+
+    function _min(uint x, uint y) internal pure returns (uint) {
+        return (x < y) ? x : y;
+    }
+
+    function _max(uint x, uint y) internal pure returns (uint) {
+        return (x > y) ? x : y;
+    }
+
+    // temporary fix - eth core devs promised Q2 2022 fix
+    function _toDynamic(uint val)
+        internal
+        pure
+        returns (uint[] memory dynamicArray)
+    {
+        dynamicArray = new uint[](1);
+        dynamicArray[0] = val;
+    }
 }
