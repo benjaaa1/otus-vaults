@@ -79,9 +79,20 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     uint period; // 15 min 1 hour 4 hours 12 hours 24 hours hedge attempt allowed once per period
   }
 
+  struct DeltaHedgeDetail {
+    uint maxNetDelta; // 3 if current net delta is 4, need to get it to 3 again by buying = > 1 share of base asset - keeper will keep track of this and will be rechecked (net delta) here
+    uint minNetDelta; // -3 if current net delta is -4, need to get it to -3 or under by selling = > 1 share of base asset - keeper will keep track of this and will be rechecked here
+    uint minTimestamp;
+    uint hourPeriod;
+    uint maxHedgeAttempts;
+  }
+
   StrikeTrade[] public currentStrikeTrades;
   // Round settings
   StrategyDetail public currentStrategy;
+
+  // Delta hedge strategy
+  DeltaHedgeDetail public deltaHedgeStrategy;
   // option type => strike strategy
   mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
   uint public immutable StrikeStrategiesPossible = 4;

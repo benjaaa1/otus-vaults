@@ -488,48 +488,16 @@ contract Strategy is StrategyBase {
 
   /**
    * @notice delta hedging using synthetix futures based on strategy
-   * @param optionType option type - direction to hedge
-   * @param lockedAmountLeft Use reserved amount for hedging
+   * @param hedgeFunds Use reserved amount for hedging
    * @param hedgeAttempts current hedge attempts in hedging
    */
-
-  Hedge How?	Hedge When Delta Over *Number*	8
-Hedge When?	Starting Time	0 hours
-Hedge Every?	By Hours	6 hours
-Hedge Times?	The Attempts Allowed	6
-
-  struct DeltaHedgeDetail {
-    uint maxNetDelta; // 3 if current net delta is 4, need to get it to 3 again by buying = > 1 share of base asset - keeper will keep track of this and will be rechecked (net delta) here
-    uint minNetDelta; // -3 if current net delta is -4, need to get it to -3 or under by selling = > 1 share of base asset - keeper will keep track of this and will be rechecked here
-    uint minTimestamp; 
-    uint hourPeriod; 
-    uint maxHedgeAttempts; 
-  }
-  function _deltaHedge(
-    uint netDelta, 
-    uint optionType,
-    uint hedgeFunds,
-    uint hedgeAttempts
-  ) external onlyVault {
+  function _deltaHedge(uint hedgeFunds, uint hedgeAttempts) external onlyVault {
     // need to track by optiontype
-    DeltaHedgeDetail memory deltaHedgeStrategy = deltaHedgeStrategies[optionType];
     require(deltaHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
 
-    // check futures positions
-    // through kwenta
+    // transfer funds to synthetix futures margin
     if (hedgeAttempts == 0) {
-      // first time hedging
-      require(
-        // need to use kwenta / synthetix susd collateralAssetTest
-        IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(
-          address(vault),
-          address(this),
-          lockedAmountLeft
-        ),
-        "susd transfer to from vault failed"
-      );
-
-      _transferMargin(int(hedgeFunds));
+      _transferFunds(hedgeFunds);
     }
 
     // check current hedge balance in synthetix
@@ -538,10 +506,10 @@ Hedge Times?	The Attempts Allowed	6
 
     uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
 
-    uint currentNetDelta = _checkNetDelta(); // 3.8 or -3.2 and spot price is 2000 usd for eth, then i need 7800 usd in total + fees 
-    // if margin total is around 3000 usd and need 7800 => 7800 / 3000 = 2.6x leverage is neeeded 
-    int fundsRequiredSUSD = currentNetDelta.multiplyDecimal(spotPrice); // 3.8 delta * 2000 spot price = 7800 / marginRemaining (5000) == ; 
-    int size = fundsRequiredSUSD.multiplyDecimal(marginRemaining);
+    int currentNetDelta = _checkNetDelta(); // 3.8 or -3.2 and spot price is 2000 usd for eth, then i need 7800 usd in total + fees
+    // if margin total is around 3000 usd and need 7800 => 7800 / 3000 = 2.6x leverage is neeeded
+    int fundsRequiredSUSD = currentNetDelta.multiplyDecimal(int(spotPrice)); // 3.8 delta * 2000 spot price = 7800 / marginRemaining (5000) == ;
+    int size = fundsRequiredSUSD.multiplyDecimal(int(marginRemaining));
 
     _modifyPosition(size);
   }
@@ -565,22 +533,9 @@ Hedge Times?	The Attempts Allowed	6
     StrikeHedgeDetail memory currentHedgeStrategy = currentHedgeStrategies[optionType];
     require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
 
-    // check futures positions
-
-    // through kwenta
+    // transfer funds to synthetix futures margin
     if (hedgeAttempts == 0) {
-      // first time hedging
-      require(
-        // need to use kwenta / synthetix susd collateralAssetTest
-        IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(
-          address(vault),
-          address(this),
-          lockedAmountLeft
-        ),
-        "susd transfer to from vault failed"
-      );
-
-      _transferMargin(int(lockedAmountLeft));
+      _transferFunds(lockedAmountLeft);
     }
 
     // check current hedge balance in synthetix
@@ -619,32 +574,40 @@ Hedge Times?	The Attempts Allowed	6
    *  SYNTHETIX FUTURES HEDGING HELPER
    *****************************************************/
 
-  function _checkNetDelta() internal return (uint netDelta) {
-
-    uint[] positionIds = new uint[](len);
+  function _checkNetDelta() internal returns (int netDelta) {
     uint _len = activeStrikeIds.length;
+    uint[] memory positionIds = new uint[](_len);
 
     for (uint i = 0; i < _len; i++) {
+      uint strikeId = activeStrikeIds[i];
       uint positionId = strikeToPositionId[strikeId];
       positionIds[i] = positionId;
-
     }
 
     OptionPosition[] memory positions = getPositions(positionIds);
     uint _positionsLen = positions.length;
-    uint[] strikeIds = new uint[](_positionsLen);
+    uint[] memory strikeIds = new uint[](_positionsLen);
 
     for (uint i = 0; i < _positionsLen; i++) {
       strikeIds[i] = positions[i].strikeId;
     }
 
-    int[] deltas = getDeltas(strikeIds); 
-
-    int netDelta;
+    int[] memory deltas = getDeltas(strikeIds);
 
     for (uint i = 0; i < deltas.length; i++) {
-      netDelta =+ deltas[i];
+      netDelta = netDelta + deltas[i];
     }
+  }
 
+  function _transferFunds(uint amount) internal {
+    // check futures positions
+    // first time hedging
+    require(
+      // synthetix susd collateralAssetTest
+      IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(vault), address(this), amount),
+      "susd transfer to from vault failed"
+    );
+
+    _transferMargin(int(amount));
   }
 }
