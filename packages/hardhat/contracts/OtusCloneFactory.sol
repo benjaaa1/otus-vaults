@@ -33,10 +33,6 @@ interface IStrategy {
   ) external;
 }
 
-interface IL2DepositMover {
-  function initialize(address _owner, address _vault) external;
-}
-
 /**
  * @title OtusCloneFactory
  * @author Otus
@@ -47,8 +43,6 @@ contract OtusCloneFactory {
   address public immutable otusVault;
   /// @notice Stores the Strategy contract implementation address
   address public immutable strategy;
-  /// @notice Stores the Strategy contract implementation address
-  address public immutable l2DepositMover;
 
   address public immutable otusController;
 
@@ -61,31 +55,49 @@ contract OtusCloneFactory {
 
   /**
    * @notice Initializes the contract with immutable variables
+   * @param _otusVault implementation vault contract address
+   * @param _strategyAddress implementation strategy contract address
+   * @param _otusController controller contract address
    */
   constructor(
     address _otusVault,
     address _strategyAddress,
-    address _l2DepositMover,
     address _otusController
   ) {
     otusVault = _otusVault;
     strategy = _strategyAddress;
-    l2DepositMover = _l2DepositMover;
     otusController = _otusController;
   }
 
+  /**
+   * @notice Clones vault for user
+   * @return otusVaultClone proxy vault contract address
+   */
   function cloneVault() public returns (address otusVaultClone) {
     require(msg.sender == otusController, "Not allowed to create");
     otusVaultClone = Clones.clone(otusVault);
     emit NewVaultClone(otusVaultClone, msg.sender);
   }
 
+  /**
+   * @notice Clones strategy for user
+   * @return strategyClone proxy strategy contract address
+   */
   function cloneStrategy() public returns (address strategyClone) {
     require(msg.sender == otusController, "Not allowed to create");
     strategyClone = Clones.clone(strategy);
     emit NewStrategyClone(strategyClone, msg.sender);
   }
 
+  /**
+   * @notice Initialize cloned vault
+   * @param _otusVaultClone cloned vault
+   * @param _owner address
+   * @param _vaultInfo vault basic info
+   * @param _vaultParams vault share info
+   * @param _strategy address of clone
+   * @param _keeper address
+   */
   function _initializeClonedVault(
     address _otusVaultClone,
     address _owner,
@@ -99,7 +111,12 @@ contract OtusCloneFactory {
   }
 
   /**
-   * @notice Clones strategy contract if supervisor has a vault created
+   * @notice Clones strategy contract
+   * @param _owner address
+   * @param _vault address
+   * @param _strategy address
+   * @param marketAddresses lyra option market details addresses
+   * @param _currentStrategy strategy settings
    */
   function _initializeClonedStrategy(
     address _owner,

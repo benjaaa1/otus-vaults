@@ -106,6 +106,7 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
    * @param _owner _owner address
    * @param _vault _vault address
    * @param marketAddresses marketAddresses
+   * @param _currentStrategy strategy settings
    */
   function baseInitialize(
     address _owner,

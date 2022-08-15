@@ -94,6 +94,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   /************************************************
    *  CONSTRUCTOR & INITIALIZATION
    ***********************************************/
+
   constructor(uint _roundDuration) {
     uint _roundPerYear = uint(365 days).mul(Vault.FEE_MULTIPLIER).div(_roundDuration);
     roundPerYear = _roundPerYear;

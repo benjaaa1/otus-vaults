@@ -59,6 +59,12 @@ contract OtusController is Ownable {
    *  CONSTRUCTOR & INITIALIZATION
    ***********************************************/
 
+  /**
+   * @notice Assign lyra registry and snx market managers
+   * @param _lyraRegistry Lyra registry address
+   * @param _futuresMarketManager Synthetix futures market manager address
+   * @param _keeper keeper address
+   */
   constructor(
     address _lyraRegistry,
     address _futuresMarketManager,
@@ -69,26 +75,21 @@ contract OtusController is Ownable {
     keeper = _keeper;
   }
 
+  /**
+   * @notice set clone factory address
+   * @param _otusCloneFactory address
+   */
   function setOtusCloneFactory(address _otusCloneFactory) public onlyOwner {
     require(_otusCloneFactory != address(0), "Must be a contract address");
     otusCloneFactory = _otusCloneFactory;
   }
 
-  // /**
-  // * @notice Create Delta Neutral Vault controlled
-  // */
-  // function createDeltraNeutralVault(
-  //   address market,
-  //   Vault.VaultInformation memory _vaultInfo,
-  //   Vault.VaultParams memory _vaultParams,
-  //   address keeper
-  // ) {
-  //   // create vault
-  //   address vault = IOtusCloneFactory(otusCloneFactory).cloneVault();
-  // }
-
   /**
    * @notice Create Options Vault controlled
+   * @param _optionMarket address of asset lyra option market
+   * @param _vaultInfo vault information
+   * @param _vaultParams vault shares information
+   * @param currentStrategy vault strategy settings
    */
   function createOptionsVault(
     address _optionMarket,
@@ -139,23 +140,43 @@ contract OtusController is Ownable {
 
   /**
    * @notice Set options keeper
+   * @param _keeper address
    */
   function setKeeper(address _keeper) external onlyOwner {
     keeper = _keeper;
   }
 
+  /**
+   * @notice Set futures markets
+   * @param _baseAsset address of base
+   * @param _synth asset name in bytes32
+   */
   function setFuturesMarkets(address _baseAsset, bytes32 _synth) external {
     futuresMarketByAsset[_baseAsset] = futuresMarketManager.marketForKey(_synth);
   }
 
+  /**
+   * @notice Get futures market by synth name
+   * @param _synth asset name in bytes32
+   * @return futuresMarket
+   */
   function getFuturesMarket(bytes32 _synth) public view returns (address futuresMarket) {
     futuresMarket = futuresMarketManager.marketForKey(_synth);
   }
 
+  /**
+   * @notice Get futures market by base address
+   * @param _baseAsset address of base
+   * @return futuresMarket
+   */
   function getFuturesMarketByBaseAsset(address _baseAsset) public view returns (address futuresMarket) {
     futuresMarket = futuresMarketByAsset[_baseAsset];
   }
 
+  /**
+   * @notice Set option market details used by vaults/strategies
+   * @param _optionMarket address of base optionmarket
+   */
   function setOptionMarketDetails(address _optionMarket) public {
     (
       LiquidityPool liquidityPool,
@@ -185,10 +206,20 @@ contract OtusController is Ownable {
     marketAddress[_optionMarket] = marketAddresses;
   }
 
+  /**
+   * @notice Get option market details used by vaults/strategies by optionmarket
+   * @param _optionMarket address of base optionmarket
+   * @return mad addresses by optionmarket
+   */
   function getOptionMarketDetails(address _optionMarket) public view returns (address[] memory mad) {
     mad = marketAddress[_optionMarket];
   }
 
+  /**
+   * @notice Get vaults and strategies by owner
+   * @return userVaults vault owned
+   * @return userStrategies vault's strategies
+   */
   function getUserManagerDetails() public view returns (address[] memory userVaults, address[] memory userStrategies) {
     address _msgSender = msg.sender;
     userVaults = _getVaults(_msgSender);
