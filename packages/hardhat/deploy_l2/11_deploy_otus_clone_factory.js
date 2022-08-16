@@ -7,7 +7,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   const otusVault = await ethers.getContract("OtusVault");
   const strategy = await ethers.getContract("Strategy");
-  const l2DepositMover = await ethers.getContract("L2DepositMover");
   const otusController = await ethers.getContract("OtusController");
 
   await deploy("OtusCloneFactory", {
@@ -16,7 +15,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     args: [ 
       otusVault.address, 
       strategy.address, 
-      l2DepositMover.address,
       otusController.address
     ],
     log: true,

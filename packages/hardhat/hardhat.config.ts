@@ -156,6 +156,9 @@ module.exports = {
       default: 0, // here this will by default take the first account as deployer
     },
   },
+  mocha: {
+    timeout: 1000000000
+  },
   etherscan: {
     apiKey: {
       mainnet: "582EMV38X8492YGM6IIB22YVXIBFDB3RU5",
