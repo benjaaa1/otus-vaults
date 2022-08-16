@@ -147,7 +147,7 @@ contract Strategy is StrategyBase {
    * @notice Set boardId for vault
    * @param boardId lyra board id
    */
-  function setBoard(uint boardId) external {
+  function setBoard(uint boardId) external onlyVault {
     require(boardId > 0, "Board Id incorrect");
     Board memory board = getBoard(boardId);
     require(_isValidExpiry(board.expiry), "invalid board");
@@ -168,7 +168,7 @@ contract Strategy is StrategyBase {
     onlyVault
     returns (
       uint positionId,
-      uint premiumReceived,
+      uint premium,
       uint capitalUsed
     )
   {
@@ -182,6 +182,7 @@ contract Strategy is StrategyBase {
     require(_isValidVolVariance(strikeId, optionType), "vol variance exceeded");
 
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
+
     require(isValidStrike(strike, optionType), "invalid strike");
 
     if (_isLong(currentStrikeStrategy.optionType)) {
@@ -192,7 +193,7 @@ contract Strategy is StrategyBase {
         "collateral transfer from vault failed"
       );
 
-      (positionId, premiumReceived) = _buyStrike(strike, size, currentStrikeStrategy, maxPremium);
+      (positionId, premium) = _buyStrike(strike, size, currentStrikeStrategy, maxPremium);
 
       capitalUsed = maxPremium;
     } else {
@@ -203,7 +204,7 @@ contract Strategy is StrategyBase {
         "collateral transfer from vault failed"
       );
 
-      (positionId, premiumReceived) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, _strike);
+      (positionId, premium) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, _strike);
 
       capitalUsed = collateralToAdd;
     }
@@ -578,6 +579,7 @@ contract Strategy is StrategyBase {
   /*****************************************************
    *  SYNTHETIX FUTURES HEDGING
    *****************************************************/
+
   function withdrawSUSDSNX() public {
     uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
     IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(this), msg.sender, balance);

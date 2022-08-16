@@ -24,6 +24,16 @@ contract OtusVault is BaseVault {
   using SafeMath for uint;
 
   /************************************************
+   *  ENUMS
+   ***********************************************/
+
+  enum HEDGETYPE {
+    SIMPLE_HEDGE,
+    STATIC_DELTA_HEDGE,
+    DYNAMIC_DELTA_HEDGE
+  }
+
+  /************************************************
    *  IMMUTABLES & CONSTANTS
    ***********************************************/
   address public strategy;
@@ -58,7 +68,9 @@ contract OtusVault is BaseVault {
 
   event Trade(address indexed vault, uint[] positionId, uint16 roundId, uint premium);
 
-  event RoundStarted(uint16 roundId, uint104 lockAmount);
+  event Hedge(HEDGETYPE _hedgeType);
+
+  event RoundStarted(uint16 roundId, uint104 lockAmount, uint boardId);
 
   event RoundClosed(uint16 roundId, uint104 lockAmount);
 
@@ -190,7 +202,7 @@ contract OtusVault is BaseVault {
 
     lastQueuedWithdrawAmount = uint128(queuedWithdrawAmount);
 
-    emit RoundStarted(vaultState.round, uint104(lockedBalance));
+    emit RoundStarted(vaultState.round, uint104(lockedBalance), boardId);
   }
 
   /**
@@ -206,15 +218,15 @@ contract OtusVault is BaseVault {
 
     uint allCapitalUsed;
     uint positionId;
-    uint premiumReceived;
+    uint premium;
     uint capitalUsed;
     uint len = _strikes.length;
     positionIds = new uint[](len);
 
     for (uint i = 0; i < len; i++) {
       StrategyBase.StrikeTrade memory _trade = _strikes[i];
-      (positionId, premiumReceived, capitalUsed) = IStrategy(strategy).doTrade(_trade);
-      roundPremiumCollected += premiumReceived;
+      (positionId, premium, capitalUsed) = IStrategy(strategy).doTrade(_trade);
+      roundPremiumCollected += premium;
       allCapitalUsed += capitalUsed;
       positionIds[i] = positionId;
       hasFuturesHedge = _trade.futuresHedge;
@@ -224,7 +236,7 @@ contract OtusVault is BaseVault {
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
     vaultState.tradesExecuted = true;
 
-    emit Trade(address(this), positionIds, vaultState.round, premiumReceived);
+    emit Trade(address(this), positionIds, vaultState.round, roundPremiumCollected);
   }
 
   /**
@@ -234,6 +246,8 @@ contract OtusVault is BaseVault {
    */
   function reducePosition(uint positionId, uint closeAmount) external onlyKeeper {
     IStrategy(strategy).reducePosition(positionId, closeAmount);
+
+    emit PositionReduced(positionId, closeAmount);
   }
 
   /************************************************
@@ -257,6 +271,8 @@ contract OtusVault is BaseVault {
     // track by option type hedge attempts
     hedgeAttemptsByOptionType[optionType] = hedgeAttempts + 1;
     activeHedgeByOptionType[optionType] = true;
+
+    emit Hedge(HEDGETYPE.SIMPLE_HEDGE);
   }
 
   /**
@@ -271,6 +287,8 @@ contract OtusVault is BaseVault {
     }
 
     IStrategy(strategy)._deltaHedge(deltaHedgeAttempts);
+
+    emit Hedge(HEDGETYPE.DYNAMIC_DELTA_HEDGE);
   }
 
   /**
@@ -286,6 +304,8 @@ contract OtusVault is BaseVault {
     }
 
     IStrategy(strategy)._staticDeltaHedge(deltaHedgeAttempts, deltaToHedge);
+
+    emit Hedge(HEDGETYPE.STATIC_DELTA_HEDGE);
   }
 
   /**

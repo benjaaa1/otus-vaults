@@ -130,7 +130,5 @@ contract OtusCloneFactory {
     require(_vault != address(0), "_vault must be non zero address");
 
     IStrategy(_strategy).initialize(_owner, _vault, marketAddresses, _currentStrategy);
-
-    emit NewStrategyClone(_strategy, msg.sender);
   }
 }
