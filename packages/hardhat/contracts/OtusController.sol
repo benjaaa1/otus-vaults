@@ -55,7 +55,7 @@ contract OtusController is Ownable {
    *  EVENTS
    ***********************************************/
 
-  event VaultCreated(address indexed user, address indexed vault, address strategy);
+  event VaultCreated(uint indexed vaultId, address indexed user, address indexed vault, address strategy);
 
   /************************************************
    *  CONSTRUCTOR & INITIALIZATION
@@ -135,11 +135,11 @@ contract OtusController is Ownable {
       currentStrategy
     );
 
-    nextVaultId++;
+    uint vaultId = nextVaultId++;
 
     _addVault(vault);
 
-    emit VaultCreated(msg.sender, vault, strategy);
+    emit VaultCreated(vaultId, msg.sender, vault, strategy);
   }
 
   /**
