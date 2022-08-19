@@ -49,6 +49,8 @@ contract OtusController is Ownable {
   mapping(address => bool) public vaultsStatus;
   address[] public vaultsList;
 
+  uint internal nextVaultId = 1;
+
   /************************************************
    *  EVENTS
    ***********************************************/
@@ -132,6 +134,8 @@ contract OtusController is Ownable {
       marketAddresses,
       currentStrategy
     );
+
+    nextVaultId++;
 
     _addVault(vault);
 
