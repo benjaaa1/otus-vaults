@@ -1,0 +1,58 @@
+type Global @entity {
+  id: ID!
+  vaults: [Vault!]! @dervivedFrom(field: "global")
+}
+
+type Vault @entity {
+  id: ID!
+  round: Int!
+  isActive: boolean!
+  isPublic: boolean!
+  strategy: Bytes!
+  totalYieldEarned: BigInt!
+  depositsAndWithdrawals: [UserAction!]! @dervivedFrom(field:"UserAction")
+  global: Global!
+}
+
+type VaultTrade @entity {
+  id: ID!
+  type: String!
+  optionType: String!
+  positions: [Int!]!
+  txhash: Bytes!
+  strikePrice: BigInt!
+  expiry: BigInt!
+  openedAt: BigInt!
+  premiumEarned: BigInt
+  closedAt: BigInt
+  timestamp: BigInt!
+  size: BigInt!
+}
+
+type UserPortfolio @entity {
+  id: ID!
+  account: Bytes!
+  balance: BigInt! 
+  yieldEarned: BigInt!
+  depositsAndWithdrawals: [UserAction!]! @dervivedFrom(field:"UserAction")
+}
+
+type UserAction @entity {
+  id: ID!
+  timestamp: Int!
+  isDeposit: Boolean
+  amount: BigInt!
+  vault: Vault!
+  userPortfolio: UserPortfolio!
+}
+
+type Manager @entity {
+  id: ID!
+  actions: [ManagerAction!]! @dervivedFrom(field:"ManagerAction");
+}
+
+type ManagerAction @entity {
+  id: ID!
+  trade: VaultTrade
+  Manager: Manager!
+}
