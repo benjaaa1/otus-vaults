@@ -68,7 +68,9 @@ contract OtusVault is BaseVault {
 
   event Trade(address indexed vault, uint[] positionId, uint16 roundId, uint premium);
 
-  event Hedge(HEDGETYPE _hedgeType);
+  event Hedge(HEDGETYPE _hedgeType, uint amount);
+
+  event PositionReduced(uint positionId, uint amount);
 
   event RoundStarted(uint16 roundId, uint104 lockAmount, uint boardId);
 
@@ -173,7 +175,7 @@ contract OtusVault is BaseVault {
    */
   function _clearHedges() internal {
     // withdraw all margin from futures market
-    // _strategy.closeHedgeEndOfRound();
+    IStrategy(strategy).closeHedgeEndOfRound();
 
     for (uint i = 3; i <= 4; i++) {
       delete hedgeAttemptsByOptionType[i];
@@ -265,14 +267,18 @@ contract OtusVault is BaseVault {
 
     uint hedgeAttempts = hedgeAttemptsByOptionType[optionType];
 
+    // transfer funds to synthetix futures margin
+    if (hedgeAttempts == 0) {
+      _transferFunds(reservedHedgeFunds);
+    }
     // locked amout left has to be
-    IStrategy(strategy)._hedge(optionType, reservedHedgeFunds, hedgeAttempts);
+    uint amount = IStrategy(strategy)._hedge(optionType, hedgeAttempts);
 
     // track by option type hedge attempts
     hedgeAttemptsByOptionType[optionType] = hedgeAttempts + 1;
     activeHedgeByOptionType[optionType] = true;
 
-    emit Hedge(HEDGETYPE.SIMPLE_HEDGE);
+    emit Hedge(HEDGETYPE.SIMPLE_HEDGE, amount);
   }
 
   /**
@@ -286,9 +292,9 @@ contract OtusVault is BaseVault {
       IStrategy(strategy)._transferFunds(reservedHedgeFunds);
     }
 
-    IStrategy(strategy)._deltaHedge(deltaHedgeAttempts);
+    uint amount = IStrategy(strategy)._deltaHedge(deltaHedgeAttempts);
 
-    emit Hedge(HEDGETYPE.DYNAMIC_DELTA_HEDGE);
+    emit Hedge(HEDGETYPE.DYNAMIC_DELTA_HEDGE, amount);
   }
 
   /**
@@ -303,9 +309,9 @@ contract OtusVault is BaseVault {
       IStrategy(strategy)._transferFunds(reservedHedgeFunds);
     }
 
-    IStrategy(strategy)._staticDeltaHedge(deltaHedgeAttempts, deltaToHedge);
+    uint amount = IStrategy(strategy)._staticDeltaHedge(deltaHedgeAttempts, deltaToHedge);
 
-    emit Hedge(HEDGETYPE.STATIC_DELTA_HEDGE);
+    emit Hedge(HEDGETYPE.STATIC_DELTA_HEDGE, amount);
   }
 
   /**

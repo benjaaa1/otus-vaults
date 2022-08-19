@@ -160,7 +160,7 @@ contract Strategy is StrategyBase {
    * @dev sell a fix aomunt of options and collect premium or buy a fix amount and pay the price
    * @param _strike lyra strike details to trade
    * @return positionId
-   * @return premiumReceived
+   * @return premium
    * @return capitalUsed
    */
   function doTrade(StrikeTrade memory _strike)
@@ -527,6 +527,9 @@ contract Strategy is StrategyBase {
     int size = fundsRequiredSUSD.multiplyDecimal(int(marginRemaining));
 
     _modifyPosition(size);
+
+    return fundsRequiredSUSD;
+
   }
 
   /*****************************************************
@@ -540,26 +543,23 @@ contract Strategy is StrategyBase {
    */
   function _hedge(
     uint optionType,
-    uint reservedHedgeFunds,
     uint hedgeAttempts
-  ) external onlyVault {
+  ) external onlyVault returns (uint totalHedge) {
     // need to track by optiontype
     StrikeHedgeDetail memory currentHedgeStrategy = currentHedgeStrategies[optionType];
     require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
-
-    // transfer funds to synthetix futures margin
-    if (hedgeAttempts == 0) {
-      _transferFunds(reservedHedgeFunds);
-    }
 
     // check current hedge balance in synthetix
     (uint marginRemaining, bool invalid) = _remainingMargin();
     require(marginRemaining > 0, "Remaining margin is 0");
 
     uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
-    uint size = (marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize)).divideDecimal(spotPrice);
+    uint totalHedge = marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize); 
+    uint size = (totalHedge).divideDecimal(spotPrice);
 
     _modifyPosition(-int(size));
+
+    return totalHedge;
   }
 
   /*****************************************************

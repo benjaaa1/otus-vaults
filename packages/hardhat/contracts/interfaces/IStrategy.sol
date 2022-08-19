@@ -32,4 +32,6 @@ interface IStrategy {
   function _transferFunds(uint reservedHedgeFunds) external;
 
   function _closeHedge() external;
+
+  function closeHedgeEndOfRound() external;
 }
