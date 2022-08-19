@@ -514,7 +514,7 @@ contract Strategy is StrategyBase {
    * @param deltaHedgeAttempts current hedge attempts in hedging
    * @param deltaToHedge set by user
    */
-  function _staticDeltaHedge(uint deltaHedgeAttempts, int deltaToHedge) external onlyVault {
+  function _staticDeltaHedge(uint deltaHedgeAttempts, int deltaToHedge) external onlyVault returns (int fundsRequiredSUSD) {
     require(deltaHedgeStrategy.maxHedgeAttempts <= deltaHedgeAttempts);
     // check current hedge balance in synthetix
     (uint marginRemaining, bool invalid) = _remainingMargin();
@@ -523,7 +523,7 @@ contract Strategy is StrategyBase {
     uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
 
     // 3.8 delta * 2000 spot price = 7800 / marginRemaining (5000) == ;
-    int fundsRequiredSUSD = deltaToHedge.multiplyDecimal(int(spotPrice));
+    fundsRequiredSUSD = deltaToHedge.multiplyDecimal(int(spotPrice));
     int size = fundsRequiredSUSD.multiplyDecimal(int(marginRemaining));
 
     _modifyPosition(size);
@@ -544,7 +544,7 @@ contract Strategy is StrategyBase {
   function _hedge(
     uint optionType,
     uint hedgeAttempts
-  ) external onlyVault returns (uint totalHedge) {
+  ) external onlyVault returns (uint totalFunds) {
     // need to track by optiontype
     StrikeHedgeDetail memory currentHedgeStrategy = currentHedgeStrategies[optionType];
     require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
@@ -554,12 +554,16 @@ contract Strategy is StrategyBase {
     require(marginRemaining > 0, "Remaining margin is 0");
 
     uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
-    uint totalHedge = marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize); 
-    uint size = (totalHedge).divideDecimal(spotPrice);
+    totalFunds = marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize); 
+    uint size = (totalFunds).divideDecimal(spotPrice);
 
-    _modifyPosition(-int(size));
+    if(_isCall(optionType)) {
+      _modifyPosition(int(size));
+    } else {
+      _modifyPosition(-int(size));
+    }
 
-    return totalHedge;
+    return totalFunds;
   }
 
   /*****************************************************
@@ -579,11 +583,6 @@ contract Strategy is StrategyBase {
   /*****************************************************
    *  SYNTHETIX FUTURES HEDGING
    *****************************************************/
-
-  function withdrawSUSDSNX() public {
-    uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
-    IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(this), msg.sender, balance);
-  }
 
   /*****************************************************
    *  SYNTHETIX FUTURES HEDGING HELPER
@@ -625,4 +624,13 @@ contract Strategy is StrategyBase {
 
     _transferMargin(int(amount));
   }
+
+  /**
+   * for testing
+   */
+  function withdrawSUSDSNX() public {
+    uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
+    IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(this), msg.sender, balance);
+  }
+
 }

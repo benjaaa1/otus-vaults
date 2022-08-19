@@ -21,13 +21,12 @@ interface IStrategy {
 
   function _hedge(
     uint optionType,
-    uint lockedAmountLeft,
-    uint roundHedgeAttempts
-  ) external;
+    uint lockedAmountLeft
+  ) external returns (uint amount);
 
-  function _deltaHedge(uint deltaHedgeAttempts) external;
+  function _deltaHedge(uint deltaHedgeAttempts) external returns (uint amount);
 
-  function _staticDeltaHedge(uint deltaHedgeAttempts, int deltaToHedge) external;
+  function _staticDeltaHedge(uint deltaHedgeAttempts, int deltaToHedge) external returns (uint amount);
 
   function _transferFunds(uint reservedHedgeFunds) external;
 

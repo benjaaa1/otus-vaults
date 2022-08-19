@@ -269,7 +269,7 @@ contract OtusVault is BaseVault {
 
     // transfer funds to synthetix futures margin
     if (hedgeAttempts == 0) {
-      _transferFunds(reservedHedgeFunds);
+      IStrategy(strategy)._transferFunds(reservedHedgeFunds);
     }
     // locked amout left has to be
     uint amount = IStrategy(strategy)._hedge(optionType, hedgeAttempts);
