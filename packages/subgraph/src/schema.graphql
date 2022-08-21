@@ -6,11 +6,16 @@ type Global @entity {
 type Vault @entity {
   id: ID!
   round: Int!
-  isActive: boolean!
-  isPublic: boolean!
+  isActive: Boolean!
+  isPublic: Boolean!
   strategy: Bytes!
   totalYieldEarned: BigInt!
-  depositsAndWithdrawals: [UserAction!]! @dervivedFrom(field:"UserAction")
+  previousExpiryAPR: BigInt!
+  lockedAmount: BigInt!
+  maxCap: BigInt!
+  depositsAndWithdrawals: [UserAction!]! @dervivedFrom(field: "UserAction")
+  currentVaultTrades: [VaultTrade!]! @dervivedFrom(field: "VaultTrade")
+  historyVaultTrades: [VaultTrade!]! @dervivedFrom(field: "VaultTrade")
   global: Global!
 }
 
@@ -27,14 +32,23 @@ type VaultTrade @entity {
   closedAt: BigInt
   timestamp: BigInt!
   size: BigInt!
+  vault: Vault!
+}
+
+type VaultPosition @entity {
+  id: ID!
+  vault: Vault!
+  currentBalance: BigInt!
+  shares: BigInt!
 }
 
 type UserPortfolio @entity {
   id: ID!
   account: Bytes!
-  balance: BigInt! 
+  balance: BigInt!
   yieldEarned: BigInt!
-  depositsAndWithdrawals: [UserAction!]! @dervivedFrom(field:"UserAction")
+  vaultPositions: [VaultPosition!]! @dervivedFrom(field: "VaultPosition")
+  depositsAndWithdrawals: [UserAction!]! @dervivedFrom(field: "UserAction")
 }
 
 type UserAction @entity {
@@ -48,7 +62,7 @@ type UserAction @entity {
 
 type Manager @entity {
   id: ID!
-  actions: [ManagerAction!]! @dervivedFrom(field:"ManagerAction");
+  actions: [ManagerAction!]! @dervivedFrom(field: "ManagerAction")
 }
 
 type ManagerAction @entity {
