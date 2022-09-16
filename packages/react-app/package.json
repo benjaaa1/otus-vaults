@@ -17,14 +17,10 @@
   "dependencies": {
     "@apollo/client": "^3.3.21",
     "@apollo/react-hooks": "^4.0.0",
-    "@chakra-ui/core": "^0.8.0",
-    "@chakra-ui/icons": "^1.1.7",
-    "@chakra-ui/react": "^1.8.8",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@eth-optimism/sdk": "^1.0.0",
     "@lyrafinance/lyra-js": "^0.0.15",
-    "@portis/web3": "^4.0.5",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.8",
@@ -52,8 +48,6 @@
     "react-css-theme-switcher": "^0.2.2",
     "react-dom": "^17.0.2",
     "react-qr-reader": "^2.2.1",
-    "react-router-dom": "^6.3.0",
-    "react-scripts": "4.0.0",
     "react-toastify": "^9.0.1",
     "rebass": "^4.0.7",
     "recharts": "^2.1.12",
@@ -61,8 +55,14 @@
     "styled-components": "^5.3.5",
     "walletlink": "^2.1.5",
     "web3modal": "^1.9.1",
-    "next": "12.2.3"
-  },
+    "next": "12.2.3",
+    "@headlessui/react": "^1.5.0",
+    "@heroicons/react": "^1.0.5",
+    "@tailwindcss/aspect-ratio": "^0.4.0",
+    "@tailwindcss/forms": "^0.4.0",
+    "@tailwindcss/line-clamp": "^0.3.1",
+    "@tailwindcss/typography": "^0.5.2"
+  }, 
   "devDependencies": {
     "@apollo/client": "^3.3.21",
     "@testing-library/dom": "^6.12.2",
@@ -80,7 +80,6 @@
     "prettier": "^2.0.5",
     "surge": "^0.21.5",
     "tailwindcss": "^3.1.7"
-
   },
   "eslintConfig": {
     "extends": [
@@ -92,10 +91,13 @@
     }
   },
   "scripts": {
-    "build": "react-scripts build",
-    "eject": "react-scripts eject",
+    "dev": "next dev",
+    "next:build": "next build",
+    "export": "next export -o build/",
+    "build": "next build && yarn export",
     "prestart": "node ./scripts/create_contracts.js",
-    "start": "react-scripts start",
+    "start": "next start",
+    "eject": "react-scripts eject",
     "test": "react-scripts test",
     "lint": "eslint --config ./.eslintrc.js --ignore-path ./.eslintignore ./src/**/*",
     "surge": "cp build/index.html build/200.html && surge ./build",
