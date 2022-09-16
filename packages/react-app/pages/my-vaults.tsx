@@ -4,7 +4,7 @@ import Link from 'next/link'
 import React from 'react'
 import { Web3Button, Web3Address } from '../components/'
 
-const Home: NextPage = () => {
+const MyVaults: NextPage = () => {
   return (
     <div className="flex h-screen flex-col">
       <Head>
@@ -13,22 +13,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <nav className="flex flex-row justify-between p-4">
-        <Link href="/my-vaults">
-          <a className="text-lg font-light">My Vaults</a>
-        </Link>
-
-        <Link href="/my-vaults/vault/123">
-          <a>Go to pages/my-vaults/[vault]/[strategy].js</a>
-        </Link>
-
-        <Web3Button />
-      </nav>
-
-      <main className="grow p-8 text-center">
-        <h1 className="pb-8 text-4xl font-bold">Home Page</h1>
-        <Web3Address />
-      </main>
+      <main className="grow p-8 text-center">MyVaults</main>
 
       <footer className="justify-end p-4">
         <p className="text-lg font-light">Footer</p>
@@ -37,4 +22,4 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home
+export default MyVaults
