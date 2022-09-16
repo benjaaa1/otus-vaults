@@ -132,7 +132,7 @@ contract LyraAdapter is OwnableUpgradeable {
   // BasicFeeCounter internal feeCounter;
 
   /**
-   * @notice Assigns all lyra contracts
+   * @notice Assigns synthetix adapter
    * @param _synthetixAdapter SynthetixAdapter address
    */
   constructor(address _synthetixAdapter) {
