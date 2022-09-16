@@ -728,7 +728,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0xFBe7c219F32B109D24659F2Af72C10042927d6Cd",
+          "address": "0x2136a62F3691c84b7A9c2c89DE8ac31b2af1f911",
           "abi": [
             {
               "inputs": [
@@ -1014,7 +1014,7 @@
           ]
         },
         "OtusController": {
-          "address": "0xABcc99573399C009B6952d520167524Ef1F9dB4A",
+          "address": "0xad4F9d2512344bdb70a458e16b0af2D00bC0A072",
           "abi": [
             {
               "inputs": [
@@ -1059,6 +1059,12 @@
             {
               "anonymous": false,
               "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "uint256",
+                  "name": "vaultId",
+                  "type": "uint256"
+                },
                 {
                   "indexed": true,
                   "internalType": "address",
@@ -1640,7 +1646,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0xA902391Ad2098f6d36Dd6303de6290dad7BA999C",
+          "address": "0x7E3e4F35D7e5De6b9aB0B43F10309491D2C172dc",
           "abi": [
             {
               "inputs": [
@@ -1767,6 +1773,12 @@
                   "internalType": "enum OtusVault.HEDGETYPE",
                   "name": "_hedgeType",
                   "type": "uint8"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
                 }
               ],
               "name": "Hedge",
@@ -3321,7 +3333,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0xAE9C00c1aE640180bA2227b8B6c2C47F81B08AB1",
+          "address": "0x73C21988aeA43D0cf0E0b3401233bA98adF02fcf",
           "abi": [
             {
               "inputs": [
@@ -3531,17 +3543,18 @@
                 },
                 {
                   "internalType": "uint256",
-                  "name": "reservedHedgeFunds",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
                   "name": "hedgeAttempts",
                   "type": "uint256"
                 }
               ],
               "name": "_hedge",
-              "outputs": [],
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "totalFunds",
+                  "type": "uint256"
+                }
+              ],
               "stateMutability": "nonpayable",
               "type": "function"
             },
@@ -3597,7 +3610,13 @@
                 }
               ],
               "name": "_staticDeltaHedge",
-              "outputs": [],
+              "outputs": [
+                {
+                  "internalType": "int256",
+                  "name": "fundsRequiredSUSD",
+                  "type": "int256"
+                }
+              ],
               "stateMutability": "nonpayable",
               "type": "function"
             },
