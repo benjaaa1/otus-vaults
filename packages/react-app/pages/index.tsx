@@ -22,6 +22,14 @@ const Home: NextPage = () => {
           <a>Go to pages/my-vaults/[vault]/[strategy].js</a>
         </Link>
 
+        <Link href="/forward-tests">
+          <a>Go to pages/forward-tests</a>
+        </Link>
+
+        <Link href="/forward-tests/2134">
+          <a>Go to pages/forward-tests/forward-test.js</a>
+        </Link>
+
         <Web3Button />
       </nav>
 
