@@ -4,13 +4,13 @@ import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { Top } from "./components/Common/Top";
-import Product from "./components/Product";
-import { Vault } from "./components/Product/Vault";
-import Strategy from "./components/MyVaults/Strategy";
-import MyVaults from "./components/MyVaults";
-import Portfolio from "./components/Portfolio";
-import { Footer } from "./components/Common/Footer";
+import { Top } from "./components/_Common/Top";
+import Product from "./components/_Product";
+import { Vault } from "./components/_Product/Vault";
+import Strategy from "./components/_MyVaults/Strategy";
+import MyVaults from "./components/_MyVaults";
+import Portfolio from "./components/_Portfolio";
+import { Footer } from "./components/_Common/Footer";
 
 function App(props) {
 

@@ -5,8 +5,8 @@ import "hardhat/console.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "../synthetix/SafeDecimalMath.sol";
 
-import "../interfaces/IFuturesMarket.sol";
 import {IStrategy} from "../interfaces/IStrategy.sol";
 
 import {BaseVault} from "../vault/BaseVault.sol";
@@ -22,16 +22,7 @@ import {StrategyBase} from "./strategy/StrategyBase.sol";
  */
 contract OtusVault is BaseVault {
   using SafeMath for uint;
-
-  /************************************************
-   *  ENUMS
-   ***********************************************/
-
-  enum HEDGETYPE {
-    SIMPLE_HEDGE,
-    STATIC_DELTA_HEDGE,
-    DYNAMIC_DELTA_HEDGE
-  }
+  using SafeDecimalMath for uint;
 
   /************************************************
    *  IMMUTABLES & CONSTANTS
@@ -50,15 +41,21 @@ contract OtusVault is BaseVault {
   // add details for for vault type ~
   bool public isPublic;
 
+  struct ActiveTrade {
+    uint optionType;
+    uint strikeId;
+    uint size;
+    uint premium;
+    uint positionId;
+  }
+
   /************************************************
    *   HEDGE TRACKING
    ************************************************/
 
-  uint public reservedHedgeFunds;
-  bool public hasFuturesHedge;
-  mapping(uint => uint) public hedgeAttemptsByOptionType;
-  mapping(uint => bool) public activeHedgeByOptionType;
-  uint public deltaHedgeAttempts;
+  uint[] public strikeIdsHedged; // [10, 12, 11];
+  mapping(uint => uint) public hedgeAttemptsByStrikeId;
+  mapping(uint => bool) public activeHedgeByStrikeId;
 
   /************************************************
    *  EVENTS
@@ -66,9 +63,7 @@ contract OtusVault is BaseVault {
 
   event StrategyUpdated(address strategy);
 
-  event Trade(address indexed vault, uint[] positionId, uint16 roundId, uint premium);
-
-  event Hedge(HEDGETYPE _hedgeType, uint amount);
+  event Trade(address indexed vault, ActiveTrade[] activeTrades, uint round, uint roundPremiumCollected);
 
   event PositionReduced(uint positionId, uint amount);
 
@@ -163,26 +158,23 @@ contract OtusVault is BaseVault {
     // won't be able to close if positions are not settled
     IStrategy(strategy).returnFundsAndClearStrikes();
 
-    if (hasFuturesHedge == true) {
-      _clearHedges();
-    }
+    _clearHedgeTracking();
 
     emit RoundClosed(vaultState.round, lockAmount);
   }
 
   /**
-   * @notice Initializes contract on clone
+   * @notice clears hedge tracking at end of round
    */
-  function _clearHedges() internal {
+  function _clearHedgeTracking() internal {
     // withdraw all margin from futures market
-    IStrategy(strategy).closeHedgeEndOfRound();
-
-    for (uint i = 3; i <= 4; i++) {
-      delete hedgeAttemptsByOptionType[i];
-      delete activeHedgeByOptionType[i];
+    for (uint i = 0; i < strikeIdsHedged.length; i++) {
+      uint strikeIdHedged = strikeIdsHedged[i]; // [12, 123, 454, 11, 112]
+      delete hedgeAttemptsByStrikeId[strikeIdHedged];
+      delete activeHedgeByStrikeId[strikeIdHedged];
     }
 
-    hasFuturesHedge = false;
+    strikeIdsHedged = new uint[](0);
   }
 
   /**
@@ -194,6 +186,7 @@ contract OtusVault is BaseVault {
     require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
     require(address(strategy) != address(0), "Strategy not set");
+    // allow for multiple boardId selection and mostly check expiry is within strategy range
     IStrategy(strategy).setBoard(boardId);
 
     (uint lockedBalance, uint queuedWithdrawAmount) = _rollToNextRound(uint(lastQueuedWithdrawAmount));
@@ -204,7 +197,21 @@ contract OtusVault is BaseVault {
 
     lastQueuedWithdrawAmount = uint128(queuedWithdrawAmount);
 
+    _transferFundsToStrategy();
+
     emit RoundStarted(vaultState.round, uint104(lockedBalance), boardId);
+  }
+
+  function _transferFundsToStrategy() internal {
+    StrategyBase.StrategyDetail memory strategyDetail = IStrategy(strategy).getVaultStrategy();
+
+    uint quoteBal = collateralAsset.balanceOf(address(this));
+    // 10k 20% reserve = 10k * (.2) == 2k
+    uint hedgeFunds = quoteBal.multiplyDecimal(strategyDetail.hedgeReserve);
+    uint tradeBalance = quoteBal - hedgeFunds;
+    require(collateralAsset.transfer(address(strategy), tradeBalance), "collateral transfer to strategy failed");
+    // refactor transfer to synthetix when a hedge is needed to be opened only
+    IStrategy(strategy).transferToFuturesMarket(int(hedgeFunds));
   }
 
   /**
@@ -216,7 +223,7 @@ contract OtusVault is BaseVault {
     // can trade during round as long as lockedAmount is greater than 0
     // round should be opened
     require(vaultState.roundInProgress, "round not opened");
-    require(!vaultState.tradesExecuted, "trades executed for round");
+    // require(!vaultState.tradesExecuted, "trades executed for round");
 
     uint allCapitalUsed;
     uint positionId;
@@ -225,20 +232,30 @@ contract OtusVault is BaseVault {
     uint len = _strikes.length;
     positionIds = new uint[](len);
 
+    ActiveTrade[] memory activeTrades = new ActiveTrade[](len);
+
     for (uint i = 0; i < len; i++) {
       StrategyBase.StrikeTrade memory _trade = _strikes[i];
       (positionId, premium, capitalUsed) = IStrategy(strategy).doTrade(_trade);
       roundPremiumCollected += premium;
       allCapitalUsed += capitalUsed;
       positionIds[i] = positionId;
-      hasFuturesHedge = _trade.futuresHedge;
+
+      ActiveTrade memory activeTrade = ActiveTrade(
+        _trade.optionType,
+        _trade.strikeId,
+        _trade.size,
+        premium,
+        positionId
+      );
+      activeTrades[i] = activeTrade;
     }
 
     // update the remaining locked amount -- lockedAmountLeft can be used for hedge
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
     vaultState.tradesExecuted = true;
 
-    emit Trade(address(this), positionIds, vaultState.round, roundPremiumCollected);
+    emit Trade(address(this), activeTrades, vaultState.round, roundPremiumCollected);
   }
 
   /**
@@ -258,69 +275,53 @@ contract OtusVault is BaseVault {
 
   /**
    * @notice Simple hedge based on pricing of base asset
-   * @param optionType hedge by optiontype
+   * @param size hedge by size
+   * @param size hedge by strikeId
    */
-  function simpleHedge(uint optionType) external onlyKeeper {
+  function simpleHedge(int size, uint strikeId) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
-    require(hasFuturesHedge, "Vault is not hedging strikes");
-    require(activeHedgeByOptionType[optionType] == false, "Vault has hedge for option type");
+    require(activeHedgeByStrikeId[strikeId] == false, "Vault has active hedge for strike");
 
-    uint hedgeAttempts = hedgeAttemptsByOptionType[optionType];
-
-    // transfer funds to synthetix futures margin
-    if (hedgeAttempts == 0) {
-      IStrategy(strategy)._transferFunds(reservedHedgeFunds);
-    }
-    // locked amout left has to be
-    uint amount = IStrategy(strategy)._hedge(optionType, hedgeAttempts);
-
-    // track by option type hedge attempts
-    hedgeAttemptsByOptionType[optionType] = hedgeAttempts + 1;
-    activeHedgeByOptionType[optionType] = true;
-
-    emit Hedge(HEDGETYPE.SIMPLE_HEDGE, amount);
+    IStrategy(strategy)._simpleHedge(size);
   }
 
   /**
    * @notice delta hedge based on strategy settings
    */
-  function deltaHedge() external onlyKeeper {
+  function dynamicDeltaHedge(int deltaToHedge, uint strikeId) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
+    require(activeHedgeByStrikeId[strikeId] == false, "Vault has hedge for option type");
 
-    // transfer funds to synthetix futures margin
-    if (deltaHedgeAttempts == 0) {
-      IStrategy(strategy)._transferFunds(reservedHedgeFunds);
-    }
+    uint deltaHedgeAttempts = hedgeAttemptsByStrikeId[strikeId];
 
-    uint amount = IStrategy(strategy)._deltaHedge(deltaHedgeAttempts);
+    IStrategy(strategy)._dynamicDeltaHedge(deltaToHedge, deltaHedgeAttempts);
 
-    emit Hedge(HEDGETYPE.DYNAMIC_DELTA_HEDGE, amount);
+    hedgeAttemptsByStrikeId[strikeId] = deltaHedgeAttempts + 1;
+    activeHedgeByStrikeId[strikeId] = true;
   }
 
   /**
    * @notice delta hedge based on user set min. delta to hedge
    * @param deltaToHedge set by user to minimize delta exposure
    */
-  function staticDeltaHedge(int deltaToHedge) external onlyOwner {
+  function staticDeltaHedge(int deltaToHedge, uint strikeId) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
+    require(activeHedgeByStrikeId[strikeId] == false, "Vault has active hedge for strike");
 
-    // transfer funds to synthetix futures margin
-    if (deltaHedgeAttempts == 0) {
-      IStrategy(strategy)._transferFunds(reservedHedgeFunds);
-    }
-
-    uint amount = IStrategy(strategy)._staticDeltaHedge(deltaHedgeAttempts, deltaToHedge);
-
-    emit Hedge(HEDGETYPE.STATIC_DELTA_HEDGE, amount);
+    IStrategy(strategy)._staticDeltaHedge(deltaToHedge);
   }
 
   /**
-   * @notice Close hedge by option type
-   * @param optionType close hedge for optiontype
+   * @notice Close hedge by strikeId
+   * @param strikeId close hedge for strikeId
    */
-  function closeHedgeByOptionType(uint optionType) external onlyKeeper {
-    require(activeHedgeByOptionType[optionType], "Vault has no active hedge for option type");
+  function closeHedgeByStrikeId(uint strikeId) external onlyKeeper {
+    require(activeHedgeByStrikeId[strikeId], "Vault has no active hedge for option type");
     IStrategy(strategy)._closeHedge();
-    activeHedgeByOptionType[optionType] = false;
+    delete activeHedgeByStrikeId[strikeId];
+
+    for (uint i = 0; i < strikeIdsHedged.length; i++) {
+      strikeIdsHedged[i] = 0; // clear strike for now
+    }
   }
 }

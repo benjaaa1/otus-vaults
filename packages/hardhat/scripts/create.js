@@ -56,7 +56,8 @@ const dripApproveAndDeposit = async (susd, testFaucet, otusVaultInstance, _vault
     // Get a new wallet
     let wallet = ethers.Wallet.createRandom();
     // add the provider from Hardhat
-    wallet =  wallet.connect(provider);
+    wallet = wallet.connect(provider);
+    console.log({wallet: wallet.address, key: wallet._signingKey()})
     // send ETH to the new wallet so it can perform a tx
     await funder.sendTransaction({to: wallet.address, value: ethers.utils.parseEther(".005")}); 
 
@@ -73,10 +74,11 @@ const dripApproveAndDeposit = async (susd, testFaucet, otusVaultInstance, _vault
     console.log({ formattedBalance })
     const approve = await susd.connect(signer).approve(_vault, ethers.utils.parseEther(formattedBalance)); 
     const approveReceipt = await approve.wait(); 
-
     const allowanceStatus = await susd.allowance(signer.address, _vault);
+    console.log({allowanceStatus1: allowanceStatus})
 
     if(!allowanceStatus.isZero()) {
+      console.log({allowanceStatus})
 
       const deposit = await otusVaultInstance.connect(signer).deposit(allowanceStatus); 
       const depositReceipt = await deposit.wait(); 
@@ -119,11 +121,14 @@ const buildHedgeStrategies = () => {
 
   return [
     {
-      hedgePercentage: parseUnits('.2', 18),
+      deltaToHedge: parseUnits('.8', 18),
+      maxLeverageSize: parseUnits('2', 18),
+    },
+    {
+      deltaToHedge: parseUnits('1', 18),
       maxHedgeAttempts: parseUnits('6', 18),
-      leverageSize: parseUnits('2', 18),
-      stopLossLimit: parseUnits('.001', 18),
-      optionType: 4
+      maxLeverageSize: parseUnits('2', 18),
+      period: 6 * HOUR_SEC,
     }
   ]
 }
@@ -181,8 +186,9 @@ const create = async () => {
 
     const cap = 50000; // 50,000 usd cap
 
+    const hedgeReserve = .2;
     const collatBuffer = 1.2;
-    const collatPercent = .35;
+    const collatPercent = .55;
 
     const formattedVaultInformation = {
       name: 'Test',
@@ -201,6 +207,7 @@ const create = async () => {
     };
 
     const formattedVaultStrategy = {
+      hedgeReserve: parseUnits(hedgeReserve.toString(), 18),
       collatBuffer: parseUnits(collatBuffer.toString(), 18), 
       collatPercent: parseUnits(collatPercent.toString(), 18),
       minTimeToExpiry: 0 * HOUR_SEC,
@@ -237,30 +244,37 @@ const create = async () => {
     // await depositSNXSUSDToVault(snxSUSD, _vault);
     // set strike options strategies 
     const currentStrikeStrategies = buildStrikeStrategies(); 
-
+    console.log({currentStrikeStrategies})
     const strikeStrategiesSet = await strategyInstance.connect(deployer).setStrikeStrategyDetail(currentStrikeStrategies);
     const strikeStrategiesSetReceipt = strikeStrategiesSet.wait();
+    console.log('strikeStrategiesSet')
 
     // in future set hedge strategy 
-    const hedgeStrategies = buildHedgeStrategies(); 
-    const strikeHedgeDetailSet = await strategyInstance.connect(deployer).setHedgeStrategy(hedgeStrategies);
+    const [_staticStrategy, _dynamicStrategy] = buildHedgeStrategies(); 
+
+    console.log({_staticStrategy, _dynamicStrategy})
+
+    const strikeHedgeDetailSet = await strategyInstance.connect(deployer).setHedgeStrategies(_staticStrategy, _dynamicStrategy);
     const strikeHedgeDetailSetReceipt = strikeHedgeDetailSet.wait(); 
+    console.log('strikeHedgeDetailSet')
 
     // start round
     const liveBoards = await getLiveBoards(); 
     const selectedBoard = liveBoards[1];
-
+    console.log({ selectedBoard: selectedBoard.id })
     const startRound = await otusVaultInstance.connect(deployer).startNextRound(selectedBoard.id); 
     const startRoundReceipt = await startRound.wait(); 
-    
+    console.log('startRound')
+
     // select strikes StrategyBase.StrikeTrade[] and trade
     const trades = await buildTrades(selectedBoard, deployer, strategyInstance); 
+    console.log({ trades })
     const trade = await otusVaultInstance.connect(deployer).trade([trades]); 
     const tradeReceipt = await trade.wait(); 
 
     // get positions opened
-    const [strikes, optionTypes, positionIds] = await strategyInstance.getStrikeOptionTypes();
-    console.log({ strikes, optionTypes, positionIds })
+    // const [strikes, optionTypes, positionIds] = await strategyInstance.getStrikeOptionTypes();
+    // console.log({ strikes, optionTypes, positionIds })
 
     return true;
   } catch (e) {

@@ -35,9 +35,9 @@ contract Strategy is StrategyBase {
    *  EVENTS
    ***********************************************/
 
-  event HedgeClosePosition(address closer);
+  event HedgeClosePosition(address closer, uint spotPrice, uint strikeId);
 
-  event HedgeModifyPosition(address closer, uint marginDelta, uint hedgeAttempt);
+  event Hedge(HEDGETYPE _hedgeType, int size, uint spotPrice, uint strikeId);
 
   /************************************************
    *  Modifiers
@@ -90,21 +90,28 @@ contract Strategy is StrategyBase {
   }
 
   /**
+   * @notice one type of hedge strategy allowed
+   * @param _hedgeType hedge type
+   */
+  function setHedgeStrategy(uint _hedgeType) external onlyOwner {
+    hedgeType = HEDGETYPE(_hedgeType);
+  }
+
+  /**
    * @notice Update the strike hedge strategy
-   * @param _hedgeStrategies vault strategy settings
+   * @param _staticStrategy vault strategy settings
+   * @param _dynamicStrategy vault strategy settings
    * @dev should be able to accept multiple strategy types (1 click / delta / auto simple)
    */
-  function setHedgeStrategy(StrikeHedgeDetail[] memory _hedgeStrategies) external onlyOwner {
+  function setHedgeStrategies(
+    StaticDeltaHedgeStrategy memory _staticStrategy,
+    DynamicDeltaHedgeStrategy memory _dynamicStrategy
+  ) external onlyOwner {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
 
-    uint len = _hedgeStrategies.length;
-    StrikeHedgeDetail memory currentHedgeStrategy;
-
-    for (uint i = 0; i < len; i++) {
-      currentHedgeStrategy = _hedgeStrategies[i];
-      currentHedgeStrategies[currentHedgeStrategy.optionType] = currentHedgeStrategy;
-    }
+    staticHedgeStrategy = _staticStrategy;
+    dynamicHedgeStrategy = _dynamicStrategy;
   }
 
   /**
@@ -124,19 +131,8 @@ contract Strategy is StrategyBase {
     }
   }
 
-  /**
-   * @notice Get the strike strategy by option
-   * @return _currentStrikeStrategies list of different strike strategy by option
-   */
-  function getCurrentStrikeStrategies() public view returns (StrikeStrategyDetail[] memory _currentStrikeStrategies) {
-    _currentStrikeStrategies = new StrikeStrategyDetail[](StrikeStrategiesPossible);
-    StrikeStrategyDetail memory _strikeStrategy;
-
-    for (uint i = 0; i < StrikeStrategiesPossible; i++) {
-      _strikeStrategy = currentStrikeStrategies[i];
-    }
-
-    return _currentStrikeStrategies;
+  function getVaultStrategy() public view returns (StrategyDetail memory _strategyDetail) {
+    return currentStrategy;
   }
 
   ///////////////////
@@ -148,7 +144,6 @@ contract Strategy is StrategyBase {
    * @param boardId lyra board id
    */
   function setBoard(uint boardId) external onlyVault {
-    require(boardId > 0, "Board Id incorrect");
     Board memory board = getBoard(boardId);
     require(_isValidExpiry(board.expiry), "invalid board");
     activeExpiry = board.expiry;
@@ -177,8 +172,7 @@ contract Strategy is StrategyBase {
     uint optionType = _strike.optionType;
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
 
-    require(validateTimeIntervalByOptionType(strikeId, optionType), "min time interval not passed for option type");
-
+    require(validateTimeIntervalByOptionType(strikeId, optionType), "min time interval");
     require(_isValidVolVariance(strikeId, optionType), "vol variance exceeded");
 
     Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
@@ -187,25 +181,11 @@ contract Strategy is StrategyBase {
 
     if (_isLong(currentStrikeStrategy.optionType)) {
       uint maxPremium = _getPremiumLimit(strike, false, _strike);
-
-      require(
-        quoteAsset.transferFrom(address(vault), address(this), maxPremium),
-        "collateral transfer from vault failed"
-      );
-
       (positionId, premium) = _buyStrike(strike, size, currentStrikeStrategy, maxPremium);
-
       capitalUsed = maxPremium;
     } else {
       (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike, size, optionType);
-
-      require(
-        quoteAsset.transferFrom(address(vault), address(this), collateralToAdd), // susd for now
-        "collateral transfer from vault failed"
-      );
-
       (positionId, premium) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, _strike);
-
       capitalUsed = collateralToAdd;
     }
 
@@ -217,39 +197,12 @@ contract Strategy is StrategyBase {
    * @dev convert premium in quote asset into collateral asset and send it back to the vault.
    */
   function returnFundsAndClearStrikes() external onlyVault {
-    ExchangeRateParams memory exchangeParams = getExchangeParams();
+    // need to return the synthetix ones too
+    _closeHedgeEndOfRound();
+
     uint quoteBal = quoteAsset.balanceOf(address(this));
 
-    StrikeTrade memory currentStrikeTrade;
-
-    bool hasBaseCollat = false;
-    bool hasQuoteCollat = false;
-
-    for (uint i = 0; i < currentStrikeTrades.length; i++) {
-      currentStrikeTrade = currentStrikeTrades[i];
-
-      // base asset might not be needed if we only use usd
-      if (_isBaseCollat(currentStrikeTrade.optionType)) {
-        hasBaseCollat = true;
-      } else {
-        hasQuoteCollat = true;
-      }
-    }
-
-    if (hasBaseCollat) {
-      // exchange quote asset to base asset, and send base asset back to vault
-      uint baseBal = baseAsset.balanceOf(address(this));
-      uint minQuoteExpected = quoteBal.divideDecimal(exchangeParams.spotPrice).multiplyDecimal(
-        DecimalMath.UNIT - exchangeParams.baseQuoteFeeRate
-      );
-      uint baseReceived = exchangeFromExactQuote(quoteBal, minQuoteExpected);
-      require(baseAsset.transfer(address(vault), baseBal + baseReceived), "failed to return funds from strategy");
-    }
-
-    if (hasQuoteCollat) {
-      // send quote balance directly
-      require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
-    }
+    require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
 
     _clearAllActiveStrikes();
   }
@@ -438,13 +391,8 @@ contract Strategy is StrategyBase {
     require(result.totalCost <= maxExpectedPremium, "premium paid is above max expected premium");
 
     // return closed collateral amount
-    if (_isBaseCollat(uint(position.optionType))) {
-      uint currentBal = baseAsset.balanceOf(address(this));
-      baseAsset.transfer(address(vault), currentBal);
-    } else {
-      // quote collateral
-      quoteAsset.transfer(address(vault), closeAmount);
-    }
+    // quote collateral
+    quoteAsset.transfer(address(vault), closeAmount);
   }
 
   /**
@@ -479,105 +427,119 @@ contract Strategy is StrategyBase {
    * HEDGE WITH SYNTHETIX FUTURES
    *****************************************************/
 
+  /**
+   * @notice transfer to synthetix futures market
+   * @param hedgeFunds funds to transfer
+   * @dev refactor this to move away from futuresadapter
+   */
+  function transferToFuturesMarket(int hedgeFunds) public {
+    futuresMarket.transferMargin(hedgeFunds);
+  }
+
   /*****************************************************
-   *  DELTA HEDGE - KEEPER
+   *  DYNAMIC HEDGE - KEEPER
    *****************************************************/
 
   /**
    * @notice delta hedging using synthetix futures based on strategy
-   * @param hedgeAttempts current hedge attempts in hedging
+   * @param deltaToHedge deltaToHedge calcualted by keeper
+   * @param hedgeAttempts attempts
+   * @dev refactor this to move away from futuresadapter
    */
-  function _deltaHedge(uint hedgeAttempts) external onlyVault {
-    // need to track by optiontype
-    require(deltaHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
+  function _dynamicDeltaHedge(int deltaToHedge, uint hedgeAttempts) external onlyVault {
+    require(hedgeType == HEDGETYPE.DYNAMIC_DELTA_HEDGE, "Not allowed");
 
-    // check current hedge balance in synthetix
-    (uint marginRemaining, bool invalid) = _remainingMargin();
+    require(dynamicHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
+
+    (uint marginRemaining, ) = futuresMarket.remainingMargin(address(this));
+
     require(marginRemaining > 0, "Remaining margin is 0");
 
     uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
+    uint fundsRequiredSUSD = _abs(deltaToHedge).multiplyDecimal(spotPrice); // 20 * 2000 = 40000
 
-    int currentNetDelta = _checkNetDelta(); // 3.8 or -3.2 and spot price is 2000 usd for eth, then i need 7800 usd in total + fees
-    // if margin total is around 3000 usd and need 7800 => 7800 / 3000 = 2.6x leverage is neeeded
-    int fundsRequiredSUSD = currentNetDelta.multiplyDecimal(int(spotPrice)); // 3.8 delta * 2000 spot price = 7800 / marginRemaining (5000) == ;
-    int size = fundsRequiredSUSD.multiplyDecimal(int(marginRemaining));
+    // marginRemaining = 44000 | marginRemaining / fundsRequired = 1.1x == 110%
+    // marginRemaining = 24000 | marginRemaining / fundsRequired = .6x == 60%
+    uint currentLeverage = marginRemaining.divideDecimal(fundsRequiredSUSD);
 
-    _modifyPosition(size);
+    // need to calculate max size possible by taking into account max leverage allowed
+    // deltaToHedge is +10 == buy 10 units = $20k current marginRemaining = $10k // 20k / 10k = 2x leverage / maxlevarge is 150% * marginRemaining / 10k * 1.5x = 15k / spotprice (2k) = 7.5
+    // deltaToHedge is -10 == sell 10 units = $20k
+    int size = staticHedgeStrategy.maxLeverageSize > currentLeverage
+      ? deltaToHedge
+      : _maxLeverageSize(deltaToHedge, staticHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
+
+    futuresMarket.modifyPosition(size);
   }
 
   /******************************************************
-   *  STATIC HEDGE - DELTA HEDGE - CONTROLLED BY OWNER
+   *  STATIC HEDGE - DELTA HEDGE
    *****************************************************/
 
   /**
    * @notice static delta hedging using synthetix futures based on strategy
-   * @param deltaHedgeAttempts current hedge attempts in hedging
    * @param deltaToHedge set by user
+   * @dev refactor this to move away from futuresadapter
    */
-  function _staticDeltaHedge(uint deltaHedgeAttempts, int deltaToHedge) external onlyVault returns (int fundsRequiredSUSD) {
-    require(deltaHedgeStrategy.maxHedgeAttempts <= deltaHedgeAttempts);
-    // check current hedge balance in synthetix
-    (uint marginRemaining, bool invalid) = _remainingMargin();
+  function _staticDeltaHedge(int deltaToHedge) external onlyVault {
+    require(hedgeType == HEDGETYPE.STATIC_DELTA_HEDGE, "Not allowed");
+
+    (uint marginRemaining, ) = futuresMarket.remainingMargin(address(this));
+
     require(marginRemaining > 0, "Remaining margin is 0");
 
     uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
+    uint fundsRequiredSUSD = _abs(deltaToHedge).multiplyDecimal(spotPrice); // 20 * 2000 = 40000
 
-    // 3.8 delta * 2000 spot price = 7800 / marginRemaining (5000) == ;
-    fundsRequiredSUSD = deltaToHedge.multiplyDecimal(int(spotPrice));
-    int size = fundsRequiredSUSD.multiplyDecimal(int(marginRemaining));
+    // marginRemaining = 44000 | marginRemaining / fundsRequired = 1.1x == 110%
+    // marginRemaining = 24000 | marginRemaining / fundsRequired = .6x == 60%
+    uint currentLeverage = marginRemaining.divideDecimal(fundsRequiredSUSD);
 
-    _modifyPosition(size);
+    // need to calculate max size possible by taking into account max leverage allowed
+    // deltaToHedge is +10 == buy 10 units = $20k current marginRemaining = $10k // 20k / 10k = 2x leverage / maxlevarge is 150% * marginRemaining / 10k * 1.5x = 15k / spotprice (2k) = 7.5
+    // deltaToHedge is -10 == sell 10 units = $20k
+    int size = staticHedgeStrategy.maxLeverageSize > currentLeverage
+      ? deltaToHedge
+      : _maxLeverageSize(deltaToHedge, staticHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
 
-    return fundsRequiredSUSD;
-
+    futuresMarket.modifyPosition(size);
   }
 
   /*****************************************************
-   *  SIMPLE FUTURES HEDGE -  KEEPER
+   *  DELTA HEDGE -  CONTROLLED BY USER
    *****************************************************/
 
   /**
-   * @notice simple future hedge based on strategy
-   * @param optionType option type - direction to hedge
-   * @param hedgeAttempts current hedge attempts in hedging
+   * @notice one click delta hedge
+   * @param size total size of hedge
    */
-  function _hedge(
-    uint optionType,
-    uint hedgeAttempts
-  ) external onlyVault returns (uint totalFunds) {
-    // need to track by optiontype
-    StrikeHedgeDetail memory currentHedgeStrategy = currentHedgeStrategies[optionType];
-    require(currentHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
+  function _simpleHedge(int size) external onlyVault {
+    require(hedgeType == HEDGETYPE.SIMPLE_HEDGE, "Not allowed");
 
-    // check current hedge balance in synthetix
-    (uint marginRemaining, bool invalid) = _remainingMargin();
+    (uint marginRemaining, ) = futuresMarket.remainingMargin(address(this));
     require(marginRemaining > 0, "Remaining margin is 0");
 
-    uint spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
-    totalFunds = marginRemaining.multiplyDecimal(currentHedgeStrategy.leverageSize); 
-    uint size = (totalFunds).divideDecimal(spotPrice);
-
-    if(_isCall(optionType)) {
-      _modifyPosition(int(size));
-    } else {
-      _modifyPosition(-int(size));
-    }
-
-    return totalFunds;
+    futuresMarket.modifyPosition(size);
   }
 
   /*****************************************************
    *  CLOSE HEDGE
    *****************************************************/
 
+  /**
+   * @notice close position
+   * @dev refactor this to move away from futuresadapter
+   */
   function _closeHedge() external onlyVault {
-    // need to track by optiontype no more global active short
-    (, , uint128 margin, uint128 lastPrice, int128 size) = _positions();
-    _closePosition();
+    futuresMarket.closePosition();
   }
 
-  function closeHedgeEndOfRound() public {
-    _withdrawAllMargin();
+  /**
+   * @notice withdraw margin
+   * @dev refactor this to move away from futuresadapter
+   */
+  function _closeHedgeEndOfRound() public {
+    futuresMarket.withdrawAllMargin();
   }
 
   /*****************************************************
@@ -613,24 +575,13 @@ contract Strategy is StrategyBase {
     }
   }
 
-  function _transferFunds(uint amount) public onlyOwner {
-    // check futures positions
-    // first time hedging
-    require(
-      // synthetix susd collateralAssetTest
-      IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(vault), address(this), amount),
-      "susd transfer to from vault failed"
-    );
-
-    _transferMargin(int(amount));
+  function _maxLeverageSize(
+    int deltaToHedge,
+    uint maxLeverageSize,
+    uint marginRemaining,
+    uint spotPrice
+  ) private pure returns (int size) {
+    int direction = deltaToHedge >= 0 ? int(1) : -int(1);
+    size = direction * (int(maxLeverageSize).multiplyDecimal(int(marginRemaining))).divideDecimal(int(spotPrice));
   }
-
-  /**
-   * for testing
-   */
-  function withdrawSUSDSNX() public {
-    uint balance = IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).balanceOf(address(this));
-    IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).transferFrom(address(this), msg.sender, balance);
-  }
-
 }

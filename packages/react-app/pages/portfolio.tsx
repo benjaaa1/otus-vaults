@@ -1,6 +1,7 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import React from 'react'
+import UserPortfolio from '../components/Portfolio'
 
 const Portfolio: NextPage = () => {
   return (
@@ -11,11 +12,7 @@ const Portfolio: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="grow p-8 text-center">Portfolio page</main>
-
-      <footer className="justify-end p-4">
-        <p className="text-lg font-light">Footer</p>
-      </footer>
+      <UserPortfolio />
     </div>
   )
 }

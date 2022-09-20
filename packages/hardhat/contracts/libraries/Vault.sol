@@ -12,21 +12,13 @@ library Vault {
   uint internal constant ROUND_DELAY = 12 hours;
 
   struct VaultInformation {
-
-    string name; 
-
-    string tokenName; 
-
-    string tokenSymbol; 
-
-    string description; 
-
+    string name;
+    string tokenName;
+    string tokenSymbol;
+    string description;
     bool isPublic;
-
     uint performanceFee;
-
-    uint managementFee; 
-    
+    uint managementFee;
   }
 
   struct VaultParams {
@@ -36,7 +28,6 @@ library Vault {
     uint104 cap;
     // Asset used in Theta / Delta Vault
     address asset;
-
   }
 
   struct VaultState {
@@ -62,7 +53,7 @@ library Vault {
     bool roundInProgress;
     // true if the current round has set trades, false if the round has not traded is idle
     bool tradesExecuted;
-  } 
+  }
 
   struct DepositReceipt {
     // Maximum of 65535 rounds. Assuming 1 round is 7 days, maximum is 1256 years.

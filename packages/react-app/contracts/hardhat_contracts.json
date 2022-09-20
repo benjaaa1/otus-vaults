@@ -728,7 +728,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x2136a62F3691c84b7A9c2c89DE8ac31b2af1f911",
+          "address": "0x4d6C598F7DE8fD822d3e779e1f309FC0D86ABD01",
           "abi": [
             {
               "inputs": [
@@ -813,6 +813,11 @@
                 },
                 {
                   "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "hedgeReserve",
+                      "type": "uint256"
+                    },
                     {
                       "internalType": "uint256",
                       "name": "collatBuffer",
@@ -1014,7 +1019,7 @@
           ]
         },
         "OtusController": {
-          "address": "0xad4F9d2512344bdb70a458e16b0af2D00bC0A072",
+          "address": "0x36BB2BB9384586e265754bF02CE670623552dEe5",
           "abi": [
             {
               "inputs": [
@@ -1082,6 +1087,72 @@
                   "internalType": "address",
                   "name": "strategy",
                   "type": "address"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "string",
+                      "name": "name",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "tokenName",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "tokenSymbol",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "description",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isPublic",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "performanceFee",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "managementFee",
+                      "type": "uint256"
+                    }
+                  ],
+                  "indexed": false,
+                  "internalType": "struct Vault.VaultInformation",
+                  "name": "vaultInfo",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint8",
+                      "name": "decimals",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint104",
+                      "name": "cap",
+                      "type": "uint104"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "asset",
+                      "type": "address"
+                    }
+                  ],
+                  "indexed": false,
+                  "internalType": "struct Vault.VaultParams",
+                  "name": "vaultParams",
+                  "type": "tuple"
                 }
               ],
               "name": "VaultCreated",
@@ -1229,6 +1300,11 @@
                 },
                 {
                   "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "hedgeReserve",
+                      "type": "uint256"
+                    },
                     {
                       "internalType": "uint256",
                       "name": "collatBuffer",
@@ -1646,7 +1722,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0x7E3e4F35D7e5De6b9aB0B43F10309491D2C172dc",
+          "address": "0x82c40421253503B6fF9949F0Beb6Ba3BEbE80C0F",
           "abi": [
             {
               "inputs": [
@@ -1763,25 +1839,6 @@
                 }
               ],
               "name": "Deposit",
-              "type": "event"
-            },
-            {
-              "anonymous": false,
-              "inputs": [
-                {
-                  "indexed": false,
-                  "internalType": "enum OtusVault.HEDGETYPE",
-                  "name": "_hedgeType",
-                  "type": "uint8"
-                },
-                {
-                  "indexed": false,
-                  "internalType": "uint256",
-                  "name": "amount",
-                  "type": "uint256"
-                }
-              ],
-              "name": "Hedge",
               "type": "event"
             },
             {
@@ -2021,21 +2078,48 @@
                   "type": "address"
                 },
                 {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "optionType",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "strikeId",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "size",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "premium",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "positionId",
+                      "type": "uint256"
+                    }
+                  ],
                   "indexed": false,
-                  "internalType": "uint256[]",
-                  "name": "positionId",
-                  "type": "uint256[]"
-                },
-                {
-                  "indexed": false,
-                  "internalType": "uint16",
-                  "name": "roundId",
-                  "type": "uint16"
+                  "internalType": "struct OtusVault.ActiveTrade[]",
+                  "name": "activeTrades",
+                  "type": "tuple[]"
                 },
                 {
                   "indexed": false,
                   "internalType": "uint256",
-                  "name": "premium",
+                  "name": "round",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "roundPremiumCollected",
                   "type": "uint256"
                 }
               ],
@@ -2119,7 +2203,7 @@
                   "type": "uint256"
                 }
               ],
-              "name": "activeHedgeByOptionType",
+              "name": "activeHedgeByStrikeId",
               "outputs": [
                 {
                   "internalType": "bool",
@@ -2201,11 +2285,11 @@
               "inputs": [
                 {
                   "internalType": "uint256",
-                  "name": "optionType",
+                  "name": "strikeId",
                   "type": "uint256"
                 }
               ],
-              "name": "closeHedgeByOptionType",
+              "name": "closeHedgeByStrikeId",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -2259,26 +2343,6 @@
                 }
               ],
               "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "deltaHedge",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "deltaHedgeAttempts",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
               "type": "function"
             },
             {
@@ -2355,6 +2419,24 @@
               "type": "function"
             },
             {
+              "inputs": [
+                {
+                  "internalType": "int256",
+                  "name": "deltaToHedge",
+                  "type": "int256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "strikeId",
+                  "type": "uint256"
+                }
+              ],
+              "name": "dynamicDeltaHedge",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
               "inputs": [],
               "name": "feeRecipient",
               "outputs": [
@@ -2368,19 +2450,6 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "hasFuturesHedge",
-              "outputs": [
-                {
-                  "internalType": "bool",
-                  "name": "",
-                  "type": "bool"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
               "inputs": [
                 {
                   "internalType": "uint256",
@@ -2388,7 +2457,7 @@
                   "type": "uint256"
                 }
               ],
-              "name": "hedgeAttemptsByOptionType",
+              "name": "hedgeAttemptsByStrikeId",
               "outputs": [
                 {
                   "internalType": "uint256",
@@ -2674,19 +2743,6 @@
             },
             {
               "inputs": [],
-              "name": "reservedHedgeFunds",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
               "name": "roundPremiumCollected",
               "outputs": [
                 {
@@ -2828,8 +2884,13 @@
             {
               "inputs": [
                 {
+                  "internalType": "int256",
+                  "name": "size",
+                  "type": "int256"
+                },
+                {
                   "internalType": "uint256",
-                  "name": "optionType",
+                  "name": "strikeId",
                   "type": "uint256"
                 }
               ],
@@ -2857,6 +2918,11 @@
                   "internalType": "int256",
                   "name": "deltaToHedge",
                   "type": "int256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "strikeId",
+                  "type": "uint256"
                 }
               ],
               "name": "staticDeltaHedge",
@@ -2872,6 +2938,25 @@
                   "internalType": "address",
                   "name": "",
                   "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "strikeIdsHedged",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
                 }
               ],
               "stateMutability": "view",
@@ -2934,11 +3019,6 @@
                       "internalType": "uint256",
                       "name": "size",
                       "type": "uint256"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "futuresHedge",
-                      "type": "bool"
                     }
                   ],
                   "internalType": "struct StrategyBase.StrikeTrade[]",
@@ -3333,7 +3413,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0x73C21988aeA43D0cf0E0b3401233bA98adF02fcf",
+          "address": "0x215Dbd29bB911c98ec31A4D500E4222d4bDd98Bf",
           "abi": [
             {
               "inputs": [
@@ -3351,12 +3431,30 @@
               "inputs": [
                 {
                   "indexed": false,
-                  "internalType": "address",
-                  "name": "closer",
-                  "type": "address"
+                  "internalType": "enum StrategyBase.HEDGETYPE",
+                  "name": "_hedgeType",
+                  "type": "uint8"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "int256",
+                  "name": "size",
+                  "type": "int256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "spotPrice",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "strikeId",
+                  "type": "uint256"
                 }
               ],
-              "name": "HedgeClosePosition",
+              "name": "Hedge",
               "type": "event"
             },
             {
@@ -3371,17 +3469,17 @@
                 {
                   "indexed": false,
                   "internalType": "uint256",
-                  "name": "marginDelta",
+                  "name": "spotPrice",
                   "type": "uint256"
                 },
                 {
                   "indexed": false,
                   "internalType": "uint256",
-                  "name": "hedgeAttempt",
+                  "name": "strikeId",
                   "type": "uint256"
                 }
               ],
-              "name": "HedgeModifyPosition",
+              "name": "HedgeClosePosition",
               "type": "event"
             },
             {
@@ -3402,19 +3500,6 @@
               ],
               "name": "OwnershipTransferred",
               "type": "event"
-            },
-            {
-              "inputs": [],
-              "name": "StrikeStrategiesPossible",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
             },
             {
               "inputs": [],
@@ -3444,14 +3529,26 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "_closeHedgeEndOfRound",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
               "inputs": [
+                {
+                  "internalType": "int256",
+                  "name": "deltaToHedge",
+                  "type": "int256"
+                },
                 {
                   "internalType": "uint256",
                   "name": "hedgeAttempts",
                   "type": "uint256"
                 }
               ],
-              "name": "_deltaHedge",
+              "name": "_dynamicDeltaHedge",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -3511,11 +3608,6 @@
                       "internalType": "uint256",
                       "name": "size",
                       "type": "uint256"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "futuresHedge",
-                      "type": "bool"
                     }
                   ],
                   "internalType": "struct StrategyBase.StrikeTrade",
@@ -3538,30 +3630,6 @@
               "inputs": [
                 {
                   "internalType": "uint256",
-                  "name": "optionType",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "hedgeAttempts",
-                  "type": "uint256"
-                }
-              ],
-              "name": "_hedge",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "totalFunds",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
                   "name": "_optionType",
                   "type": "uint256"
                 }
@@ -3574,7 +3642,7 @@
                   "type": "bool"
                 }
               ],
-              "stateMutability": "view",
+              "stateMutability": "pure",
               "type": "function"
             },
             {
@@ -3593,16 +3661,24 @@
                   "type": "bool"
                 }
               ],
-              "stateMutability": "view",
+              "stateMutability": "pure",
               "type": "function"
             },
             {
               "inputs": [
                 {
-                  "internalType": "uint256",
-                  "name": "deltaHedgeAttempts",
-                  "type": "uint256"
-                },
+                  "internalType": "int256",
+                  "name": "size",
+                  "type": "int256"
+                }
+              ],
+              "name": "_simpleHedge",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
                 {
                   "internalType": "int256",
                   "name": "deltaToHedge",
@@ -3610,25 +3686,6 @@
                 }
               ],
               "name": "_staticDeltaHedge",
-              "outputs": [
-                {
-                  "internalType": "int256",
-                  "name": "fundsRequiredSUSD",
-                  "type": "int256"
-                }
-              ],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "amount",
-                  "type": "uint256"
-                }
-              ],
-              "name": "_transferFunds",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -3680,59 +3737,13 @@
             },
             {
               "inputs": [],
-              "name": "closeHedgeEndOfRound",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "name": "currentHedgeStrategies",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "hedgePercentage",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "maxHedgeAttempts",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "leverageSize",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "stopLossLimit",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "optionType",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "period",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
               "name": "currentStrategy",
               "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "hedgeReserve",
+                  "type": "uint256"
+                },
                 {
                   "internalType": "uint256",
                   "name": "collatBuffer",
@@ -3835,44 +3846,6 @@
                   "internalType": "uint256",
                   "name": "size",
                   "type": "uint256"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "futuresHedge",
-                  "type": "bool"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "deltaHedgeStrategy",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "maxNetDelta",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "minNetDelta",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "minTimestamp",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "hourPeriod",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "maxHedgeAttempts",
-                  "type": "uint256"
                 }
               ],
               "stateMutability": "view",
@@ -3896,11 +3869,6 @@
                       "internalType": "uint256",
                       "name": "size",
                       "type": "uint256"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "futuresHedge",
-                      "type": "bool"
                     }
                   ],
                   "internalType": "struct StrategyBase.StrikeTrade",
@@ -3927,6 +3895,34 @@
                 }
               ],
               "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "dynamicHedgeStrategy",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "deltaToHedge",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "maxHedgeAttempts",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "maxLeverageSize",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "period",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
               "type": "function"
             },
             {
@@ -3990,86 +3986,6 @@
                   "internalType": "uint256",
                   "name": "closeAmount",
                   "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "getCurrentStrikeStrategies",
-              "outputs": [
-                {
-                  "components": [
-                    {
-                      "internalType": "int256",
-                      "name": "targetDelta",
-                      "type": "int256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxDeltaGap",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVol",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxVolVariance",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "optionType",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct StrategyBase.StrikeStrategyDetail[]",
-                  "name": "_currentStrikeStrategies",
-                  "type": "tuple[]"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "getCurrentStrikeTrades",
-              "outputs": [
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "optionType",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "strikeId",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "size",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "futuresHedge",
-                      "type": "bool"
-                    }
-                  ],
-                  "internalType": "struct StrategyBase.StrikeTrade[]",
-                  "name": "strikeTrades",
-                  "type": "tuple[]"
                 }
               ],
               "stateMutability": "view",
@@ -4208,29 +4124,6 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "getStrikeOptionTypes",
-              "outputs": [
-                {
-                  "internalType": "uint256[]",
-                  "name": "strikes",
-                  "type": "uint256[]"
-                },
-                {
-                  "internalType": "uint256[]",
-                  "name": "optionTypes",
-                  "type": "uint256[]"
-                },
-                {
-                  "internalType": "uint256[]",
-                  "name": "positionIds",
-                  "type": "uint256[]"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
               "inputs": [
                 {
                   "internalType": "uint256[]",
@@ -4271,6 +4164,56 @@
                   "internalType": "struct LyraAdapter.Strike[]",
                   "name": "allStrikes",
                   "type": "tuple[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "getVaultStrategy",
+              "outputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "hedgeReserve",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "collatBuffer",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "collatPercent",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minTimeToExpiry",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxTimeToExpiry",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minTradeInterval",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "gwavPeriod",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct StrategyBase.StrategyDetail",
+                  "name": "_strategyDetail",
+                  "type": "tuple"
                 }
               ],
               "stateMutability": "view",
@@ -4328,6 +4271,19 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "hedgeType",
+              "outputs": [
+                {
+                  "internalType": "enum StrategyBase.HEDGETYPE",
+                  "name": "",
+                  "type": "uint8"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "address",
@@ -4346,6 +4302,11 @@
                 },
                 {
                   "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "hedgeReserve",
+                      "type": "uint256"
+                    },
                     {
                       "internalType": "uint256",
                       "name": "collatBuffer",
@@ -4566,7 +4527,24 @@
                   "components": [
                     {
                       "internalType": "uint256",
-                      "name": "hedgePercentage",
+                      "name": "deltaToHedge",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxLeverageSize",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct StrategyBase.StaticDeltaHedgeStrategy",
+                  "name": "_staticStrategy",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "deltaToHedge",
                       "type": "uint256"
                     },
                     {
@@ -4576,17 +4554,7 @@
                     },
                     {
                       "internalType": "uint256",
-                      "name": "leverageSize",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "stopLossLimit",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "optionType",
+                      "name": "maxLeverageSize",
                       "type": "uint256"
                     },
                     {
@@ -4595,9 +4563,22 @@
                       "type": "uint256"
                     }
                   ],
-                  "internalType": "struct StrategyBase.StrikeHedgeDetail[]",
-                  "name": "_hedgeStrategies",
-                  "type": "tuple[]"
+                  "internalType": "struct StrategyBase.DynamicDeltaHedgeStrategy",
+                  "name": "_dynamicStrategy",
+                  "type": "tuple"
+                }
+              ],
+              "name": "setHedgeStrategies",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_hedgeType",
+                  "type": "uint256"
                 }
               ],
               "name": "setHedgeStrategy",
@@ -4609,6 +4590,11 @@
               "inputs": [
                 {
                   "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "hedgeReserve",
+                      "type": "uint256"
+                    },
                     {
                       "internalType": "uint256",
                       "name": "collatBuffer",
@@ -4696,6 +4682,24 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "staticHedgeStrategy",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "deltaToHedge",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "maxLeverageSize",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "uint256",
@@ -4747,6 +4751,19 @@
               "type": "function"
             },
             {
+              "inputs": [
+                {
+                  "internalType": "int256",
+                  "name": "hedgeFunds",
+                  "type": "int256"
+                }
+              ],
+              "name": "transferToFuturesMarket",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
               "inputs": [],
               "name": "vault",
               "outputs": [
@@ -4757,13 +4774,6 @@
                 }
               ],
               "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "withdrawSUSDSNX",
-              "outputs": [],
-              "stateMutability": "nonpayable",
               "type": "function"
             }
           ]
@@ -4856,11 +4866,11 @@
           ]
         },
         "Vault": {
-          "address": "0x63F08A6bD306506E5E71EcF0dB37544cdBF1B168",
+          "address": "0x08671389062e91FF53C4f6784430060Cf621b3df",
           "abi": []
         },
         "VaultLifeCycle": {
-          "address": "0x46C05dd9C11273F6F3af4ca0FE19d1A8fFC0699b",
+          "address": "0x114161451F6ca05C1C8c6CB89F70A1182B2349fF",
           "abi": []
         }
       }

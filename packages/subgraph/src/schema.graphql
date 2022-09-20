@@ -1,29 +1,35 @@
 type Global @entity {
   id: ID!
-  vaults: [Vault!]! @dervivedFrom(field: "global")
 }
 
 type Vault @entity {
   id: ID!
+  manager: Manager!
   round: Int!
   isActive: Boolean!
   isPublic: Boolean!
   strategy: Bytes!
+  name: String!
+  tokenName: String!
+  tokenSymbol: String!
+  description: String!
+  performanceFee: BigInt!
+  managementFee: BigInt!
+  asset: Bytes!
+  vaultCap: BigInt!
   totalYieldEarned: BigInt!
   previousExpiryAPR: BigInt!
   lockedAmount: BigInt!
-  maxCap: BigInt!
-  depositsAndWithdrawals: [UserAction!]! @dervivedFrom(field: "UserAction")
-  currentVaultTrades: [VaultTrade!]! @dervivedFrom(field: "VaultTrade")
-  historyVaultTrades: [VaultTrade!]! @dervivedFrom(field: "VaultTrade")
+  userActions: [UserAction!]! @derivedFrom(field: "vault")
+  vaultTrades: [VaultTrade!]! @derivedFrom(field: "vault")
   global: Global!
 }
 
 type VaultTrade @entity {
-  id: ID!
+  id: ID!8
   type: String!
   optionType: String!
-  positions: [Int!]!
+  positionIds: [Int!]!
   txhash: Bytes!
   strikePrice: BigInt!
   expiry: BigInt!
@@ -35,20 +41,12 @@ type VaultTrade @entity {
   vault: Vault!
 }
 
-type VaultPosition @entity {
-  id: ID!
-  vault: Vault!
-  currentBalance: BigInt!
-  shares: BigInt!
-}
-
 type UserPortfolio @entity {
   id: ID!
   account: Bytes!
   balance: BigInt!
   yieldEarned: BigInt!
-  vaultPositions: [VaultPosition!]! @dervivedFrom(field: "VaultPosition")
-  depositsAndWithdrawals: [UserAction!]! @dervivedFrom(field: "UserAction")
+  userActions: [UserAction!]! @derivedFrom(field: "userPortfolio")
 }
 
 type UserAction @entity {
@@ -62,11 +60,12 @@ type UserAction @entity {
 
 type Manager @entity {
   id: ID!
-  actions: [ManagerAction!]! @dervivedFrom(field: "ManagerAction")
+  vaults: [Vault!]! @derivedFrom(field: "manager")
+  managerActions: [ManagerAction!]! @derivedFrom(field: "manager")
 }
 
 type ManagerAction @entity {
   id: ID!
   trade: VaultTrade
-  Manager: Manager!
+  manager: Manager!
 }

@@ -15,6 +15,7 @@ import "@nomiclabs/hardhat-etherscan";
 import "@typechain/hardhat";
 import "hardhat-dependency-compiler";
 import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths';
+import "hardhat-contract-sizer";
 
 dotenv.config();
 

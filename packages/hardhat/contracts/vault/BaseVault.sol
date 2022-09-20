@@ -409,10 +409,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    * @return lockedBalance is the new balance used to calculate next option purchase size or collateral size
    * @return queuedWithdrawAmount is the new queued withdraw amount for this round
    */
-
-  /**
-   * Need to check if address is auto compounding or if they're letting premium stay on the side
-   */
   function _rollToNextRound(uint lastQueuedWithdrawAmount) internal returns (uint, uint) {
     (
       uint currentBalance,

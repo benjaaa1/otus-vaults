@@ -7,7 +7,6 @@ import "hardhat/console.sol";
 // Libraries
 import {BlackScholes} from "@lyrafinance/protocol/contracts/libraries/BlackScholes.sol";
 import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
-import "../interfaces/IFuturesMarket.sol";
 
 // Inherited
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -223,60 +222,6 @@ contract LyraAdapter is OwnableUpgradeable {
    */
   function getSpotPriceForMarket() public view returns (uint spotPrice) {
     spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
-  }
-
-  /**
-   * @notice helper to exchange with a min
-   * @param amountQuote expected quote
-   * @param minBaseReceived minimum acceptable
-   * @return baseReceived
-   */
-  function exchangeFromExactQuote(uint amountQuote, uint minBaseReceived) internal returns (uint baseReceived) {
-    baseReceived = synthetixAdapter.exchangeFromExactQuote(address(optionMarket), amountQuote);
-    require(baseReceived >= minBaseReceived, "base received too low");
-  }
-
-  /**
-   * @notice helper to exchange to exact quote
-   * @param amountQuote exact quote
-   * @param maxBaseUsed max base used for quote
-   * @return quoteReceived
-   */
-  function exchangeToExactQuote(uint amountQuote, uint maxBaseUsed) internal returns (uint quoteReceived) {
-    SynthetixAdapter.ExchangeParams memory exchangeParams = synthetixAdapter.getExchangeParams(address(optionMarket));
-    (, quoteReceived) = synthetixAdapter.exchangeToExactQuoteWithLimit(
-      exchangeParams,
-      address(optionMarket),
-      amountQuote,
-      maxBaseUsed
-    );
-  }
-
-  /**
-   * @notice helper to exchange to min base
-   * @param amountBase exact base
-   * @param minQuoteReceived min quote received acceptable
-   * @return quoteReceived
-   */
-  function exchangeFromExactBase(uint amountBase, uint minQuoteReceived) internal returns (uint quoteReceived) {
-    quoteReceived = synthetixAdapter.exchangeFromExactBase(address(optionMarket), amountBase);
-    require(quoteReceived >= minQuoteReceived, "quote received too low");
-  }
-
-  /**
-   * @notice helper to exchange to base
-   * @param amountBase exact base
-   * @param maxQuoteUsed max quote used acceptable
-   * @return baseReceived
-   */
-  function exchangeToExactBase(uint amountBase, uint maxQuoteUsed) internal returns (uint baseReceived) {
-    SynthetixAdapter.ExchangeParams memory exchangeParams = synthetixAdapter.getExchangeParams(address(optionMarket));
-    (, baseReceived) = synthetixAdapter.exchangeToExactBaseWithLimit(
-      exchangeParams,
-      address(optionMarket),
-      amountBase,
-      maxQuoteUsed
-    );
   }
 
   //////////////////////////

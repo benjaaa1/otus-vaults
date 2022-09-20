@@ -80,62 +80,11 @@ contract FuturesAdapter {
   }
 
   /**
-   * @notice liquidates positions
-   */
-  function _liquidatePosition() internal {
-    futuresMarket.liquidatePosition(address(this));
-  }
-
-  //////////////////////////////
-  // Market Position Details  //
-  //////////////////////////////
-
-  /**
-   * @notice View all positions held by vault
-   * @return id synthetix futures id of position
-   * @return fundingIndex index of position
-   * @return margin of position
-   * @return lastPrice of asset in synthetix
-   * @return size
-   */
-  function _positions()
-    internal
-    view
-    returns (
-      uint64 id,
-      uint64 fundingIndex,
-      uint128 margin,
-      uint128 lastPrice,
-      int128 size
-    )
-  {
-    (id, fundingIndex, margin, lastPrice, size) = futuresMarket.positions(address(this));
-  }
-
-  /**
-   * @notice View pnl of vault
-   * @return value
-   * @return invalid
-   */
-  function _profitLoss() internal view returns (int value, bool invalid) {
-    (value, invalid) = futuresMarket.profitLoss(address(this));
-  }
-
-  /**
    * @notice Remaining margin available
    * @return marginRemaining
    * @return invalid
    */
   function _remainingMargin() internal view returns (uint marginRemaining, bool invalid) {
     (marginRemaining, invalid) = futuresMarket.remainingMargin(address(this));
-  }
-
-  /**
-   * @notice Calculate fee amount for trade
-   * @return fee
-   * @return invalid
-   */
-  function _orderFee(int sizeDelta) internal view returns (uint fee, bool invalid) {
-    (fee, invalid) = futuresMarket.orderFee(sizeDelta);
   }
 }

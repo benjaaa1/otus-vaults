@@ -1,7 +1,6 @@
-import { log } from '@graphprotocol/graph-ts'
-import { StrategyUpdated, Trade, Hedge, PositionReduced, RoundStarted, RoundClosed, RoundSettled, Deposit, InitiateWithdraw, Redeem, Withdraw } from '../../generated/templates/OtusVault/OtusVault'
+import { Address, BigInt, Bytes, DataSourceContext, store } from '@graphprotocol/graph-ts';import { StrategyUpdated, Trade, PositionReduced, RoundStarted, RoundClosed, RoundSettled, Deposit, InitiateWithdraw, Redeem, Withdraw } from '../../generated/templates/OtusVault/OtusVault'
 import {
-  Global, Vault, VaultTrade, VaultPosition, UserPortfolio, UserAction, Manager, ManagerAction
+  Global, Vault, VaultTrade, UserPortfolio, UserAction, Manager, ManagerAction
 } from '../../generated/schema'
 
 export function handleStrategyUpdate(event: StrategyUpdated): void {
@@ -9,10 +8,6 @@ export function handleStrategyUpdate(event: StrategyUpdated): void {
 }
 
 export function handleVaultTrade(event: Trade): void {
-
-}
-
-export function handleVaultHedge(event: Hedge): void {
 
 }
 
@@ -32,8 +27,32 @@ export function handleRoundSettled(event: RoundSettled): void {
 
 }
 
-export function handleDeposit(event: Deposit): void {
 
+  // let otusVaultEntity = Vault.load(otusVaultAddress.toHex());
+  // if(otusVaultEntity == null) {
+  //   otusVaultEntity = new Vault(otusVaultAddress.toHex());
+  // }
+
+  // userAction.vault = otusVaultAddress.toHex();
+
+export function handleDeposit(event: Deposit): void {
+  let otusVaultAddress = event.address as Address;
+  let depositor = event.params.account;
+  let userAction = new UserAction(otusVaultAddress.toHex() + '-' + depositor.toHex());
+
+  let userPortfolioEntity = UserPortfolio.load(depositor.toHex());
+  if (!userPortfolioEntity) {
+    userPortfolioEntity = new UserPortfolio(depositor.toHex());
+    userPortfolioEntity.balance = event.params.amount; 
+  } 
+  
+  userAction.isDeposit = true; 
+  userAction.amount = event.params.amount; 
+  userAction.vault = otusVaultAddress.toHex();
+  userAction.userPortfolio = userPortfolioEntity.id;
+
+  userAction.save();
+  userPortfolioEntity.save();
 }
 
 export function handleInitiateWithdraw(event: InitiateWithdraw): void {

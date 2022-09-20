@@ -55,7 +55,14 @@ contract OtusController is Ownable {
    *  EVENTS
    ***********************************************/
 
-  event VaultCreated(uint indexed vaultId, address indexed user, address indexed vault, address strategy);
+  event VaultCreated(
+    uint indexed vaultId,
+    address indexed user,
+    address indexed vault,
+    address strategy,
+    Vault.VaultInformation vaultInfo,
+    Vault.VaultParams vaultParams
+  );
 
   /************************************************
    *  CONSTRUCTOR & INITIALIZATION
@@ -105,7 +112,7 @@ contract OtusController is Ownable {
     address[] memory _vaults = vaults[msg.sender];
     uint len = _vaults.length;
 
-    require(len < 9, "Max 9 vaults created");
+    require(len < 18, "Max 18 vaults created");
     vaults[msg.sender].push(vault);
     require(vault != address(0), "Vault not created");
 
@@ -139,7 +146,7 @@ contract OtusController is Ownable {
 
     _addVault(vault);
 
-    emit VaultCreated(vaultId, msg.sender, vault, strategy);
+    emit VaultCreated(vaultId, msg.sender, vault, strategy, _vaultInfo, _vaultParams);
   }
 
   /**

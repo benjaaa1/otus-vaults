@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 
 export type Web3ProviderState = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  signer: ethers.providers.JsonRpcSigner | null | undefined,
   provider: any
   web3Provider: ethers.providers.Web3Provider | null | undefined
   address: string | null | undefined
@@ -11,6 +12,7 @@ export type Web3ProviderState = {
 }
 
 export const web3InitialState: Web3ProviderState = {
+  signer: null,
   provider: null,
   web3Provider: null,
   address: null,
@@ -22,6 +24,7 @@ export const web3InitialState: Web3ProviderState = {
 export type Web3Action =
   | {
       type: 'SET_WEB3_PROVIDER'
+      signer?: Web3ProviderState['signer']
       provider?: Web3ProviderState['provider']
       web3Provider?: Web3ProviderState['web3Provider']
       address?: Web3ProviderState['address']
@@ -47,6 +50,7 @@ export function web3Reducer(
     case 'SET_WEB3_PROVIDER':
       return {
         ...state,
+        signer: action.signer,
         provider: action.provider,
         web3Provider: action.web3Provider,
         address: action.address,

@@ -24,7 +24,7 @@ const providerOptions = {
 let web3Modal: Web3Modal | null
 if (typeof window !== 'undefined') {
   web3Modal = new Web3Modal({
-    network: 'mainnet', // optional
+    network: 'optimism-kovan', // optional
     cacheProvider: true,
     providerOptions, // required
   })
@@ -32,7 +32,7 @@ if (typeof window !== 'undefined') {
 
 export const useWeb3 = () => {
   const [state, dispatch] = useReducer(web3Reducer, web3InitialState)
-  const { provider, web3Provider, address, network } = state
+  const { signer, provider, web3Provider, address, network } = state
 
   const connect = useCallback(async () => {
     if (web3Modal) {
@@ -46,10 +46,11 @@ export const useWeb3 = () => {
 
         dispatch({
           type: 'SET_WEB3_PROVIDER',
+          signer,
           provider,
           web3Provider,
           address,
-          network,
+          network
         } as Web3Action)
       } catch (e) {
         console.log('connect error', e)
@@ -125,6 +126,7 @@ export const useWeb3 = () => {
   }, [provider, disconnect])
 
   return {
+    signer,
     provider,
     web3Provider,
     address,

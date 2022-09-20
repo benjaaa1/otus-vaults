@@ -14,37 +14,60 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {LyraAdapter} from "../../vaultAdapters/LyraAdapter.sol";
-import {FuturesAdapter} from "../../vaultAdapters/FuturesAdapter.sol";
+// import {FuturesAdapter} from "../../vaultAdapters/FuturesAdapter.sol";
+import "../../interfaces/IFuturesMarket.sol";
 
 /**
  * @title StrategyBase
  * @author Lyra
  * @dev Maintains strategy settings and strike validations
  */
-contract StrategyBase is FuturesAdapter, LyraAdapter {
+contract StrategyBase is LyraAdapter {
   using SafeDecimalMath for uint;
 
   ///////////////
   // Variables //
   ///////////////
 
+  IFuturesMarket internal futuresMarket;
   GWAVOracle public gwavOracle;
 
   IERC20 internal quoteAsset;
-  IERC20 internal baseAsset;
 
   uint public activeExpiry;
   uint public activeBoardId;
-
   uint[] public activeStrikeIds;
+
+  StrikeTrade[] public currentStrikeTrades;
   mapping(uint => uint) public strikeToPositionId;
   mapping(uint => uint) public strikeIdToTrade;
 
   mapping(uint => uint) public lastTradeTimestamp;
   mapping(uint => uint) public lastTradeOptionType;
 
+  // Round vault settings
+  StrategyDetail public currentStrategy;
+  // dynamic hedge strategy
+  DynamicDeltaHedgeStrategy public dynamicHedgeStrategy;
+  // dynamic hedge strategy
+  StaticDeltaHedgeStrategy public staticHedgeStrategy;
+
+  // option type => strike strategy
+  mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
+
+  HEDGETYPE public hedgeType;
+
+  // hedge type selected
+  enum HEDGETYPE {
+    NO_HEDGE,
+    SIMPLE_HEDGE,
+    STATIC_DELTA_HEDGE,
+    DYNAMIC_DELTA_HEDGE
+  }
+
   // strategies can be updated by different strategizers
   struct StrategyDetail {
+    uint hedgeReserve; // (this is subtracted first the collatpercent and buffer)
     uint collatBuffer;
     uint collatPercent;
     uint minTimeToExpiry;
@@ -66,40 +89,21 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     uint optionType;
     uint strikeId;
     uint size;
-    bool futuresHedge;
   }
 
-  struct StrikeHedgeDetail {
-    uint hedgePercentage; // 20% + collatPercent == 100%
+  struct StaticDeltaHedgeStrategy {
+    uint deltaToHedge; // 50% - 100% -> dependent on risk appetite
+    uint maxLeverageSize; // 150% ~ 1.5x 200% 2x
+  }
+
+  struct DynamicDeltaHedgeStrategy {
+    uint deltaToHedge; // 50% - 100% -> dependent on risk appetite
     uint maxHedgeAttempts; // ~6 dependent on fees mostly
-    uint leverageSize; // 150% ~ 1.5x 200% 2x
-    uint stopLossLimit; // .001 1%
-    uint optionType;
-    /** NEW HEDGE OPTION */
-    uint period; // 15 min 1 hour 4 hours 12 hours 24 hours hedge attempt allowed once per period
+    uint maxLeverageSize; // 150% ~ 1.5x 200% 2x - sometimes not enough funds to cover the delta
+    uint period; // 4 hours 12 hours 24 hours hedge attempt allowed once per period
   }
 
-  struct DeltaHedgeDetail {
-    uint maxNetDelta; // 3 if current net delta is 4, need to get it to 3 again by buying = > 1 share of base asset - keeper will keep track of this and will be rechecked (net delta) here
-    uint minNetDelta; // -3 if current net delta is -4, need to get it to -3 or under by selling = > 1 share of base asset - keeper will keep track of this and will be rechecked here
-    uint minTimestamp;
-    uint hourPeriod;
-    uint maxHedgeAttempts;
-  }
-
-  StrikeTrade[] public currentStrikeTrades;
-  // Round settings
-  StrategyDetail public currentStrategy;
-
-  // Delta hedge strategy
-  DeltaHedgeDetail public deltaHedgeStrategy;
-  // option type => strike strategy
-  mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
-  uint public immutable StrikeStrategiesPossible = 4;
-  // option type => hedge
-  mapping(uint => StrikeHedgeDetail) public currentHedgeStrategies;
-
-  constructor(address _synthetixAdapter) FuturesAdapter() LyraAdapter(_synthetixAdapter) {}
+  constructor(address _synthetixAdapter) LyraAdapter(_synthetixAdapter) {}
 
   /**
    * @dev
@@ -118,36 +122,29 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     currentStrategy = _currentStrategy;
 
     address _futuresMarket = marketAddresses[8];
+    futuresMarket = IFuturesMarket(_futuresMarket);
+
     address _optionMarket = marketAddresses[3]; // marketAddress.optionMarket,
     address _quoteAsset = marketAddresses[0]; // quote asset
-    address _baseAsset = marketAddresses[1]; // base asset
 
     if (address(quoteAsset) != address(0)) {
       quoteAsset.approve(_optionMarket, 0);
       quoteAsset.approve(_optionMarket, 0);
     }
-    if (address(baseAsset) != address(0)) {
-      baseAsset.approve(_futuresMarket, 0);
-      baseAsset.approve(_futuresMarket, 0);
-    }
 
     quoteAsset = IERC20(_quoteAsset);
-    baseAsset = IERC20(_baseAsset);
 
     // Do approvals
     quoteAsset.approve(_vault, type(uint).max);
-    baseAsset.approve(_vault, type(uint).max);
 
     quoteAsset.approve(_optionMarket, type(uint).max);
-    baseAsset.approve(_optionMarket, type(uint).max);
 
     quoteAsset.approve(_futuresMarket, type(uint).max);
-    baseAsset.approve(_futuresMarket, type(uint).max);
 
     // susd test on synthetix different than lyra
     // IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).approve(_futuresMarket, type(uint).max);
 
-    futuresInitialize(marketAddresses[8]);
+    // futuresInitialize(marketAddresses[8]);
 
     optionInitialize(
       _owner,
@@ -280,7 +277,7 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
     uint strikePrice,
     uint amount,
     uint _optionType
-  ) internal view returns (uint fullCollat) {
+  ) internal pure returns (uint fullCollat) {
     // calculate required collat based on collatBuffer and collatPercent
     fullCollat = _isBaseCollat(_optionType) ? amount : amount.multiplyDecimal(strikePrice);
   }
@@ -336,60 +333,18 @@ contract StrategyBase is FuturesAdapter, LyraAdapter {
   }
 
   //////////
-  // View //
-  //////////
-
-  function getStrikeOptionTypes()
-    external
-    view
-    returns (
-      uint[] memory strikes,
-      uint[] memory optionTypes,
-      uint[] memory positionIds
-    )
-  {
-    uint len = activeStrikeIds.length;
-    strikes = new uint[](len);
-    optionTypes = new uint[](len);
-    positionIds = new uint[](len);
-
-    for (uint i = 0; i < len; i++) {
-      uint strikeId = activeStrikeIds[i];
-      strikes[i] = strikeId;
-      uint optionType = lastTradeOptionType[strikeId];
-      optionTypes[i] = optionType;
-      uint positionId = strikeToPositionId[strikeId];
-      positionIds[i] = positionId;
-    }
-
-    return (strikes, optionTypes, positionIds);
-  }
-
-  function getCurrentStrikeTrades() external view returns (StrikeTrade[] memory strikeTrades) {
-    uint len = currentStrikeTrades.length;
-    strikeTrades = new StrikeTrade[](len);
-
-    for (uint i = 0; i < len; i++) {
-      StrikeTrade memory strikeTrade = currentStrikeTrades[i];
-      strikeTrades[i] = strikeTrade;
-    }
-
-    return strikeTrades;
-  }
-
-  //////////
   // Misc //
   //////////
 
-  function _isBaseCollat(uint _optionType) internal view returns (bool isBase) {
+  function _isBaseCollat(uint _optionType) internal pure returns (bool isBase) {
     isBase = (OptionType(_optionType) == OptionType.SHORT_CALL_BASE) ? true : false;
   }
 
-  function _isCall(uint _optionType) public view returns (bool isCall) {
+  function _isCall(uint _optionType) public pure returns (bool isCall) {
     isCall = (OptionType(_optionType) == OptionType.SHORT_PUT_QUOTE) ? false : true;
   }
 
-  function _isLong(uint _optionType) public view returns (bool isLong) {
+  function _isLong(uint _optionType) public pure returns (bool isLong) {
     if (OptionType(_optionType) == OptionType.LONG_CALL || OptionType(_optionType) == OptionType.LONG_PUT) {
       isLong = true;
     }

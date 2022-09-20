@@ -10,13 +10,20 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+        sans: ['"IBM Plex Sans"', 'sans-serif'],
+        serif: ['"IBM Plex Mono"', 'serif'],
       },
       colors: {
         sky: colors.sky,
         teal: colors.teal,
         cyan: colors.cyan,
         rose: colors.rose,
+        'black': '#1c1c1c',
+        'white': '#ffffff',
+        'gray': '#959595',
+        'dark-gray': '#343434',
+        'green': '#84FFC4',
+        'dark-green': '#369165'
       },
     },
   },
