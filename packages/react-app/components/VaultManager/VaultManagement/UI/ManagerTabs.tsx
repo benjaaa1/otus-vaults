@@ -1,13 +1,15 @@
+import { VaultManagerTabs } from '../../../../constants/tabs'
+
 const tabs = [
-  { name: 'Trade', href: 'trades' },
-  { name: 'Current Round', href: 'current' },
+  { name: VaultManagerTabs.TRADE.TITLE, href: VaultManagerTabs.TRADE.HREF },
+  { name: VaultManagerTabs.CURRENT.TITLE, href: VaultManagerTabs.CURRENT.HREF },
 ]
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function MangerTabs({ setTab, active }) {
+export default function ManagerTabs({ setTab, active }) {
   return (
     <div>
       <div className="sm:hidden">

@@ -1,46 +1,29 @@
-/* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useState } from 'react'
+import { Dispatch, Fragment, useState } from 'react'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
+import { LyraBoard } from '../../../../queries/lyra/useLyra'
 
-const people = [
-  { id: 1, name: 'Wade Cooper', online: true },
-  { id: 2, name: 'Arlene Mccoy', online: false },
-  { id: 3, name: 'Devon Webb', online: false },
-  { id: 4, name: 'Tom Cook', online: true },
-  { id: 5, name: 'Tanya Fox', online: false },
-  { id: 6, name: 'Hellen Schmidt', online: true },
-  { id: 7, name: 'Caroline Schultz', online: true },
-  { id: 8, name: 'Mason Heaney', online: false },
-  { id: 9, name: 'Claudie Smitham', online: true },
-  { id: 10, name: 'Emil Schaefer', online: false },
-]
-
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function SelectExpiry() {
-  const [selected, setSelected] = useState(people[3])
-
+export default function SelectExpiry({
+  boards,
+  selectedExpiry,
+  setSelectedExpiry,
+}: {
+  boards: LyraBoard[] | null | undefined
+  selectedExpiry: LyraBoard | null | undefined
+  setSelectedExpiry: Dispatch<any>
+}) {
   return (
-    <Listbox value={selected} onChange={setSelected}>
+    <Listbox value={selectedExpiry} onChange={setSelectedExpiry}>
       {({ open }) => (
         <>
-          <Listbox.Label className="text-gray-700 block text-sm font-medium">
-            Assigned to
-          </Listbox.Label>
-          <div className="relative mt-1">
+          <div className="relative">
             <Listbox.Button className="border-gray-300 relative w-full cursor-default rounded-md border bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
-              <span className="flex items-center">
-                <span
-                  aria-label={selected.online ? 'Online' : 'Offline'}
-                  className={classNames(
-                    selected.online ? 'bg-green-400' : 'bg-gray-200',
-                    'inline-block h-2 w-2 flex-shrink-0 rounded-full'
-                  )}
-                />
-                <span className="ml-3 block truncate">{selected.name}</span>
+              <span className="block truncate">
+                {selectedExpiry ? selectedExpiry.name : 'Select an Expiry'}
               </span>
               <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                 <ChevronUpDownIcon
@@ -58,25 +41,22 @@ export default function SelectExpiry() {
               leaveTo="opacity-0"
             >
               <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                {people.map((person) => (
+                {boards?.map((board) => (
                   <Listbox.Option
-                    key={person.id}
+                    key={board.id}
                     className={({ active }) =>
                       classNames(
                         active ? 'bg-indigo-600 text-white' : 'text-gray-900',
                         'relative cursor-default select-none py-2 pl-3 pr-9'
                       )
                     }
-                    value={person}
+                    value={board}
                   >
                     {({ selected, active }) => (
                       <>
                         <div className="flex items-center">
                           <span
-                            className={classNames(
-                              person.online ? 'bg-green-400' : 'bg-gray-200',
-                              'inline-block h-2 w-2 flex-shrink-0 rounded-full'
-                            )}
+                            className="inline-block h-2 w-2 flex-shrink-0 rounded-full"
                             aria-hidden="true"
                           />
                           <span
@@ -85,11 +65,7 @@ export default function SelectExpiry() {
                               'ml-3 block truncate'
                             )}
                           >
-                            {person.name}
-                            <span className="sr-only">
-                              {' '}
-                              is {person.online ? 'online' : 'offline'}
-                            </span>
+                            {board.name}
                           </span>
                         </div>
 

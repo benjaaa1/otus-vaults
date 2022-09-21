@@ -47,6 +47,11 @@ export const commifyAndPadDecimals = (value: string, decimals: number) => {
 	return formatted;
 };
 
+export const formatFromBigNumber = (value: BigNumber, options?: FormatNumberOptions) => {
+	return formatUnits(value); 
+	// return commifyAndPadDecimals(formatted, 2); 
+}
+
 // // TODO: implement max decimals
 // export const formatNumber = (value: WeiSource, options?: FormatNumberOptions) => {
 // 	const prefix = options?.prefix;

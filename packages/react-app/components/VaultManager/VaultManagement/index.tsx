@@ -18,7 +18,7 @@ import SelectExpiry from './UI/SelectExpiry'
 import ManagerTabs from './UI/ManagerTabs'
 import Trade from './Trade'
 import Current from './Current'
-import { useLyraMarket } from '../../../queries/lyra/useLyra'
+import { VaultManagerTabs } from '../../../constants/tabs'
 
 const user = {
   name: 'Whitney Francis',
@@ -126,9 +126,7 @@ export default function VaultManagement() {
   console.log({ vault: query?.vault })
   const { data, isLoading } = useMyVault(query?.vault)
 
-  const [tab, setTab] = useState('trades')
-
-  const response = useLyraMarket()
+  const [tab, setTab] = useState(VaultManagerTabs.CURRENT.HREF)
 
   return (
     <>
@@ -139,9 +137,11 @@ export default function VaultManagement() {
             <div className="flex items-center space-x-5">
               <div>
                 <h1 className="text-2xl font-bold text-gray">
-                  Vault Management
+                  {data?.name || <span>--</span>}
                 </h1>
-                <p className="text-sm font-medium text-white">{data?.name}</p>
+                <p className="text-sm font-medium text-white">
+                  Vault Management
+                </p>
               </div>
             </div>
           </div>
@@ -151,25 +151,31 @@ export default function VaultManagement() {
               {/* Active Strike list */}
               <section aria-labelledby="applicant-information-title">
                 <div className="bg-white shadow sm:rounded-lg">
-                  <div className="px-4 py-5 sm:px-6">
+                  <div className="px-2 py-2 sm:px-2">
                     {/** add tab here */}
                     <ManagerTabs setTab={setTab} active={tab} />
                   </div>
-                  <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
+                  <div className="border-gray-200 border-t px-2 py-2 sm:px-2">
                     <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
                       <div className="bg-black sm:col-span-2">
-                        {tab === 'trade' ? <Trade /> : <Current />}
+                        {tab === VaultManagerTabs.TRADE.HREF ? (
+                          <Trade />
+                        ) : (
+                          <Current />
+                        )}
                       </div>
                     </dl>
                   </div>
-                  {/* <div>
-                    <a
-                      onClick={() => setOpen(true)}
-                      className="text-gray-500 hover:text-gray-700 block bg-green px-4 py-4 text-center text-sm font-medium sm:rounded-b-lg"
-                    >
-                      Add strike
-                    </a>
-                  </div> */}
+                  {tab === VaultManagerTabs.CURRENT.HREF ? (
+                    <div>
+                      <a
+                        onClick={() => setTab(VaultManagerTabs.TRADE.HREF)}
+                        className="text-gray-500 hover:text-gray-700 block bg-green px-4 py-4 text-center text-sm font-medium sm:rounded-b-lg"
+                      >
+                        Add strike
+                      </a>
+                    </div>
+                  ) : null}
                 </div>
               </section>
 
