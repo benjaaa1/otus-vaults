@@ -19,6 +19,8 @@ import ManagerTabs from './UI/ManagerTabs'
 import Trade from './Trade'
 import Current from './Current'
 import { VaultManagerTabs } from '../../../constants/tabs'
+import { VaultManagerContextProvider } from '../../../context'
+import TradeExecute from './Trade/TradeExecute'
 
 const user = {
   name: 'Whitney Francis',
@@ -129,7 +131,7 @@ export default function VaultManagement() {
   const [tab, setTab] = useState(VaultManagerTabs.CURRENT.HREF)
 
   return (
-    <>
+    <VaultManagerContextProvider>
       <div className="min-h-full">
         <main className="py-10">
           {/* Page header */}
@@ -291,23 +293,14 @@ export default function VaultManagement() {
               className="lg:col-span-1 lg:col-start-3"
             >
               <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6">
-                <h2
-                  id="timeline-title"
-                  className="text-gray-900 text-lg font-medium"
-                >
-                  Trade Details
-                </h2>
+                <TradeExecute />
 
-                {/* Activity Feed */}
-                <div className="mt-6 flow-root">
-                  <ul role="list" className="-mb-8"></ul>
-                </div>
                 <div className="justify-stretch mt-6 flex flex-col">
                   <button
                     type="button"
                     className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   >
-                    Trade
+                    Execute Trade
                   </button>
                 </div>
               </div>
@@ -315,6 +308,6 @@ export default function VaultManagement() {
           </div>
         </main>
       </div>
-    </>
+    </VaultManagerContextProvider>
   )
 }

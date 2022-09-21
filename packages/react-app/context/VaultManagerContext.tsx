@@ -1,5 +1,5 @@
 import React, { ReactChild, createContext, useContext } from 'react'
-import { useWeb3 } from '../hooks/Web3Client'
+import { useVaultManager } from '../hooks'
 import {
   VaultManagerProviderState,
   vaultManagerInitialState,
@@ -16,10 +16,10 @@ interface Props {
 
 // not ready
 export const VaultManagerContextProvider = ({ children }: Props) => {
-  const web3ProviderState = useWeb3()
+  const vaultManagerProviderState = useVaultManager()
 
   return (
-    <VaultManagerContext.Provider value={web3ProviderState}>
+    <VaultManagerContext.Provider value={vaultManagerProviderState}>
       {children}
     </VaultManagerContext.Provider>
   )

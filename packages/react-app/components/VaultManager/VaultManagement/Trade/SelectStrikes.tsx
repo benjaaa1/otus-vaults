@@ -1,17 +1,15 @@
 import { Strike } from '@lyrafinance/lyra-js'
+import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import { useEffect, useState } from 'react'
+import { ONE_BN } from '../../../../constants/bn'
+import { useVaultManagerContext } from '../../../../context/VaultManagerContext'
 import { LyraBoard, LyraStrike } from '../../../../queries/lyra/useLyra'
-import { formatFromBigNumber } from '../../../../utils/formatters/numbers'
+import {
+  commifyAndPadDecimals,
+  formatFromBigNumber,
+} from '../../../../utils/formatters/numbers'
 
-// const people = [
-//   {
-//     name: 'Lindsay Walton',
-//     title: 'Front-end Developer',
-//     email: 'lindsay.walton@example.com',
-//     role: 'Member',
-//   },
-// ]
 export default function SelectStrikes({
   selectedOptionType,
   selectedExpiry,
@@ -27,6 +25,8 @@ export default function SelectStrikes({
       setStrikes(_strikes)
     }
   }, [selectedOptionType, selectedExpiry])
+
+  const { toggleTrade } = useVaultManagerContext()
 
   return (
     <table className="min-w-full divide-y divide-gray">
@@ -65,7 +65,11 @@ export default function SelectStrikes({
         {strikes.map((strike: LyraStrike) => (
           <tr key={strike.id}>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray sm:pl-6">
-              {formatFromBigNumber(strike.strikePrice)}
+              {commifyAndPadDecimals(
+                formatFromBigNumber(strike.strikePrice),
+                2
+              )}{' '}
+              - {strike.id}
             </td>
             <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-gray sm:table-cell">
               {formatFromBigNumber(strike.quote.breakEven)}
@@ -76,13 +80,14 @@ export default function SelectStrikes({
               )}
             </td>
             <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-              <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                Select {formatFromBigNumber(strike.quote.premium)}
-                <span className="sr-only">
-                  {formatFromBigNumber(strike.quote.premium)} -{' '}
-                  {formatFromBigNumber(strike.quote.pricePerOption)}
-                </span>
-              </a>
+              <button
+                onClick={
+                  () => toggleTrade({ ...strike, selectedOptionType }) // change to toggle trade
+                }
+                className="text-indigo-600 hover:text-indigo-900"
+              >
+                {`$${formatFromBigNumber(strike.quote.premium)}`}
+              </button>
             </td>
           </tr>
         ))}

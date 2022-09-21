@@ -34,11 +34,11 @@ export const zeroBN = BigNumber.from('0');
  * @returns string
  */
 export const commifyAndPadDecimals = (value: string, decimals: number) => {
-	let formatted =  utils.commify(value);
+	let formatted = utils.commify(value);
 	const comps = formatted.split('.');
 
 	if (comps.length === 2 && comps[1] && comps[1].length !== decimals) {
-		const zeros = '0'.repeat(decimals - comps[1].length);
+		const zeros = '0'.repeat(comps[1].length > decimals ? decimals : decimals - comps[1].length);
 
 		const decimalSuffix = `${comps[1]}${zeros}`;
 		formatted = `${comps[0]}.${decimalSuffix}`;
@@ -47,9 +47,19 @@ export const commifyAndPadDecimals = (value: string, decimals: number) => {
 	return formatted;
 };
 
+
+const getPrecision = (amount: WeiSource) => {
+	if (amount >= 1) {
+		return DEFAULT_CURRENCY_DECIMALS;
+	}
+	if (amount > 0.01) {
+		return SHORT_CRYPTO_CURRENCY_DECIMALS;
+	}
+	return LONG_CRYPTO_CURRENCY_DECIMALS;
+};
+
 export const formatFromBigNumber = (value: BigNumber, options?: FormatNumberOptions) => {
-	return formatUnits(value); 
-	// return commifyAndPadDecimals(formatted, 2); 
+	return formatUnits(value)
 }
 
 // // TODO: implement max decimals
