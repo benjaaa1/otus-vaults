@@ -8,6 +8,7 @@ export type VaultManagerProviderState = {
   builtTrades: any[] | null | undefined
   builtHedges: any[] | null | undefined
   toggleTrade: (trade: any) => void
+  updateTradeSize: (trade: any) => void
   addToHedges: (hedge: any) => void
   removeFromHedges: (hedge: any) => void
 }
@@ -52,6 +53,7 @@ export const vaultManagerInitialState: VaultManagerProviderState = {
   builtTrades: [],
   builtHedges: [],
   toggleTrade: (any) => void any,
+  updateTradeSize: (any) => void any,
   addToHedges: (any) => void any,
   removeFromHedges: (any) => void any,
 }
@@ -75,7 +77,7 @@ export type VaultManagerAction =
       strategies?: VaultManagerProviderState['strategies']
     }
   | {
-      type: 'ADD_NEW_TRADE' | 'REMOVE_NEW_TRADE'
+      type: 'ADD_NEW_TRADE' | 'REMOVE_NEW_TRADE' | 'UPDATE_NEW_TRADE'
       builtTrades?: VaultManagerProviderState['builtTrades']
     }
   | {
@@ -118,6 +120,11 @@ export function vaultManagerReducer(
         builtTrades: action.builtTrades,
       }
     case 'REMOVE_NEW_TRADE':
+      return {
+        ...state,
+        builtTrades: action.builtTrades,
+      }
+    case 'UPDATE_NEW_TRADE':
       return {
         ...state,
         builtTrades: action.builtTrades,

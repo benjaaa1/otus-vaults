@@ -87,14 +87,18 @@ contract Strategy is StrategyBase {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
     currentStrategy = _currentStrategy;
+    // event StrategyUpdated(StrategyDetail updatedStrategy);
+    // emit StrategyUpdated(currentStrategy);
   }
 
   /**
    * @notice one type of hedge strategy allowed
    * @param _hedgeType hedge type
    */
-  function setHedgeStrategy(uint _hedgeType) external onlyOwner {
+  function setHedgeStrategyType(uint _hedgeType) external onlyOwner {
     hedgeType = HEDGETYPE(_hedgeType);
+    // event StrategyUpdated(HEDGETYPE hedgeType);
+    // emit StrategyUpdated(hedgeType);
   }
 
   /**
@@ -112,6 +116,8 @@ contract Strategy is StrategyBase {
 
     staticHedgeStrategy = _staticStrategy;
     dynamicHedgeStrategy = _dynamicStrategy;
+    // event StrategyUpdated(HEDGETYPE hedgeType);
+    // emit StrategyUpdated(hedgeType);
   }
 
   /**
@@ -164,29 +170,39 @@ contract Strategy is StrategyBase {
     returns (
       uint positionId,
       uint premium,
-      uint capitalUsed
+      uint capitalUsed,
+      uint expiry,
+      uint strikePrice
     )
   {
-    uint strikeId = _strike.strikeId;
-    uint size = _strike.size;
+    // uint strikeId = _strike.strikeId;
+    // uint size = _strike.size;
     uint optionType = _strike.optionType;
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
 
-    require(validateTimeIntervalByOptionType(strikeId, optionType), "min time interval");
-    require(_isValidVolVariance(strikeId, optionType), "vol variance exceeded");
+    require(validateTimeIntervalByOptionType(_strike.strikeId, optionType), "min time interval");
+    require(_isValidVolVariance(_strike.strikeId, optionType), "vol variance exceeded");
 
-    Strike memory strike = getStrikes(_toDynamic(strikeId))[0];
+    Strike memory strike = getStrikes(_toDynamic(_strike.strikeId))[0];
+
+    expiry = strike.expiry;
+    strikePrice = strike.strikePrice;
 
     require(isValidStrike(strike, optionType), "invalid strike");
 
     if (_isLong(currentStrikeStrategy.optionType)) {
-      uint maxPremium = _getPremiumLimit(strike, false, _strike);
-      (positionId, premium) = _buyStrike(strike, size, currentStrikeStrategy, maxPremium);
-      capitalUsed = maxPremium;
+      {
+        uint maxPremium = _getPremiumLimit(strike, false, _strike);
+        (positionId, premium) = _buyStrike(strike, _strike.size, optionType, maxPremium);
+        capitalUsed = maxPremium;
+      }
     } else {
-      (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike, size, optionType);
-      (positionId, premium) = _sellStrike(strike, size, setCollateralTo, currentStrikeStrategy, _strike);
-      capitalUsed = collateralToAdd;
+      {
+        (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(strike, _strike.size, optionType);
+        uint minExpectedPremium = _getPremiumLimit(strike, true, _strike);
+        (positionId, premium) = _sellStrike(strike, _strike.size, setCollateralTo, optionType, minExpectedPremium);
+        capitalUsed = collateralToAdd;
+      }
     }
 
     currentStrikeTrades.push(_strike);
@@ -261,8 +277,8 @@ contract Strategy is StrategyBase {
    * @param strike strike detail
    * @param _size target size
    * @param setCollateralTo target collateral amount
-   * @param currentStrikeStrategy strategy of strike's optiontype to trade
-   * @param currentStrikeTrade details of striketrade
+   * @param _optionType strikes optionType
+   * @param minExpectedPremium minExpectedPremium
    * @return positionId lyra position id
    * @return totalCost the premium received from selling
    */
@@ -270,14 +286,12 @@ contract Strategy is StrategyBase {
     Strike memory strike,
     uint _size,
     uint setCollateralTo,
-    StrikeStrategyDetail memory currentStrikeStrategy,
-    StrikeTrade memory currentStrikeTrade
+    uint _optionType,
+    uint minExpectedPremium
   ) internal returns (uint, uint) {
     uint strategyIndex = activeStrikeIds.length;
-
     // get minimum expected premium based on minIv
-    uint minExpectedPremium = _getPremiumLimit(strike, true, currentStrikeTrade);
-    OptionType optionType = OptionType(currentStrikeStrategy.optionType);
+    OptionType optionType = OptionType(_optionType);
     // perform trade
     TradeResult memory result = openPosition(
       TradeInputParameters({
@@ -293,7 +307,7 @@ contract Strategy is StrategyBase {
       })
     );
     lastTradeTimestamp[strike.id] = block.timestamp;
-    lastTradeOptionType[strike.id] = currentStrikeStrategy.optionType + 1;
+    lastTradeOptionType[strike.id] = _optionType + 1;
 
     // update active strikes
     _addActiveStrike(strike.id, result.positionId, strategyIndex);
@@ -307,7 +321,7 @@ contract Strategy is StrategyBase {
    * @notice perform the buy
    * @param strike strike detail
    * @param _size target size
-   * @param currentStrikeStrategy strategy of strike's optiontype to trade
+   * @param _optionType strikes optionType
    * @param maxPremium total cost acceptable
    * @return positionId
    * @return totalCost
@@ -315,12 +329,12 @@ contract Strategy is StrategyBase {
   function _buyStrike(
     Strike memory strike,
     uint _size,
-    StrikeStrategyDetail memory currentStrikeStrategy,
+    uint _optionType,
     uint maxPremium
   ) internal returns (uint, uint) {
     uint strategyIndex = activeStrikeIds.length;
 
-    OptionType optionType = OptionType(currentStrikeStrategy.optionType);
+    OptionType optionType = OptionType(_optionType);
     // perform trade to long
     TradeResult memory result = openPosition(
       TradeInputParameters({
@@ -336,7 +350,7 @@ contract Strategy is StrategyBase {
       })
     );
     lastTradeTimestamp[strike.id] = block.timestamp;
-    lastTradeOptionType[strike.id] = currentStrikeStrategy.optionType + 1;
+    lastTradeOptionType[strike.id] = _optionType + 1;
 
     // update active strikes
     _addActiveStrike(strike.id, result.positionId, strategyIndex);

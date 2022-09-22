@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useCallback } from 'react'
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 
 import {
   VaultManagerProviderState,
@@ -9,7 +9,7 @@ import {
 } from '../reducers'
 
 import { toast } from 'react-toastify'
-import { LyraStrike } from '../queries/lyra/useLyra'
+import { getStrikeQuote, LyraStrike } from '../queries/lyra/useLyra'
 
 export const useVaultManager = () => {
   const [state, dispatch] = useReducer(
@@ -28,6 +28,9 @@ export const useVaultManager = () => {
 
   const toggleTrade = (trade: LyraStrike) => {
     // check if in list
+
+    console.log({ builtTrades })
+
     console.log('toggle')
     if (
       builtTrades?.find(
@@ -53,6 +56,29 @@ export const useVaultManager = () => {
         builtTrades: builtTrades?.concat([trade]),
       } as VaultManagerAction)
     }
+  }
+
+  const updateTradeSize = (strike) => {
+    const _updatedBuiltTrades = builtTrades?.map((existingTrade) => {
+      console.log({
+        optiontype: existingTrade.selectedOptionType,
+        optiontype1: strike.selectedOptionType,
+      })
+      if (
+        existingTrade.id == strike.id &&
+        existingTrade.selectedOptionType == strike.selectedOptionType
+      ) {
+        return strike
+      } else {
+        return existingTrade
+      }
+    })
+    console.log({ _updatedBuiltTrades })
+
+    dispatch({
+      type: 'UPDATE_NEW_TRADE',
+      builtTrades: _updatedBuiltTrades,
+    })
   }
 
   const addToHedges = (hedge) => {
@@ -84,6 +110,7 @@ export const useVaultManager = () => {
     builtTrades,
     builtHedges,
     toggleTrade,
+    updateTradeSize,
     addToHedges,
     removeFromHedges,
   }

@@ -6,6 +6,7 @@ type Vault @entity {
   id: ID!
   manager: Manager!
   round: Int!
+  createdAt: BigInt!
   isActive: Boolean!
   isPublic: Boolean!
   strategy: Bytes!
@@ -26,19 +27,19 @@ type Vault @entity {
 }
 
 type VaultTrade @entity {
-  id: ID!8
-  type: String!
-  optionType: String!
-  positionIds: [Int!]!
+  id: ID!
+  strikeId: BigInt!
+  optionType: BigInt!
+  positionId: BigInt!
   txhash: Bytes!
   strikePrice: BigInt!
   expiry: BigInt!
   openedAt: BigInt!
   premiumEarned: BigInt
   closedAt: BigInt
-  timestamp: BigInt!
   size: BigInt!
   vault: Vault!
+  round: BigInt!
 }
 
 type UserPortfolio @entity {

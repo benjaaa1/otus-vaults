@@ -10,7 +10,6 @@ export default function UserPortfolio() {
   console.log({ data, isLoading })
   // const userPortfolio = data;
 
-  // const balance = data?. || BigNumber.from('0')
   return (
     <div className="relative pt-8 pb-8">
       <Stats

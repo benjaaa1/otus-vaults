@@ -7,7 +7,10 @@ import { useVaultManagerContext } from '../../../../context/VaultManagerContext'
 import { LyraBoard, LyraStrike } from '../../../../queries/lyra/useLyra'
 import {
   commifyAndPadDecimals,
-  formatFromBigNumber,
+  fromBigNumber,
+  from18DecimalBN,
+  formatPercentage,
+  formatUSD,
 } from '../../../../utils/formatters/numbers'
 
 export default function SelectStrikes({
@@ -63,21 +66,15 @@ export default function SelectStrikes({
       </thead>
       <tbody className="divide-y divide-gray">
         {strikes.map((strike: LyraStrike) => (
-          <tr key={strike.id}>
+          <tr key={strike.id + selectedOptionType}>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray sm:pl-6">
-              {commifyAndPadDecimals(
-                formatFromBigNumber(strike.strikePrice),
-                2
-              )}{' '}
-              - {strike.id}
+              {formatUSD(fromBigNumber(strike.strikePrice))}
             </td>
             <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-gray sm:table-cell">
-              {formatFromBigNumber(strike.quote.breakEven)}
+              {formatUSD(fromBigNumber(strike.quote.breakEven))}
             </td>
             <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-gray lg:table-cell">
-              {formatFromBigNumber(
-                strike.quote.iv.add(strike.quote.iv.mul(strike.skew))
-              )}
+              {formatPercentage(fromBigNumber(strike.quote.iv), true)}
             </td>
             <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
               <button
@@ -86,7 +83,7 @@ export default function SelectStrikes({
                 }
                 className="text-indigo-600 hover:text-indigo-900"
               >
-                {`$${formatFromBigNumber(strike.quote.premium)}`}
+                {formatUSD(fromBigNumber(strike.quote.premium))}
               </button>
             </td>
           </tr>

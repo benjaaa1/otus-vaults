@@ -14,7 +14,9 @@ interface IStrategy {
     returns (
       uint positionId,
       uint premiumReceived,
-      uint capitalUsed
+      uint capitalUsed,
+      uint expiry,
+      uint strikePrice
     );
 
   function reducePosition(uint positionId, uint closeAmount) external;

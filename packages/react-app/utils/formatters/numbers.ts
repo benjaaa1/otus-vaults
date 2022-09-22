@@ -1,163 +1,138 @@
 import { BigNumber, utils } from 'ethers'
-import { formatUnits, parseUnits } from 'ethers/lib/utils';
-
-type WeiSource = BigNumber | number | string;
+import { formatUnits, parseUnits, formatEther } from 'ethers/lib/utils'
 
 export type FormatNumberOptions = {
-	minDecimals?: number;
-	maxDecimals?: number;
-	prefix?: string;
-	suffix?: string;
-};
-
-export type FormatCurrencyOptions = {
-	minDecimals?: number;
-	maxDecimals?: number;
-	sign?: string;
-	currencyKey?: string;
-};
-
-const DEFAULT_CURRENCY_DECIMALS = 2;
-export const SHORT_CRYPTO_CURRENCY_DECIMALS = 4;
-export const LONG_CRYPTO_CURRENCY_DECIMALS = 8;
-
-export const zeroBN = BigNumber.from('0');
-
-/**
- * ethers utils.commify method will reduce the decimals of a number to one digit if those decimals are zero.
- * This helper is used to reverse this behavior in order to display the specified decmials in the output.
- *
- * ex: utils.commify('10000', 2) => '10,000.0'
- * ex: commifyAndPadDecimals('10000', 2)) => '10,000.00'
- * @param value - commified value from utils.commify
- * @param decimals - number of decimals to display on commified value.
- * @returns string
- */
-export const commifyAndPadDecimals = (value: string, decimals: number) => {
-	let formatted = utils.commify(value);
-	const comps = formatted.split('.');
-
-	if (comps.length === 2 && comps[1] && comps[1].length !== decimals) {
-		const zeros = '0'.repeat(comps[1].length > decimals ? decimals : decimals - comps[1].length);
-
-		const decimalSuffix = `${comps[1]}${zeros}`;
-		formatted = `${comps[0]}.${decimalSuffix}`;
-	}
-
-	return formatted;
-};
-
-
-const getPrecision = (amount: WeiSource) => {
-	if (amount >= 1) {
-		return DEFAULT_CURRENCY_DECIMALS;
-	}
-	if (amount > 0.01) {
-		return SHORT_CRYPTO_CURRENCY_DECIMALS;
-	}
-	return LONG_CRYPTO_CURRENCY_DECIMALS;
-};
-
-export const formatFromBigNumber = (value: BigNumber, options?: FormatNumberOptions) => {
-	return formatUnits(value)
+  dps?: number
+  minDps?: number
+  maxDps?: number
+  precision?: number
+  showSign?: boolean
 }
 
-// // TODO: implement max decimals
-// export const formatNumber = (value: WeiSource, options?: FormatNumberOptions) => {
-// 	const prefix = options?.prefix;
-// 	const suffix = options?.suffix;
+export type FormatCurrencyOptions = {
+  minDecimals?: number
+  maxDecimals?: number
+  sign?: string
+  currencyKey?: string
+}
 
-// 	let weiValue = parseUnits('0');
-// 	try {
-// 		weiValue = parseUnits(value);
-// 	} catch (e) {
-// 		console.error('***Error in formatNumber', e);
-// 	}
+type FormatUSDOptions = FormatNumberOptions
 
-// 	const isNegative = weiValue. (formatNumber(0));
-// 	const formattedValue = [];
-// 	if (isNegative) {
-// 		formattedValue.push('-');
-// 	}
-// 	if (prefix) {
-// 		formattedValue.push(prefix);
-// 	}
+export const SHORT_CRYPTO_CURRENCY_DECIMALS = 4
+export const LONG_CRYPTO_CURRENCY_DECIMALS = 8
+// default to 0.1% precision
+const DEFAULT_PRECISION = 0.001
 
-// 	const weiAsStringWithDecimals = weiValue
-// 		.abs()
-// 		.toString(options?.minDecimals ?? DEFAULT_NUMBER_DECIMALS);
+export function formatNumber(
+  value: number | BigNumber,
+  options?: FormatNumberOptions
+): string {
+  const {
+    dps,
+    minDps: _minDps = 0,
+    maxDps: _maxDps = 6,
+    precision = DEFAULT_PRECISION,
+    showSign = false,
+  } = options ?? {}
 
-// 	const withCommas = commifyAndPadDecimals(
-// 		weiAsStringWithDecimals,
-// 		options?.minDecimals ?? DEFAULT_NUMBER_DECIMALS
-// 	);
+  const minDps = dps !== undefined ? dps : _minDps
+  const maxDps = dps !== undefined ? dps : _maxDps
 
-// 	formattedValue.push(withCommas);
+  // resolve value as number
+  let val = 0
+  if (BigNumber.isBigNumber(value)) {
+    val = fromWei(value)
+  } else {
+    val = value
+  }
 
-// 	if (suffix) {
-// 		formattedValue.push(` ${suffix}`);
-// 	}
+  if (isNaN(val)) {
+    return 'NaN'
+  }
 
-// 	return formattedValue.join('');
-// };
+  let numDps = minDps
+  let currRoundedVal: number = round(val, numDps)
+  for (; numDps <= maxDps; numDps++) {
+    currRoundedVal = round(val, numDps)
+    const currPrecision = Math.abs((val - currRoundedVal) / val)
+    if (currPrecision <= precision) {
+      // escape dp increment when we hit desired precision
+      break
+    }
+  }
+  const roundedVal = currRoundedVal
 
-// export const formatCryptoCurrency = (value: WeiSource, options?: FormatCurrencyOptions) =>
-// 	formatNumber(value, {
-// 		prefix: options?.currencyKey,
-// 		suffix: options?.sign,
-// 		minDecimals: options?.minDecimals ?? DEFAULT_CRYPTO_DECIMALS,
-// 		maxDecimals: options?.maxDecimals,
-// 	});
+  // convert into styled string
+  // commas for number part e.g. 1,000,000
+  // padded zeroes for dp precision e.g. 0.1000
+  const parts = roundedVal.toString().split('.')
+  const num = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') // add commas
+  const dec = (parts[1] || '').padEnd(minDps, '0')
+  const numStr = dec != null && dec.length > 0 ? num + '.' + dec : num
+  return roundedVal > 0 && showSign ? '+' + numStr : numStr
+}
 
-// export const formatFiatCurrency = (value: WeiSource, options?: FormatCurrencyOptions) =>
-// 	formatNumber(value, {
-// 		prefix: options?.sign,
-// 		suffix: options?.currencyKey,
-// 		minDecimals: options?.minDecimals ?? DEFAULT_FIAT_DECIMALS,
-// 		maxDecimals: options?.maxDecimals,
-// 	});
+export const zeroBN = BigNumber.from('0')
 
-// export const formatCurrency = (
-// 	currencyKey: string,
-// 	value: WeiSource,
-// 	options?: FormatCurrencyOptions
-// ) =>
-// 	isFiatCurrency(currencyKey as CurrencyKey)
-// 		? formatFiatCurrency(value, options)
-// 		: formatCryptoCurrency(value, options);
+export const commifyAndPadDecimals = (value: string, decimals: number) => {
+  let formatted = utils.commify(value)
+  const comps = formatted.split('.')
 
-// export const formatPercent = (value: WeiSource, options?: { minDecimals: number }) => {
-// 	const decimals = options?.minDecimals ?? 2;
+  if (comps.length === 2 && comps[1] && comps[1].length !== decimals) {
+    const zeros = '0'.repeat(
+      comps[1].length > decimals ? decimals : decimals - comps[1].length
+    )
 
-// 	return `${wei(value).mul(100).toString(decimals)}%`;
-// };
+    const decimalSuffix = `${comps[1]}${zeros}`
+    formatted = `${comps[0]}.${decimalSuffix}`
+  }
 
-// // TODO: figure out a robust way to get the correct precision.
-// const getPrecision = (amount: WeiSource) => {
-// 	if (amount >= 1) {
-// 		return DEFAULT_CURRENCY_DECIMALS;
-// 	}
-// 	if (amount > 0.01) {
-// 		return SHORT_CRYPTO_CURRENCY_DECIMALS;
-// 	}
-// 	return LONG_CRYPTO_CURRENCY_DECIMALS;
-// };
+  return formatted
+}
 
-// // TODO: use a library for this, because the sign does not always appear on the left. (perhaps something like number.toLocaleString)
-// export const formatCurrencyWithSign = (
-// 	sign: string | null | undefined,
-// 	value: WeiSource,
-// 	decimals?: number
-// ) => `${sign}${formatCurrency(String(value), decimals || getPrecision(value))}`;
+export const fromBigNumber = (
+  number: BigNumber,
+  decimals: number = 18
+): number => {
+  return parseFloat(formatUnits(number.toString(), decimals))
+}
 
-// export const formatCurrencyWithKey = (
-// 	currencyKey: CurrencyKey,
-// 	value: WeiSource,
-// 	decimals?: number
-// ) => `${formatCurrency(String(value), decimals || getPrecision(value))} ${currencyKey}`;
+export function formatPercentage(
+  pct: number,
+  hidePlus: boolean = false
+): string {
+  return `${pct > 0 ? (hidePlus ? '' : '+') : ''}${formatNumber(pct * 100)}%`
+}
 
-// export function scale(input: Wei, decimalPlaces: number): Wei {
-// 	return input.mul(wei(10).pow(decimalPlaces));
-// }
+export function from18DecimalBN(val: BigNumber, decimals: number): BigNumber {
+  return val.div(BigNumber.from(10).pow(18 - decimals))
+}
 
-// export const formatGwei = (wei: number) => wei / 1e8 / 10;
+export function to18DecimalBN(val: BigNumber, decimals: number): BigNumber {
+  return val.mul(BigNumber.from(10).pow(18 - decimals))
+}
+
+const round = (val: number, dps: number) => {
+  const mul = Math.pow(10, dps)
+  return Math.round(val * mul) / mul
+}
+
+export const fromWei = (number: BigNumber): number => {
+  return parseFloat(formatEther(number.toString()))
+}
+
+export const formatUSD = (
+  price: number | BigNumber,
+  options?: FormatUSDOptions
+): string => {
+  if (typeof price === 'number' && isNaN(price)) {
+    return ''
+  }
+  const numStr = formatNumber(price, { ...options, minDps: 2 })
+  const isSigned = numStr.startsWith('-') || numStr.startsWith('+')
+  if (isSigned) {
+    return `${numStr.slice(0, 1)}$${numStr.slice(1)}`
+  } else {
+    return `$${numStr}`
+  }
+}

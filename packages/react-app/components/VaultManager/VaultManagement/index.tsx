@@ -292,13 +292,13 @@ export default function VaultManagement() {
               aria-labelledby="timeline-title"
               className="lg:col-span-1 lg:col-start-3"
             >
-              <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6">
+              <div className="shadow sm:rounded-lg">
                 <TradeExecute />
 
                 <div className="justify-stretch mt-6 flex flex-col">
                   <button
                     type="button"
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-green px-4 py-2 text-sm font-medium text-black shadow-sm hover:bg-dark-green focus:outline-none focus:ring-2 focus:ring-dark-green focus:ring-offset-2"
                   >
                     Execute Trade
                   </button>

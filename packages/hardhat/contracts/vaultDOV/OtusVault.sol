@@ -34,7 +34,6 @@ contract OtusVault is BaseVault {
   string public vaultDescription;
 
   uint128 public lastQueuedWithdrawAmount;
-  uint public roundPremiumCollected;
 
   IERC20 collateralAsset;
 
@@ -47,6 +46,8 @@ contract OtusVault is BaseVault {
     uint size;
     uint premium;
     uint positionId;
+    uint expiry;
+    uint strikePrice;
   }
 
   /************************************************
@@ -63,7 +64,7 @@ contract OtusVault is BaseVault {
 
   event StrategyUpdated(address strategy);
 
-  event Trade(address indexed vault, ActiveTrade[] activeTrades, uint round, uint roundPremiumCollected);
+  event Trade(address indexed vault, ActiveTrade[] activeTrades, uint round);
 
   event PositionReduced(uint positionId, uint amount);
 
@@ -230,15 +231,16 @@ contract OtusVault is BaseVault {
     uint premium;
     uint capitalUsed;
     uint len = _strikes.length;
+    uint expiry;
+    uint strikePrice;
     positionIds = new uint[](len);
 
     ActiveTrade[] memory activeTrades = new ActiveTrade[](len);
 
     for (uint i = 0; i < len; i++) {
       StrategyBase.StrikeTrade memory _trade = _strikes[i];
-      (positionId, premium, capitalUsed) = IStrategy(strategy).doTrade(_trade);
-      roundPremiumCollected += premium;
-      allCapitalUsed += capitalUsed;
+      (positionId, premium, capitalUsed, expiry, strikePrice) = IStrategy(strategy).doTrade(_trade);
+      allCapitalUsed += capitalUsed; // substract on costs
       positionIds[i] = positionId;
 
       ActiveTrade memory activeTrade = ActiveTrade(
@@ -246,7 +248,9 @@ contract OtusVault is BaseVault {
         _trade.strikeId,
         _trade.size,
         premium,
-        positionId
+        positionId,
+        expiry,
+        strikePrice
       );
       activeTrades[i] = activeTrade;
     }
@@ -255,7 +259,7 @@ contract OtusVault is BaseVault {
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
     vaultState.tradesExecuted = true;
 
-    emit Trade(address(this), activeTrades, vaultState.round, roundPremiumCollected);
+    emit Trade(address(this), activeTrades, vaultState.round);
   }
 
   /**

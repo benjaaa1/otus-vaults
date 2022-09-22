@@ -305,10 +305,10 @@ contract StrategyBase is LyraAdapter {
   function _getPremiumLimit(
     Strike memory strike,
     bool isMin,
-    StrikeTrade memory currentStrikeTrade
+    StrikeTrade memory trade
   ) public view returns (uint limitPremium) {
     ExchangeRateParams memory exchangeParams = getExchangeParams();
-    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[currentStrikeTrade.optionType];
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[trade.optionType];
 
     uint limitVol = isMin ? currentStrikeStrategy.minVol : currentStrikeStrategy.maxVol;
     (uint minCallPremium, uint minPutPremium) = getPurePremium(
@@ -318,9 +318,9 @@ contract StrategyBase is LyraAdapter {
       strike.strikePrice
     );
 
-    limitPremium = _isCall(currentStrikeStrategy.optionType)
-      ? minCallPremium.multiplyDecimal(currentStrikeTrade.size)
-      : minPutPremium.multiplyDecimal(currentStrikeTrade.size);
+    limitPremium = _isCall(trade.optionType)
+      ? minCallPremium.multiplyDecimal(trade.size)
+      : minPutPremium.multiplyDecimal(trade.size);
   }
 
   /**

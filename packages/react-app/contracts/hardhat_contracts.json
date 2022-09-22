@@ -728,7 +728,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x4d6C598F7DE8fD822d3e779e1f309FC0D86ABD01",
+          "address": "0x4AE4d77AfEEBdCf60E71B71F3D505793f3A2213A",
           "abi": [
             {
               "inputs": [
@@ -1019,7 +1019,7 @@
           ]
         },
         "OtusController": {
-          "address": "0x36BB2BB9384586e265754bF02CE670623552dEe5",
+          "address": "0x73b6f73Ce220719DB1B92f18B1bBBedab113014d",
           "abi": [
             {
               "inputs": [
@@ -1722,7 +1722,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0x82c40421253503B6fF9949F0Beb6Ba3BEbE80C0F",
+          "address": "0x08100d705F1E9096F7985dc02676b8F558C16F3a",
           "abi": [
             {
               "inputs": [
@@ -2103,6 +2103,16 @@
                       "internalType": "uint256",
                       "name": "positionId",
                       "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "expiry",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "strikePrice",
+                      "type": "uint256"
                     }
                   ],
                   "indexed": false,
@@ -2114,12 +2124,6 @@
                   "indexed": false,
                   "internalType": "uint256",
                   "name": "round",
-                  "type": "uint256"
-                },
-                {
-                  "indexed": false,
-                  "internalType": "uint256",
-                  "name": "roundPremiumCollected",
                   "type": "uint256"
                 }
               ],
@@ -2739,19 +2743,6 @@
               "name": "renounceOwnership",
               "outputs": [],
               "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "roundPremiumCollected",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
               "type": "function"
             },
             {
@@ -3413,7 +3404,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0x215Dbd29bB911c98ec31A4D500E4222d4bDd98Bf",
+          "address": "0x70d688d721683fD9E8c36e0609767b4153665d5F",
           "abi": [
             {
               "inputs": [
@@ -3611,7 +3602,7 @@
                     }
                   ],
                   "internalType": "struct StrategyBase.StrikeTrade",
-                  "name": "currentStrikeTrade",
+                  "name": "trade",
                   "type": "tuple"
                 }
               ],
@@ -3891,6 +3882,16 @@
                 {
                   "internalType": "uint256",
                   "name": "capitalUsed",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiry",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "strikePrice",
                   "type": "uint256"
                 }
               ],
@@ -4581,7 +4582,7 @@
                   "type": "uint256"
                 }
               ],
-              "name": "setHedgeStrategy",
+              "name": "setHedgeStrategyType",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
