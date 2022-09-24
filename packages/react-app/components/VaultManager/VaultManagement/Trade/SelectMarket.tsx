@@ -21,13 +21,13 @@ export default function SelectMarket({
       {({ open }) => (
         <>
           <div className="relative">
-            <Listbox.Button className="border-gray-300 relative w-full cursor-default rounded-md border bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+            <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
               <span className="block truncate">
                 {selectedMarket ? selectedMarket.name : 'Select a Market'}
               </span>
               <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                 <ChevronUpDownIcon
-                  className="text-gray-400 h-5 w-5"
+                  className="h-5 w-5 text-gray-400"
                   aria-hidden="true"
                 />
               </span>
@@ -57,7 +57,9 @@ export default function SelectMarket({
                         <div className="flex items-center">
                           <span
                             className={classNames(
-                              !market.isPaused ? 'bg-green-400' : 'bg-gray-200',
+                              !market.isPaused
+                                ? '-400 bg-teal-500'
+                                : 'bg-gray-200',
                               'inline-block h-2 w-2 flex-shrink-0 rounded-full'
                             )}
                             aria-hidden="true"

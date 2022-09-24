@@ -32,21 +32,21 @@ export default function Modal({ setOpen, open, children }) {
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
                 <div>
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-teal-500 ">
                     <CheckIcon
-                      className="text-green-600 h-6 w-6"
+                      className="h-6 w-6 text-green-600"
                       aria-hidden="true"
                     />
                   </div>
                   <div className="mt-3 text-center sm:mt-5">
                     <Dialog.Title
                       as="h3"
-                      className="text-gray-900 text-lg font-medium leading-6"
+                      className="text-lg font-medium leading-6 text-gray-900"
                     >
                       Payment successful
                     </Dialog.Title>
                     <div className="mt-2">
-                      <p className="text-gray-500 text-sm">
+                      <p className="text-sm text-gray-500">
                         Lorem ipsum dolor sit amet consectetur adipisicing elit.
                         Consequatur amet labore.
                       </p>
@@ -56,7 +56,7 @@ export default function Modal({ setOpen, open, children }) {
                 <div className="mt-5 sm:mt-6">
                   <button
                     type="button"
-                    className="inline-flex w-full justify-center rounded-md border border-transparent bg-green px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-dark-green focus:outline-none focus:ring-2 focus:ring-dark-green focus:ring-offset-2 sm:text-sm"
+                    className="focus:ring-dark-green inline-flex w-full justify-center rounded-md border border-transparent  bg-teal-500 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:text-sm"
                     onClick={() => setOpen(false)}
                   >
                     Go back to dashboard

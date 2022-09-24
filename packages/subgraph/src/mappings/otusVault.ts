@@ -76,6 +76,8 @@ export function handleDeposit(event: Deposit): void {
   let otusVaultAddress = event.address as Address;
   let depositor = event.params.account;
   let userAction = new UserAction(otusVaultAddress.toHex() + '-' + depositor.toHex());
+  let txhash = event.transaction.hash;
+  let timestamp = event.block.timestamp;
 
   let userPortfolioEntity = UserPortfolio.load(depositor.toHex());
   if (!userPortfolioEntity) {
@@ -83,6 +85,8 @@ export function handleDeposit(event: Deposit): void {
     userPortfolioEntity.balance = event.params.amount;
   }
 
+  userAction.timestamp = timestamp;
+  userAction.txhash = txhash;
   userAction.isDeposit = true;
   userAction.amount = event.params.amount;
   userAction.vault = otusVaultAddress.toHex();

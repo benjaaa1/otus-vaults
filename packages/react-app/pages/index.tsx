@@ -8,7 +8,7 @@ import Vaults from '../components/Products/Vaults/Vaults'
 
 const Home: NextPage = () => {
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex h-screen flex-col">
       <Head>
         <title>Web3 Next-Boilerplate</title>
         <meta name="description" content="Boilerplate for Web3 dApp" />
@@ -17,12 +17,12 @@ const Home: NextPage = () => {
 
       <Products />
 
-      <div className="relative pt-8 pb-8">
+      <div className="relative pt-12 pb-12">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-dark-gray" />
+          <div className="w-full border-t border-zinc-800" />
         </div>
         <div className="relative flex justify-center">
-          <span className="bg-black px-3 font-serif text-xl font-medium text-dark-gray">
+          <span className="bg-zinc-900 px-3 font-mono text-2xl font-medium text-white">
             Vaults
           </span>
         </div>

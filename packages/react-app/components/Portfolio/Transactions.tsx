@@ -1,78 +1,72 @@
+import { UserAction } from '../../queries/portfolio/useUserPortfolio'
+import { formatUSD, fromBigNumber } from '../../utils/formatters/numbers'
 import EmptyState from './EmptyState'
-
-/* This example requires Tailwind CSS v2.0+ */
-const people = [
-  {
-    name: 'Lindsay Walton',
-    title: 'Front-end Developer',
-    email: 'lindsay.walton@example.com',
-    role: 'Member',
-  },
-  // More people...
-]
 
 export default function Transactions({ actions }: { actions: any }) {
   // all useractions
   return (
-    <div className="py-4 sm:py-6 lg:py-8">
+    <div className="relative pt-8 pb-8 font-sans">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-xl font-semibold text-gray">Transactions</h1>
+          <h1 className="text-xl font-semibold text-white">Transactions</h1>
         </div>
       </div>
-      <div className="-mx-4 mt-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
+      <div className="-mx-4 mt-8  overflow-hidden border border-zinc-700 bg-zinc-800 ring-1 ring-zinc-700 ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
         {actions?.length > 0 ? (
-          <table className="divide-gray-300 min-w-full divide-y">
-            <thead className="bg-black">
+          <table className="min-w-full divide-y divide-zinc-700">
+            <thead className="bg-zinc-800">
               <tr>
                 <th
                   scope="col"
-                  className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray sm:pl-6"
+                  className="text-md px-4 py-6 text-left font-semibold text-white"
                 >
-                  Name
+                  View Transaction
                 </th>
                 <th
                   scope="col"
-                  className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray sm:table-cell"
+                  className="text-md px-4 py-6 text-left font-semibold text-white lg:table-cell"
                 >
-                  Title
+                  Timestamp
                 </th>
                 <th
                   scope="col"
-                  className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray lg:table-cell"
+                  className="text-md px-4 py-6 text-left font-semibold text-white"
                 >
-                  Email
+                  Type
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray"
+                  className="text-md px-4 py-6 text-left font-semibold text-white"
                 >
-                  Role
+                  Amount
                 </th>
-                <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                  <span className="sr-only">Edit</span>
+                <th
+                  scope="col"
+                  className="text-md px-4 py-6 text-left font-semibold text-white"
+                >
+                  Vault
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray bg-black">
-              {people.map((person) => (
-                <tr key={person.email}>
-                  <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray sm:pl-6">
-                    {person.name}
+            <tbody className="divide-y divide-zinc-700">
+              {actions.map((action: UserAction) => (
+                <tr key={action.id}>
+                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200">
+                    {action.txhash}
                   </td>
-                  <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-gray sm:table-cell">
-                    {person.title}
+                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200 lg:table-cell">
+                    {action.timestamp
+                      ? new Date(fromBigNumber(action.timestamp))
+                      : ''}
                   </td>
-                  <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-gray lg:table-cell">
-                    {person.email}
+                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200">
+                    {action.isDeposit ? 'Deposit' : 'Withdraw'}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray">
-                    {person.role}
+                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200">
+                    {formatUSD(fromBigNumber(action.amount))}
                   </td>
-                  <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <a href="#" className="text-black hover:text-gray">
-                      Edit<span className="sr-only">, {person.name}</span>
-                    </a>
+                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200">
+                    {action.vault}
                   </td>
                 </tr>
               ))}

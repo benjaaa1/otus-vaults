@@ -21,18 +21,16 @@ export default function SlideInPanel({ setOpen, open, title, children }) {
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto w-screen max-w-xl">
-                  <div className="divide-gray-200 flex h-full flex-col divide-y bg-white shadow-xl">
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-3xl">
+                  <div className="flex h-full flex-col divide-y divide-gray-200 border-l border-zinc-800 bg-zinc-900 shadow-xl">
                     <div className="flex min-h-0 flex-1 flex-col overflow-y-scroll py-6">
                       <div className="px-4 sm:px-6">
-                        <div className="flex items-start justify-between">
-                          <Dialog.Title className="text-gray-900 text-lg font-medium">
-                            {title}
-                          </Dialog.Title>
+                        <div className="flex items-end justify-between">
+                          <Dialog.Title className="text-lg font-medium text-zinc-400"></Dialog.Title>
                           <div className="ml-3 flex h-7 items-center">
                             <button
                               type="button"
-                              className="text-gray-400 hover:text-gray-500 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="rounded-md bg-zinc-800 text-zinc-400 hover:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               onClick={() => setOpen(false)}
                             >
                               <span className="sr-only">Close panel</span>
@@ -46,10 +44,7 @@ export default function SlideInPanel({ setOpen, open, title, children }) {
                       </div>
                       <div className="relative mt-6 flex-1 px-4 sm:px-6">
                         {/* Replace with your content */}
-                        <div
-                          className="h-full border-2 border-dashed border-gray"
-                          aria-hidden="true"
-                        >
+                        <div className="h-full" aria-hidden="true">
                           {/* /End replace */}
                           {children}
                         </div>
@@ -58,7 +53,7 @@ export default function SlideInPanel({ setOpen, open, title, children }) {
                     <div className="flex flex-shrink-0 justify-end px-4 py-4">
                       <button
                         type="button"
-                        className="text-gray-700 hover:bg-gray-50 rounded-md border border-gray bg-white py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="border-gray rounded-md border bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         onClick={() => setOpen(false)}
                       >
                         Cancel

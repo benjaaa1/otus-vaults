@@ -12,19 +12,18 @@ const Vault = ({ vault }: { vault: Vault }) => {
 
   return (
     <div
+      onClick={(e) => handleVaultClick(e, `vault/${vault.id}`)}
       key={vault.id}
-      className="relative flex items-center space-x-3 rounded-lg border border-gray bg-black px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-gray focus-within:ring-offset-2 hover:border-gray"
+      className="focus-within:ring-gray relative flex cursor-pointer items-center space-x-1 rounded-lg border border-transparent bg-gradient-to-br from-purple-600 to-blue-500 px-1 py-1 shadow-sm
+      focus-within:ring-2 focus-within:ring-offset-2 hover:border hover:border-purple-600 hover:shadow-2xl hover:shadow-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:text-white dark:focus:ring-blue-800"
     >
-      <div className="min-w-0 flex-1">
-        <div
-          key={vault.id}
-          className="overflow-hidden rounded-lg px-2 py-2 shadow sm:p-2"
-        >
-          <dt className="truncate font-serif text-sm font-medium text-gray">
+      <div className="min-w-0 flex-1 rounded-lg bg-zinc-800 p-4">
+        <div key={vault.id} className="overflow-hidden px-2 py-2 sm:p-2">
+          <dt className="truncate font-mono text-3xl font-bold text-white">
             {vault.name}
           </dt>
-          <dd className="mt-1 text-3xl font-semibold tracking-tight text-dark-gray">
-            {vault.name}
+          <dd className="mt-1 text-sm font-medium text-zinc-200">
+            {vault.description}
           </dd>
         </div>
 
@@ -35,13 +34,6 @@ const Vault = ({ vault }: { vault: Vault }) => {
         <p className="truncate text-sm text-gray">{vault.manager}</p>
         <p className="truncate text-sm text-gray">{vault.vaultCap}</p>
         <p className="truncate text-sm text-gray">{vault.asset}</p> */}
-        <button
-          onClick={(e) => handleVaultClick(e, `vault/${vault.id}`)}
-          type="button"
-          className="inline-flex items-center rounded-full border border-transparent bg-green px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-dark-gray focus:outline-none focus:ring-2 focus:ring-dark-gray focus:ring-offset-2"
-        >
-          View Vault
-        </button>
       </div>
     </div>
   )

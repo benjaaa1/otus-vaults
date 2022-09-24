@@ -52,7 +52,8 @@ type UserPortfolio @entity {
 
 type UserAction @entity {
   id: ID!
-  timestamp: Int!
+  txhash: Bytes!
+  timestamp: BigInt!
   isDeposit: Boolean
   amount: BigInt!
   vault: Vault!

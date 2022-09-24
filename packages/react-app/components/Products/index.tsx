@@ -2,74 +2,47 @@ import React, { useEffect, useState } from 'react'
 import { useWeb3Context } from '../../context'
 import { useContracts } from '../../hooks/Web3Contracts'
 import { ContractsMap } from '../../utils/types'
+import CurrencyIconContainer from '../Common/Components/UI/Currency/CurrencyIcon'
+import CryptoIcon from '../Common/Icons'
 import Modal from '../Common/Modal'
 import { Web3Address } from '../Common/Web3'
-import SlideInPanel from '../VaultManager/Settings/SlideInPanel'
+import Create from '../VaultManager/Create'
 
 const Products = () => {
-  // const { signer, network } = useWeb3Context()
-
-  // const { contracts } = useContracts(signer, network, {})
-
-  // const [error, setError] = useState<string | null>(null)
-
-  // useEffect(() => {
-  //   const getActiveVaults = async () => {
-  //     if (!signer || !network || !contracts) {
-  //       return
-  //     }
-  //     try {
-  //       setError(null)
-  //       const OtusController = getOtusContract('OtusController', contracts) // contracts['OtusController'];
-
-  //       const vaults = await OtusController.getActiveVaults()
-  //       console.log({ vaults })
-  //       // setVaults(vaults);
-  //     } catch (e) {
-  //       console.log(e)
-
-  //       // @ts-ignore
-  //       setError(e?.data?.message ?? e.message)
-  //     }
-  //   }
-
-  //   getActiveVaults()
-  // }, [signer, network, contracts])
-
   const [open, setOpen] = useState(false)
 
   return (
     <div className="relative overflow-auto rounded-xl pt-12 pb-8">
-      <div className="bg-stripes-pink mt-2 flex flex-wrap gap-4 rounded-lg font-mono text-sm font-bold leading-6 text-white">
-        <div className="flex w-32 flex-1 items-center justify-center rounded-lg bg-dark-gray p-4 shadow-lg">
-          <span>
+      <div className="mt-2 flex flex-wrap gap-12 rounded-lg font-mono text-sm font-bold leading-6 text-white">
+        <div className="flex w-32 flex-1 items-center justify-between rounded-lg border border-zinc-700 bg-zinc-800 p-14 shadow">
+          <span className="w-48 text-xl">
             Earn with managed vaults, choose by asset or by historical
             performance.
           </span>
+          <CurrencyIconContainer currencyKey="sLINK" />
           <button
             type="button"
-            className="inline-flex items-center rounded-full border border-transparent bg-black px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-dark-gray focus:outline-none focus:ring-2 focus:ring-dark-gray focus:ring-offset-2"
+            className="text-md mr-2 mb-2 inline-flex items-center rounded-lg border border-emerald-600 bg-gradient-to-br from-emerald-600 to-blue-500 py-2 px-8 text-center font-sans font-medium text-white hover:bg-gradient-to-bl focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
           >
             View Vaults
           </button>
         </div>
-        <div className="flex w-32 flex-1 items-center justify-center rounded-lg bg-dark-gray shadow-lg">
-          <span>
+        <div className="flex w-32 flex-1 items-center justify-between rounded-lg border border-zinc-700 bg-zinc-800 p-14 shadow">
+          <span className="w-48 text-xl">
             Build and Manage your own permissionless options vault for any
             asset.
           </span>
+          <CryptoIcon />
           <button
             onClick={() => setOpen(true)}
             type="button"
-            className="inline-flex items-center rounded-full border border-transparent bg-black px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-dark-gray focus:outline-none focus:ring-2 focus:ring-dark-gray focus:ring-offset-2"
+            className="text-md mr-2 mb-2 inline-flex items-center rounded-lg border border-emerald-600 bg-gradient-to-br from-emerald-600 to-blue-500 py-2 px-8 text-center  font-sans font-medium text-white hover:bg-gradient-to-bl focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
           >
             Create Vault
           </button>
         </div>
       </div>
-      <SlideInPanel setOpen={setOpen} open={open}>
-        tet
-      </SlideInPanel>
+      <Create setOpen={setOpen} open={open} />
     </div>
   )
 }

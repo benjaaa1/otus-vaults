@@ -36,7 +36,7 @@ export function handleVaultCreated(event: VaultCreated): void {
 
   vault.strategy = _vaultStrategy;
   vault.totalYieldEarned = ZERO;
-  vault.vaultTrades = [];
+  // vault.vaultTrades = [];
   vault.createdAt = event.block.timestamp;
 
   manager.save();

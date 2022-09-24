@@ -4,7 +4,7 @@ import SelectExpiry from './SelectExpiry'
 import SelectOptionType from './SelectOptionType'
 import SelectMarket from './SelectMarket'
 import { useEffect, useState } from 'react'
-import { Spinner } from '../../../Common/UIElements/Spinner'
+import { Spinner } from '../../../Common/Components/UI/Spinner'
 
 const calculateOptionType = (isLong: boolean, isCall: boolean) => {
   if (isLong && isCall) {
@@ -44,20 +44,20 @@ export default function Trade() {
 
   return (
     <div>
-      <div className="-mx-2 mt-2 shadow ring-1 ring-black ring-opacity-5 sm:-mx-2 md:mx-0 md:rounded-lg">
+      <div className="-mx-2 sm:-mx-2 md:mx-0">
         {isLoading ? (
           <Spinner />
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-              <div className="rounded-lg bg-fuchsia-500 p-2 shadow-lg">
+            <div className="grid grid-cols-1 gap-4 sm:m-4 md:grid-cols-5">
+              <div className="rounded-lg p-2">
                 <SelectMarket
                   markets={data}
                   selectedMarket={selectedMarket}
                   setSelectedMarket={setSelectedMarket}
                 />
               </div>
-              <div className="rounded-lg bg-fuchsia-500 p-2 shadow-lg sm:col-span-2">
+              <div className="rounded-lg p-2 sm:col-span-2">
                 <SelectOptionType
                   isLong={isLong}
                   isCall={isCall}
@@ -65,7 +65,7 @@ export default function Trade() {
                   setCall={setCall}
                 />
               </div>
-              <div className="rounded-lg bg-fuchsia-500 p-2 shadow-lg sm:col-span-2">
+              <div className="rounded-lg p-2 sm:col-span-2">
                 <SelectExpiry
                   boards={selectedMarket ? selectedMarket?.liveBoards : []}
                   selectedExpiry={selectedExpiry}

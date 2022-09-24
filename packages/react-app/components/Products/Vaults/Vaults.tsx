@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router'
 import React from 'react'
 import { useVaultProducts } from '../../../queries/vaults/useVaultProducts'
-import { Spinner } from '../../Common/UIElements/Spinner'
+import { Spinner } from '../../Common/Components/UI/Spinner'
 import Vault from './Vault'
 
 const Vaults = () => {
@@ -21,7 +21,7 @@ const Vaults = () => {
       {isLoading ? (
         <Spinner />
       ) : (
-        <div className="grid grid-cols-1 gap-6 pt-10 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-10 pt-10 sm:grid-cols-3">
           {vaults?.length ? (
             vaults.map((vault) => <Vault key={vault.id} vault={vault} />)
           ) : (

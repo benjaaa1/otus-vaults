@@ -16,11 +16,10 @@ export default function ManagerTabs({ setTab, active }) {
         <label htmlFor="tabs" className="sr-only">
           Select a tab
         </label>
-        {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
         <select
           id="tabs"
           name="tabs"
-          className="block w-full rounded-md border-gray focus:border-gray focus:ring-dark-gray"
+          className="border-gray focus:border-gray block w-full rounded-md focus:ring-zinc-900"
           defaultValue={tabs.find((tab) => tab.href == active).name}
         >
           {tabs.map((tab) => (
@@ -36,9 +35,9 @@ export default function ManagerTabs({ setTab, active }) {
               onClick={() => setTab(tab.href)}
               className={classNames(
                 tab.href == active
-                  ? 'bg-gray text-white'
-                  : 'text-gray hover:text-dark-gray',
-                'cursor-pointer rounded-md px-3 py-2 text-sm font-medium'
+                  ? 'bg-zinc-700 text-zinc-400'
+                  : 'text-zinc-400 hover:text-gray-700',
+                'text-md cursor-pointer rounded-md px-3 py-2 font-semibold'
               )}
               aria-current={tab.href == active ? 'page' : undefined}
             >

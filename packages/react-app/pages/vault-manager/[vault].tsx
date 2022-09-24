@@ -5,7 +5,7 @@ import VaultManagement from '../../components/VaultManager/VaultManagement'
 
 const Strategy: NextPage = () => {
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex h-screen flex-col">
       <Head>
         <title>Web3 Next-Boilerplate</title>
         <meta name="description" content="Boilerplate for Web3 dApp" />
