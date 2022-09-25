@@ -7,6 +7,13 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
   ],
+  theme: {
+    extend: {},
+    fontFamily: {
+      sans: ['"Rubik"', 'sans-serif'],
+      mono: ['"IBM Plex Mono"', 'serif'],
+    },
+  },
   plugins: [
     require('@tailwindcss/forms'),
     require('@tailwindcss/aspect-ratio'),

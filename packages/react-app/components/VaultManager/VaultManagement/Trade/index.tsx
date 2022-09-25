@@ -4,7 +4,7 @@ import SelectExpiry from './SelectExpiry'
 import SelectOptionType from './SelectOptionType'
 import SelectMarket from './SelectMarket'
 import { useEffect, useState } from 'react'
-import { Spinner } from '../../../Common/Components/UI/Spinner'
+import { Spinner } from '../../../UI/Components/UI/Spinner'
 
 const calculateOptionType = (isLong: boolean, isCall: boolean) => {
   if (isLong && isCall) {

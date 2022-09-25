@@ -7,8 +7,8 @@ const Portfolio: NextPage = () => {
   return (
     <div className="flex h-screen flex-col">
       <Head>
-        <title>Web3 Next-Boilerplate</title>
-        <meta name="description" content="Boilerplate for Web3 dApp" />
+        <title>Decentralized Options Vaults</title>
+        <meta name="description" content="Decentralized Options Vaults" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

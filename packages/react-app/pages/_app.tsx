@@ -6,7 +6,7 @@ import { QueryClientProvider, QueryClient } from 'react-query'
 
 import 'react-toastify/dist/ReactToastify.css'
 import React from 'react'
-import Layout from '../components/Common/Layout'
+import Layout from '../components/UI/Layout'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (

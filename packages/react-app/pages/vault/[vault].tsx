@@ -7,8 +7,11 @@ const Vault: NextPage = () => {
   return (
     <div className="flex flex-col">
       <Head>
-        <title>Web3 Next-Boilerplate</title>
-        <meta name="description" content="Boilerplate for Web3 dApp" />
+        <title>Decentralized Options Vault Detail</title>
+        <meta
+          name="description"
+          content="Information: Decentralized Options Vault"
+        />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

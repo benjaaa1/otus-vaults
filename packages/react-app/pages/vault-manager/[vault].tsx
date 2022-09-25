@@ -7,8 +7,11 @@ const Strategy: NextPage = () => {
   return (
     <div className="flex h-screen flex-col">
       <Head>
-        <title>Web3 Next-Boilerplate</title>
-        <meta name="description" content="Boilerplate for Web3 dApp" />
+        <title>Manage your Decentralized Options Vault</title>
+        <meta
+          name="description"
+          content="Manage your Decentralized Options Vaul Settings"
+        />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
