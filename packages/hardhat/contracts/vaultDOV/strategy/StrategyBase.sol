@@ -124,7 +124,7 @@ contract StrategyBase is LyraAdapter {
     address _futuresMarket = marketAddresses[8];
     futuresMarket = IFuturesMarket(_futuresMarket);
 
-    address _optionMarket = marketAddresses[3]; // marketAddress.optionMarket,
+    address _optionMarket = marketAddresses[3]; // marketAddress.optionMarket, allow for multiple option markets?
     address _quoteAsset = marketAddresses[0]; // quote asset
 
     if (address(quoteAsset) != address(0)) {
@@ -145,6 +145,21 @@ contract StrategyBase is LyraAdapter {
     // IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).approve(_futuresMarket, type(uint).max);
 
     // futuresInitialize(marketAddresses[8]);
+
+    // instead of setting this here we can query for market addresses from trade function to otus controller registry
+    // and use an interface to interact with these
+    // to support multiple assets in vault
+    // we will only store option market
+
+    // struct MarketAddress {
+    //   address liquidityPool
+    //   address optionMarket
+    //   address ...
+    // }
+
+    // mapping(bytes32 || option marekt address => MarketAddress) marketAddresses
+
+    // IOtusController.MarketAddress marketAddress = IOtusController(otusControllerAddress).getMarketAddresses(bytes32);
 
     optionInitialize(
       _owner,

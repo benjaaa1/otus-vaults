@@ -282,7 +282,7 @@ contract OtusVault is BaseVault {
    * @param size hedge by size
    * @param size hedge by strikeId
    */
-  function simpleHedge(int size, uint strikeId) external onlyKeeper {
+  function simpleHedge(int size, uint strikeId) external onlyOwner {
     require(vaultState.roundInProgress, "Round closed");
     require(activeHedgeByStrikeId[strikeId] == false, "Vault has active hedge for strike");
 
@@ -294,6 +294,7 @@ contract OtusVault is BaseVault {
    */
   function dynamicDeltaHedge(int deltaToHedge, uint strikeId) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
+    // probably check by position id not strike id
     require(activeHedgeByStrikeId[strikeId] == false, "Vault has hedge for option type");
 
     uint deltaHedgeAttempts = hedgeAttemptsByStrikeId[strikeId];
