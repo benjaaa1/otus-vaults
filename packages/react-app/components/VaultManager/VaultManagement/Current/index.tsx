@@ -1,9 +1,21 @@
-const people = [
+const vaultInfo = {
+  hedgeType: 0,
+}
+
+const vaultStrategy = {}
+
+const hedgeStrategies = {}
+
+const strikeStrategies = {}
+
+const currentPositions = [
   {
-    name: 'Lindsay Walton',
-    title: 'Front-end Developer',
-    email: 'lindsay.walton@example.com',
-    role: 'Member',
+    asset: 'sETH',
+    strikeId: 180,
+    positionId: 18,
+    size: 10,
+    expiry: 'September 30, 11:00am',
+    pandl: '$221.10',
   },
 ]
 
@@ -18,52 +30,82 @@ export default function Current() {
             <tr>
               <th
                 scope="col"
-                className="text-md p-4 text-left font-semibold text-zinc-400 sm:pl-6"
+                className="p-2 text-left text-sm font-semibold text-zinc-400 sm:pl-2"
               >
-                Name
+                Asset
               </th>
               <th
                 scope="col"
-                className="text-md hidden p-4 text-left font-semibold text-zinc-400 sm:table-cell"
+                className="hidden p-2 text-left text-sm font-semibold text-zinc-400 sm:table-cell"
               >
-                Title
+                StrikeId
               </th>
               <th
                 scope="col"
-                className="text-md hidden p-4 text-left font-semibold text-zinc-400 lg:table-cell"
+                className="hidden p-2 text-left text-sm font-semibold text-zinc-400 lg:table-cell"
               >
-                Email
+                Size
               </th>
               <th
                 scope="col"
-                className="text-md p-4 text-left font-semibold text-zinc-400"
+                className="p-2 text-left text-sm font-semibold text-zinc-400"
               >
-                Role
+                Expiry
               </th>
-              <th scope="col" className="relative p-4 sm:pr-6">
-                <span className="sr-only">Edit</span>
+
+              <th
+                scope="col"
+                className="p-2 text-left text-sm font-semibold text-zinc-400"
+              >
+                P&L
+              </th>
+              <th
+                scope="col"
+                className="p-2 text-left text-sm font-semibold text-zinc-400"
+              >
+                Close
+              </th>
+              <th
+                scope="col"
+                className="p-2 text-left text-sm font-semibold text-zinc-400"
+              >
+                Hedge
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-700">
-            {people.map((person) => (
-              <tr key={person.email}>
-                <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200 sm:pl-6">
-                  {person.name}
+            {currentPositions.map((position) => (
+              <tr key={position.positionId}>
+                <td className="whitespace-nowrap p-2 text-sm font-medium text-zinc-200 sm:pl-6">
+                  {position.asset}
                 </td>
-                <td className="text-md hidden whitespace-nowrap p-4 text-zinc-200 sm:table-cell">
-                  {person.title}
+                <td className="hidden whitespace-nowrap p-2 text-sm text-zinc-200 sm:table-cell">
+                  {position.strikeId}
                 </td>
-                <td className="text-md hidden whitespace-nowrap p-4 text-zinc-200 lg:table-cell">
-                  {person.email}
+                <td className="hidden whitespace-nowrap p-2 text-sm text-zinc-200 lg:table-cell">
+                  {position.size}
                 </td>
-                <td className="text-md whitespace-nowrap p-4 text-zinc-200">
-                  {person.role}
+                <td className="whitespace-nowrap p-2 text-sm text-zinc-200">
+                  {position.expiry}
                 </td>
-                <td className="whitespace-nowrap p-4 text-right text-sm font-medium sm:pr-6">
-                  <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                    Edit<span className="sr-only">, {person.name}</span>
-                  </a>
+                <td className="whitespace-nowrap p-2 text-sm text-zinc-200">
+                  {position.pandl}
+                </td>
+                <td className="whitespace-nowrap p-2 text-right text-sm font-medium">
+                  <button
+                    onClick={() => console.log(position.positionId)}
+                    className="text-indigo-600 hover:text-indigo-900"
+                  >
+                    Close
+                  </button>
+                </td>
+                <td className="whitespace-nowrap p-2 text-right text-sm font-medium">
+                  <button
+                    onClick={() => console.log(position.positionId)}
+                    className="text-indigo-600 hover:text-indigo-900"
+                  >
+                    Hedge
+                  </button>
                 </td>
               </tr>
             ))}
