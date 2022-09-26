@@ -8,7 +8,11 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontSize: {
+        xxs: ['0.625rem', '0.75rem']
+      },
+    },
     fontFamily: {
       sans: ['"Rubik"', 'sans-serif'],
       mono: ['"IBM Plex Mono"', 'serif'],

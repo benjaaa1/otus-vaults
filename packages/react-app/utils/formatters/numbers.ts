@@ -128,7 +128,7 @@ export const formatUSD = (
   if (typeof price === 'number' && isNaN(price)) {
     return ''
   }
-  const numStr = formatNumber(price, { ...options, minDps: 2 })
+  const numStr = formatNumber(price, { ...options })
   const isSigned = numStr.startsWith('-') || numStr.startsWith('+')
   if (isSigned) {
     return `${numStr.slice(0, 1)}$${numStr.slice(1)}`

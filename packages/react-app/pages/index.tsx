@@ -5,6 +5,10 @@ import React from 'react'
 import { Web3Button, Web3Address } from '../components/UI/Web3'
 import Products from '../components/Products'
 import Vaults from '../components/Products/Vaults/Vaults'
+import Transactions from '../components/Portfolio/Transactions'
+import MyVaultsTable from '../components/VaultManager/MyVaultsTable'
+import Positions from '../components/Portfolio/Positions'
+import Stats from '../components/Portfolio/Stats'
 
 const Home: NextPage = () => {
   return (
@@ -15,20 +19,32 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Products />
+      <div className="grid grid-cols-12 gap-8">
+        <div className="col-span-7">
+          <div className="grid grid-cols-1">
+            <div>
+              <Stats />
+            </div>
+            <div>
+              <Transactions />
+            </div>
 
-      <div className="relative pt-12 pb-12">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-zinc-800" />
+            <div>
+              <MyVaultsTable />
+            </div>
+          </div>
         </div>
-        <div className="relative flex justify-center">
-          <span className="bg-zinc-900 px-3 font-mono text-2xl font-medium text-white">
-            Vaults
-          </span>
+        <div className="col-span-5 ">
+          <div className="grid grid-cols-1">
+            <div>
+              <Positions />
+            </div>
+            <div className="shadow shadow-black">
+              <Products />
+            </div>
+          </div>
         </div>
       </div>
-
-      <Vaults />
     </div>
   )
 }

@@ -1,9 +1,25 @@
-import { UserAction } from '../../queries/portfolio/useUserPortfolio'
+import { useRouter } from 'next/router'
+import {
+  UserAction,
+  useUserPortfolio,
+} from '../../queries/portfolio/useUserPortfolio'
 import { formatUSD, fromBigNumber } from '../../utils/formatters/numbers'
-import EmptyState from './EmptyState'
+import { Cell } from '../UI/Components/Table/Cell'
+import { HeaderCell } from '../UI/Components/Table/HeaderCell'
+import Table from '../UI/Components/Table/Table'
 
-export default function Transactions({ actions }: { actions: any }) {
-  // all useractions
+export default function Transactions() {
+  const { data, isLoading } = useUserPortfolio()
+  const actions = data?.userActions || []
+
+  const router = useRouter()
+
+  const handleVaultClick = (e: any, href: string) => {
+    e.preventDefault()
+    router.push(`/vault/${href}`)
+  }
+
+  console.log({ actions })
   return (
     <div className="relative pt-8 pb-8 font-sans">
       <div className="sm:flex sm:items-center">
@@ -11,73 +27,56 @@ export default function Transactions({ actions }: { actions: any }) {
           <h1 className="text-xl font-semibold text-white">Transactions</h1>
         </div>
       </div>
-      <div className="-mx-4 mt-8  overflow-hidden border border-zinc-700 bg-zinc-800 ring-1 ring-zinc-700 ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
-        {actions?.length > 0 ? (
-          <table className="min-w-full divide-y divide-zinc-700">
-            <thead className="bg-zinc-800">
-              <tr>
-                <th
-                  scope="col"
-                  className="text-md px-4 py-6 text-left font-semibold text-white"
-                >
-                  View Transaction
-                </th>
-                <th
-                  scope="col"
-                  className="text-md px-4 py-6 text-left font-semibold text-white lg:table-cell"
-                >
-                  Timestamp
-                </th>
-                <th
-                  scope="col"
-                  className="text-md px-4 py-6 text-left font-semibold text-white"
-                >
-                  Type
-                </th>
-                <th
-                  scope="col"
-                  className="text-md px-4 py-6 text-left font-semibold text-white"
-                >
-                  Amount
-                </th>
-                <th
-                  scope="col"
-                  className="text-md px-4 py-6 text-left font-semibold text-white"
-                >
-                  Vault
-                </th>
+      <div className="mt-6">
+        <Table
+          variant="default"
+          headers={
+            <tr>
+              {['View Transaction', 'Timestamp', 'Type', 'Amount', 'Vault'].map(
+                (column, i) => {
+                  return <HeaderCell key={i} variant="default" label={column} />
+                }
+              )}
+            </tr>
+          }
+        >
+          {actions?.map((action: UserAction) => {
+            return (
+              <tr key={action.id}>
+                <Cell
+                  variant="default"
+                  label={action.txhash}
+                  isButton={false}
+                />
+                <Cell
+                  variant="default"
+                  label={
+                    action.timestamp
+                      ? new Date(fromBigNumber(action.timestamp)).toString()
+                      : ''
+                  }
+                  isButton={false}
+                />
+                <Cell
+                  variant="default"
+                  label={action.isDeposit ? 'Deposit' : 'Withdraw'}
+                  isButton={false}
+                />
+                <Cell
+                  variant="default"
+                  label={formatUSD(fromBigNumber(action.amount))}
+                  isButton={false}
+                />
+                <Cell
+                  variant="default"
+                  label={'View Vault'}
+                  isButton={true}
+                  onClick={(e) => handleVaultClick(e, action.vault)}
+                />
               </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-700">
-              {actions.map((action: UserAction) => (
-                <tr key={action.id}>
-                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200">
-                    {action.txhash}
-                  </td>
-                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200 lg:table-cell">
-                    {action.timestamp
-                      ? new Date(fromBigNumber(action.timestamp))
-                      : ''}
-                  </td>
-                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200">
-                    {action.isDeposit ? 'Deposit' : 'Withdraw'}
-                  </td>
-                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200">
-                    {formatUSD(fromBigNumber(action.amount))}
-                  </td>
-                  <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200">
-                    {action.vault}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <EmptyState
-            title="No transactions"
-            description="Start by joining a vault"
-          />
-        )}
+            )
+          })}
+        </Table>
       </div>
     </div>
   )

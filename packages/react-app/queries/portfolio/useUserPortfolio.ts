@@ -22,8 +22,8 @@ export type UserAction = {
 type UserPortfolio = {
   id: string
   account: string
-  balance: BigNumberish
-  yieldEarned: BigNumberish
+  balance: BigNumber
+  yieldEarned: BigNumber
   userActions: UserAction[]
 }
 
@@ -76,7 +76,6 @@ export const useUserPortfolio = () => {
         `,
         { userId: userId.toLowerCase() }
       )
-      console.log({ response })
       return response.userPortfolios.length > 0
         ? parseUserPortfolio(response.userPortfolios[0])
         : null

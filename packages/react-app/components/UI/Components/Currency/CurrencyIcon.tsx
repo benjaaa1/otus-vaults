@@ -1,6 +1,4 @@
 import React, { FC, useState } from 'react'
-import Img, { Svg } from 'react-optimized-image'
-
 import ETHIcon from '../../../../../assets/svg/currencies/crypto/ETH.svg'
 import BTCIcon from '../../../../../assets/svg/currencies/crypto/BTC.svg'
 import LINKIcon from '../../../../../assets/svg/currencies/crypto/LINK.svg'
@@ -36,23 +34,20 @@ const CurrencyIcon: FC<CurrencyIconProps> = ({
   ...rest
 }) => {
   const props = {
-    width: '48px',
-    height: '48px',
+    width: '40px',
+    height: '40px',
     alt: currencyKey,
     ...rest,
   }
 
   switch (currencyKey) {
-    case CRYPTO_CURRENCY_MAP.ETH: {
-      return <Img src={ETHIcon} {...props} />
-    }
     case CRYPTO_CURRENCY_MAP.SNX: {
       return <img src={SNXIcon} {...props} alt="snx-icon" />
     }
     default:
       return (
         <img
-          className="rounded-full border-2 border-black"
+          className=""
           src={getSynthIcon(currencyKey as CurrencyKey)}
           {...props}
           alt={currencyKey}

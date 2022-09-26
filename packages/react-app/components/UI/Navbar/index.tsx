@@ -4,55 +4,50 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { Web3Button } from '../Web3'
 import { useRouter } from 'next/router'
+import LogoIcon from '../Components/Icons/OTUS'
 
 const linkStyle = (path: string, activePath: string) => {
   if (path == activePath) {
-    return 'rounded-md bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl px-3 py-2 text-sm font-medium text-white'
+    return 'p-3 text-sm font-bold text-white'
   } else {
-    return 'rounded-md px-3 py-2 text-sm font-medium text-white hover:text-zinc-500'
+    return 'p-3 text-sm font-normal text-white hover:text-zinc-500'
   }
 }
 
 const linkStyleMobile = (path: string, activePath: string) => {
   if (path == activePath) {
-    return 'block rounded-md bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl px-3 py-2 text-base font-medium text-white'
+    return 'block p-3 text-base font-bold text-white'
   } else {
-    return 'block rounded-md px-3 py-2 text-base font-medium text-white hover:text-zinc-500'
+    return 'block p-3 text-base font-normal text-white hover:text-zinc-500'
   }
 }
 
 export const Navbar = () => {
   const router = useRouter()
   return (
-    <Disclosure as="nav" className="border border-zinc-800 bg-zinc-900">
+    <Disclosure as="nav" className="border-b border-zinc-800 bg-zinc-900">
       {({ open }) => (
         <>
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="flex h-20 items-center justify-between">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <span className="block w-auto cursor-pointer font-sans text-xl font-bold text-zinc-200 lg:hidden">
-                    Otus Finance
-                  </span>
-                  <span className="hidden w-auto cursor-pointer font-sans text-2xl font-bold text-zinc-200 lg:block">
-                    Otus Finance
-                  </span>
+                  <Link href="/">
+                    <span className="mt-1 block w-auto cursor-pointer">
+                      <LogoIcon />
+                    </span>
+                  </Link>
                 </div>
-                <div className="hidden sm:ml-6 sm:block">
+                <div className="hidden sm:ml-16 sm:block">
                   <div className="flex space-x-4">
                     <Link href="/">
                       <a className={linkStyle('/', router.pathname)}>
-                        Products
+                        Dashboard
                       </a>
                     </Link>
-                    <Link href="/portfolio">
-                      <a className={linkStyle('/portfolio', router.pathname)}>
-                        Portfolio
-                      </a>
-                    </Link>
-                    <Link href="/my-vaults">
-                      <a className={linkStyle('/my-vaults', router.pathname)}>
-                        My Vaults
+                    <Link href="/vaults">
+                      <a className={linkStyle('/vaults', router.pathname)}>
+                        Vaults
                       </a>
                     </Link>
                   </div>
@@ -69,9 +64,15 @@ export const Navbar = () => {
                 <Disclosure.Button className="text-gray inline-flex items-center justify-center rounded-md p-2 hover:bg-zinc-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
-                    <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                    <XMarkIcon
+                      className="block h-6 w-6 text-zinc-200"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                    <Bars3Icon
+                      className="block h-6 w-6 text-zinc-200"
+                      aria-hidden="true"
+                    />
                   )}
                 </Disclosure.Button>
               </div>
@@ -84,21 +85,14 @@ export const Navbar = () => {
                 <Disclosure.Button
                   className={linkStyleMobile('/', router.pathname)}
                 >
-                  Products
+                  Dashboard
                 </Disclosure.Button>
               </Link>
-              <Link href="/portfolio">
+              <Link href="/vaults">
                 <Disclosure.Button
-                  className={linkStyleMobile('/portfolio', router.pathname)}
+                  className={linkStyleMobile('/vaults', router.pathname)}
                 >
-                  Portfolio
-                </Disclosure.Button>
-              </Link>
-              <Link href="/my-vaults">
-                <Disclosure.Button
-                  className={linkStyleMobile('/my-vaults', router.pathname)}
-                >
-                  My Vaults
+                  Vaults2
                 </Disclosure.Button>
               </Link>
             </div>

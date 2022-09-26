@@ -1,90 +1,78 @@
 import { useRouter } from 'next/router'
+import { CURRENCY_BY_ADDRESS } from '../../constants/currency'
+import { useWeb3Context } from '../../context'
 
-import { Vault } from '../../queries/myVaults/useMyVaults'
+import { useMyVaults, Vault } from '../../queries/myVaults/useMyVaults'
+import { Cell } from '../UI/Components/Table/Cell'
+import { HeaderCell } from '../UI/Components/Table/HeaderCell'
+import Table from '../UI/Components/Table/Table'
 
-export default function MyVaultsTable({ vaults }: { vaults: Vault[] }) {
+export default function MyVaultsTable() {
+  const { network } = useWeb3Context()
+  console.log({ network })
+
+  const { data, isLoading } = useMyVaults()
+  const vaults = data?.vaults || []
+
   const router = useRouter()
 
   const handleVaultClick = (e: any, href: string) => {
     e.preventDefault()
-    router.push(href)
+    router.push(`/vault-manager/${href}`)
   }
 
   return (
     <div className="relative pt-8 pb-8 font-sans">
-      <div className="-mx-4 mt-8 overflow-hidden border border-zinc-700 bg-zinc-800 ring-1 ring-zinc-700 ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
-        <table className="min-w-full divide-y divide-zinc-700">
-          <thead className=" bg-zinc-800">
+      <div className="sm:flex sm:items-center">
+        <div className="sm:flex-auto">
+          <h1 className="text-xl font-semibold text-white">Vault Management</h1>
+        </div>
+      </div>
+      <div className="mt-6">
+        <Table
+          variant="default"
+          headers={
             <tr>
-              <th
-                scope="col"
-                className="text-md hidden px-4 py-6 text-left font-semibold text-white lg:table-cell"
-              >
-                Active
-              </th>
-              <th
-                scope="col"
-                className="text-md px-4 py-6 text-left font-semibold text-zinc-400"
-              >
-                Name
-              </th>
-              <th
-                scope="col"
-                className="text-md px-4 py-6 text-left font-semibold text-zinc-400"
-              >
-                Description
-              </th>
-              <th
-                scope="col"
-                className="text-md px-4 py-6 text-left font-semibold text-zinc-400"
-              >
-                Asset
-              </th>
-              <th
-                scope="col"
-                className="text-md px-4 py-6 text-left font-semibold text-zinc-400"
-              >
-                Public
-              </th>
-              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                <span className="sr-only">Manage</span>
-              </th>
+              {[
+                'Active',
+                'Timestamp',
+                'Name',
+                'Asset',
+                'Is Public',
+                'Manage',
+              ].map((column, i) => {
+                return <HeaderCell key={i} variant="default" label={column} />
+              })}
             </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-700">
-            {vaults.map((vault, index) => (
+          }
+        >
+          {vaults.map((vault: Vault) => {
+            return (
               <tr key={vault.id}>
-                <td className="text-md hidden whitespace-nowrap p-4 font-medium text-zinc-200 sm:pl-6 lg:table-cell">
-                  {vault.isActive ? <span>Yes</span> : <span>No</span>}
-                </td>
-                <td className="text-md whitespace-nowrap p-4 font-medium text-zinc-200 sm:pl-6">
-                  {vault.name}
-                </td>
-                <td className="text-md whitespace-nowrap p-4 text-zinc-200">
-                  {vault.description}
-                </td>
-                <td className="text-md whitespace-nowrap p-4 text-zinc-200">
-                  {vault.isPublic ? <span>Yes</span> : <span>No</span>}
-                </td>
-                <td className="text-md whitespace-nowrap p-4 text-zinc-200">
-                  {vault.asset}
-                </td>
+                <Cell variant="default" label={vault.isActive ? 'Yes' : 'No'} />
+                <Cell variant="default" label={vault.createdAt} />
 
-                <td className="text-md whitespace-nowrap p-4 text-right font-medium">
-                  <button
-                    onClick={(e) =>
-                      handleVaultClick(e, `vault-manager/${vault.id}`)
-                    }
-                    type="button"
-                    className="text-md mr-2 mb-2 inline-flex items-center rounded-lg border border-emerald-600 bg-gradient-to-br from-emerald-600 to-blue-500 py-2 px-8 text-center font-sans font-light text-white hover:bg-gradient-to-bl focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
-                  >
-                    Manage
-                  </button>
-                </td>
+                <Cell variant="default" label={vault.name} isButton={false} />
+                <Cell
+                  variant="default"
+                  label={
+                    CURRENCY_BY_ADDRESS[network?.chainId || 10][vault.id] ||
+                    'N/A'
+                  }
+                  isButton={false}
+                />
+                <Cell variant="default" label={vault.isPublic ? 'Yes' : 'No'} />
+
+                <Cell
+                  variant="default"
+                  label={'View'}
+                  isButton={true}
+                  onClick={(e) => handleVaultClick(e, vault.id)}
+                />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            )
+          })}
+        </Table>
       </div>
     </div>
   )

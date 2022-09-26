@@ -4,10 +4,10 @@ import {
   CREATE_STEP_LINKS,
   CREATE_STEP_STATUS,
 } from '../../../constants/tabs'
-import { Input } from '../../UI/Components/UI/Input'
-import { RangeSlider } from '../../UI/Components/UI/RangeSlider'
-import { Switch } from '../../UI/Components/UI/Switch'
-import { TextArea } from '../../UI/Components/UI/TextArea'
+import { Input } from '../../UI/Components/Input/Input'
+import { RangeSlider } from '../../UI/Components/RangeSlider'
+import { Switch } from '../../UI/Components/Switch'
+import { TextArea } from '../../UI/Components/TextArea'
 import CreateSteps from './CreateSteps'
 import SlideInPanel from './SlideInPanel'
 

@@ -21,7 +21,7 @@ export default function VaultManager() {
       <div className="h-screen">
         <main className="py-10">
           {/* Page header */}
-          <div className="mx-auto max-w-3xl md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl">
+          <div className="mx-auto max-w-3xl md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-6xl">
             <div className="flex items-center space-x-5">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">

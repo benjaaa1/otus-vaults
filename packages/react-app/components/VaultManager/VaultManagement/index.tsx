@@ -20,7 +20,7 @@ export default function VaultManagement() {
       <div className="h-screen">
         <main className="py-10">
           {/* Page header */}
-          <div className="mx-auto max-w-3xl md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl">
+          <div className="mx-auto max-w-3xl md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-6xl">
             <div className="flex items-center space-x-5">
               <div>
                 <h1 className="text-gray text-2xl font-bold">
@@ -33,7 +33,7 @@ export default function VaultManagement() {
             </div>
           </div>
 
-          <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 border-zinc-700 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
+          <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 border-zinc-700 lg:max-w-6xl lg:grid-flow-col-dense lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2 lg:col-start-1">
               {/* Active Strike list */}
               <section aria-labelledby="strike-selection-current">
