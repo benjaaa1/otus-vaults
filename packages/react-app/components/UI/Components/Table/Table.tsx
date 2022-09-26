@@ -14,7 +14,7 @@ export const getTableVariant = (variant: TableVariant): string => {
       return 'min-w-full md:rounded-sm bg-zinc-800 shadow-sm'
       break
     case 'primary':
-      return 'min-w-full md:rounded-sm bg-gradient-to-b from-zinc-900 to-zinc-200 shadow-sm'
+      return 'min-w-full'
   }
 }
 

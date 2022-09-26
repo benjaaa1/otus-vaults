@@ -13,7 +13,7 @@ export const getHeaderCellVariant = (variant: HeaderCellVariant): string => {
       return 'text-xxs uppercase px-4 py-3 text-left font-semibold text-white/50'
       break
     case 'primary':
-      return 'text-xxs uppercase px-4 py-3 text-left font-semibold text-white/50'
+      return 'text-xxs uppercase px-6 py-3 text-left font-semibold text-zinc-500'
   }
 }
 

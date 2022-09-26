@@ -49,7 +49,7 @@ export default function TradeExecute() {
   const costs = useMemo(() => computeCosts(builtTrades), [builtTrades])
   console.log({ costs })
   return (
-    <div className="overflow-hidden border border-zinc-700 bg-zinc-800 sm:rounded-md">
+    <div className="overflow-hidden border border-zinc-700 bg-transparent sm:rounded-sm">
       <ul role="list" className="divide-y divide-zinc-700">
         {builtTrades?.map((trade: LyraStrike) => (
           <Trade trade={trade} />
@@ -61,21 +61,21 @@ export default function TradeExecute() {
           <div className="block">
             <div className="px-4 py-6 sm:px-6">
               <div className="flex items-center justify-between pt-2">
-                <p className="truncate font-sans font-medium text-white">
+                <p className="truncate font-sans text-xs font-semibold text-white">
                   Min Received
                 </p>
                 <div className="ml-2 flex flex-shrink-0">
-                  <p className="inline-flex  rounded-full bg-teal-500 px-2 text-sm font-bold leading-5 text-black">
+                  <p className="inline-flex font-mono  text-xs font-normal leading-5 text-white">
                     {formatUSD(fromBigNumber(costs.minReceived))}
                   </p>
                 </div>
               </div>
               <div className="flex items-center justify-between pt-2">
-                <p className="truncate font-sans font-medium text-white">
+                <p className="truncate font-sans text-xs font-medium text-white">
                   Max Cost
                 </p>
                 <div className="ml-2 flex flex-shrink-0">
-                  <p className="inline-flex  rounded-full bg-teal-500 px-2 text-sm font-bold leading-5 text-black">
+                  <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
                     {formatUSD(fromBigNumber(costs.minCost))}
                   </p>
                 </div>
@@ -94,17 +94,17 @@ const Trade = ({ trade }: { trade: LyraStrike }) => {
   console.log({ trade, newSize: fromBigNumber(trade.quote.size) })
   return (
     <li key={trade.id}>
-      <div className="block hover:bg-zinc-700">
+      <div className="block hover:bg-black">
         <div className="px-4 py-6 sm:px-6">
           <div className="flex items-center justify-between">
-            <p className="truncate font-mono font-bold text-white">
+            <p className="text-md truncate font-sans font-semibold text-zinc-500">
               {`${isLongText(trade.selectedOptionType)} ETH ${formatUSD(
                 fromBigNumber(trade.strikePrice)
               )} ${isCallText(trade.selectedOptionType)}`}
             </p>
           </div>
           <div className="flex items-center justify-between pt-2">
-            <p className="truncate font-sans font-medium text-white">
+            <p className="truncate font-sans text-xs font-normal text-white">
               Contracts
             </p>
             <div className="ml-2 flex flex-shrink-0">
@@ -121,40 +121,33 @@ const Trade = ({ trade }: { trade: LyraStrike }) => {
                       trade.selectedOptionType,
                       parseUnits(parseInt(e.target.value).toString(), 18)
                     )
-                    console.log({
-                      strikeWithUpdatedQuote,
-                      price: formatUSD(
-                        fromBigNumber(strikeWithUpdatedQuote.strikePrice)
-                      ),
-                      size: fromBigNumber(strikeWithUpdatedQuote.quote.size),
-                    })
                     updateTradeSize(strikeWithUpdatedQuote)
                   }}
                   type="number"
                   name="size"
                   id="size"
-                  className="block w-24 rounded-full border-zinc-900 bg-zinc-800 px-4 text-right text-zinc-200 shadow-sm focus:border-zinc-900 focus:ring-black sm:text-sm"
+                  className="block w-24 rounded-full border-zinc-800 bg-transparent px-4 pr-2 text-right text-zinc-200 shadow-sm focus:border-zinc-900 focus:ring-black sm:text-sm"
                 />
               </div>
             </div>
           </div>
           <div className="flex items-center justify-between pt-2">
-            <p className="truncate font-sans font-medium text-white">
+            <p className="truncate font-sans text-xs font-normal text-white">
               Price per option
             </p>
             <div className="ml-2 flex flex-shrink-0">
-              <p className="inline-flex  rounded-full bg-teal-500 px-2 text-sm font-bold leading-5 text-black">
+              <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
                 {formatUSD(fromBigNumber(trade.quote.premium))}
               </p>
             </div>
           </div>
           {!isLong(trade.selectedOptionType) ? (
             <div className="flex items-center justify-between pt-2">
-              <p className="truncate font-sans font-medium text-white">
+              <p className="truncate font-sans font-normal text-white">
                 Collateral
               </p>
               <div className="ml-2 flex flex-shrink-0">
-                <p className="inline-flex  rounded-full bg-teal-500 px-2 text-sm font-bold leading-5 text-black">
+                <p className=" inline-flex font-mono  text-xs font-normal leading-5">
                   {formatUSD(fromBigNumber(trade.strikePrice))}
                 </p>
               </div>

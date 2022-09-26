@@ -29,7 +29,7 @@ export default function Transact({ setTab, active }) {
         </select>
       </div>
       <div className="hidden sm:block">
-        <div className="border-b border-gray-200">
+        <div className="border-b border-zinc-700">
           <nav className="-mb-px flex" aria-label="Tabs">
             {tabs.map((tab) => (
               <a
@@ -37,9 +37,9 @@ export default function Transact({ setTab, active }) {
                 onClick={() => setTab(tab.href)}
                 className={classNames(
                   tab.href == active
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                  'w-1/2 border-b-2 py-4 px-1 text-center text-sm font-medium'
+                    ? ' text-emerald-600'
+                    : ' text-zinc-500  hover:text-zinc-200',
+                  'w-1/2 cursor-pointer border-b border-zinc-700 py-4 px-1 text-center text-xxs font-semibold uppercase last:border-l'
                 )}
                 aria-current={tab.href == active ? 'page' : undefined}
               >

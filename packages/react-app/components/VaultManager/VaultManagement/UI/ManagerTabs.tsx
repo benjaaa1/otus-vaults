@@ -28,23 +28,25 @@ export default function ManagerTabs({ setTab, active }) {
         </select>
       </div>
       <div className="hidden sm:block">
-        <nav className="flex space-x-4" aria-label="Tabs">
-          {tabs.map((tab) => (
-            <a
-              key={tab.name}
-              onClick={() => setTab(tab.href)}
-              className={classNames(
-                tab.href == active
-                  ? 'bg-zinc-700 text-zinc-400'
-                  : 'text-zinc-400 hover:text-gray-700',
-                'text-md cursor-pointer rounded-md px-3 py-2 font-semibold'
-              )}
-              aria-current={tab.href == active ? 'page' : undefined}
-            >
-              {tab.name}
-            </a>
-          ))}
-        </nav>
+        <div className="">
+          <nav className="flex" aria-label="Tabs">
+            {tabs.map((tab) => (
+              <a
+                key={tab.name}
+                onClick={() => setTab(tab.href)}
+                className={classNames(
+                  tab.href == active
+                    ? ' text-emerald-600'
+                    : ' text-zinc-500  hover:text-zinc-200',
+                  'w-1/2 cursor-pointer border-b border-zinc-700 py-4 px-1 text-center text-xs font-bold uppercase last:border-l'
+                )}
+                aria-current={tab.href == active ? 'page' : undefined}
+              >
+                {tab.name}
+              </a>
+            ))}
+          </nav>
+        </div>
       </div>
     </div>
   )

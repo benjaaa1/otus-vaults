@@ -1,17 +1,14 @@
-import { Strike } from '@lyrafinance/lyra-js'
-import { BigNumber } from 'ethers'
-import { formatUnits } from 'ethers/lib/utils'
 import { useEffect, useState } from 'react'
-import { ONE_BN } from '../../../../constants/bn'
 import { useVaultManagerContext } from '../../../../context/VaultManagerContext'
 import { LyraBoard, LyraStrike } from '../../../../queries/lyra/useLyra'
 import {
-  commifyAndPadDecimals,
   fromBigNumber,
-  from18DecimalBN,
   formatPercentage,
   formatUSD,
 } from '../../../../utils/formatters/numbers'
+import { Cell } from '../../../UI/Components/Table/Cell'
+import { HeaderCell } from '../../../UI/Components/Table/HeaderCell'
+import Table from '../../../UI/Components/Table/Table'
 
 export default function SelectStrikes({
   selectedOptionType,
@@ -21,7 +18,7 @@ export default function SelectStrikes({
   selectedExpiry: LyraBoard | null | undefined
 }) {
   const [strikes, setStrikes] = useState([])
-  console.log({ strikes })
+
   useEffect(() => {
     if (selectedExpiry != null && selectedExpiry.strikesByOptionTypes != null) {
       const _strikes = selectedExpiry?.strikesByOptionTypes[selectedOptionType]
@@ -31,64 +28,67 @@ export default function SelectStrikes({
 
   const { toggleTrade } = useVaultManagerContext()
 
+  const [activeIds, setActiveIds] = useState<Record<string, boolean>>({})
+
   return (
-    <table className="min-w-full divide-y divide-zinc-800 sm:mt-10">
-      <thead className="">
+    <Table
+      variant="primary"
+      headers={
         <tr>
-          <th
-            scope="col"
-            className="text-md py-3.5 pl-4 pr-3 text-left font-medium text-zinc-400 sm:pl-6"
-          >
-            Strike
-          </th>
-          <th
-            scope="col"
-            className="text-md hidden px-3 py-3.5 text-left font-medium text-zinc-400 sm:table-cell"
-          >
-            Break Event
-          </th>
-          <th
-            scope="col"
-            className="text-md hidden px-3 py-3.5 text-left font-medium text-zinc-400 lg:table-cell"
-          >
-            Implied Volatility
-          </th>
-          <th
-            scope="col"
-            className="text-md px-3 py-3.5 font-semibold text-zinc-400 lg:table-cell"
-          >
-            Price
-          </th>
-          <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-            <span className="sr-only">Edit</span>
-          </th>
+          {['Strike', 'Break Even', 'Implied Volatility', 'Price'].map(
+            (column, i) => {
+              return <HeaderCell key={i} variant="primary" label={column} />
+            }
+          )}
         </tr>
-      </thead>
-      <tbody className="divide-y divide-zinc-800">
-        {strikes.map((strike: LyraStrike) => (
-          <tr key={strike.id + selectedOptionType}>
-            <td className="whitespace-nowrap py-8 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
-              {formatUSD(fromBigNumber(strike.strikePrice))}
-            </td>
-            <td className="hidden whitespace-nowrap px-3 py-8 text-sm text-white lg:table-cell">
-              {formatUSD(fromBigNumber(strike.quote.breakEven))}
-            </td>
-            <td className="hidden whitespace-nowrap px-3 py-8 text-sm text-white lg:table-cell">
-              {formatPercentage(fromBigNumber(strike.quote.iv), true)}
-            </td>
-            <td className="whitespace-nowrap py-8 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-              <button
-                onClick={
-                  () => toggleTrade({ ...strike, selectedOptionType }) // change to toggle trade
+      }
+    >
+      {strikes.map((strike: LyraStrike) => (
+        <tr key={strike.id + selectedOptionType}>
+          <Cell
+            variant="primary"
+            label={formatUSD(fromBigNumber(strike.strikePrice))}
+            isButton={false}
+          />
+          <Cell
+            variant="primary"
+            label={formatUSD(fromBigNumber(strike.quote.breakEven))}
+            isButton={false}
+          />
+          <Cell
+            variant="primary"
+            label={formatPercentage(fromBigNumber(strike.quote.iv), true)}
+            isButton={false}
+          />
+          <Cell
+            variant="primary"
+            label={formatUSD(fromBigNumber(strike.quote.premium))}
+            isButton={true}
+            isSelected={activeIds[`${strike.id}-${selectedOptionType}`]}
+            onClick={() => {
+              setActiveIds((_activeIds: Record<string, boolean>) => {
+                if (
+                  Object.hasOwn(
+                    _activeIds,
+                    `${strike.id}-${selectedOptionType}`
+                  )
+                ) {
+                  return {
+                    ..._activeIds,
+                    [`${strike.id}-${selectedOptionType}`]: false,
+                  }
+                } else {
+                  return {
+                    ..._activeIds,
+                    [`${strike.id}-${selectedOptionType}`]: true,
+                  }
                 }
-                className="text-indigo-600 hover:text-indigo-900"
-              >
-                {formatUSD(fromBigNumber(strike.quote.premium))}
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+              })
+              toggleTrade({ ...strike, selectedOptionType })
+            }}
+          />
+        </tr>
+      ))}
+    </Table>
   )
 }

@@ -16,6 +16,7 @@ import { useRouter } from 'next/router'
 import Transact from './Transact'
 import { UserActionTabs } from '../../../constants/tabs'
 import Deposit from './Deposit'
+import { Button } from '../../UI/Components/Button'
 
 export default function Product() {
   const { query } = useRouter()
@@ -36,124 +37,167 @@ export default function Product() {
   return (
     <>
       <div className="h-full">
-        <main className="py-10">
-          {/* Page header */}
-          <div className="mx-auto max-w-3xl md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-6xl">
+        <main className="py-8">
+          <div className="mx-auto max-w-3xl text-white md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-6xl">
             <div className="flex items-center space-x-5">
               <div>
-                <h1 className="text-2xl font-bold text-zinc-200">
+                <h1 className="text-3xl font-bold uppercase text-zinc-200">
                   {vault?.name || <span>---</span>}
                 </h1>
-                <p className="btext-zinc-500 text-sm font-medium">
-                  Applied for{' '}
-                  <a href="#" className="text-zinc-200">
-                    Front End Developer
-                  </a>{' '}
-                  on <time dateTime="2020-08-25">August 25, 2020</time>
-                </p>
               </div>
-            </div>
-            <div className="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-md border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-500 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100"
-              >
-                Disqualify
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100"
-              >
-                Advance to offer
-              </button>
             </div>
           </div>
-
-          <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 lg:max-w-6xl lg:grid-flow-col-dense lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2 lg:col-start-1">
-              {/* Description list*/}
-              <section aria-labelledby="applicant-information-title">
-                <div className="border border-zinc-700 bg-zinc-800 shadow sm:rounded-lg">
-                  <div className="px-4 py-5 sm:px-6">
-                    <h2
-                      id="applicant-information-title"
-                      className="text-lg font-medium leading-6 text-zinc-200"
-                    >
-                      Vault Strategy
-                    </h2>
-                    <p className="mt-1 max-w-2xl text-sm text-zinc-500">
-                      {vault?.description || <span>---</span>}
-                    </p>
-                  </div>
-                  <div className="border-t border-zinc-700 px-4 py-5 sm:px-6">
-                    <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-zinc-500">
-                          Application for
-                        </dt>
-                        <dd className="mt-1 text-sm text-zinc-200">
-                          Backend Developer
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-zinc-500">
-                          Email address
-                        </dt>
-                        <dd className="mt-1 text-sm text-zinc-200">
-                          ricardocooper@example.com
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="btext-zinc-500 text-sm font-medium">
-                          Salary expectation
-                        </dt>
-                        <dd className="mt-1 text-sm text-zinc-200">$120,000</dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-zinc-500">
-                          Phone
-                        </dt>
-                        <dd className="mt-1 text-sm text-zinc-200">
-                          +1 555-555-5555
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-zinc-500">
-                          About
-                        </dt>
-                        <dd className="mt-1 text-sm text-zinc-200">
-                          Fugiat ipsum ipsum deserunt culpa aute sint do nostrud
-                          anim incididunt cillum culpa consequat. Excepteur qui
-                          ipsum aliquip consequat sint. Sit id mollit nulla
-                          mollit nostrud in ea officia proident. Irure nostrud
-                          pariatur mollit ad adipisicing reprehenderit deserunt
-                          qui eu.
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
+          <div className="grid grid-cols-12 gap-8 py-8">
+            <div className="col-span-7 grid grid-cols-1 rounded-sm border border-zinc-700 bg-gradient-to-b from-black to-zinc-900 p-9">
+              <div className="py-2">
+                <div className="text-xxs font-bold uppercase text-zinc-300">
+                  Strategy Description
                 </div>
-              </section>
-            </div>
-
-            <section
-              aria-labelledby="timeline-title"
-              className="lg:col-span-1 lg:col-start-3"
-            >
-              <div className="border border-zinc-700 bg-zinc-800 px-4 py-5 shadow sm:rounded-lg sm:px-6">
-                {/* transact */}
-                <div className="flow-root">
-                  <Transact setTab={setTab} active={tab} />
-                </div>
-                <div className="flow-root">
-                  {tab === UserActionTabs.DEPOSIT.HREF ? (
-                    <Deposit />
-                  ) : (
-                    <Deposit />
-                  )}
+                <div className="py-4 text-xs font-normal text-zinc-300">
+                  {vault?.description || '---'}
                 </div>
               </div>
-            </section>
+              <div className="py-2">
+                <span className="round text-xxs font-bold uppercase text-zinc-300">
+                  Current Strategies
+                </span>
+                <div className="grid grid-cols-3 py-4">
+                  <div>
+                    <Button
+                      label="Vault Strategy"
+                      isLoading={false}
+                      variant={'secondary'}
+                      size={'xs'}
+                      radius={'full'}
+                      onClick={() => console.log('test')}
+                    />
+                  </div>
+                  <div>
+                    <Button
+                      label="Strike Strategy"
+                      isLoading={false}
+                      variant={'secondary'}
+                      size={'xs'}
+                      radius={'full'}
+                      onClick={() => console.log('test')}
+                    />
+                  </div>
+                  <div>
+                    {' '}
+                    <Button
+                      label="Hedge Strategy"
+                      isLoading={false}
+                      variant={'secondary'}
+                      size={'xs'}
+                      radius={'full'}
+                      onClick={() => console.log('test')}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 py-4">
+                <div className="py-4 text-sm font-bold uppercase text-zinc-400">
+                  Vault Snapshot
+                </div>
+                <div className="grid grid-cols-3">
+                  <div className="py-2">
+                    <div className="text-xxs font-normal uppercase text-zinc-300">
+                      Current Projected Apy
+                    </div>
+                    <div className="py-2 font-mono text-xl font-normal text-white">
+                      10.2%
+                    </div>
+                  </div>
+
+                  <div className="py-2">
+                    <div className="text-xxs font-normal uppercase text-zinc-300">
+                      Previous Week Performance
+                    </div>
+                    <div className="py-2 font-mono text-xl font-normal text-white">
+                      0.2%
+                    </div>
+                  </div>
+
+                  <div className="py-2">
+                    <div className="text-xxs font-normal uppercase text-zinc-300">
+                      Cumulative Yield
+                    </div>
+                    <div className="py-2 font-mono text-xl font-normal text-white">
+                      -12.2%
+                    </div>
+                  </div>
+
+                  <div className="py-2">
+                    <div className="text-xxs font-normal uppercase text-zinc-300">
+                      Premium Collected
+                    </div>
+                    <div className="py-2 font-mono text-xl font-normal text-white">
+                      $291.00
+                    </div>
+                  </div>
+
+                  <div className="py-2">
+                    <div className="text-xxs font-normal uppercase text-zinc-300">
+                      Expiry
+                    </div>
+                    <div className="py-2 font-mono text-xl font-normal text-white">
+                      October 8, 2022
+                    </div>
+                  </div>
+                </div>
+                {/* <div>
+                  <div>Strikes</div>
+                  <div className="grid grid-cols-5">
+                    <div>$1200</div>
+                    <div>$1300</div>
+                    <div>$1400</div>
+                  </div>
+                </div> */}
+                <div className="py-2">
+                  <div className="grid grid-cols-4">
+                    <div className="py-2">
+                      <div className="text-xxs font-normal uppercase text-zinc-300">
+                        Managed By
+                      </div>
+                      <div className="py-2 font-mono text-xl font-normal text-white"></div>
+                    </div>
+
+                    <div className="py-2">
+                      <div className="text-xxs font-normal uppercase text-zinc-300">
+                        Management Fees
+                      </div>
+                      <div className="py-2 font-mono text-xl font-normal text-white">
+                        0%
+                      </div>
+                    </div>
+
+                    <div className="py-2">
+                      <div className="text-xxs font-normal uppercase text-zinc-300">
+                        Performance Fees
+                      </div>
+                      <div className="py-2 font-mono text-xl font-normal text-white">
+                        0%
+                      </div>
+                    </div>
+
+                    <div className="py-2">
+                      <div className="text-xxs font-normal uppercase text-zinc-300">
+                        Protocol Fees
+                      </div>
+                      <div className="py-2 font-mono text-xl font-normal text-white">
+                        0%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="col-span-5">
+              <div className="rounded-sm border border-zinc-700 bg-zinc-800 shadow shadow-black">
+                <Transact setTab={setTab} active={tab} />
+                {tab == UserActionTabs.DEPOSIT.HREF ? <Deposit /> : null}
+              </div>
+            </div>
           </div>
         </main>
       </div>

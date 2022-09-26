@@ -27,11 +27,6 @@ export const useVaultManager = () => {
   } = state
 
   const toggleTrade = (trade: LyraStrike) => {
-    // check if in list
-
-    console.log({ builtTrades })
-
-    console.log('toggle')
     if (
       builtTrades?.find(
         (existingTrade) =>
@@ -45,7 +40,6 @@ export const useVaultManager = () => {
           existingTrade.selectedOptionType != trade.selectedOptionType
       )
 
-      console.log({ filtered })
       dispatch({
         type: 'REMOVE_NEW_TRADE',
         builtTrades: filtered,

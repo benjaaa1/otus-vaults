@@ -5,19 +5,20 @@ export type CellVariant =
   | 'primary' // bg dark gradient no border
 
 export type CellProps = {
-  label: string
+  label: string | number
   isButton?: boolean
   variant: CellVariant
   onClick?: any
+  isSelected?: boolean
 }
 
 export const getCellVariant = (variant: CellVariant): string => {
   switch (variant) {
     case 'default':
-      return 'text-xxs whitespace-nowrap p-4 font-medium text-zinc-200'
+      return 'text-xxs whitespace-nowrap px-4 py-3 font-medium text-zinc-200'
       break
     case 'primary':
-      return 'text-xxs whitespace-nowrap p-4 font-medium text-zinc-200'
+      return 'text-xxs whitespace-nowrap px-6 py-3 font-medium text-zinc-500'
   }
 }
 
@@ -25,6 +26,7 @@ export const Cell = ({
   variant,
   label,
   isButton = false,
+  isSelected = false,
   onClick,
 }: CellProps) => {
   const cellVariant = getCellVariant(variant)
@@ -35,7 +37,8 @@ export const Cell = ({
         <Button
           label={label}
           onClick={onClick}
-          size={'xs'}
+          isActive={isSelected}
+          size={'fixed-xs'}
           radius={'full'}
           variant={'primary'}
         />

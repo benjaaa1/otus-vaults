@@ -1,3 +1,6 @@
+import { Button } from '../../UI/Components/Button'
+import { Input } from '../../UI/Components/Input/Input'
+
 export default function Deposit() {
   // const execute = useTransaction()
 
@@ -27,7 +30,7 @@ export default function Deposit() {
   //   setIsLoading(false)
   // }, [account, amount, execute, market, mutateLiquidityDepositBalance, mutateMyVaultLiquidity])
   return (
-    <div className="py-8">
+    <div className="p-8">
       <div>
         <label
           htmlFor="price"
@@ -37,35 +40,43 @@ export default function Deposit() {
         </label>
         <div className="relative mt-1 rounded-md shadow-sm">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <span className="text-gray-500 sm:text-sm">$</span>
+            <span className="text-zinc-500 sm:text-sm">$</span>
           </div>
-          <input
-            type="text"
-            name="price"
-            id="price"
-            className="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          <Input
+            type="number"
+            id="amount"
+            onChange={(e) => console.log(e.target.value)}
+            value={0}
             placeholder="0.00"
-            aria-describedby="price-currency"
+            radius={'xs'}
+            variant={'default'}
+            style={'pl-6'}
           />
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-            <span className="text-gray-500 sm:text-sm" id="price-currency">
-              USD
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-9">
+            <span className="text-zinc-500 sm:text-sm" id="price-currency">
+              sUSD
             </span>
           </div>
         </div>
       </div>
       <div className="mt-2 flex flex-wrap justify-between">
-        <div>Wallet Balance</div>
-        <div>0</div>
+        <div className="text-xs text-white">Wallet Balance</div>
+        <div className="text-xs text-white">$0</div>
       </div>
 
+      <div className="py-6 text-center text-xs text-white">
+        Your deposit will be deployed in the Vault’s weekly strategy on Friday
+        at 11am UTC
+      </div>
       <div className="justify-stretch mt-6 flex flex-col">
-        <button
-          type="button"
-          className="block  bg-teal-500 px-4 py-4 text-center text-sm font-medium text-gray-500 hover:text-gray-700 sm:rounded-lg"
-        >
-          Deposit
-        </button>
+        <Button
+          label={'Deposit'}
+          isLoading={false}
+          variant={'action'}
+          radius={'xs'}
+          size={'full'}
+          onClick={() => console.log('deposit')}
+        />
       </div>
     </div>
   )

@@ -4,7 +4,7 @@ import SelectExpiry from './SelectExpiry'
 import SelectOptionType from './SelectOptionType'
 import SelectMarket from './SelectMarket'
 import { useEffect, useState } from 'react'
-import { Spinner } from '../../../UI/Components/UI/Spinner'
+import { Spinner } from '../../../UI/Components/Spinner'
 
 const calculateOptionType = (isLong: boolean, isCall: boolean) => {
   if (isLong && isCall) {
@@ -19,16 +19,10 @@ const calculateOptionType = (isLong: boolean, isCall: boolean) => {
 }
 
 export default function Trade() {
-  // const [market, setMarket] = useState();
-  // const [optionType, setOptionType] = useState();
-  // const [board, setMarket] = useState();
   const { data, isLoading } = useLyraMarket() // return markets, boards
-  console.log({ data, isLoading })
   const [selectedMarket, setSelectedMarket] = useState(null)
-
   const [isLong, setLong] = useState(true)
   const [isCall, setCall] = useState(true)
-
   const [selectedOptionType, setSelectedOptionType] = useState(0)
 
   useEffect(() => {
@@ -44,7 +38,7 @@ export default function Trade() {
 
   return (
     <div>
-      <div className="-mx-2 sm:-mx-2 md:mx-0">
+      <div className="py-2">
         {isLoading ? (
           <Spinner />
         ) : (

@@ -1,22 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import { useWeb3Context } from '../../context'
-import { useContracts } from '../../hooks/Web3Contracts'
-import { ContractsMap } from '../../utils/types'
+import React, { useState } from 'react'
 import { Button } from '../UI/Components/Button'
-import CurrencyIconContainer from '../UI/Components/Currency/CurrencyIcon'
 import BTCIcon from '../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../UI/Components/Icons/Color/ETH'
 import LyraIcon from '../UI/Components/Icons/Color/LYRA'
 import SNXLogoIcon from '../UI/Components/Icons/Color/SNX'
-import Modal from '../UI/Modal'
-import { Web3Address } from '../UI/Web3'
 import Create from '../VaultManager/Create'
 
 const Products = () => {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="grid grid-cols-5 rounded-sm border border-zinc-700 bg-transparent p-9 ">
+    <div className="grid grid-cols-5 rounded-sm border border-zinc-700 bg-transparent p-9">
       <div>
         <div>
           <SNXLogoIcon />
@@ -51,7 +45,7 @@ const Products = () => {
           size={'full'}
         />
       </div>
-      {/* <Create setOpen={setOpen} open={open} /> */}
+      <Create setOpen={setOpen} open={open} />
     </div>
   )
 }

@@ -1,14 +1,21 @@
 import { useQuery } from 'react-query'
 
 import Lyra, { Board, Market, Quote, Strike } from '@lyrafinance/lyra-js'
-import { BigNumber } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { MONTHS } from '../../constants/dates'
 import { ONE_BN } from '../../constants/bn'
+import { INFURA_ID } from '../../constants'
 
 const isProduction = true //process.env.NODE_ENV === "production";
 
-export const lyra = isProduction ? new Lyra() : new Lyra(69)
+let provider = new ethers.providers.InfuraProvider(10, INFURA_ID)
+
+export const lyra = isProduction
+  ? new Lyra({
+      provider,
+    })
+  : new Lyra(69)
 
 export const getLyraMarkets = async () => await lyra.markets()
 
