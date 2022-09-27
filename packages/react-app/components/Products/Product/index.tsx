@@ -22,16 +22,6 @@ export default function Product() {
   const { query } = useRouter()
   const { data: vault, isLoading } = useVaultProduct(query?.vault)
   console.log({ vault })
-
-  // on vault page must display
-  // title
-  // token symbol - token name
-  // status and asset
-  // Vault Strategy: description
-  // Vault Snapshot: other details like premium + current price + expiry + strikes traded (table)
-  // vault performance: current apy and previous week
-  // Vault Transactions (manager actions + hedges):
-
   const [tab, setTab] = useState(UserActionTabs.DEPOSIT.HREF)
 
   return (

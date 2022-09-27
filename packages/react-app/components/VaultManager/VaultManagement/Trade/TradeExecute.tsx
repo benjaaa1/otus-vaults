@@ -9,6 +9,9 @@ import {
   fromBigNumber,
   to18DecimalBN,
 } from '../../../../utils/formatters/numbers'
+import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
+import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
+import LyraIcon from '../../../UI/Components/Icons/Color/LYRA'
 
 const computeCosts = (trades: LyraStrike[] | null | undefined) => {
   return trades?.reduce(
@@ -92,10 +95,18 @@ const Trade = ({ trade }: { trade: LyraStrike }) => {
   const { updateTradeSize } = useVaultManagerContext()
   const [size, setSize] = useState(fromBigNumber(trade.quote.size))
   console.log({ trade, newSize: fromBigNumber(trade.quote.size) })
+
+  const market = trade.market
+
   return (
     <li key={trade.id}>
-      <div className="block hover:bg-black">
-        <div className="px-4 py-6 sm:px-6">
+      <div className="flex hover:bg-black">
+        <div className="flex-none-1 w-14">
+          <div className="p-4 text-white sm:px-6">
+            {market == 'BTC' ? <BTCIcon /> : <ETHIcon />}
+          </div>
+        </div>
+        <div className="flex-1 px-4 py-6 sm:px-6">
           <div className="flex items-center justify-between">
             <p className="text-md truncate font-sans font-semibold text-zinc-500">
               {`${isLongText(trade.selectedOptionType)} ETH ${formatUSD(
@@ -115,12 +126,14 @@ const Trade = ({ trade }: { trade: LyraStrike }) => {
                 <input
                   value={size}
                   onChange={async (e) => {
+                    if (e.target.value == '') return
                     setSize(parseInt(e.target.value))
                     const strikeWithUpdatedQuote = await getStrikeQuote(
                       trade,
                       trade.selectedOptionType,
                       parseUnits(parseInt(e.target.value).toString(), 18)
                     )
+
                     updateTradeSize(strikeWithUpdatedQuote)
                   }}
                   type="number"
@@ -137,17 +150,17 @@ const Trade = ({ trade }: { trade: LyraStrike }) => {
             </p>
             <div className="ml-2 flex flex-shrink-0">
               <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                {formatUSD(fromBigNumber(trade.quote.premium))}
+                {formatUSD(fromBigNumber(trade.quote.pricePerOption))}
               </p>
             </div>
           </div>
           {!isLong(trade.selectedOptionType) ? (
             <div className="flex items-center justify-between pt-2">
-              <p className="truncate font-sans font-normal text-white">
+              <p className="truncate font-sans text-xs font-normal text-white">
                 Collateral
               </p>
               <div className="ml-2 flex flex-shrink-0">
-                <p className=" inline-flex font-mono  text-xs font-normal leading-5">
+                <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
                   {formatUSD(fromBigNumber(trade.strikePrice))}
                 </p>
               </div>

@@ -53,11 +53,8 @@ export const useVaultManager = () => {
   }
 
   const updateTradeSize = (strike) => {
+    console.log({ strike })
     const _updatedBuiltTrades = builtTrades?.map((existingTrade) => {
-      console.log({
-        optiontype: existingTrade.selectedOptionType,
-        optiontype1: strike.selectedOptionType,
-      })
       if (
         existingTrade.id == strike.id &&
         existingTrade.selectedOptionType == strike.selectedOptionType
@@ -67,7 +64,6 @@ export const useVaultManager = () => {
         return existingTrade
       }
     })
-    console.log({ _updatedBuiltTrades })
 
     dispatch({
       type: 'UPDATE_NEW_TRADE',

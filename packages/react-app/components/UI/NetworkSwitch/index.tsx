@@ -8,7 +8,7 @@ export default function NetworkSwitch() {
         <div className="rounded-lg bg-zinc-800 p-2 shadow-lg sm:p-3">
           <div className="flex flex-wrap items-center justify-between">
             <div className="flex w-0 flex-1 items-center">
-              <span className="flex rounded-lg bg-white p-2">
+              <span className="flex rounded-lg bg-emerald-600 p-2">
                 <MegaphoneIcon
                   className="h-6 w-6 text-white"
                   aria-hidden="true"
