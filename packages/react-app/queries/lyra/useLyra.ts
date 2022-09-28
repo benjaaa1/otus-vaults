@@ -5,7 +5,7 @@ import { BigNumber, ethers } from 'ethers'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { MONTHS } from '../../constants/dates'
 import { ONE_BN } from '../../constants/bn'
-import { INFURA_ID } from '../../constants'
+import { INFURA_ID } from '../../constants/api'
 
 const isProduction = true //process.env.NODE_ENV === "production";
 

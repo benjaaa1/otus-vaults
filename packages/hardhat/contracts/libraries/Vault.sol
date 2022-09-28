@@ -26,7 +26,7 @@ library Vault {
     uint8 decimals;
     // Vault cap
     uint104 cap;
-    // Asset used in Theta / Delta Vault
+    // Asset used
     address asset;
   }
 

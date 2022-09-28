@@ -1,0 +1,79 @@
+// import { createContainer } from 'unstated-next'
+import { useWeb3Context } from '../context'
+import { toast } from 'react-toastify'
+import { TransactionStatusData } from '@synthetixio/transaction-notifier'
+import { useCallback } from 'react'
+
+const NotificationSuccess = () => {}
+
+const NotificationPending = () => {}
+
+const NotificationError = ({
+  failureReason,
+}: {
+  failureReason: string | undefined
+}) => {
+  return <div>{failureReason}</div>
+}
+
+export const useTransactionNotifier = () => {
+  const { transactionNotifier } = useWeb3Context() // Connector.useContainer();
+  const blockExplorerInstance = null
+  console.log({ transactionNotifier })
+  return useCallback(
+    ({
+      txHash,
+      onTxConfirmed,
+      onTxFailed,
+    }: {
+      txHash: string
+      onTxSent?: () => void
+      onTxConfirmed?: () => void
+      onTxFailed?: (failureMessage: TransactionStatusData) => void
+    }) => {
+      const link =
+        blockExplorerInstance != null
+          ? blockExplorerInstance.txLink(txHash)
+          : undefined
+      if (transactionNotifier) {
+        const toastProps = {
+          onClick: () => window.open(link, '_blank'),
+        }
+        const emitter = transactionNotifier.hash(txHash)
+        emitter.on('txSent', () => {
+          toast(NotificationPending, { ...toastProps, toastId: txHash })
+        })
+        emitter.on(
+          'txConfirmed',
+          ({ transactionHash }: TransactionStatusData) => {
+            toast.update(transactionHash, {
+              ...toastProps,
+              render: NotificationSuccess,
+              autoClose: 10000,
+            })
+            if (onTxConfirmed != null) {
+              onTxConfirmed()
+            }
+          }
+        )
+        emitter.on(
+          'txFailed',
+          ({ transactionHash, failureReason }: TransactionStatusData) => {
+            toast.update(transactionHash, {
+              ...toastProps,
+              render: <NotificationError failureReason={failureReason} />,
+            })
+            if (onTxFailed != null) {
+              onTxFailed({ transactionHash, failureReason })
+            }
+          }
+        )
+      }
+    },
+    [transactionNotifier]
+  )
+}
+
+// const TransactionNotifier = createContainer(useTransactionNotifier);
+
+// export default TransactionNotifier;

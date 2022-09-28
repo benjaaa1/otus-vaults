@@ -26,6 +26,9 @@ export const QUERY_KEYS = {
     Markets: () => ['lyraMarkets'],
     Quote: (strikeId: number) => ['lyraQuote', strikeId],
   },
+  Balance: {
+    Susd: (address: string | null | undefined) => ['susd', address],
+  },
 }
 
 export default QUERY_KEYS

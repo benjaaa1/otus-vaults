@@ -1,14 +1,16 @@
 import { ethers } from 'ethers'
+import { TransactionNotifierInterface } from '@synthetixio/transaction-notifier'
 
 export type Web3ProviderState = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signer: ethers.providers.JsonRpcSigner | null | undefined,
+  signer: ethers.providers.JsonRpcSigner | any
   provider: any
   web3Provider: ethers.providers.Web3Provider | null | undefined
   address: string | null | undefined
   network: ethers.providers.Network | null | undefined
   connect: (() => Promise<void>) | null
   disconnect: (() => Promise<void>) | null
+  transactionNotifier: TransactionNotifierInterface | null | undefined
 }
 
 export const web3InitialState: Web3ProviderState = {
@@ -19,6 +21,7 @@ export const web3InitialState: Web3ProviderState = {
   network: null,
   connect: null,
   disconnect: null,
+  transactionNotifier: null,
 }
 
 export type Web3Action =
@@ -29,6 +32,7 @@ export type Web3Action =
       web3Provider?: Web3ProviderState['web3Provider']
       address?: Web3ProviderState['address']
       network?: Web3ProviderState['network']
+      transactionNotifier?: Web3ProviderState['transactionNotifier']
     }
   | {
       type: 'SET_ADDRESS'
@@ -55,6 +59,7 @@ export function web3Reducer(
         web3Provider: action.web3Provider,
         address: action.address,
         network: action.network,
+        transactionNotifier: action.transactionNotifier,
       }
     case 'SET_ADDRESS':
       return {

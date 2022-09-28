@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '../UI/Components/Button'
+import AllIcons from '../UI/Components/Icons/Color/ALL'
 import BTCIcon from '../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../UI/Components/Icons/Color/ETH'
 import LyraIcon from '../UI/Components/Icons/Color/LYRA'
@@ -11,20 +12,8 @@ const Products = () => {
 
   return (
     <div className="grid grid-cols-5 rounded-sm border border-zinc-700 bg-transparent p-9">
-      <div>
-        <div>
-          <SNXLogoIcon />
-        </div>
-        <div>
-          <LyraIcon />
-        </div>
-
-        <div>
-          <ETHIcon />
-        </div>
-        <div>
-          <BTCIcon />
-        </div>
+      <div className="mx-auto grid-cols-1">
+        <AllIcons />
       </div>
       <div className="col-span-4 pl-2">
         <div className="text-3xl font-semibold text-white">

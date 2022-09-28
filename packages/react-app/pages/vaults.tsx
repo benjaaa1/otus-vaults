@@ -22,10 +22,12 @@ const Vaults: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="mx-auto max-w-4xl py-8">
-        <div className="grid grid-cols-3 gap-8">
+      <div className="mx-auto max-w-4xl py-14">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           {isLoading ? (
-            <Spinner />
+            <div className="col-span-3 mx-auto">
+              <Spinner />
+            </div>
           ) : (
             vaults.map((vault) => <Vault key={vault.id} vault={vault} />)
           )}

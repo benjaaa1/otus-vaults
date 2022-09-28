@@ -17,10 +17,10 @@ const Vault = ({ vault }: { vault: Vault }) => {
     <div
       onClick={(e) => handleVaultClick(e, `vault/${vault.id}`)}
       key={vault.id}
-      className="cursor-pointer rounded-sm border border-zinc-800 bg-gradient-to-b from-black to-zinc-900 shadow-black hover:shadow-lg hover:shadow-emerald-600"
+      className="cursor-pointer rounded-sm border border-zinc-800 bg-gradient-to-b from-black to-zinc-900 shadow-black hover:shadow hover:shadow-emerald-200"
     >
       <div key={vault.id} className="overflow-hidden border-b border-zinc-800">
-        <div className="p-4 pb-6">
+        <div className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3">
             <div className="sm:col-span-2">
               <Tag
@@ -33,7 +33,7 @@ const Vault = ({ vault }: { vault: Vault }) => {
             <div>
               <SUSDIcon />
             </div>
-            <div className="py-4">
+            <div className="pt-4">
               <Tag label={'No Hedge'} size={'xs'} variant={'default'} />
             </div>
           </div>

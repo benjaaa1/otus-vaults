@@ -172,7 +172,7 @@ export default function Product() {
 
                     <div className="py-2">
                       <div className="text-xxs font-normal uppercase text-zinc-300">
-                        Protocol Fees
+                        Platform Fees
                       </div>
                       <div className="py-2 font-mono text-xl font-normal text-white">
                         0%
@@ -185,7 +185,9 @@ export default function Product() {
             <div className="col-span-5">
               <div className="rounded-sm border border-zinc-700 bg-zinc-800 shadow shadow-black">
                 <Transact setTab={setTab} active={tab} />
-                {tab == UserActionTabs.DEPOSIT.HREF ? <Deposit /> : null}
+                {tab == UserActionTabs.DEPOSIT.HREF ? (
+                  <Deposit vault={vault} />
+                ) : null}
               </div>
             </div>
           </div>

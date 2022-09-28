@@ -16,6 +16,8 @@ packages/hardhat/cache*
 packages/**/data
 !packages/react-app/src/contracts/contracts.js
 
+packages/react-app/constants/api.ts
+
 .next/ 
 
 # ts
@@ -61,11 +63,6 @@ yarn-debug.log*
 yarn-error.log*
 
 .idea
-
-# Local Netlify folder
-.netlify
-*.tsbuildinfo
-*.stackdump
 
 # doc directory
 /doc

@@ -1,17 +1,11 @@
-import { CalendarIcon, MapPinIcon, UsersIcon } from '@heroicons/react/20/solid'
 import { parseUnits } from 'ethers/lib/utils'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useVaultManagerContext } from '../../../../context'
-import { useVaultManager } from '../../../../hooks'
 import { getStrikeQuote, LyraStrike } from '../../../../queries/lyra/useLyra'
-import {
-  formatUSD,
-  fromBigNumber,
-  to18DecimalBN,
-} from '../../../../utils/formatters/numbers'
+import { formatUSD, fromBigNumber } from '../../../../utils/formatters/numbers'
+import { Button } from '../../../UI/Components/Button'
 import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
-import LyraIcon from '../../../UI/Components/Icons/Color/LYRA'
 
 const computeCosts = (trades: LyraStrike[] | null | undefined) => {
   return trades?.reduce(
@@ -51,43 +45,58 @@ export default function TradeExecute() {
 
   const costs = useMemo(() => computeCosts(builtTrades), [builtTrades])
   console.log({ costs })
-  return (
-    <div className="overflow-hidden border border-zinc-700 bg-transparent sm:rounded-sm">
-      <ul role="list" className="divide-y divide-zinc-700">
-        {builtTrades?.map((trade: LyraStrike) => (
-          <Trade trade={trade} />
-        ))}
+  return builtTrades && builtTrades.length > 0 ? (
+    <>
+      <div className="overflow-hidden border border-zinc-800 bg-transparent sm:rounded-sm">
+        <ul role="list" className="divide-y divide-zinc-700">
+          {builtTrades?.map((trade: LyraStrike) => (
+            <Trade trade={trade} />
+          ))}
 
-        {/** max cost & min received  */}
-
-        <li key={'costs'}>
-          <div className="block">
-            <div className="px-4 py-6 sm:px-6">
-              <div className="flex items-center justify-between pt-2">
-                <p className="truncate font-sans text-xs font-semibold text-white">
-                  Min Received
-                </p>
-                <div className="ml-2 flex flex-shrink-0">
-                  <p className="inline-flex font-mono  text-xs font-normal leading-5 text-white">
-                    {formatUSD(fromBigNumber(costs.minReceived))}
-                  </p>
+          {/** max cost & min received  */}
+          {builtTrades != null && builtTrades?.length > 0 ? (
+            <li key={'costs'}>
+              <div className="block">
+                <div className="px-4 py-6 sm:px-6">
+                  <div className="flex items-center justify-between pt-2">
+                    <p className="truncate font-sans text-xs font-semibold text-white">
+                      Min Received
+                    </p>
+                    <div className="ml-2 flex flex-shrink-0">
+                      <p className="inline-flex font-mono  text-xs font-normal leading-5 text-white">
+                        {formatUSD(fromBigNumber(costs.minReceived))}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-2">
+                    <p className="truncate font-sans text-xs font-medium text-white">
+                      Max Cost
+                    </p>
+                    <div className="ml-2 flex flex-shrink-0">
+                      <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
+                        {formatUSD(fromBigNumber(costs.minCost))}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between pt-2">
-                <p className="truncate font-sans text-xs font-medium text-white">
-                  Max Cost
-                </p>
-                <div className="ml-2 flex flex-shrink-0">
-                  <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                    {formatUSD(fromBigNumber(costs.minCost))}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
+            </li>
+          ) : null}
+        </ul>
+      </div>
+      <div className="justify-stretch mt-6 flex flex-col">
+        <Button
+          label={'Execute Trade'}
+          isLoading={false}
+          variant={'action'}
+          radius={'xs'}
+          size={'full'}
+          onClick={() => console.log('Execute Trade')}
+        />
+      </div>
+    </>
+  ) : (
+    <div className="h-10 border border-zinc-800 bg-transparent"></div>
   )
 }
 

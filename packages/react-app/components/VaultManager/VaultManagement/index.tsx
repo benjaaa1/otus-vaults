@@ -8,6 +8,7 @@ import { VaultManagerTabs } from '../../../constants/tabs'
 import { VaultManagerContextProvider } from '../../../context'
 import TradeExecute from './Trade/TradeExecute'
 import { Button } from '../../UI/Components/Button'
+import HedgeExecute from './Current/HedgeExecute'
 
 export default function VaultManagement() {
   const { query } = useRouter()
@@ -40,18 +41,11 @@ export default function VaultManagement() {
             </div>
 
             <div className="col-span-4">
-              <TradeExecute />
-
-              <div className="justify-stretch mt-6 flex flex-col">
-                <Button
-                  label={'Execute Trade'}
-                  isLoading={false}
-                  variant={'action'}
-                  radius={'xs'}
-                  size={'full'}
-                  onClick={() => console.log('Execute Trade')}
-                />
-              </div>
+              {tab === VaultManagerTabs.TRADE.HREF ? (
+                <TradeExecute />
+              ) : (
+                <HedgeExecute />
+              )}
             </div>
           </div>
         </main>

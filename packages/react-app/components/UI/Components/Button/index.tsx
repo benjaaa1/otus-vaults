@@ -98,6 +98,7 @@ export const Button = ({
   radius,
   size,
   onClick,
+  isDisabled,
   isActive = false,
 }: ButtonProps) => {
   const buttonSize = getButtonSize(size)
@@ -111,6 +112,7 @@ export const Button = ({
     </button>
   ) : (
     <button
+      disabled={isDisabled}
       className={`items-center ${buttonSize} ${buttonVariant} ${buttonRadius} ${activeButton}`}
       onClick={onClick}
     >

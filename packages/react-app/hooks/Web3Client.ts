@@ -2,6 +2,7 @@ import { useEffect, useReducer, useCallback } from 'react'
 import { ethers } from 'ethers'
 import Web3Modal from 'web3modal'
 import WalletConnectProvider from '@walletconnect/web3-provider'
+import { TransactionNotifier } from '@synthetixio/transaction-notifier'
 
 import {
   Web3ProviderState,
@@ -32,7 +33,14 @@ if (typeof window !== 'undefined') {
 
 export const useWeb3 = () => {
   const [state, dispatch] = useReducer(web3Reducer, web3InitialState)
-  const { signer, provider, web3Provider, address, network } = state
+  const {
+    signer,
+    provider,
+    web3Provider,
+    address,
+    network,
+    transactionNotifier,
+  } = state
 
   const connect = useCallback(async () => {
     if (web3Modal) {
@@ -42,15 +50,21 @@ export const useWeb3 = () => {
         const signer = web3Provider.getSigner()
         const address = await signer.getAddress()
         const network = await web3Provider.getNetwork()
+        const _transactionNotifier = transactionNotifier
+          ? transactionNotifier.setProvider(web3Provider)
+          : new TransactionNotifier(web3Provider)
         toast.success('Connected to Web3')
+        console.log('connected to web3')
 
+        console.log({ _transactionNotifier })
         dispatch({
           type: 'SET_WEB3_PROVIDER',
           signer,
           provider,
           web3Provider,
           address,
-          network
+          network,
+          transactionNotifier: _transactionNotifier,
         } as Web3Action)
       } catch (e) {
         console.log('connect error', e)
@@ -133,5 +147,6 @@ export const useWeb3 = () => {
     network,
     connect,
     disconnect,
+    transactionNotifier,
   } as Web3ProviderState
 }

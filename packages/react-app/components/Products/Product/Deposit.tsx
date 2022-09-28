@@ -1,34 +1,121 @@
+import { BigNumber } from 'ethers'
+import { parseUnits } from 'ethers/lib/utils'
+import { useCallback, useEffect, useState } from 'react'
+import { MAX_BN, ZERO_BN } from '../../../constants/bn'
+import { useWeb3Context } from '../../../context'
+import { useBalance } from '../../../hooks/Balances'
+import { useContracts, useOtusVaultContracts } from '../../../hooks/Contracts'
+import useTransaction from '../../../hooks/Transaction'
+import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
+import { lyra } from '../../../queries/lyra/useLyra'
+import { Vault } from '../../../queries/myVaults/useMyVaults'
+import {
+  formatNumber,
+  formatUSD,
+  fromBigNumber,
+} from '../../../utils/formatters/numbers'
 import { Button } from '../../UI/Components/Button'
 import { Input } from '../../UI/Components/Input/Input'
 
-export default function Deposit() {
-  // const execute = useTransaction()
+export default function Deposit({ vault }: { vault: Vault }) {
+  const { signer, address, network } = useWeb3Context()
+  const execute = useTransaction()
+  const contracts = useContracts()
+  const otusContracts = useOtusVaultContracts()
 
-  // const handleClickApprove = useCallback(async () => {
-  //   if (!account) {
-  //     console.warn('Account does not exist')
-  //     return null
-  //   }
-  //   setIsApprovalLoading(true)
-  //   const tx = await account.approveDeposit(market.address, MAX_BN)
-  //   await execute(tx, {
-  //     onComplete: async () => await Promise.all([mutateLiquidityDepositBalance(market.address)]),
-  //   })
-  //   setIsApprovalLoading(false)
-  // }, [account, market, execute, mutateLiquidityDepositBalance])
+  const monitorTransaction = useTransactionNotifier()
 
-  // const handleClickDeposit = useCallback(async () => {
-  //   if (!account || !market) {
-  //     console.warn('Account does not exist')
-  //     return null
-  //   }
-  //   setIsLoading(true)
-  //   await execute(market.deposit(account.address, amount), {
-  //     onComplete: async () =>
-  //       await Promise.all([mutateLiquidityDepositBalance(market.address), mutateMyVaultLiquidity(market.address)]),
-  //   })
-  //   setIsLoading(false)
-  // }, [account, amount, execute, market, mutateLiquidityDepositBalance, mutateMyVaultLiquidity])
+  const susdContract = contracts ? contracts['SUSD'] : null
+  console.log({ otusContracts })
+  const otusVaultContract = otusContracts ? otusContracts[vault?.id] : null
+
+  const balance = useBalance()
+  console.log({ balance })
+  const [isDepositLoading, setIsDepositLoading] = useState(false)
+  const [isApproveLoading, setIsApproveLoading] = useState(false)
+  const [isApproved, setApproved] = useState(false)
+  const [canTransact, setCanTransact] = useState(false)
+  const [amount, setAmount] = useState(0)
+
+  const [allowanceAmount, setAllowanceAmount] = useState<BigNumber>(ZERO_BN)
+
+  const checkAllowanceStatus = useCallback(async () => {
+    console.log({ susdContract, address, vault })
+    if (susdContract != null && address != null && vault) {
+      const allowanceStatus = await susdContract.allowance(address, vault.id)
+      console.log({ allowanceStatus: fromBigNumber(allowanceStatus) })
+      if (fromBigNumber(allowanceStatus) > 0) {
+        setApproved(true)
+      } else {
+        setApproved(false)
+      }
+      setAllowanceAmount(allowanceStatus)
+    }
+  }, [susdContract, address, vault, isApproveLoading])
+
+  useEffect(() => {
+    try {
+      checkAllowanceStatus()
+    } catch (error) {
+      console.log({ error })
+    }
+  }, [susdContract, address, vault])
+
+  useEffect(() => {
+    if (network?.chainId == 69 && signer != null) {
+      setCanTransact(true)
+    }
+  }, [signer, network])
+
+  // add log events
+  const handleClickApproveQuote = useCallback(async () => {
+    console.log({ susdContract, vault })
+    if (susdContract == null || vault == null) {
+      console.warn('Vault does not exist')
+      return null
+    }
+
+    setIsApproveLoading(true)
+
+    const tx = await susdContract.approve(vault.id, MAX_BN)
+
+    if (tx) {
+      monitorTransaction({
+        txHash: tx.hash,
+        onTxConfirmed: () => {
+          setTimeout(() => {
+            setApproved(true)
+          }, 5 * 1000)
+        },
+      })
+    }
+
+    setIsApproveLoading(false)
+  }, [susdContract, vault, execute])
+
+  const handleDepositQuote = useCallback(async () => {
+    console.log({ otusVaultContract, vault })
+    if (otusVaultContract == null || vault == null) {
+      console.warn('Vault does not exist for deposit')
+      return null
+    }
+
+    setIsDepositLoading(true)
+    console.log({ amount, amountparsed: parseUnits(amount.toString()) })
+    const tx = await otusVaultContract.deposit(parseUnits(amount.toString()))
+    if (tx) {
+      monitorTransaction({
+        txHash: tx.hash,
+        onTxConfirmed: () => {
+          setTimeout(() => {
+            setIsDepositLoading(false)
+            balance.refetch()
+          }, 5 * 1000)
+        },
+      })
+    }
+  }, [otusVaultContract, vault, execute, amount])
+
   return (
     <div className="p-8">
       <div>
@@ -43,10 +130,14 @@ export default function Deposit() {
             <span className="text-zinc-500 sm:text-sm">$</span>
           </div>
           <Input
+            isDisabled={allowanceAmount.eq(ZERO_BN)}
             type="number"
             id="amount"
-            onChange={(e) => console.log(e.target.value)}
-            value={0}
+            onChange={(e) => {
+              console.log({ changeamount: parseInt(e.target.value) })
+              setAmount(parseInt(e.target.value))
+            }}
+            value={amount}
             placeholder="0.00"
             radius={'xs'}
             variant={'default'}
@@ -61,22 +152,44 @@ export default function Deposit() {
       </div>
       <div className="mt-2 flex flex-wrap justify-between">
         <div className="text-xs text-white">Wallet Balance</div>
-        <div className="text-xs text-white">$0</div>
+        <div className="text-xs text-white">
+          {formatUSD(fromBigNumber(balance.data || ZERO_BN))}
+        </div>
       </div>
-
       <div className="py-6 text-center text-xs text-white">
         Your deposit will be deployed in the Vault’s weekly strategy on Friday
         at 11am UTC
       </div>
       <div className="justify-stretch mt-6 flex flex-col">
-        <Button
-          label={'Deposit'}
-          isLoading={false}
-          variant={'action'}
-          radius={'xs'}
-          size={'full'}
-          onClick={() => console.log('deposit')}
-        />
+        {canTransact && isApproved ? (
+          <Button
+            isDisabled={amount <= 0}
+            label={'Deposit'}
+            isLoading={isDepositLoading}
+            variant={'action'}
+            radius={'xs'}
+            size={'full'}
+            onClick={handleDepositQuote}
+          />
+        ) : canTransact && !isApproved ? (
+          <Button
+            label={'Approve'}
+            isLoading={isApproveLoading}
+            variant={'action'}
+            radius={'xs'}
+            size={'full'}
+            onClick={handleClickApproveQuote}
+          />
+        ) : !canTransact ? (
+          <Button
+            label={'Wallet Connect'}
+            isLoading={false}
+            variant={'action'}
+            radius={'xs'}
+            size={'full'}
+            onClick={() => console.log('deposit')}
+          />
+        ) : null}
       </div>
     </div>
   )
