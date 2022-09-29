@@ -5,7 +5,6 @@ import { MAX_BN, ZERO_BN } from '../../../constants/bn'
 import { useWeb3Context } from '../../../context'
 import { useBalance } from '../../../hooks/Balances'
 import { useContracts, useOtusVaultContracts } from '../../../hooks/Contracts'
-import useTransaction from '../../../hooks/Transaction'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
 import { lyra } from '../../../queries/lyra/useLyra'
 import { Vault } from '../../../queries/myVaults/useMyVaults'
@@ -19,18 +18,17 @@ import { Input } from '../../UI/Components/Input/Input'
 
 export default function Deposit({ vault }: { vault: Vault }) {
   const { signer, address, network } = useWeb3Context()
-  const execute = useTransaction()
   const contracts = useContracts()
   const otusContracts = useOtusVaultContracts()
 
   const monitorTransaction = useTransactionNotifier()
 
   const susdContract = contracts ? contracts['SUSD'] : null
-  console.log({ otusContracts })
+
   const otusVaultContract = otusContracts ? otusContracts[vault?.id] : null
 
   const balance = useBalance()
-  console.log({ balance })
+
   const [isDepositLoading, setIsDepositLoading] = useState(false)
   const [isApproveLoading, setIsApproveLoading] = useState(false)
   const [isApproved, setApproved] = useState(false)
@@ -40,10 +38,8 @@ export default function Deposit({ vault }: { vault: Vault }) {
   const [allowanceAmount, setAllowanceAmount] = useState<BigNumber>(ZERO_BN)
 
   const checkAllowanceStatus = useCallback(async () => {
-    console.log({ susdContract, address, vault })
     if (susdContract != null && address != null && vault) {
       const allowanceStatus = await susdContract.allowance(address, vault.id)
-      console.log({ allowanceStatus: fromBigNumber(allowanceStatus) })
       if (fromBigNumber(allowanceStatus) > 0) {
         setApproved(true)
       } else {
@@ -69,7 +65,6 @@ export default function Deposit({ vault }: { vault: Vault }) {
 
   // add log events
   const handleClickApproveQuote = useCallback(async () => {
-    console.log({ susdContract, vault })
     if (susdContract == null || vault == null) {
       console.warn('Vault does not exist')
       return null
@@ -91,17 +86,16 @@ export default function Deposit({ vault }: { vault: Vault }) {
     }
 
     setIsApproveLoading(false)
-  }, [susdContract, vault, execute])
+  }, [susdContract, vault, monitorTransaction])
 
   const handleDepositQuote = useCallback(async () => {
-    console.log({ otusVaultContract, vault })
     if (otusVaultContract == null || vault == null) {
       console.warn('Vault does not exist for deposit')
       return null
     }
 
     setIsDepositLoading(true)
-    console.log({ amount, amountparsed: parseUnits(amount.toString()) })
+
     const tx = await otusVaultContract.deposit(parseUnits(amount.toString()))
     if (tx) {
       monitorTransaction({
@@ -114,7 +108,7 @@ export default function Deposit({ vault }: { vault: Vault }) {
         },
       })
     }
-  }, [otusVaultContract, vault, execute, amount])
+  }, [otusVaultContract, vault, monitorTransaction, amount])
 
   return (
     <div className="p-8">
@@ -134,7 +128,6 @@ export default function Deposit({ vault }: { vault: Vault }) {
             type="number"
             id="amount"
             onChange={(e) => {
-              console.log({ changeamount: parseInt(e.target.value) })
               setAmount(parseInt(e.target.value))
             }}
             value={amount}

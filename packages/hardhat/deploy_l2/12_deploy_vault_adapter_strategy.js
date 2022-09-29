@@ -11,7 +11,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ 
-      '0xa64a15E39e717663bB6885a536FA9741DEe08daC' //lyraGlobal.SynthetixAdapter.address
+      '0x2400D0469bfdA59FB0233c3027349D83F1a0f4c8', // quote asset
+      '0xD7C80fC4A5B05B5bE7B5b762e32127B54Fea385A' // snx fu;tures
     ],
     log: true,
     libraries: {

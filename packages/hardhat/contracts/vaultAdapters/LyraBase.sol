@@ -120,6 +120,8 @@ contract LyraBase {
   // Variables //
   ///////////////
 
+  bytes32 public marketKey;
+
   OptionToken internal optionToken;
   OptionMarket public optionMarket;
   LiquidityPool internal liquidityPool;
@@ -133,6 +135,7 @@ contract LyraBase {
 
   /**
    * @notice Assigns synthetix adapter
+   * @param _marketKey synth market name
    * @param _synthetixAdapter SynthetixAdapter address
    * @param _optionToken OptionToken Address
    * @param _optionMarket OptionMarket Address
@@ -143,6 +146,7 @@ contract LyraBase {
    * @param _gwavOracle GWAVOracle address
    */
   constructor(
+    bytes32 _marketKey,
     address _synthetixAdapter,
     address _optionToken,
     address _optionMarket,
@@ -152,6 +156,7 @@ contract LyraBase {
     address _greekCache,
     address _gwavOracle
   ) {
+    marketKey = _marketKey;
     synthetixAdapter = SynthetixAdapter(_synthetixAdapter);
     optionToken = OptionToken(_optionToken); // option token will be different
     optionMarket = OptionMarket(_optionMarket); // option market will be different

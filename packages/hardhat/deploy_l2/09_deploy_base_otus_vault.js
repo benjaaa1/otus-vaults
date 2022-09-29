@@ -7,7 +7,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   const vault = await ethers.getContract("Vault");
   const vaultLifeCycle = await ethers.getContract("VaultLifeCycle");
-  const _roundDuration = 86400 * 7; // uint, 
+  const _roundDuration = 86400 * 7; // uint, // remove this if rounds can last longer
   // const _keeper = "0x2A48Cea7dEF88436ba90d81eE6f55D416804bD54"; // address,
 
   await deploy("OtusVault", {

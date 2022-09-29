@@ -1,57 +1,57 @@
 import * as dotenv from 'dotenv';
-import { utils } from "ethers"; 
-import fs from "fs"; 
-import chalk from "chalk"; 
+import { utils } from 'ethers';
+import fs from 'fs';
+import chalk from 'chalk';
 
-import "@nomiclabs/hardhat-waffle";
-import "@tenderly/hardhat-tenderly";
+import '@nomiclabs/hardhat-waffle';
+import '@tenderly/hardhat-tenderly';
 
-import "hardhat-deploy";
-import "hardhat-gas-reporter";
+import 'hardhat-deploy';
+import 'hardhat-gas-reporter';
 
-import "@otusfinance/otus-hardhat-ethers";
-import "@nomiclabs/hardhat-etherscan";
+import '@otusfinance/otus-hardhat-ethers';
+import '@nomiclabs/hardhat-etherscan';
 
-import "@typechain/hardhat";
-import "hardhat-dependency-compiler";
+import '@typechain/hardhat';
+import 'hardhat-dependency-compiler';
 import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths';
-import "hardhat-contract-sizer";
+import 'hardhat-contract-sizer';
 
 dotenv.config();
 
-const defaultNetwork = "localhost";
+const defaultNetwork = 'localhost';
 
 const mainnetGwei = 21;
 
 function mnemonic() {
   try {
-    return fs.readFileSync("./mnemonic.txt").toString().trim();
+    return fs.readFileSync('./mnemonic.txt').toString().trim();
   } catch (e) {
-    if (defaultNetwork !== "localhost") {
+    if (defaultNetwork !== 'localhost') {
       console.log(
-        "☢️ WARNING: No mnemonic file created for a deploy account. Try `yarn run generate` and then `yarn run account`."
+        '☢️ WARNING: No mnemonic file created for a deploy account. Try `yarn run generate` and then `yarn run account`.',
       );
     }
   }
-  return "";
+  return '';
 }
 
 module.exports = {
   tenderly: {
-    project: "otus-finance-vault-factory",
-    username: "0xbenjaaa",
+    project: 'otus-finance-vault-factory',
+    username: '0xbenjaaa',
   },
   defaultNetwork,
   gasReporter: {
-    currency: "USD",
+    currency: 'USD',
     coinmarketcap: process.env.COINMARKETCAP || null,
   },
   networks: {
     localhost: {
-      url: "http://localhost:8545",
+      url: 'http://localhost:8545',
     },
     mainnet: {
-      url: "https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925", // <---- YOUR INFURA ID! (or it won't work)
+      url: 'https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', // <---- YOUR INFURA ID! (or it won't work)
       gasPrice: mainnetGwei * 1000000000,
       accounts: {
         mnemonic: mnemonic(),
@@ -62,29 +62,29 @@ module.exports = {
       },
     },
     kovan: {
-      url: "https://kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925", // <---- YOUR INFURA ID! (or it won't work)
+      url: 'https://kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', // <---- YOUR INFURA ID! (or it won't work)
       //    url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXXXXX/eth/kovan", // <---- YOUR MORALIS ID! (not limited to infura)
       accounts: {
         mnemonic: 'wear bubble foil piano inherit cram talent cute minute neglect three play',
       },
       deploy: ['deploy_l1'],
       companionNetworks: {
-        l2: "kovanOptimism",
+        l2: 'kovanOptimism',
       },
     },
     optimism: {
-      url: "https://mainnet.optimism.io",
+      url: 'https://mainnet.optimism.io',
       accounts: {
         mnemonic: mnemonic(),
       },
       deploy: ['deploy_l2'],
       companionNetworks: {
-        l1: "mainnet",
+        l1: 'mainnet',
       },
     },
     kovanOptimism: {
       chainId: 69,
-      url: "https://optimism-kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925",
+      url: 'https://optimism-kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925',
       ovm: true,
       timeout: 60000,
       accounts: {
@@ -92,26 +92,26 @@ module.exports = {
       },
       deploy: ['deploy_l2'],
       companionNetworks: {
-        l1: "kovan",
+        l1: 'kovan',
       },
     },
     localOptimism: {
-      url: "http://localhost:8545",
+      url: 'http://localhost:8545',
       accounts: {
         mnemonic: mnemonic(),
       },
       companionNetworks: {
-        l1: "localOptimismL1",
+        l1: 'localOptimismL1',
       },
     },
     localOptimismL1: {
-      url: "http://localhost:9545",
+      url: 'http://localhost:9545',
       gasPrice: 0,
       accounts: {
         mnemonic: mnemonic(),
       },
       companionNetworks: {
-        l2: "localOptimism",
+        l2: 'localOptimism',
       },
     },
     // hardhat: {
@@ -130,7 +130,7 @@ module.exports = {
         },
       },
       {
-        version: "0.8.4",
+        version: '0.8.4',
         settings: {
           optimizer: {
             enabled: true,
@@ -139,7 +139,7 @@ module.exports = {
         },
       },
       {
-        version: "0.6.7",
+        version: '0.6.7',
         settings: {
           optimizer: {
             enabled: true,
@@ -150,7 +150,7 @@ module.exports = {
     ],
   },
   ovm: {
-    solcVersion: "0.7.6",
+    solcVersion: '0.7.6',
   },
   namedAccounts: {
     deployer: {
@@ -158,16 +158,15 @@ module.exports = {
     },
   },
   mocha: {
-    timeout: 1000000000
+    timeout: 1000000000,
   },
   etherscan: {
     apiKey: {
-      mainnet: "582EMV38X8492YGM6IIB22YVXIBFDB3RU5",
-      optimisticKovan: "582EMV38X8492YGM6IIB22YVXIBFDB3RU5"
+      mainnet: '582EMV38X8492YGM6IIB22YVXIBFDB3RU5',
+      optimisticKovan: '582EMV38X8492YGM6IIB22YVXIBFDB3RU5',
     },
   },
   dependencyCompiler: {
     paths: lyraContractPaths,
   },
 };
-

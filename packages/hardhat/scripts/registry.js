@@ -30,6 +30,8 @@ const registerMarkets = async () => {
     const market = await outsController.getOptionMarketDetails("0xDc06D81A68948544A6B453Df55CcD172061c6d6e"); 
     console.log({ market })
 
+    // const lyraAdapters = await outsController.setLyraAdapters("")
+
     return true;
   } catch (e) {
     console.log(e);
