@@ -68,7 +68,7 @@ contract OtusVault is BaseVault {
 
   event PositionReduced(uint positionId, uint amount);
 
-  event RoundStarted(uint16 roundId, uint104 lockAmount, uint boardId);
+  event RoundStarted(uint16 roundId, uint104 lockAmount);
 
   event RoundClosed(uint16 roundId, uint104 lockAmount);
 
@@ -180,15 +180,14 @@ contract OtusVault is BaseVault {
 
   /**
    * @notice Start the next/new round
-   * @param boardId set the boardId for next round
    */
-  function startNextRound(uint boardId) external onlyOwner {
+  function startNextRound() external onlyOwner {
     //can't start next round before outstanding expired positions are settled.
     require(!vaultState.roundInProgress, "round opened");
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
     require(address(strategy) != address(0), "Strategy not set");
     // allow for multiple boardId selection and mostly check expiry is within strategy range
-    IStrategy(strategy).setBoard(boardId);
+    // IStrategy(strategy).setBoard(boardId);
 
     (uint lockedBalance, uint queuedWithdrawAmount) = _rollToNextRound(uint(lastQueuedWithdrawAmount));
 
@@ -200,7 +199,7 @@ contract OtusVault is BaseVault {
 
     _transferFundsToStrategy();
 
-    emit RoundStarted(vaultState.round, uint104(lockedBalance), boardId);
+    emit RoundStarted(vaultState.round, uint104(lockedBalance));
   }
 
   function _transferFundsToStrategy() internal {
@@ -221,10 +220,8 @@ contract OtusVault is BaseVault {
    * @return positionIds lyra position ids
    */
   function trade(StrategyBase.StrikeTrade[] memory _strikes) external onlyOwner returns (uint[] memory positionIds) {
-    // can trade during round as long as lockedAmount is greater than 0
     // round should be opened
     require(vaultState.roundInProgress, "round not opened");
-    // require(!vaultState.tradesExecuted, "trades executed for round");
 
     uint allCapitalUsed;
     uint positionId;
@@ -239,8 +236,8 @@ contract OtusVault is BaseVault {
 
     for (uint i = 0; i < len; i++) {
       StrategyBase.StrikeTrade memory _trade = _strikes[i];
-      (positionId, premium, capitalUsed, expiry, strikePrice) = IStrategy(strategy).doTrade(_trade);
-      allCapitalUsed += capitalUsed; // substract on costs
+      (positionId, premium, capitalUsed, expiry) = IStrategy(strategy).doTrade(_trade);
+      allCapitalUsed += capitalUsed;
       positionIds[i] = positionId;
 
       ActiveTrade memory activeTrade = ActiveTrade(
@@ -250,7 +247,7 @@ contract OtusVault is BaseVault {
         premium,
         positionId,
         expiry,
-        strikePrice
+        _trade.strikePrice
       );
       activeTrades[i] = activeTrade;
     }
@@ -267,8 +264,12 @@ contract OtusVault is BaseVault {
    * @param positionId lyra position id
    * @param closeAmount total amount to reduce
    */
-  function reducePosition(uint positionId, uint closeAmount) external onlyKeeper {
-    IStrategy(strategy).reducePosition(positionId, closeAmount);
+  function reducePosition(
+    address market,
+    uint positionId,
+    uint closeAmount
+  ) external onlyKeeper {
+    IStrategy(strategy).reducePosition(market, positionId, closeAmount);
 
     emit PositionReduced(positionId, closeAmount);
   }

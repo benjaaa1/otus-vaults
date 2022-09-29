@@ -259,7 +259,7 @@ const create = async () => {
     console.log('strikeHedgeDetailSet')
 
     // start round
-    const liveBoards = await getLiveBoards(); 
+    // const liveBoards = await getLiveBoards(); // remove this
     const selectedBoard = liveBoards[1];
     console.log({ selectedBoard: selectedBoard.id })
     const startRound = await otusVaultInstance.connect(deployer).startNextRound(selectedBoard.id); 

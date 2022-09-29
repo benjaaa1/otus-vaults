@@ -6,6 +6,7 @@ import "hardhat/console.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {StrategyBase} from "./vaultDOV/strategy/StrategyBase.sol";
+import {IStrategy} from "./interfaces/IStrategy.sol";
 
 // libraries
 import {Vault} from "./libraries/Vault.sol";
@@ -21,15 +22,6 @@ interface IOtusVault {
     Vault.VaultParams memory _vaultParams,
     address _strategy,
     address _keeper
-  ) external;
-}
-
-interface IStrategy {
-  function initialize(
-    address _owner,
-    address _vault,
-    address[] memory marketAddressess,
-    StrategyBase.StrategyDetail memory _currentStrategy
   ) external;
 }
 
@@ -110,25 +102,35 @@ contract OtusCloneFactory {
     IOtusVault(_otusVaultClone).initialize(_owner, _vaultInfo, _vaultParams, _strategy, _keeper);
   }
 
+  //  * @param marketAddresses lyra option market details addresses
+
   /**
    * @notice Clones strategy contract
    * @param _owner address
    * @param _vault address
    * @param _strategy address
-   * @param marketAddresses lyra option market details addresses
    * @param _currentStrategy strategy settings
    */
   function _initializeClonedStrategy(
+    bytes32[] memory lyraAdapterKeys,
+    address[] memory lyraAdapterValues,
+    address[] memory lyraOptionMarkets,
     address _owner,
     address _vault,
     address _strategy,
-    address[] memory marketAddresses,
     StrategyBase.StrategyDetail memory _currentStrategy
   ) public {
     require(msg.sender == otusController, "Not allowed to create");
-    require(marketAddresses[0] != address(0), "Failed to get quote asset");
+    // require(marketAddresses[0] != address(0), "Failed to get quote asset");
     require(_vault != address(0), "_vault must be non zero address");
 
-    IStrategy(_strategy).initialize(_owner, _vault, marketAddresses, _currentStrategy);
+    IStrategy(_strategy).initialize(
+      lyraAdapterKeys,
+      lyraAdapterValues,
+      lyraOptionMarkets,
+      _owner,
+      _vault,
+      _currentStrategy
+    );
   }
 }

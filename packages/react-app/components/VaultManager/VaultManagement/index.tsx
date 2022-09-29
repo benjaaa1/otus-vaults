@@ -114,7 +114,7 @@ const CurrentRoundProgress = ({ vaultId }: { vaultId: string }) => {
   }, [otusVaultContract])
 
   return (
-    <nav aria-label="Progress" className="p-4">
+    <nav aria-label="Progress" className="border-b border-zinc-700 p-4 py-6">
       <ol
         role="list"
         className="divide-y divide-zinc-800 rounded-md border border-zinc-800 md:flex md:divide-y-0"

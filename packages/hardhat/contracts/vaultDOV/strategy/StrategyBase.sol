@@ -4,18 +4,18 @@ pragma solidity 0.8.9;
 // Hardhat
 import "hardhat/console.sol";
 
-import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
 import {SignedDecimalMath} from "@lyrafinance/protocol/contracts/synthetix/SignedDecimalMath.sol";
 import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
 import "../../synthetix/SafeDecimalMath.sol";
 
-// Inherited
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-
+// interfaces
+import {IOptionMarket} from "@lyrafinance/protocol/contracts/interfaces/IOptionMarket.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {LyraAdapter} from "../../vaultAdapters/LyraAdapter.sol";
-// import {FuturesAdapter} from "../../vaultAdapters/FuturesAdapter.sol";
+import "../../interfaces/ILyraBase.sol";
 import "../../interfaces/IFuturesMarket.sol";
+
+// Inherited
+import {LyraAdapter} from "../../vaultAdapters/LyraAdapter.sol";
 
 /**
  * @title StrategyBase
@@ -30,20 +30,12 @@ contract StrategyBase is LyraAdapter {
   ///////////////
 
   IFuturesMarket internal futuresMarket;
-  GWAVOracle public gwavOracle;
 
   IERC20 internal quoteAsset;
 
-  uint public activeExpiry;
-  uint public activeBoardId;
-  uint[] public activeStrikeIds;
-
-  StrikeTrade[] public currentStrikeTrades;
-  mapping(uint => uint) public strikeToPositionId;
-  mapping(uint => uint) public strikeIdToTrade;
-
-  mapping(uint => uint) public lastTradeTimestamp;
-  mapping(uint => uint) public lastTradeOptionType;
+  StrikeTrade[] public activeStrikeTrades; // need
+  mapping(uint => StrikeTrade) public activeStrikeByPositionId; // need
+  mapping(bytes32 => uint) public positionIdByStrikeOption;
 
   // Round vault settings
   StrategyDetail public currentStrategy;
@@ -56,6 +48,8 @@ contract StrategyBase is LyraAdapter {
   mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
 
   HEDGETYPE public hedgeType;
+
+  mapping(bytes32 => address) public lyraBases;
 
   // hedge type selected
   enum HEDGETYPE {
@@ -74,6 +68,7 @@ contract StrategyBase is LyraAdapter {
     uint maxTimeToExpiry;
     uint minTradeInterval;
     uint gwavPeriod;
+    bytes32[] allowedMarkets;
   }
 
   struct StrikeStrategyDetail {
@@ -86,9 +81,12 @@ contract StrategyBase is LyraAdapter {
   }
 
   struct StrikeTrade {
+    bytes32 market;
     uint optionType;
     uint strikeId;
     uint size;
+    uint positionId;
+    uint strikePrice;
   }
 
   struct StaticDeltaHedgeStrategy {
@@ -103,73 +101,51 @@ contract StrategyBase is LyraAdapter {
     uint period; // 4 hours 12 hours 24 hours hedge attempt allowed once per period
   }
 
-  constructor(address _synthetixAdapter) LyraAdapter(_synthetixAdapter) {}
+  constructor(address _quoteAsset, address _futuresMarket) LyraAdapter() {
+    quoteAsset = IERC20(_quoteAsset);
+    futuresMarket = IFuturesMarket(_futuresMarket);
+  }
 
   /**
    * @dev
    * @param _owner _owner address
    * @param _vault _vault address
-   * @param marketAddresses marketAddresses
    * @param _currentStrategy strategy settings
    */
   function baseInitialize(
+    bytes32[] memory lyraAdapterKeys,
+    address[] memory lyraBaseValues,
+    address[] memory optionMarkets,
     address _owner,
     address _vault,
-    address[] memory marketAddresses,
     StrategyDetail memory _currentStrategy
-  ) internal {
-    gwavOracle = GWAVOracle(marketAddresses[9]);
-    currentStrategy = _currentStrategy;
+  ) internal initializer {
+    uint len = lyraAdapterKeys.length;
 
-    address _futuresMarket = marketAddresses[8];
-    futuresMarket = IFuturesMarket(_futuresMarket);
-
-    address _optionMarket = marketAddresses[3]; // marketAddress.optionMarket, allow for multiple option markets?
-    address _quoteAsset = marketAddresses[0]; // quote asset
-
-    if (address(quoteAsset) != address(0)) {
-      quoteAsset.approve(_optionMarket, 0);
-      quoteAsset.approve(_optionMarket, 0);
+    for (uint i = 0; i < len; i++) {
+      bytes32 key = lyraAdapterKeys[i];
+      address lyraBase = lyraBaseValues[i];
+      lyraBases[key] = lyraBase;
     }
 
-    quoteAsset = IERC20(_quoteAsset);
+    currentStrategy = _currentStrategy;
+
+    bytes32[] memory allowedMarkets = currentStrategy.allowedMarkets;
+    uint marketsLength = allowedMarkets.length;
+    address optionMarket;
+
+    for (uint i = 0; i < marketsLength; i++) {
+      bytes32 key = allowedMarkets[i];
+      address lyraAdapter = lyraBases[key];
+      optionMarket = optionMarkets[i];
+      quoteAsset.approve(address(optionMarket), 0);
+    }
 
     // Do approvals
     quoteAsset.approve(_vault, type(uint).max);
+    quoteAsset.approve(address(futuresMarket), type(uint).max);
 
-    quoteAsset.approve(_optionMarket, type(uint).max);
-
-    quoteAsset.approve(_futuresMarket, type(uint).max);
-
-    // susd test on synthetix different than lyra
-    // IERC20(0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57).approve(_futuresMarket, type(uint).max);
-
-    // futuresInitialize(marketAddresses[8]);
-
-    // instead of setting this here we can query for market addresses from trade function to otus controller registry
-    // and use an interface to interact with these
-    // to support multiple assets in vault
-    // we will only store option market
-
-    // struct MarketAddress {
-    //   address liquidityPool
-    //   address optionMarket
-    //   address ...
-    // }
-
-    // mapping(bytes32 || option marekt address => MarketAddress) marketAddresses
-
-    // IOtusController.MarketAddress marketAddress = IOtusController(otusControllerAddress).getMarketAddresses(bytes32);
-
-    optionInitialize(
-      _owner,
-      marketAddresses[2], // marketAddress.optionToken,
-      marketAddresses[3], // marketAddress.optionMarket,
-      marketAddresses[4], // marketAddress.liquidityPool,
-      marketAddresses[5], // marketAddress.shortCollateral,
-      marketAddresses[6], // optionPricer
-      marketAddresses[7] // greekCache
-    );
+    lyraInitialize(_owner, lyraAdapterKeys, optionMarkets);
   }
 
   //////////////////////////////
@@ -180,14 +156,13 @@ contract StrategyBase is LyraAdapter {
    * @dev add strike id to activeStrikeIds array
    */
   function _addActiveStrike(
-    uint strikeId,
+    StrikeTrade memory strike,
     uint tradedPositionId,
-    uint currentStrikeTradeIndex
+    uint optionType
   ) internal {
-    if (!_isActiveStrike(strikeId)) {
-      strikeToPositionId[strikeId] = tradedPositionId;
-      strikeIdToTrade[strikeId] = currentStrikeTradeIndex;
-      activeStrikeIds.push(strikeId);
+    if (!_isActiveStrike(strike.strikeId, optionType)) {
+      positionIdByStrikeOption[keccak256(abi.encode(strike.strikeId, optionType))] = tradedPositionId;
+      activeStrikeByPositionId[tradedPositionId] = strike;
     }
   }
 
@@ -196,61 +171,58 @@ contract StrategyBase is LyraAdapter {
    * this can only be called after the position is settled by lyra
    **/
   function _clearAllActiveStrikes() internal {
-    if (activeStrikeIds.length != 0) {
-      for (uint i = 0; i < activeStrikeIds.length; i++) {
-        uint strikeId = activeStrikeIds[i];
-        OptionPosition memory position = getPositions(_toDynamic(strikeToPositionId[strikeId]))[0];
-        // revert if position state is not settled
-        require(position.state != PositionState.ACTIVE, "cannot clear active position");
-        delete strikeToPositionId[strikeId];
-        delete strikeIdToTrade[strikeId];
-        delete lastTradeTimestamp[i];
-        delete lastTradeOptionType[i];
+    uint len = activeStrikeTrades.length;
+
+    if (len != 0) {
+      address lyraBase;
+      StrikeTrade memory activeTrade;
+
+      for (uint i = 0; i < len; i++) {
+        activeTrade = activeStrikeTrades[i];
+        lyraBase = lyraBases[activeTrade.market];
+        // get position id on StrikeTrade?
+        ILyraBase.OptionPosition memory position = ILyraBase(lyraBase).getPositions(_toDynamic(activeTrade.positionId))[
+          0
+        ];
+        require(position.state != ILyraBase.PositionState.ACTIVE, "cannot clear active position");
+        delete positionIdByStrikeOption[keccak256(abi.encode(activeTrade.strikeId, activeTrade.optionType))];
+        delete activeStrikeByPositionId[activeTrade.positionId];
       }
-      delete activeStrikeIds;
-      delete currentStrikeTrades;
+
+      delete activeStrikeTrades;
     }
-  }
-
-  function _clearCurrentStrikeTrades() public {
-    delete currentStrikeTrades;
-  }
-
-  function _isActiveStrike(uint strikeId) internal view returns (bool isActive) {
-    isActive = strikeToPositionId[strikeId] != 0;
-  }
-
-  function validateTimeIntervalByOptionType(uint strikeId, uint _optionType) internal view returns (bool) {
-    bool valid = true;
-
-    if (
-      lastTradeTimestamp[strikeId] + currentStrategy.minTradeInterval <= block.timestamp &&
-      lastTradeOptionType[strikeId] == _optionType + 1
-    ) {
-      valid = false;
-    }
-
-    return valid;
   }
 
   //////////////////
   // View Strikes //
   //////////////////
 
+  function _isActiveStrike(uint strikeId, uint optionType) internal view returns (bool isActive) {
+    // mapping(uint => uint) memory strikeToPositionId = strikeToPositionIdByOptionType[optionType];
+    // isActive = strikeToPositionId[strikeId] != 0;
+
+    bytes32 key = keccak256(abi.encode(strikeId, optionType));
+    uint positionId = positionIdByStrikeOption[key];
+    isActive = positionId != 0 ? true : false;
+
+    // StrikePosition memory strikePosition = optionTypePositions[optionType];
+    // isActive = strikePosition.strikeToPositionId[strikeId] != 0 ? true : false;
+  }
+
   /**
    * @dev verify if the strike is valid for the strategy
    * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
    */
-  function isValidStrike(Strike memory strike, uint optionType) public view returns (bool isValid) {
-    if (activeExpiry != strike.expiry) {
-      return false;
-    }
-
+  function isValidStrike(
+    address lyraBase,
+    ILyraBase.Strike memory strike,
+    uint optionType
+  ) public view returns (bool isValid) {
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
 
     uint[] memory strikeId = _toDynamic(strike.id);
-    uint vol = getVols(strikeId)[0];
-    int callDelta = getDeltas(strikeId)[0];
+    uint vol = ILyraBase(lyraBase).getVols(strikeId)[0];
+    int callDelta = ILyraBase(lyraBase).getDeltas(strikeId)[0];
     int delta = _isCall(currentStrikeStrategy.optionType) ? callDelta : callDelta - SignedDecimalMath.UNIT;
     uint deltaGap = _abs(currentStrikeStrategy.targetDelta - delta);
 
@@ -263,11 +235,15 @@ contract StrategyBase is LyraAdapter {
   /**
    * @dev check if the vol variance for the given strike is within certain range
    */
-  function _isValidVolVariance(uint strikeId, uint optionType) internal view returns (bool isValid) {
+  function _isValidVolVariance(
+    address lyraBase,
+    uint strikeId,
+    uint optionType
+  ) internal view returns (bool isValid) {
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
 
-    uint volGWAV = gwavOracle.volGWAV(strikeId, currentStrategy.gwavPeriod);
-    uint volSpot = getVols(_toDynamic(strikeId))[0];
+    uint volGWAV = ILyraBase(lyraBase).volGWAV(strikeId, currentStrategy.gwavPeriod);
+    uint volSpot = ILyraBase(lyraBase).getVols(_toDynamic(strikeId))[0];
 
     uint volDiff = (volGWAV >= volSpot) ? volGWAV - volSpot : volSpot - volGWAV;
 
@@ -301,13 +277,20 @@ contract StrategyBase is LyraAdapter {
    * @dev get amount of collateral needed for shorting {amount} of strike, according to the strategy
    */
   function _getBufferCollateral(
+    address lyraBase,
     uint strikePrice,
     uint expiry,
     uint spotPrice,
     uint amount,
     uint _optionType
   ) internal view returns (uint) {
-    uint minCollat = getMinCollateral(OptionType(_optionType), strikePrice, expiry, spotPrice, amount);
+    uint minCollat = ILyraBase(lyraBase).getMinCollateral(
+      ILyraBase.OptionType(_optionType),
+      strikePrice,
+      expiry,
+      spotPrice,
+      amount
+    );
     require(minCollat > 0, "min collat must be more");
     uint minCollatWithBuffer = minCollat.multiplyDecimal(currentStrategy.collatBuffer);
 
@@ -318,15 +301,16 @@ contract StrategyBase is LyraAdapter {
   }
 
   function _getPremiumLimit(
-    Strike memory strike,
+    address lyraBase,
+    ILyraBase.Strike memory strike,
     bool isMin,
     StrikeTrade memory trade
   ) public view returns (uint limitPremium) {
-    ExchangeRateParams memory exchangeParams = getExchangeParams();
+    ILyraBase.ExchangeRateParams memory exchangeParams = ILyraBase(lyraBase).getExchangeParams();
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[trade.optionType];
 
     uint limitVol = isMin ? currentStrikeStrategy.minVol : currentStrikeStrategy.maxVol;
-    (uint minCallPremium, uint minPutPremium) = getPurePremium(
+    (uint minCallPremium, uint minPutPremium) = ILyraBase(lyraBase).getPurePremium(
       _getSecondsToExpiry(strike.expiry),
       limitVol,
       exchangeParams.spotPrice,
@@ -341,9 +325,9 @@ contract StrategyBase is LyraAdapter {
   /**
    * @dev use latest optionMarket delta cutoff to determine whether trade delta is out of bounds
    */
-  function _isOutsideDeltaCutoff(uint strikeId) internal view returns (bool) {
-    MarketParams memory marketParams = getMarketParams();
-    int callDelta = getDeltas(_toDynamic(strikeId))[0];
+  function _isOutsideDeltaCutoff(address lyraBase, uint strikeId) internal view returns (bool) {
+    ILyraBase.MarketParams memory marketParams = ILyraBase(lyraBase).getMarketParams();
+    int callDelta = ILyraBase(lyraBase).getDeltas(_toDynamic(strikeId))[0];
     return callDelta > (int(DecimalMath.UNIT) - marketParams.deltaCutOff) || callDelta < marketParams.deltaCutOff;
   }
 

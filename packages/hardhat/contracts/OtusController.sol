@@ -37,6 +37,12 @@ contract OtusController is Ownable {
 
   address public otusCloneFactory;
 
+  mapping(bytes32 => address) optionMarkets;
+  mapping(bytes32 => address) lyraAdapters;
+  bytes32[] public lyraAdapterKeys;
+  address[] public lyraAdapterValues;
+  address[] public lyraOptionMarkets;
+
   mapping(address => address[]) public marketAddress;
   mapping(address => address) public futuresMarketByAsset;
 
@@ -95,13 +101,11 @@ contract OtusController is Ownable {
 
   /**
    * @notice Create Options Vault controlled
-   * @param _optionMarket address of asset lyra option market
    * @param _vaultInfo vault information
    * @param _vaultParams vault shares information
    * @param currentStrategy vault strategy settings
    */
   function createOptionsVault(
-    address _optionMarket,
     Vault.VaultInformation memory _vaultInfo,
     Vault.VaultParams memory _vaultParams,
     StrategyBase.StrategyDetail memory currentStrategy
@@ -131,14 +135,14 @@ contract OtusController is Ownable {
       keeper
     );
 
-    address[] memory marketAddresses = getOptionMarketDetails(_optionMarket);
-
     //initialize strategy
     IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(
+      lyraAdapterKeys,
+      lyraAdapterValues,
+      lyraOptionMarkets,
       msg.sender,
       vault,
       strategy,
-      marketAddresses,
       currentStrategy
     );
 
@@ -185,10 +189,28 @@ contract OtusController is Ownable {
   }
 
   /**
+   * @notice Set lyra adapter addresses by market bytes32
+   * @param _lyraAdapter address of lyradapter for market
+   * @param _market bytes32 of market "sETH" / "sBTC"
+   * @dev call this after deploy lyra adapter contracts
+   */
+  function setLyraAdapter(
+    address _lyraAdapter,
+    address _optionMarket,
+    bytes32 _market
+  ) public onlyOwner {
+    lyraAdapters[_market] = _lyraAdapter;
+    optionMarkets[_market] = _optionMarket;
+    lyraOptionMarkets.push(_optionMarket);
+    lyraAdapterValues.push(_lyraAdapter);
+    lyraAdapterKeys.push(_market);
+  }
+
+  /**
    * @notice Set option market details used by vaults/strategies
    * @param _optionMarket address of base optionmarket
    */
-  function setOptionMarketDetails(address _optionMarket) public {
+  function setOptionMarketDetails(address _optionMarket) public onlyOwner {
     (
       LiquidityPool liquidityPool,
       LiquidityToken liquidityToken,
@@ -215,6 +237,8 @@ contract OtusController is Ownable {
     marketAddresses[8] = futuresMarketByAsset[address(baseAsset)];
     marketAddresses[9] = address(gwavOracle);
     marketAddress[_optionMarket] = marketAddresses;
+
+    //update deployed lyra adapters contracts with new market addresses
   }
 
   /**

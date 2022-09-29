@@ -7,7 +7,7 @@ import {StrategyBase} from "../vaultDOV/strategy/StrategyBase.sol";
 interface IStrategy {
   function returnFundsAndClearStrikes() external;
 
-  function setBoard(uint boardId) external;
+  // function setBoard(uint boardId) external;
 
   function doTrade(StrategyBase.StrikeTrade memory currentStrikeStrategy)
     external
@@ -15,11 +15,14 @@ interface IStrategy {
       uint positionId,
       uint premiumReceived,
       uint capitalUsed,
-      uint expiry,
-      uint strikePrice
+      uint expiry
     );
 
-  function reducePosition(uint positionId, uint closeAmount) external;
+  function reducePosition(
+    address market,
+    uint positionId,
+    uint closeAmount
+  ) external;
 
   function getVaultStrategy() external returns (StrategyBase.StrategyDetail memory currentStrategy);
 
@@ -36,4 +39,13 @@ interface IStrategy {
   function _closeHedgeEndOfRound() external;
 
   function transferToFuturesMarket(int hedgeFunds) external;
+
+  function initialize(
+    bytes32[] memory lyraAdapterKeys,
+    address[] memory lyraAdapterValues,
+    address[] memory lyraOptionMarkets,
+    address _owner,
+    address _vault,
+    StrategyBase.StrategyDetail memory _currentStrategy
+  ) external;
 }
