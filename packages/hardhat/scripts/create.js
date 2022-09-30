@@ -214,16 +214,18 @@ const create = async () => {
       maxTimeToExpiry: 8 * WEEK_SEC,
       minTradeInterval: 60 * 10,
       gwavPeriod: 60 * 10,
+      allowedMarkets: ["0x7345544800000000000000000000000000000000000000000000000000000000"]
     };
-    // create options vault
+    console.log("create options vault")
     const createVault = await otusController.connect(deployer).createOptionsVault(
-      "0xDc06D81A68948544A6B453Df55CcD172061c6d6e",//optionMarket,
       formattedVaultInformation,
       formattedVaultParams,
       formattedVaultStrategy
     ); 
     const createVaultReceipt = await createVault.wait();
     // get vault information back
+    console.log("create options vault: success")
+
     const { userVaults, userStrategies } = await otusController.connect(deployer).getUserManagerDetails();
     const userVaultInformation = userVaults.map((vault, index) => {
       const strategy = userStrategies[index];

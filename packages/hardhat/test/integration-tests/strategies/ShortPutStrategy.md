@@ -9,53 +9,59 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 import {
-  OtusController, 
-  OtusCloneFactory, 
-  OtusVault, 
+  OtusController,
+  OtusCloneFactory,
+  OtusVault,
   Strategy,
   StrategyBase,
   MockOptionToken,
-  MockERC20, 
-  OtusVault__factory, 
+  MockERC20,
+  OtusVault__factory,
   Strategy__factory,
   MockFuturesMarketManager,
-  Keeper
+  Keeper,
 } from '../../../typechain-types';
 import { LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
 
 const defaultStrategyDetail: StrategyBase.StrategyDetailStruct = {
-  collatBuffer: toBN('1.5'),
+  hedgeReserve: toBN('1.5'),
+  collatBuffer: toBN('1.2'),
   collatPercent: toBN('.35'),
-  gwavPeriod: 600,
   minTimeToExpiry: lyraConstants.DAY_SEC,
   maxTimeToExpiry: lyraConstants.WEEK_SEC * 4,
   minTradeInterval: 600,
+  gwavPeriod: 600,
+  allowedMarkets: ['0x7345544800000000000000000000000000000000000000000000000000000000'],
 };
 
 const defaultStrikeStrategyDetailCall: StrategyBase.StrikeStrategyDetailStruct = {
-  maxVolVariance: toBN('0.1'),
   targetDelta: toBN('0.4'),
   maxDeltaGap: toBN('0.5'), // accept delta from 0.1~0.3
   minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
   maxVol: toBN('1.3'), // max vol to sell.
-  optionType: 3
+  maxVolVariance: toBN('0.1'),
+  optionType: 3,
 };
 
 const defaultStrikeStrategyDetail: StrategyBase.StrikeStrategyDetailStruct = {
-  maxVolVariance: toBN('0.1'),
   targetDelta: toBN('0.2').mul(-1),
   maxDeltaGap: toBN('0.1'), // accept delta from 0.1~0.3
   minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
   maxVol: toBN('1.3'), // max vol to sell.
-  optionType: 4
+  maxVolVariance: toBN('0.1'),
+  optionType: 4,
 };
 
-const defaultHedgeDetail: StrategyBase.StrikeHedgeDetailStruct = {
-  hedgePercentage: toBN('1.2'), // 20% + collatPercent == 100%
+const defaultStaticDeltaHedgeDetail: StrategyBase.StaticDeltaHedgeStrategyStruct = {
+  deltaToHedge: toBN('.5'), // 50% of delta
+  maxLeverageSize: toBN('2'), // 2x
+};
+
+const defaultDynamicDeltaHedgeDetail: StrategyBase.DynamicDeltaHedgeStrategyStruct = {
+  deltaToHedge: toBN('1'), // 100%
   maxHedgeAttempts: toBN('5'),
-  leverageSize: toBN('2'), // 150% ~ 1.5x 200% 2x 
-  stopLossLimit: toBN('0.001'), // .1 is 10% // can be 0 // can be .01 1% // can be .001 .1% // can be .0001 .01%
-  optionType: 4
+  maxLeverageSize: toBN('2'), // 150% ~ 1.5x 200% 2x
+  period: lyraConstants.DAY_SEC, // every period to hedge check
 };
 
 describe('Strategy integration test', async () => {
@@ -76,21 +82,22 @@ describe('Strategy integration test', async () => {
   let vault: OtusVault;
   let strategy: Strategy;
   // cloned contracts owned by manager
-  let managersVault: OtusVault; 
-  let managersStrategy: Strategy; 
+  let managersVault: OtusVault;
+  let managersStrategy: Strategy;
   let keeper: Keeper;
 
   // roles
+  let otusMultiSig: SignerWithAddress;
+
   let deployer: SignerWithAddress;
   let manager: SignerWithAddress; // this is the supervisor
-  let treasury: SignerWithAddress; 
-  let otusMultiSig: SignerWithAddress; 
+
   let randomUser: SignerWithAddress;
   let randomUser2: SignerWithAddress;
   let randomUser3: SignerWithAddress;
 
   // testing parameters
-  const spotPrice = toBN('3000');
+  const spotPrice = toBN('1300');
   let boardId = BigNumber.from(0);
   const boardParameter = {
     expiresIn: lyraConstants.DAY_SEC * 7,
@@ -103,9 +110,8 @@ describe('Strategy integration test', async () => {
 
   before('assign roles', async () => {
     const addresses = await ethers.getSigners();
-    deployer = addresses[0]; 
+    deployer = addresses[0];
     manager = addresses[1]; // supervisor
-    treasury = addresses[2];
     otusMultiSig = addresses[3];
     randomUser = addresses[4];
     randomUser2 = addresses[5];
@@ -121,7 +127,6 @@ describe('Strategy integration test', async () => {
     };
 
     lyraTestSystem = await TestSystem.deploy(deployer, false, false, { pricingParams });
-    console.log({lyraTestSystem })
     await TestSystem.seed(deployer, lyraTestSystem, {
       initialBoard: boardParameter,
       initialBasePrice: spotPrice,
@@ -147,42 +152,45 @@ describe('Strategy integration test', async () => {
 
   before('deploy Mock Futures Market Manager', async () => {
     const MockFuturesMarketManagerFactory = await ethers.getContractFactory('MockFuturesMarketManager');
-    futureMarketManager = (await MockFuturesMarketManagerFactory.connect(deployer).deploy()) as MockFuturesMarketManager;
-    await futureMarketManager.connect(deployer).addMarket(
-      "0x7345544800000000000000000000000000000000000000000000000000000000",
-      "0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D"
-    );
-  })
+    futureMarketManager = (await MockFuturesMarketManagerFactory.connect(
+      deployer,
+    ).deploy()) as MockFuturesMarketManager;
+    await futureMarketManager
+      .connect(deployer)
+      .addMarket(
+        '0x7345544800000000000000000000000000000000000000000000000000000000',
+        '0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D',
+      );
+  });
 
   before('deploy Mock Option - Token', async () => {
     const MockOptionTokenFactory = await ethers.getContractFactory('MockOptionToken');
-    optionToken = (await MockOptionTokenFactory.connect(deployer).deploy('Lyra Option Token', 'LYRAOT')) as MockOptionToken;
-    await optionToken.connect(deployer).init(
-      lyraTestSystem.optionMarket.address,
-      lyraTestSystem.optionGreekCache.address,
-      susd.address,
-      lyraTestSystem.synthetixAdapter.address
-    );
-  })
+    optionToken = (await MockOptionTokenFactory.connect(deployer).deploy(
+      'Lyra Option Token',
+      'LYRAOT',
+    )) as MockOptionToken;
+    await optionToken
+      .connect(deployer)
+      .init(
+        lyraTestSystem.optionMarket.address,
+        lyraTestSystem.optionGreekCache.address,
+        susd.address,
+        lyraTestSystem.synthetixAdapter.address,
+      );
+  });
 
   before('deploy vault, strategy, and clone factory contracts', async () => {
-
     const OtusController = await ethers.getContractFactory('OtusController');
     otusController = (await OtusController.connect(otusMultiSig).deploy(
       lyraTestSystem.lyraRegistry.address,
-      futureMarketManager.address // futuresmarketmanager
+      futureMarketManager.address, // futuresmarketmanager
     )) as OtusController;
 
     const Keeper = await ethers.getContractFactory('Keeper');
-    keeper = (await Keeper.connect(otusMultiSig).deploy(
-      otusController.address
-    )) as Keeper;
+    keeper = (await Keeper.connect(otusMultiSig).deploy(otusController.address)) as Keeper;
 
     const OtusVaultFactory = await ethers.getContractFactory('OtusVault');
-    vault = (await OtusVaultFactory.connect(otusMultiSig).deploy(
-      86400 * 7,
-      keeper.address
-    )) as OtusVault;
+    vault = (await OtusVaultFactory.connect(otusMultiSig).deploy(86400 * 7, keeper.address)) as OtusVault;
 
     const StrategyFactory = await ethers.getContractFactory('Strategy', {
       libraries: {
@@ -190,24 +198,27 @@ describe('Strategy integration test', async () => {
       },
     });
 
-    strategy = (await StrategyFactory.connect(otusMultiSig).deploy(lyraTestSystem.synthetixAdapter.address)) as Strategy;
+    strategy = (await StrategyFactory.connect(otusMultiSig).deploy(
+      lyraTestSystem.synthetixAdapter.address,
+    )) as Strategy;
 
     const OtusCloneFactory = await ethers.getContractFactory('OtusCloneFactory');
     otusCloneFactory = (await OtusCloneFactory.connect(otusMultiSig).deploy(
-      vault.address, 
-			strategy.address, 
-		  strategy.address, // l2DepositMover.address,
-			otusController.address
+      vault.address,
+      strategy.address,
+      strategy.address, // l2DepositMover.address,
+      otusController.address,
     )) as OtusCloneFactory;
 
     await otusController.connect(otusMultiSig).setOtusCloneFactory(otusCloneFactory.address);
 
-    await otusController.connect(otusMultiSig).setFuturesMarkets(seth.address, "0x7345544800000000000000000000000000000000000000000000000000000000");
+    await otusController
+      .connect(otusMultiSig)
+      .setFuturesMarkets(seth.address, '0x7345544800000000000000000000000000000000000000000000000000000000');
   });
 
   before('set lyra market - eth', async () => {
     lyraMarket = await getMarketDeploys('local', 'sETH');
-    console.log({ lyraMarket })
     await lyraTestSystem.lyraRegistry.addMarket({
       liquidityPool: lyraMarket.LiquidityPool.address,
       liquidityToken: lyraMarket.LiquidityToken.address,
@@ -219,14 +230,14 @@ describe('Strategy integration test', async () => {
       shortCollateral: lyraMarket.ShortCollateral.address,
       gwavOracle: lyraMarket.GWAVOracle.address,
       quoteAsset: susd.address,
-      baseAsset: lyraMarket.BaseAsset.address
-    })
-  })
+      baseAsset: lyraMarket.BaseAsset.address,
+    });
+  });
 
   before('setup option market details', async () => {
     await otusController.connect(deployer).setOptionMarketDetails(lyraMarket.OptionMarket.address);
     const addresses = await otusController.getOptionMarketDetails(lyraMarket.OptionMarket.address);
-  })
+  });
 
   before('initialize vault and strategy', async () => {
     const cap = ethers.utils.parseEther('5000000'); // 5m USD as cap
@@ -236,36 +247,35 @@ describe('Strategy integration test', async () => {
       lyraMarket.OptionMarket.address,
       {
         name: 'New Vault',
-        tokenName: 'OtusVault Share', 
+        tokenName: 'OtusVault Share',
         tokenSymbol: 'Otus VS',
         description: '',
         isPublic: true,
         performanceFee: 0,
-        managementFee: 0
+        managementFee: 0,
       },
       {
         decimals,
-        cap, 
-        asset: susd.address
-      }, 
-      defaultStrategyDetail
-    ); 
+        cap,
+        asset: susd.address,
+      },
+      defaultStrategyDetail,
+    );
 
     const vaultCloneAddress = await otusController.vaults(manager.address, 0);
-    managersVault = await ethers.getContractAt(OtusVault__factory.abi, vaultCloneAddress) as OtusVault; 
+    managersVault = (await ethers.getContractAt(OtusVault__factory.abi, vaultCloneAddress)) as OtusVault;
     expect(managersVault.address).to.not.be.eq(ZERO_ADDRESS);
     const strategyCloneAddress = await otusController.connect(manager)._getStrategies([managersVault.address]);
-    managersStrategy = await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress[0]) as Strategy; 
+    managersStrategy = (await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress[0])) as Strategy;
     expect(managersStrategy.address).to.not.be.eq(ZERO_ADDRESS);
     expect(await managersVault.strategy()).to.be.eq(managersStrategy.address);
   });
 
   describe('check strategy setup', async () => {
-
     it('it should set the strategy correctly on the vault', async () => {
-      const strategy = await managersVault.connect(manager).strategy(); 
+      const strategy = await managersVault.connect(manager).strategy();
       expect(strategy).to.be.eq(managersStrategy.address);
-    })
+    });
 
     it('deploys with correct vault', async () => {
       expect(await managersStrategy.vault()).to.be.eq(managersVault.address);
@@ -278,31 +288,24 @@ describe('Strategy integration test', async () => {
 
   describe('setStrategy', async () => {
     it('setting strategy should correctly update strategy variables', async () => {
-
       const owner = await managersStrategy.owner();
 
-      await managersStrategy.connect(manager).setStrategy(
-        defaultStrategyDetail
-      );
+      await managersStrategy.connect(manager).setStrategy(defaultStrategyDetail);
 
       const newStrategy = await managersStrategy.connect(manager).currentStrategy();
       expect(newStrategy.minTimeToExpiry).to.be.eq(defaultStrategyDetail.minTimeToExpiry);
       expect(newStrategy.maxTimeToExpiry).to.be.eq(defaultStrategyDetail.maxTimeToExpiry);
       expect(newStrategy.minTradeInterval).to.be.eq(defaultStrategyDetail.minTradeInterval);
-
     });
 
     it('should revert if setStrategy is not called by owner', async () => {
-      await expect(strategy.connect(randomUser).setStrategy(
-          defaultStrategyDetail
-        )).to.be.revertedWith(
+      await expect(strategy.connect(randomUser).setStrategy(defaultStrategyDetail)).to.be.revertedWith(
         'Ownable: caller is not the owner',
       );
     });
   });
 
   describe('start the first round', async () => {
-
     let strikes: BigNumber[] = [];
 
     before('create fake susd for users', async () => {
@@ -314,14 +317,14 @@ describe('Strategy integration test', async () => {
       strikes = await lyraTestSystem.optionMarket.getBoardStrikes(boardId);
     });
 
-    before('check strikeIds', async() => {
-
-      const results = await Promise.all(strikes.map(async strike => {
-        const strikeObj = await strikeIdToDetail(lyraTestSystem.optionMarket, strike);
-        return strikeObj;
-      }))
-
-    })   
+    before('check strikeIds', async () => {
+      const results = await Promise.all(
+        strikes.map(async strike => {
+          const strikeObj = await strikeIdToDetail(lyraTestSystem.optionMarket, strike);
+          return strikeObj;
+        }),
+      );
+    });
 
     it('user should be able to deposit through vault', async () => {
       // user 1 deposits
@@ -346,12 +349,12 @@ describe('Strategy integration test', async () => {
         optionType: defaultStrikeStrategyDetail.optionType,
         strikeId: strikes[0],
         size: toBN('7.5'),
-        futuresHedge: false
-      }
+        futuresHedge: false,
+      };
 
-      const currentStrikeStrategies = await managersStrategy.getCurrentStrikeStrategies(); 
+      const currentStrikeStrategies = await managersStrategy.getCurrentStrikeStrategies();
 
-      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('invalid strike');      
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('invalid strike');
     });
 
     it('will not trade when delta is out of range1', async () => {
@@ -360,10 +363,10 @@ describe('Strategy integration test', async () => {
         optionType: defaultStrikeStrategyDetail.optionType,
         strikeId: strikes[1],
         size: toBN('7.5'),
-        futuresHedge: false
-      }
+        futuresHedge: false,
+      };
 
-      const currentStrikeStrategies1 = await managersStrategy.getCurrentStrikeStrategies(); 
+      const currentStrikeStrategies1 = await managersStrategy.getCurrentStrikeStrategies();
 
       await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TradeDeltaOutOfRange');
     });
@@ -374,13 +377,12 @@ describe('Strategy integration test', async () => {
         optionType: defaultStrikeStrategyDetail.optionType,
         strikeId: strikes[4],
         size: toBN('7.5'),
-        futuresHedge: false
-      }
+        futuresHedge: false,
+      };
 
-      const currentStrikeStrategies2 = await managersStrategy.getCurrentStrikeStrategies(); 
+      const currentStrikeStrategies2 = await managersStrategy.getCurrentStrikeStrategies();
 
       await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('invalid strike');
-      
     });
 
     it('should revert when min premium < premium calculated with min vol', async () => {
@@ -389,10 +391,11 @@ describe('Strategy integration test', async () => {
         optionType: defaultStrikeStrategyDetail.optionType,
         strikeId: strikes[3],
         size: toBN('7.5'),
-        futuresHedge: false
-      }
-      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
-
+        futuresHedge: false,
+      };
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith(
+        'TotalCostOutsideOfSpecifiedBounds',
+      );
     });
 
     it('should trade when delta and vol are within range', async () => {
@@ -401,18 +404,20 @@ describe('Strategy integration test', async () => {
         optionType: defaultStrikeStrategyDetail.optionType,
         strikeId: strikes[2],
         size: toBN('7.5'),
-        futuresHedge: false
-      }
+        futuresHedge: false,
+      };
 
       const strikeStrategyCall = {
         optionType: defaultStrikeStrategyDetail.optionType,
         strikeId: strikes[6],
         size: toBN('7.5'),
-        futuresHedge: false
-      }
+        futuresHedge: false,
+      };
 
-      const [collateralToAdd] = await managersStrategy.connect(manager).getRequiredCollateral(strikeObj, strikeStrategy.size, strikeStrategy.optionType);
-      
+      const [collateralToAdd] = await managersStrategy
+        .connect(manager)
+        .getRequiredCollateral(strikeObj, strikeStrategy.size, strikeStrategy.optionType);
+
       const vaultStateBefore = await managersVault.connect(manager).vaultState();
       const strategySUSDBalance = await susd.balanceOf(managersStrategy.address);
 
@@ -451,8 +456,8 @@ describe('Strategy integration test', async () => {
         optionType: defaultStrikeStrategyDetail.optionType,
         strikeId: strikes[4],
         size: toBN('7.5'),
-        futuresHedge: false
-      }
+        futuresHedge: false,
+      };
 
       await managersVault.connect(manager).trade([strikeStrategy]);
 
@@ -479,7 +484,7 @@ describe('Strategy integration test', async () => {
     });
 
     it('should revert when closeRound is called before options are settled', async () => {
-      const currentStrikeStrategies = await managersStrategy.getCurrentStrikeStrategies(); 
+      const currentStrikeStrategies = await managersStrategy.getCurrentStrikeStrategies();
       await expect(managersVault.closeRound()).to.be.revertedWith('cannot clear active position');
     });
 
@@ -495,7 +500,6 @@ describe('Strategy integration test', async () => {
       // initiate withdraw for later test
       await managersVault.connect(randomUser2).initiateWithdraw(toBN('50'));
     });
-
   });
 
   describe('start round 2', async () => {
@@ -551,8 +555,8 @@ describe('Strategy integration test', async () => {
         optionType: defaultStrikeStrategyDetail.optionType,
         strikeId: strikes[2],
         size: toBN('7.5'),
-        futuresHedge: false
-      }
+        futuresHedge: false,
+      };
 
       await managersVault.connect(manager).trade([strikeStrategy]);
 
@@ -571,7 +575,12 @@ describe('Strategy integration test', async () => {
     });
 
     it('should revert when trying to reduce a safe position', async () => {
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry, position.optionType);
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(
+        position,
+        strikePrice,
+        expiry,
+        position.optionType,
+      );
       expect(fullCloseAmount).to.be.eq(0);
       await expect(managersVault.connect(manager).reducePosition(positionId, toBN('10000'))).to.be.revertedWith(
         'amount exceeds allowed close amount',
@@ -584,7 +593,12 @@ describe('Strategy integration test', async () => {
       const positionId = await managersStrategy.strikeToPositionId(strikes[2]); // 2700 strike
       const preReduceBal = await susd.balanceOf(managersStrategy.address);
 
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10), position.optionType); //account for time passing
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(
+        position,
+        strikePrice,
+        expiry.sub(10),
+        position.optionType,
+      ); //account for time passing
       expect(fullCloseAmount).to.be.gt(0);
       await managersVault.connect(manager).reducePosition(positionId, fullCloseAmount);
       const postReduceBal = await susd.balanceOf(managersStrategy.address);
@@ -595,7 +609,12 @@ describe('Strategy integration test', async () => {
       await TestSystem.marketActions.mockPrice(lyraTestSystem, toBN('2600'), 'sETH');
       const preReduceBal = await susd.balanceOf(managersStrategy.address);
 
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10), position.optionType); //account for time passing
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(
+        position,
+        strikePrice,
+        expiry.sub(10),
+        position.optionType,
+      ); //account for time passing
       expect(fullCloseAmount).to.be.gt(0);
       await managersVault.connect(manager).reducePosition(positionId, fullCloseAmount.div(2));
       const postReduceBal = await susd.balanceOf(managersStrategy.address);
@@ -604,11 +623,16 @@ describe('Strategy integration test', async () => {
 
     it('revert reduce position if unsafe position + close amount too large', async () => {
       await TestSystem.marketActions.mockPrice(lyraTestSystem, toBN('2250'), 'sETH');
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10), position.optionType); //account for time passing
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(
+        position,
+        strikePrice,
+        expiry.sub(10),
+        position.optionType,
+      ); //account for time passing
       expect(fullCloseAmount).to.be.gt(0);
-      await expect(managersVault.connect(manager).reducePosition(positionId, fullCloseAmount.mul(2))).to.be.revertedWith(
-        'amount exceeds allowed close amount',
-      );
+      await expect(
+        managersVault.connect(manager).reducePosition(positionId, fullCloseAmount.mul(2)),
+      ).to.be.revertedWith('amount exceeds allowed close amount');
     });
 
     it('partially reduce position with force close if delta out of range', async () => {
@@ -616,7 +640,12 @@ describe('Strategy integration test', async () => {
 
       const [positionBefore] = await lyraTestSystem.optionToken.getOptionPositions([positionId]);
 
-      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(position, strikePrice, expiry.sub(10), position.optionType); //account for time passing
+      const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(
+        position,
+        strikePrice,
+        expiry.sub(10),
+        position.optionType,
+      ); //account for time passing
       expect(fullCloseAmount).to.be.gt(0);
 
       // send strategy some usdc so they can successfully reduce position
@@ -627,7 +656,6 @@ describe('Strategy integration test', async () => {
 
       expect(positionBefore.amount.sub(positionAfter.amount)).to.be.gt(0);
     });
-
   });
 });
 

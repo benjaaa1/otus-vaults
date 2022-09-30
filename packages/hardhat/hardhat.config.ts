@@ -103,6 +103,7 @@ module.exports = {
       companionNetworks: {
         l1: 'localOptimismL1',
       },
+      deploy: ['deploy_l2'],
     },
     localOptimismL1: {
       url: 'http://localhost:9545',

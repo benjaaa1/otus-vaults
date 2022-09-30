@@ -115,19 +115,25 @@ contract OtusCloneFactory {
     bytes32[] memory lyraAdapterKeys,
     address[] memory lyraAdapterValues,
     address[] memory lyraOptionMarkets,
+    address[] memory futuresMarkets,
     address _owner,
     address _vault,
     address _strategy,
     StrategyBase.StrategyDetail memory _currentStrategy
   ) public {
     require(msg.sender == otusController, "Not allowed to create");
-    // require(marketAddresses[0] != address(0), "Failed to get quote asset");
+    require(lyraAdapterKeys.length > 0, "Failed to add key to lyra base");
+    require(lyraAdapterValues.length > 0, "Failed to add value lyra base");
+    require(lyraOptionMarkets.length > 0, "Failed to add optionmarket lyra base");
+    require(futuresMarkets.length > 0, "Failed to add futures market");
+
     require(_vault != address(0), "_vault must be non zero address");
 
     IStrategy(_strategy).initialize(
       lyraAdapterKeys,
       lyraAdapterValues,
       lyraOptionMarkets,
+      futuresMarkets,
       _owner,
       _vault,
       _currentStrategy

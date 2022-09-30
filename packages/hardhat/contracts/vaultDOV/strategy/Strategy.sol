@@ -14,6 +14,7 @@ import "../../synthetix/SignedSafeMath.sol";
 
 // interfaces
 import "../../interfaces/ILyraBase.sol";
+import "../../interfaces/IFuturesMarket.sol";
 
 // Vault
 import {Vault} from "../../libraries/Vault.sol";
@@ -58,7 +59,7 @@ contract Strategy is StrategyBase {
   /**
    * @notice
    */
-  constructor(address _quoteAsset, address _futuresMarket) StrategyBase(_quoteAsset, _futuresMarket) {}
+  constructor(address _quoteAsset) StrategyBase(_quoteAsset) {}
 
   /**
    * @notice Initializer strategy
@@ -70,11 +71,20 @@ contract Strategy is StrategyBase {
     bytes32[] memory lyraAdapterKeys,
     address[] memory lyraAdapterValues,
     address[] memory lyraOptionMarkets,
+    address[] memory futuresMarkets,
     address _owner,
     address _vault,
     StrategyDetail memory _currentStrategy
   ) external {
-    baseInitialize(lyraAdapterKeys, lyraAdapterValues, lyraOptionMarkets, _owner, _vault, _currentStrategy);
+    baseInitialize(
+      lyraAdapterKeys,
+      lyraAdapterValues,
+      lyraOptionMarkets,
+      futuresMarkets,
+      _owner,
+      _vault,
+      _currentStrategy
+    );
     vault = _vault;
   }
 
@@ -212,9 +222,9 @@ contract Strategy is StrategyBase {
    * @notice Return funds to vault and clera strikes
    * @dev convert premium in quote asset into collateral asset and send it back to the vault.
    */
-  function returnFundsAndClearStrikes() external onlyVault {
+  function returnFundsAndClearStrikes(bytes32 market) external onlyVault {
     // need to return the synthetix ones too
-    _closeHedgeEndOfRound();
+    _closeHedgeEndOfRound(market);
 
     uint quoteBal = quoteAsset.balanceOf(address(this));
 
@@ -457,8 +467,9 @@ contract Strategy is StrategyBase {
    * @param hedgeFunds funds to transfer
    * @dev refactor this to move away from futuresadapter
    */
-  function transferToFuturesMarket(int hedgeFunds) public {
-    futuresMarket.transferMargin(hedgeFunds);
+  function transferToFuturesMarket(bytes32 market, int hedgeFunds) public {
+    address futuresMarket = futuresMarketsByKey[market];
+    IFuturesMarket(futuresMarket).transferMargin(hedgeFunds);
   }
 
   /*****************************************************
@@ -480,7 +491,9 @@ contract Strategy is StrategyBase {
 
     require(dynamicHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
 
-    (uint marginRemaining, ) = futuresMarket.remainingMargin(address(this));
+    address futuresMarket = futuresMarketsByKey[market];
+
+    (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
 
     require(marginRemaining > 0, "Remaining margin is 0");
 
@@ -500,7 +513,7 @@ contract Strategy is StrategyBase {
       ? deltaToHedge
       : _maxLeverageSize(deltaToHedge, staticHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
 
-    futuresMarket.modifyPosition(size);
+    IFuturesMarket(futuresMarket).modifyPosition(size);
   }
 
   /******************************************************
@@ -514,8 +527,9 @@ contract Strategy is StrategyBase {
    */
   function _staticDeltaHedge(bytes32 market, int deltaToHedge) external onlyVault {
     require(hedgeType == HEDGETYPE.STATIC_DELTA_HEDGE, "Not allowed");
+    address futuresMarket = futuresMarketsByKey[market];
 
-    (uint marginRemaining, ) = futuresMarket.remainingMargin(address(this));
+    (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
 
     require(marginRemaining > 0, "Remaining margin is 0");
 
@@ -535,7 +549,7 @@ contract Strategy is StrategyBase {
       ? deltaToHedge
       : _maxLeverageSize(deltaToHedge, staticHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
 
-    futuresMarket.modifyPosition(size);
+    IFuturesMarket(futuresMarket).modifyPosition(size);
   }
 
   /*****************************************************
@@ -546,13 +560,14 @@ contract Strategy is StrategyBase {
    * @notice one click delta hedge
    * @param size total size of hedge
    */
-  function _simpleHedge(int size) external onlyVault {
+  function _simpleHedge(bytes32 market, int size) external onlyVault {
     require(hedgeType == HEDGETYPE.SIMPLE_HEDGE, "Not allowed");
+    address futuresMarket = futuresMarketsByKey[market];
 
-    (uint marginRemaining, ) = futuresMarket.remainingMargin(address(this));
+    (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
     require(marginRemaining > 0, "Remaining margin is 0");
 
-    futuresMarket.modifyPosition(size);
+    IFuturesMarket(futuresMarket).modifyPosition(size);
   }
 
   /*****************************************************
@@ -563,16 +578,22 @@ contract Strategy is StrategyBase {
    * @notice close position
    * @dev refactor this to move away from futuresadapter
    */
-  function _closeHedge() external onlyVault {
-    futuresMarket.closePosition();
+  function _closeHedge(bytes32[] memory markets) external onlyVault {
+    for (uint i = 0; i < markets.length; i++) {
+      bytes32 market = markets[i];
+      address futuresMarket = futuresMarketsByKey[market];
+      IFuturesMarket(futuresMarket).closePosition();
+    }
   }
 
   /**
    * @notice withdraw margin
    * @dev refactor this to move away from futuresadapter
    */
-  function _closeHedgeEndOfRound() public {
-    futuresMarket.withdrawAllMargin();
+  function _closeHedgeEndOfRound(bytes32 market) public {
+    address futuresMarket = futuresMarketsByKey[market];
+
+    IFuturesMarket(futuresMarket).withdrawAllMargin();
   }
 
   /*****************************************************

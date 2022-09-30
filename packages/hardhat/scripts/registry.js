@@ -15,22 +15,28 @@ const registerMarkets = async () => {
 
 
     // need to update base asset 
-    const futures = await outsController.setFuturesMarkets("0xD7C80fC4A5B05B5bE7B5b762e32127B54Fea385A", "0x7345544800000000000000000000000000000000000000000000000000000000")
+    const futures = await outsController.setFuturesMarkets("0x0D10c032ad006C98C33A95e59ab3BA2b0849bD59", "0x7345544800000000000000000000000000000000000000000000000000000000")
     const futuresReceipt = futures.wait(); 
 
     const futures1 = await outsController.getFuturesMarket("0x7345544800000000000000000000000000000000000000000000000000000000")
     console.log({ futures1 })
 
     // get optionmarkets 
-
-    
     const optionMarkets = await outsController.setOptionMarketDetails("0xDc06D81A68948544A6B453Df55CcD172061c6d6e"); 
     const optionMarketsReceipt = optionMarkets.wait(); 
 
-    const market = await outsController.getOptionMarketDetails("0xDc06D81A68948544A6B453Df55CcD172061c6d6e"); 
-    console.log({ market })
+    //set lyra base 
+    const lyraBaseETH = await outsController.setLyraAdapter("0xF5272B18eee0C04E054AC9ad64023CdD60ffe063", "0xDc06D81A68948544A6B453Df55CcD172061c6d6e", "0x7345544800000000000000000000000000000000000000000000000000000000");
+    const lyraBaseETHReceipt = lyraBaseETH.wait(); 
 
-    // const lyraAdapters = await outsController.setLyraAdapters("")
+    const lyraBaseETH1 = await outsController.lyraAdapterValues(0)
+    console.log({ lyraBaseETH1 })
+
+    const lyraAdapterKeys = await outsController.lyraAdapterKeys(0)
+    console.log({ lyraAdapterKeys })
+
+    const lyraOptionMarket = await outsController.lyraOptionMarkets(0)
+    console.log({ lyraOptionMarket })
 
     return true;
   } catch (e) {

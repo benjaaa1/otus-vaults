@@ -45,6 +45,7 @@ contract OtusController is Ownable {
 
   mapping(address => address[]) public marketAddress;
   mapping(address => address) public futuresMarketByAsset;
+  address[] public futuresMarkets;
 
   mapping(address => address[]) public vaults;
 
@@ -135,11 +136,14 @@ contract OtusController is Ownable {
       keeper
     );
 
-    //initialize strategy
+    // initialize strategy
+    console.log(strategy);
+    console.log(vault);
     IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(
       lyraAdapterKeys,
       lyraAdapterValues,
       lyraOptionMarkets,
+      futuresMarkets,
       msg.sender,
       vault,
       strategy,
@@ -167,7 +171,9 @@ contract OtusController is Ownable {
    * @param _synth asset name in bytes32
    */
   function setFuturesMarkets(address _baseAsset, bytes32 _synth) external {
-    futuresMarketByAsset[_baseAsset] = futuresMarketManager.marketForKey(_synth);
+    address futuresMarket = futuresMarketManager.marketForKey(_synth);
+    futuresMarketByAsset[_baseAsset] = futuresMarket;
+    futuresMarkets.push(futuresMarket);
   }
 
   /**

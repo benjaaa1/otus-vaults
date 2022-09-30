@@ -7,6 +7,7 @@ packages/hardhat/*.txt
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 **/node_modules
 
+packages/hardhat/contracts/hardhat-dependency-compiler/*
 packages/hardhat/artifacts*
 packages/hardhat/typechain-types/*
 packages/hardhat/deployments
@@ -66,4 +67,3 @@ yarn-error.log*
 
 # doc directory
 /doc
-packages/hardhat/typechain-types/MockOtusVault.ts

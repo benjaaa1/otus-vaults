@@ -12,9 +12,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const futuresMarketManager = {
     address: "0xA3e4c049dA5Fe1c5e046fb3dCe270297D9b2c6a9"
   }
-  
-  console.log({ deployer: deployer })
-
+  // 0x95d6B120862986Fb605B0ccD1f0E8a71f5f4fB2c goerlie
   await deploy("OtusController", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,

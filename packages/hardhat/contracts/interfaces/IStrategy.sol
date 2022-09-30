@@ -44,6 +44,7 @@ interface IStrategy {
     bytes32[] memory lyraAdapterKeys,
     address[] memory lyraAdapterValues,
     address[] memory lyraOptionMarkets,
+    address[] memory futuresMarkets,
     address _owner,
     address _vault,
     StrategyBase.StrategyDetail memory _currentStrategy

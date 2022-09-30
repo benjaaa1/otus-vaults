@@ -11,7 +11,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   console.log({marketKey: "0x7345544800000000000000000000000000000000000000000000000000000000" });
 
   console.log({    
-    SynthetixAdapter: lyraGlobal.S.SynthetixAdapter.address,
+    SynthetixAdapter: lyraGlobal.SynthetixAdapter.address,
     OptionToken: lyraMarket.OptionToken.address,
     OptionMarket: lyraMarket.OptionMarket.address,
     LiquidityPool:  lyraMarket.LiquidityPool.address,

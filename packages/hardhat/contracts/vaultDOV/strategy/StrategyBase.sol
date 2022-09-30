@@ -29,9 +29,7 @@ contract StrategyBase is LyraAdapter {
   // Variables //
   ///////////////
 
-  IFuturesMarket internal futuresMarket;
-
-  IERC20 internal quoteAsset;
+  IERC20 internal immutable quoteAsset;
 
   StrikeTrade[] public activeStrikeTrades; // need
   mapping(uint => StrikeTrade) public activeStrikeByPositionId; // need
@@ -50,7 +48,7 @@ contract StrategyBase is LyraAdapter {
   HEDGETYPE public hedgeType;
 
   mapping(bytes32 => address) public lyraBases;
-
+  mapping(bytes32 => address) public futuresMarketsByKey;
   // hedge type selected
   enum HEDGETYPE {
     NO_HEDGE,
@@ -101,9 +99,8 @@ contract StrategyBase is LyraAdapter {
     uint period; // 4 hours 12 hours 24 hours hedge attempt allowed once per period
   }
 
-  constructor(address _quoteAsset, address _futuresMarket) LyraAdapter() {
+  constructor(address _quoteAsset) LyraAdapter() {
     quoteAsset = IERC20(_quoteAsset);
-    futuresMarket = IFuturesMarket(_futuresMarket);
   }
 
   /**
@@ -116,16 +113,19 @@ contract StrategyBase is LyraAdapter {
     bytes32[] memory lyraAdapterKeys,
     address[] memory lyraBaseValues,
     address[] memory optionMarkets,
+    address[] memory futuresMarkets,
     address _owner,
     address _vault,
     StrategyDetail memory _currentStrategy
-  ) internal initializer {
+  ) internal {
     uint len = lyraAdapterKeys.length;
 
     for (uint i = 0; i < len; i++) {
       bytes32 key = lyraAdapterKeys[i];
       address lyraBase = lyraBaseValues[i];
+      address futuresMarket = futuresMarkets[i];
       lyraBases[key] = lyraBase;
+      futuresMarketsByKey[key] = futuresMarket;
     }
 
     currentStrategy = _currentStrategy;
@@ -133,17 +133,23 @@ contract StrategyBase is LyraAdapter {
     bytes32[] memory allowedMarkets = currentStrategy.allowedMarkets;
     uint marketsLength = allowedMarkets.length;
     address optionMarket;
+    address futuresMarket;
 
     for (uint i = 0; i < marketsLength; i++) {
       bytes32 key = allowedMarkets[i];
       address lyraAdapter = lyraBases[key];
       optionMarket = optionMarkets[i];
-      quoteAsset.approve(address(optionMarket), 0);
+      futuresMarket = futuresMarkets[i];
+      console.log(optionMarket);
+      console.log("quoteAsset");
+      console.log(address(quoteAsset));
+
+      quoteAsset.approve(address(optionMarket), type(uint).max);
+      quoteAsset.approve(address(futuresMarket), type(uint).max);
     }
 
     // Do approvals
     quoteAsset.approve(_vault, type(uint).max);
-    quoteAsset.approve(address(futuresMarket), type(uint).max);
 
     lyraInitialize(_owner, lyraAdapterKeys, optionMarkets);
   }
