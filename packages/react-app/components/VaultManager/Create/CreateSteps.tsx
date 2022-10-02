@@ -2,6 +2,7 @@ import { CheckIcon } from '@heroicons/react/24/solid'
 import { CREATE_STEPS, CREATE_STEP_STATUS } from '../../../constants/tabs'
 
 export default function CreateSteps({ activeStep, setStep }) {
+  console.log({ activeStep })
   return (
     <nav aria-label="Progress">
       <ol
@@ -15,7 +16,7 @@ export default function CreateSteps({ activeStep, setStep }) {
                 onClick={() => setStep(step)}
                 className="group flex w-full items-center"
               >
-                <span className="flex items-center px-6 py-4 text-sm font-medium">
+                <span className="flex items-center px-6 py-2 text-sm font-medium">
                   <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-600 group-hover:bg-emerald-800">
                     <CheckIcon
                       className="h-6 w-6 text-white"
@@ -30,7 +31,7 @@ export default function CreateSteps({ activeStep, setStep }) {
             ) : activeStep.status === CREATE_STEP_STATUS.UPCOMING ? (
               <a
                 onClick={() => setStep(step)}
-                className="flex items-center px-6 py-4 text-sm font-medium"
+                className="flex items-center px-6 py-2 text-sm font-medium"
                 aria-current="step"
               >
                 <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 border-indigo-600">
@@ -45,7 +46,7 @@ export default function CreateSteps({ activeStep, setStep }) {
                 onClick={() => setStep(step)}
                 className="group flex items-center"
               >
-                <span className="flex items-center px-6 py-4 text-sm font-medium">
+                <span className="flex items-center px-6 py-2 text-sm font-medium">
                   <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 border-zinc-700 group-hover:border-zinc-900">
                     <span className="text-zinc-200 group-hover:text-white">
                       {step.id}

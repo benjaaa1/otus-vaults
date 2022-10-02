@@ -30,7 +30,7 @@ const Products = () => {
           isLoading={false}
           variant={'primary'}
           radius={'xs'}
-          onClick={setOpen}
+          onClick={() => setOpen(true)}
           size={'full'}
         />
       </div>

@@ -27,7 +27,7 @@ export const useContracts = () => {
   const contractsConfig = useContractConfig()
   const { signer } = useWeb3Context()
   const contracts = useContractLoader(signer, contractsConfig, 69)
-
+  console.log({ contracts, contractsConfig })
   return contracts
 }
 
@@ -40,7 +40,6 @@ export const useOtusVaultContracts = (): Record<string, Contract> => {
   useEffect(() => {
     console.log({ contracts })
     if (data?.vaults && contracts['OtusVault']) {
-      console.log({ abit: contracts['OtusVault'] })
       const contract = contracts['OtusVault']
       const _vaultIds = data?.vaults?.reduce((accum, { id }) => {
         return { ...accum, [id]: contract.attach(id) }

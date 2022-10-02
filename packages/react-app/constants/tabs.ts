@@ -22,8 +22,7 @@ export const UserActionTabs = {
 
 export enum CREATE_STEP_LINKS {
   INFORMATION = 'INFORMATION',
-  SETTINGS = 'SETTINGS',
-  STRATEGIES = 'STRATEGIES',
+  STRATEGY = 'STRATEGIES',
 }
 
 export enum CREATE_STEP_STATUS {
@@ -35,20 +34,14 @@ export enum CREATE_STEP_STATUS {
 export const CREATE_STEPS = [
   {
     id: 1,
-    name: 'Vault Information',
+    name: 'Vault Information & Settings',
     href: CREATE_STEP_LINKS.INFORMATION,
     status: CREATE_STEP_STATUS.CURRENT,
   },
   {
-    id: 2,
-    name: 'Vault Settings',
-    href: CREATE_STEP_LINKS.SETTINGS,
-    status: CREATE_STEP_STATUS.UPCOMING,
-  },
-  {
     id: 3,
-    name: 'Strategies',
-    href: CREATE_STEP_LINKS.STRATEGIES,
+    name: 'Vault Strategy',
+    href: CREATE_STEP_LINKS.STRATEGY,
     status: CREATE_STEP_STATUS.UPCOMING,
   },
 ]

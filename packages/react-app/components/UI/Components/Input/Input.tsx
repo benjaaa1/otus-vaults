@@ -26,14 +26,15 @@ export type InputProps = {
   radius: InputRadius
   variant: InputVariant
   style?: string
+  showLabel?: boolean
 } & HTMLInputProps
 
 export const getInputVariant = (variant: InputVariant): string => {
   switch (variant) {
     case 'default':
-      return 'w-full border-zinc-700 bg-zinc-900 text-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500'
+      return 'w-full border-zinc-700 bg-zinc-900 text-white text-xs shadow-sm focus:border-emerald-500 focus:ring-emerald-500'
     case 'primary':
-      return 'border-zinc-700 bg-zinc-900 text-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500'
+      return 'border-zinc-700 bg-zinc-900 text-white text-xs shadow-sm focus:border-emerald-500 focus:ring-emerald-500'
   }
 }
 
@@ -61,21 +62,28 @@ export const Input = ({
   radius,
   variant,
   style = '',
+  showLabel,
 }: InputProps) => {
   const inputVariant = getInputVariant(variant)
   const inputRadius = getInputRadius(radius)
+  const labelStyle = showLabel ? 'text-xs text-zinc-200 font-normal' : 'sr-only'
 
   return (
-    <input
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      type={type}
-      disabled={isDisabled}
-      name={id}
-      id={id}
-      autoComplete={id}
-      className={`block ${inputVariant} ${inputRadius} ${style}`}
-    />
+    <>
+      <label htmlFor={id} className={labelStyle}>
+        {label}
+      </label>
+      <input
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        type={type}
+        disabled={isDisabled}
+        name={id}
+        id={id}
+        autoComplete={id}
+        className={`block ${inputVariant} ${inputRadius} ${style}`}
+      />
+    </>
   )
 }

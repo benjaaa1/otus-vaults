@@ -3,7 +3,14 @@ import { Fragment, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
-export default function SlideInPanel({ setOpen, open, title, children }) {
+export default function SlideInPanel({
+  isCreating,
+  handleCreateVault,
+  setOpen,
+  open,
+  title,
+  children,
+}) {
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={setOpen}>
@@ -22,7 +29,7 @@ export default function SlideInPanel({ setOpen, open, title, children }) {
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-3xl">
-                  <div className="flex h-full flex-col divide-y divide-gray-200 border-l border-zinc-800 bg-zinc-900 shadow-xl">
+                  <div className="flex h-full flex-col divide-y divide-gray-200 border-l border-zinc-800 bg-gradient-to-b from-black to-zinc-900 shadow-xl">
                     <div className="flex min-h-0 flex-1 flex-col overflow-y-scroll py-6">
                       <div className="px-4 sm:px-6">
                         <div className="flex items-end justify-between">
@@ -59,6 +66,7 @@ export default function SlideInPanel({ setOpen, open, title, children }) {
                         Cancel
                       </button>
                       <button
+                        onClick={handleCreateVault}
                         type="submit"
                         className="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >

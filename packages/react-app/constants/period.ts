@@ -1,44 +1,5 @@
-export enum Period {
-	FOUR_HOURS = 'FOUR_HOURS',
-	ONE_DAY = 'ONE_DAY',
-	ONE_WEEK = 'ONE_WEEK',
-	ONE_MONTH = 'ONE_MONTH',
-}
-
-export const PERIOD_IN_HOURS: Record<Period, number> = {
-	FOUR_HOURS: 4,
-	ONE_DAY: 24,
-	ONE_MONTH: 672,
-	ONE_WEEK: 168,
-};
-
-export type PeriodLabel = {
-	period: Period;
-	value: number;
-	i18nLabel: string;
-};
-
-export const PERIOD_LABELS_MAP: Record<Period, PeriodLabel> = {
-	FOUR_HOURS: {
-		period: Period.FOUR_HOURS,
-		value: PERIOD_IN_HOURS.FOUR_HOURS,
-		i18nLabel: 'common.chart-periods.4H',
-	},
-	ONE_DAY: {
-		period: Period.ONE_DAY,
-		value: PERIOD_IN_HOURS.ONE_DAY,
-		i18nLabel: 'common.chart-periods.1D',
-	},
-	ONE_WEEK: {
-		period: Period.ONE_WEEK,
-		value: PERIOD_IN_HOURS.ONE_WEEK,
-		i18nLabel: 'common.chart-periods.1W',
-	},
-	ONE_MONTH: {
-		period: Period.ONE_MONTH,
-		value: PERIOD_IN_HOURS.ONE_MONTH,
-		i18nLabel: 'common.chart-periods.1M',
-	},
-};
-
-export const PERIOD_LABELS = Object.values(PERIOD_LABELS_MAP);
+export const HOUR_SEC = 60 * 60
+export const DAY_SEC = 24 * HOUR_SEC
+export const WEEK_SEC = 7 * DAY_SEC
+export const MONTH_SEC = 28 * DAY_SEC
+export const YEAR_SEC = 365 * DAY_SEC
