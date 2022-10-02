@@ -43,6 +43,8 @@ contract Strategy is StrategyBase {
 
   event Hedge(HEDGETYPE _hedgeType, int size, uint spotPrice, uint strikeId);
 
+  event StrikeStrategyUpdated(address vault, StrikeStrategyDetail[] currentStrikeStrategies);
+
   /************************************************
    *  Modifiers
    ***********************************************/
@@ -109,6 +111,8 @@ contract Strategy is StrategyBase {
    * @param _hedgeType hedge type
    */
   function setHedgeStrategyType(uint _hedgeType) external onlyOwner {
+    (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
+    require(!roundInProgress, "round opened");
     hedgeType = HEDGETYPE(_hedgeType);
     // event StrategyHedgeTypeUpdated(address vault, HEDGETYPE hedgeType);
     // emit StrategyHedgeTypeUpdated(vault, hedgeType);
@@ -148,8 +152,8 @@ contract Strategy is StrategyBase {
       currentStrikeStrategy = _currentStrikeStrategies[i];
       currentStrikeStrategies[currentStrikeStrategy.optionType] = currentStrikeStrategy;
     }
-    // event StrikeStrategyUpdated(address vault, StrikeStrategyDetail[] currentStrikeStrategies);
-    // emit StrikeStrategyUpdated(vault, currentStrikeStrategies);
+
+    emit StrikeStrategyUpdated(vault, _currentStrikeStrategies);
   }
 
   function getVaultStrategy() public view returns (StrategyDetail memory _strategyDetail) {
@@ -186,6 +190,7 @@ contract Strategy is StrategyBase {
 
     // check if valid market for trade here cuz it's part of strategy
     ILyraBase.Strike memory strike = ILyraBase(lyraBase).getStrikes(_toDynamic(_strike.strikeId))[0];
+
     require(isValidStrike(lyraBase, strike, _strike.optionType), "invalid strike");
 
     expiry = strike.expiry;
@@ -214,17 +219,19 @@ contract Strategy is StrategyBase {
     }
 
     _strike.positionId = positionId;
-    // _addActiveStrike(_strike, positionId, _strike.optionType);
-    activeStrikeTrades.push(_strike);
+    _addActiveStrike(_strike, positionId, _strike.optionType);
   }
 
   /**
    * @notice Return funds to vault and clera strikes
    * @dev convert premium in quote asset into collateral asset and send it back to the vault.
    */
-  function returnFundsAndClearStrikes(bytes32 market) external onlyVault {
+  function returnFundsAndClearStrikes() external onlyVault {
     // need to return the synthetix ones too
-    _closeHedgeEndOfRound(market);
+    for (uint i = 0; i < lyraAdapterKeys.length; i++) {
+      bytes32 market = lyraAdapterKeys[i];
+      _closeHedgeEndOfRound(market);
+    }
 
     uint quoteBal = quoteAsset.balanceOf(address(this));
 
@@ -263,7 +270,6 @@ contract Strategy is StrategyBase {
       existingCollateral = position.collateral;
       existingAmount = position.amount;
     }
-
     // gets minBufferCollat for the whole position
     uint minBufferCollateral = _getBufferCollateral(
       lyraBase,
@@ -273,7 +279,6 @@ contract Strategy is StrategyBase {
       existingAmount + sellAmount,
       _optionType
     );
-
     // get targetCollat for this trade instance
     // prevents vault from adding excess collat just to meet targetCollat
     uint targetCollat = existingCollateral +
@@ -307,8 +312,6 @@ contract Strategy is StrategyBase {
     // get minimum expected premium based on minIv
     OptionType optionType = OptionType(_optionType);
     // perform trade
-
-    // needs to be delegated - not delegated move openPosition to strategybase or another adapter
     TradeResult memory result = openPosition(
       market,
       TradeInputParameters({

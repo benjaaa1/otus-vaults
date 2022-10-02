@@ -47,6 +47,7 @@ contract StrategyBase is LyraAdapter {
 
   HEDGETYPE public hedgeType;
 
+  bytes32[] public lyraAdapterKeys;
   mapping(bytes32 => address) public lyraBases;
   mapping(bytes32 => address) public futuresMarketsByKey;
   // hedge type selected
@@ -110,7 +111,7 @@ contract StrategyBase is LyraAdapter {
    * @param _currentStrategy strategy settings
    */
   function baseInitialize(
-    bytes32[] memory lyraAdapterKeys,
+    bytes32[] memory _lyraAdapterKeys,
     address[] memory lyraBaseValues,
     address[] memory optionMarkets,
     address[] memory futuresMarkets,
@@ -118,12 +119,14 @@ contract StrategyBase is LyraAdapter {
     address _vault,
     StrategyDetail memory _currentStrategy
   ) internal {
-    uint len = lyraAdapterKeys.length;
+    uint len = _lyraAdapterKeys.length;
+    lyraAdapterKeys = new bytes32[](len);
 
     for (uint i = 0; i < len; i++) {
-      bytes32 key = lyraAdapterKeys[i];
+      bytes32 key = _lyraAdapterKeys[i];
       address lyraBase = lyraBaseValues[i];
       address futuresMarket = futuresMarkets[i];
+      lyraAdapterKeys[i] = key;
       lyraBases[key] = lyraBase;
       futuresMarketsByKey[key] = futuresMarket;
     }
@@ -140,9 +143,6 @@ contract StrategyBase is LyraAdapter {
       address lyraAdapter = lyraBases[key];
       optionMarket = optionMarkets[i];
       futuresMarket = futuresMarkets[i];
-      console.log(optionMarket);
-      console.log("quoteAsset");
-      console.log(address(quoteAsset));
 
       quoteAsset.approve(address(optionMarket), type(uint).max);
       quoteAsset.approve(address(futuresMarket), type(uint).max);
@@ -169,6 +169,7 @@ contract StrategyBase is LyraAdapter {
     if (!_isActiveStrike(strike.strikeId, optionType)) {
       positionIdByStrikeOption[keccak256(abi.encode(strike.strikeId, optionType))] = tradedPositionId;
       activeStrikeByPositionId[tradedPositionId] = strike;
+      activeStrikeTrades.push(strike);
     }
   }
 
@@ -250,7 +251,6 @@ contract StrategyBase is LyraAdapter {
 
     uint volGWAV = ILyraBase(lyraBase).volGWAV(strikeId, currentStrategy.gwavPeriod);
     uint volSpot = ILyraBase(lyraBase).getVols(_toDynamic(strikeId))[0];
-
     uint volDiff = (volGWAV >= volSpot) ? volGWAV - volSpot : volSpot - volGWAV;
 
     return isValid = volDiff < currentStrikeStrategy.maxVolVariance;

@@ -208,10 +208,12 @@ contract OtusVault is BaseVault {
     uint quoteBal = collateralAsset.balanceOf(address(this));
     // 10k 20% reserve = 10k * (.2) == 2k
     uint hedgeFunds = quoteBal.multiplyDecimal(strategyDetail.hedgeReserve);
-    uint tradeBalance = quoteBal - hedgeFunds;
+
+    uint tradeBalance = quoteBal.sub(hedgeFunds); //quoteBal. hedgeFunds;
+
     require(collateralAsset.transfer(address(strategy), tradeBalance), "collateral transfer to strategy failed");
     // refactor transfer to synthetix when a hedge is needed to be opened only
-    IStrategy(strategy).transferToFuturesMarket(int(hedgeFunds));
+    // IStrategy(strategy).transferToFuturesMarket(int(hedgeFunds));
   }
 
   /**
@@ -236,6 +238,7 @@ contract OtusVault is BaseVault {
 
     for (uint i = 0; i < len; i++) {
       StrategyBase.StrikeTrade memory _trade = _strikes[i];
+
       (positionId, premium, capitalUsed, expiry) = IStrategy(strategy).doTrade(_trade);
       allCapitalUsed += capitalUsed;
       positionIds[i] = positionId;
@@ -261,11 +264,12 @@ contract OtusVault is BaseVault {
 
   /**
    * @notice Reduce position by keeper if position dangerous
+   * @param market bytes32
    * @param positionId lyra position id
    * @param closeAmount total amount to reduce
    */
   function reducePosition(
-    address market,
+    bytes32 market,
     uint positionId,
     uint closeAmount
   ) external onlyKeeper {

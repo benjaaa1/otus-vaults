@@ -1,3 +1,15 @@
+import {
+  LyraBase,
+  MockERC20,
+  MockFuturesMarket,
+  MockFuturesMarketManager,
+  OtusCloneFactory,
+  OtusController,
+  OtusVault,
+  OtusVault__factory,
+  Strategy__factory,
+} from '../../../typechain-types';
+import { Strategy, StrategyBase } from '../../../typechain-types/Strategy';
 
 const hre = require('hardhat');
 const {getNamedAccounts, ethers} = hre;

@@ -19,7 +19,7 @@ interface IStrategy {
     );
 
   function reducePosition(
-    address market,
+    bytes32 market,
     uint positionId,
     uint closeAmount
   ) external;
@@ -38,7 +38,7 @@ interface IStrategy {
 
   function _closeHedgeEndOfRound() external;
 
-  function transferToFuturesMarket(int hedgeFunds) external;
+  function transferToFuturesMarket(bytes32 market, int hedgeFunds) external;
 
   function initialize(
     bytes32[] memory lyraAdapterKeys,

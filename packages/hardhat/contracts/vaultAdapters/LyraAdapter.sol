@@ -145,7 +145,6 @@ contract LyraAdapter is OwnableUpgradeable {
    */
   function openPosition(bytes32 market, TradeInputParameters memory params) internal returns (TradeResult memory) {
     address optionMarket = lyraOptionMarkets[market];
-
     IOptionMarket.TradeInputParameters memory convertedParams = _convertParams(params);
     IOptionMarket.Result memory result = IOptionMarket(optionMarket).openPosition(convertedParams);
 

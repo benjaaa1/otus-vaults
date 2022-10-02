@@ -93,7 +93,7 @@
           ]
         },
         "GWAVOracle": {
-          "address": "0xf5EcD22FeE78b8Ad31d741916A848Ad49c875924",
+          "address": "0x4B8de9441bEfbdcFDa3eb7476b3020945890cA06",
           "abi": [
             {
               "inputs": [],
@@ -728,7 +728,7 @@
           ]
         },
         "LyraBase": {
-          "address": "0xF5272B18eee0C04E054AC9ad64023CdD60ffe063",
+          "address": "0x67f4a6b83BF20ad2D93A8180Cb9FdF843A319D0c",
           "abi": [
             {
               "inputs": [
@@ -802,12 +802,151 @@
             },
             {
               "inputs": [],
+              "name": "getExchangeParams",
+              "outputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "spotPrice",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "quoteBaseFeeRate",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "baseQuoteFeeRate",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct LyraBase.ExchangeRateParams",
+                  "name": "",
+                  "type": "tuple"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "enum LyraBase.OptionType",
+                  "name": "optionType",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "strikePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiry",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "spotPrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMinCollateral",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "positionId",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMinCollateralForPosition",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
               "name": "getOptionMarket",
               "outputs": [
                 {
                   "internalType": "address",
                   "name": "",
                   "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "positionIds",
+                  "type": "uint256[]"
+                }
+              ],
+              "name": "getPositions",
+              "outputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "positionId",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "strikeId",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "enum LyraBase.OptionType",
+                      "name": "optionType",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "collateral",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "enum LyraBase.PositionState",
+                      "name": "state",
+                      "type": "uint8"
+                    }
+                  ],
+                  "internalType": "struct LyraBase.OptionPosition[]",
+                  "name": "",
+                  "type": "tuple[]"
                 }
               ],
               "stateMutability": "view",
@@ -1002,7 +1141,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x8A5f4248a6A4ebd6F23F96D919F3f4af0f4eEE89",
+          "address": "0x2AADF979aaa63EA381bE60A79e4f6572750D7077",
           "abi": [
             {
               "inputs": [
@@ -1313,7 +1452,7 @@
           ]
         },
         "OtusController": {
-          "address": "0x3AeeD2f7f2F286C455567019AeB457DE9B3558BB",
+          "address": "0x373C0133B5B3200BBD3BA7B7193496389052E752",
           "abi": [
             {
               "inputs": [
@@ -2115,7 +2254,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0x9547474d72630eeC5a4412dbbee0409BfbD8401d",
+          "address": "0x6C33509c5fD576EfFc1eDdD8966322000636fcb9",
           "abi": [
             {
               "inputs": [
@@ -3123,9 +3262,9 @@
             {
               "inputs": [
                 {
-                  "internalType": "address",
+                  "internalType": "bytes32",
                   "name": "market",
-                  "type": "address"
+                  "type": "bytes32"
                 },
                 {
                   "internalType": "uint256",
@@ -3818,7 +3957,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0x94b8f05B369a1a4D97963966597d76c57748ad31",
+          "address": "0xf2673Ca1Db5629C573675DA022EE4469b0Abfad9",
           "abi": [
             {
               "inputs": [
@@ -3917,6 +4056,57 @@
                 }
               ],
               "name": "OwnershipTransferred",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "vault",
+                  "type": "address"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "int256",
+                      "name": "targetDelta",
+                      "type": "int256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxDeltaGap",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVol",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxVolVariance",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "optionType",
+                      "type": "uint256"
+                    }
+                  ],
+                  "indexed": false,
+                  "internalType": "struct StrategyBase.StrikeStrategyDetail[]",
+                  "name": "currentStrikeStrategies",
+                  "type": "tuple[]"
+                }
+              ],
+              "name": "StrikeStrategyUpdated",
               "type": "event"
             },
             {
@@ -4791,6 +4981,25 @@
             {
               "inputs": [
                 {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "lyraAdapterKeys",
+              "outputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "",
+                  "type": "bytes32"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
                   "internalType": "bytes32",
                   "name": "",
                   "type": "bytes32"
@@ -4902,13 +5111,7 @@
               "type": "function"
             },
             {
-              "inputs": [
-                {
-                  "internalType": "bytes32",
-                  "name": "market",
-                  "type": "bytes32"
-                }
-              ],
+              "inputs": [],
               "name": "returnFundsAndClearStrikes",
               "outputs": [],
               "stateMutability": "nonpayable",

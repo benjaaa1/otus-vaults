@@ -286,7 +286,7 @@ contract LyraBase {
   }
 
   // get spot price of sAsset and exchange fee percentages
-  function getExchangeParams() internal view returns (ExchangeRateParams memory) {
+  function getExchangeParams() public view returns (ExchangeRateParams memory) {
     SynthetixAdapter.ExchangeParams memory params = synthetixAdapter.getExchangeParams(address(optionMarket));
     return
       ExchangeRateParams({
@@ -300,7 +300,7 @@ contract LyraBase {
   // Option Position Getters //
   /////////////////////////////
 
-  function getPositions(uint[] memory positionIds) internal view returns (OptionPosition[] memory) {
+  function getPositions(uint[] memory positionIds) public view returns (OptionPosition[] memory) {
     OptionToken.OptionPosition[] memory positions = optionToken.getOptionPositions(positionIds);
 
     OptionPosition[] memory convertedPositions = new OptionPosition[](positions.length);
@@ -324,12 +324,12 @@ contract LyraBase {
     uint expiry,
     uint spotPrice,
     uint amount
-  ) internal view returns (uint) {
+  ) public view returns (uint) {
     return
       greekCache.getMinCollateral(OptionMarket.OptionType(uint(optionType)), strikePrice, expiry, spotPrice, amount);
   }
 
-  function getMinCollateralForPosition(uint positionId) internal view returns (uint) {
+  function getMinCollateralForPosition(uint positionId) public view returns (uint) {
     OptionToken.PositionWithOwner memory position = optionToken.getPositionWithOwner(positionId);
     if (_isLong(OptionType(uint(position.optionType)))) return 0;
 
@@ -395,7 +395,6 @@ contract LyraBase {
 
   function volGWAV(uint strikeId, uint secondsAgo) public view returns (uint) {
     OptionMarket.Strike memory strike = optionMarket.getStrike(strikeId);
-
     return gwavOracle.ivGWAV(strike.boardId, secondsAgo).multiplyDecimal(gwavOracle.skewGWAV(strikeId, secondsAgo));
   }
 }
