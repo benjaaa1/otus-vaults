@@ -213,50 +213,6 @@ contract OtusController is Ownable {
   }
 
   /**
-   * @notice Set option market details used by vaults/strategies
-   * @param _optionMarket address of base optionmarket
-   */
-  function setOptionMarketDetails(address _optionMarket) public onlyOwner {
-    (
-      LiquidityPool liquidityPool,
-      LiquidityToken liquidityToken,
-      OptionGreekCache greekCache,
-      OptionMarket optionMarket,
-      OptionMarketPricer optionMarketPricer,
-      OptionToken optionToken,
-      PoolHedger poolHedger,
-      ShortCollateral shortCollateral,
-      GWAVOracle gwavOracle,
-      IERC20 quoteAsset,
-      IERC20 baseAsset
-    ) = lyraRegistry.marketAddresses(OptionMarket(_optionMarket));
-
-    address[] memory marketAddresses = new address[](10);
-    marketAddresses[0] = address(quoteAsset);
-    marketAddresses[1] = address(baseAsset);
-    marketAddresses[2] = address(optionToken);
-    marketAddresses[3] = _optionMarket;
-    marketAddresses[4] = address(liquidityPool);
-    marketAddresses[5] = address(shortCollateral);
-    marketAddresses[6] = address(optionMarketPricer);
-    marketAddresses[7] = address(greekCache);
-    marketAddresses[8] = futuresMarketByAsset[address(baseAsset)];
-    marketAddresses[9] = address(gwavOracle);
-    marketAddress[_optionMarket] = marketAddresses;
-
-    //update deployed lyra adapters contracts with new market addresses
-  }
-
-  /**
-   * @notice Get option market details used by vaults/strategies by optionmarket
-   * @param _optionMarket address of base optionmarket
-   * @return mad addresses by optionmarket
-   */
-  function getOptionMarketDetails(address _optionMarket) public view returns (address[] memory mad) {
-    mad = marketAddress[_optionMarket];
-  }
-
-  /**
    * @notice Get vaults and strategies by owner
    * @return userVaults vault owned
    * @return userStrategies vault's strategies
