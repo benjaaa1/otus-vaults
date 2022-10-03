@@ -1,0 +1,10 @@
+{
+  "name": "@otus-finance/services",
+  "license": "UNLICENSED",
+  "version": "1.0.0",
+  "scripts": {
+    "compose": "docker-compose -f docker-compose.yml up -d"
+  }
+}
+
+

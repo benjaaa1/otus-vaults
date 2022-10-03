@@ -4,7 +4,9 @@
     "version": "1.0.0",
     "scripts": {
       "codegen": "graph codegen",
-      "deploy": "graph deploy --product hosted-service otus-finance/optimism-kovan"
+      "deploy": "graph deploy --product hosted-service otus-finance/optimism-kovan",
+      "create-local": "graph create --node http://localhost:8020/ otus/test-subgraph",
+      "deploy-local": "graph deploy --ipfs http://localhost:5001 --node http://localhost:8020 otus/test-subgraph"
     },
     "dependencies": {
       "@graphprotocol/graph-cli": "^0.22.1",
