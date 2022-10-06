@@ -62,8 +62,6 @@ contract OtusVault is BaseVault {
    *  EVENTS
    ***********************************************/
 
-  event StrategyUpdated(address strategy);
-
   event Trade(address indexed vault, ActiveTrade[] activeTrades, uint round);
 
   event PositionReduced(uint positionId, uint amount);
@@ -148,6 +146,8 @@ contract OtusVault is BaseVault {
    * @notice  Closes the current round, enable user to deposit for the next round
    */
   function closeRound() external onlyOwner {
+    require(vaultState.roundInProgress, "round closed");
+
     uint104 lockAmount = vaultState.lockedAmount;
     vaultState.lastLockedAmount = lockAmount;
     vaultState.lockedAmountLeft = 0;
@@ -223,6 +223,7 @@ contract OtusVault is BaseVault {
    */
   function trade(StrategyBase.StrikeTrade[] memory _strikes) external onlyOwner returns (uint[] memory positionIds) {
     // round should be opened
+    console.log("test");
     require(vaultState.roundInProgress, "round not opened");
 
     uint allCapitalUsed;
@@ -238,11 +239,12 @@ contract OtusVault is BaseVault {
 
     for (uint i = 0; i < len; i++) {
       StrategyBase.StrikeTrade memory _trade = _strikes[i];
-
+      console.log("strategy");
+      console.log(strategy);
       (positionId, premium, capitalUsed, expiry) = IStrategy(strategy).doTrade(_trade);
       allCapitalUsed += capitalUsed;
       positionIds[i] = positionId;
-
+      require(premium > 0, "no premium?");
       ActiveTrade memory activeTrade = ActiveTrade(
         _trade.optionType,
         _trade.strikeId,

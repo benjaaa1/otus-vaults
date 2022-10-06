@@ -6,11 +6,11 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  await deploy("SignedSafeDecimalMath", {
+  await deploy("MockFuturesMarket", {
     from: deployer,
     log: true,
   });
 
 };
 
-module.exports.tags = ["SignedSafeDecimalMath"];
+module.exports.tags = ["MockFuturesMarket"];

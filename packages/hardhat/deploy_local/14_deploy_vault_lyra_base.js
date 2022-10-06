@@ -10,8 +10,8 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const lyraMarket = getMarketDeploys('kovan-ovm', 'sETH');
-  const lyraGlobal = await getGlobalDeploys('kovan-ovm');
+  const lyraMarket = getMarketDeploys('local', 'sETH');
+  const lyraGlobal = await getGlobalDeploys('local');
   console.log({marketKey: "0x7345544800000000000000000000000000000000000000000000000000000000" });
 
   console.log({    
@@ -30,7 +30,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     from: deployer,
     args: [ 
       "0x7345544800000000000000000000000000000000000000000000000000000000",
-      "0xa64a15E39e717663bB6885a536FA9741DEe08daC", // synthetix adapter
+      lyraGlobal.SynthetixAdapter.address, // synthetix adapter
       lyraMarket.OptionToken.address,
       lyraMarket.OptionMarket.address,
       lyraMarket.LiquidityPool.address,
@@ -41,7 +41,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     ],
     log: true,
     libraries: {
-      BlackScholes: '0xaB3390FBA66C75d125be94BBcc5b63088585146F'
+      BlackScholes: lyraGlobal.BlackScholes.address
     }
   });
 

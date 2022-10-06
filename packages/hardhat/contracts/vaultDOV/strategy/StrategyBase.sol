@@ -143,12 +143,20 @@ contract StrategyBase is LyraAdapter {
       address lyraAdapter = lyraBases[key];
       optionMarket = optionMarkets[i];
       futuresMarket = futuresMarkets[i];
+      console.log(" quoteAsset.approve ");
+      console.log("optionmarket");
+      console.log(address(optionMarket));
+      console.log("futuresMarket");
+      console.log(address(futuresMarket));
 
       quoteAsset.approve(address(optionMarket), type(uint).max);
       quoteAsset.approve(address(futuresMarket), type(uint).max);
     }
 
     // Do approvals
+    console.log("_vault");
+    console.log(_vault);
+
     quoteAsset.approve(_vault, type(uint).max);
 
     lyraInitialize(_owner, lyraAdapterKeys, optionMarkets);

@@ -45,6 +45,16 @@ contract Strategy is StrategyBase {
 
   event StrikeStrategyUpdated(address vault, StrikeStrategyDetail[] currentStrikeStrategies);
 
+  event StrategyUpdated(address vault, StrategyDetail updatedStrategy);
+
+  event StrategyHedgeTypeUpdated(address vault, HEDGETYPE hedgeType);
+
+  event HedgeStrategyUpdated(
+    address vault,
+    StaticDeltaHedgeStrategy staticStrategy,
+    DynamicDeltaHedgeStrategy dynamicStrategy
+  );
+
   /************************************************
    *  Modifiers
    ***********************************************/
@@ -88,6 +98,8 @@ contract Strategy is StrategyBase {
       _currentStrategy
     );
     vault = _vault;
+
+    emit StrategyUpdated(_vault, _currentStrategy);
   }
 
   /************************************************
@@ -102,8 +114,7 @@ contract Strategy is StrategyBase {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
     currentStrategy = _currentStrategy;
-    // event StrategyUpdated(address vault, StrategyDetail updatedStrategy);
-    // emit StrategyUpdated(vault, currentStrategy);
+    emit StrategyUpdated(vault, currentStrategy);
   }
 
   /**
@@ -114,8 +125,7 @@ contract Strategy is StrategyBase {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
     hedgeType = HEDGETYPE(_hedgeType);
-    // event StrategyHedgeTypeUpdated(address vault, HEDGETYPE hedgeType);
-    // emit StrategyHedgeTypeUpdated(vault, hedgeType);
+    emit StrategyHedgeTypeUpdated(vault, hedgeType);
   }
 
   /**
@@ -133,8 +143,7 @@ contract Strategy is StrategyBase {
 
     staticHedgeStrategy = _staticStrategy;
     dynamicHedgeStrategy = _dynamicStrategy;
-    // event HedgeStrategyUpdated(address vault, HEDGETYPE hedgeType);
-    // emit HedgeStrategyUpdated(vault, hedgeType);
+    emit HedgeStrategyUpdated(vault, staticHedgeStrategy, dynamicHedgeStrategy);
   }
 
   /**
@@ -183,6 +192,7 @@ contract Strategy is StrategyBase {
     )
   {
     address lyraBase = lyraBases[_strike.market];
+    // require(lyraBase.code.length > 0, "should be contract");
 
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_strike.optionType];
 
@@ -607,6 +617,9 @@ contract Strategy is StrategyBase {
    *  SYNTHETIX FUTURES HEDGING HELPER
    *****************************************************/
 
+  /**
+   * @dev checks delta for vault for a market
+   */
   function _checkNetDelta(bytes32 market) public view returns (int netDelta) {
     address lyraBase = lyraBases[market];
     uint _len = activeStrikeTrades.length;
@@ -635,6 +648,16 @@ contract Strategy is StrategyBase {
     for (uint i = 0; i < deltas.length; i++) {
       netDelta = netDelta + deltas[i];
     }
+  }
+
+  /**
+   * @dev checks delta for strikeid
+   */
+  function _checkDeltaByPositionId(bytes32 market, uint[] memory strikeIds) external view returns (int delta) {
+    address lyraBase = lyraBases[market];
+    delta = ILyraBase(lyraBase).getDeltas(strikeIds)[0];
+    // check direction
+    // int delta = _isCall(currentStrikeStrategy.optionType) ? callDelta : callDelta - SignedDecimalMath.UNIT;
   }
 
   function _maxLeverageSize(

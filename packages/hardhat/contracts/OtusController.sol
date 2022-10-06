@@ -198,7 +198,7 @@ contract OtusController is Ownable {
    * @notice Set lyra adapter addresses by market bytes32
    * @param _lyraAdapter address of lyradapter for market
    * @param _market bytes32 of market "sETH" / "sBTC"
-   * @dev call this after deploy lyra adapter contracts
+   * @dev call this after deploy lyra adapter contracts // refactor this method
    */
   function setLyraAdapter(
     address _lyraAdapter,
@@ -206,9 +206,13 @@ contract OtusController is Ownable {
     bytes32 _market
   ) public onlyOwner {
     lyraAdapters[_market] = _lyraAdapter;
+
     optionMarkets[_market] = _optionMarket;
+
     lyraOptionMarkets.push(_optionMarket);
+
     lyraAdapterValues.push(_lyraAdapter);
+
     lyraAdapterKeys.push(_market);
   }
 
