@@ -9,7 +9,8 @@ type Vault @entity {
   createdAt: BigInt!
   isActive: Boolean!
   isPublic: Boolean!
-  strategy: Bytes!
+  inProgress: Boolean!
+  strategy: Strategy!
   name: String!
   tokenName: String!
   tokenSymbol: String!
@@ -17,13 +18,59 @@ type Vault @entity {
   performanceFee: BigInt!
   managementFee: BigInt!
   asset: Bytes!
+  totalDeposit: BigInt!
   vaultCap: BigInt!
   totalYieldEarned: BigInt!
   previousExpiryAPR: BigInt!
-  lockedAmount: BigInt!
+  roundLockedAmount: BigInt!
   userActions: [UserAction!]! @derivedFrom(field: "vault")
   vaultTrades: [VaultTrade!]! @derivedFrom(field: "vault")
   global: Global!
+}
+
+type Strategy @entity {
+  id: ID!
+  latestUpdate: BigInt!
+  vault: Vault!
+  vaultStrategy: VaultStrategy! @derivedFrom(field: "strategy")
+  staticHedgeStrategy: StaticHedgeStrategy! @derivedFrom(field: "strategy")
+  dynamicHedgeStrategy: DynamicHedgeStrategy! @derivedFrom(field: "strategy")
+  strikeStrategies: [StrikeStrategy!]! @derivedFrom(field: "strategy")
+  hedgeType: Int!
+}
+
+type VaultStrategy @entity {
+  id: ID!
+  strategy: Strategy!
+  hedgeReserve: BigInt!
+  collatBuffer: BigInt!
+  collatPercent: BigInt!
+  minTimeToExpiry: BigInt!
+  maxTimeToExpiry: BigInt!
+  minTradeInterval: BigInt!
+  gwavPeriod: BigInt!
+  allowedMarkets: [Bytes!]
+}
+
+type StaticHedgeStrategy @entity {
+  id: ID!
+  strategy: Strategy!
+}
+
+type DynamicHedgeStrategy @entity {
+  id: ID!
+  strategy: Strategy!
+}
+
+type StrikeStrategy @entity {
+  id: ID!
+  strategy: Strategy!
+  targetDelta: BigInt!
+  maxDeltaGap: BigInt!
+  minVol: BigInt!
+  maxVol: BigInt!
+  maxVolVariance: BigInt!
+  optionType: BigInt!
 }
 
 type VaultTrade @entity {

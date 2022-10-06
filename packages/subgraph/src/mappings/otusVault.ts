@@ -1,6 +1,5 @@
 import { Address, BigInt, Bytes, DataSourceContext, store } from '@graphprotocol/graph-ts';
 import {
-  StrategyUpdated,
   Trade,
   PositionReduced,
   RoundStarted,
@@ -22,8 +21,6 @@ enum TradeType {
   ShortPutQuote,
 }
 
-export function handleStrategyUpdate(event: StrategyUpdated): void {}
-
 export function handleVaultTrade(event: Trade): void {
   let otusVaultAddress = event.address as Address;
   let createdAt = event.block.timestamp;
@@ -35,7 +32,6 @@ export function handleVaultTrade(event: Trade): void {
   let vault = Vault.load(otusVaultAddress.toHex());
   if (vault == null) {
     vault = new Vault(otusVaultAddress.toHex());
-    vault.save();
   }
 
   // trade should be by strikeid + positionid
@@ -55,13 +51,37 @@ export function handleVaultTrade(event: Trade): void {
     newTrade.size = activeTrade.size;
     newTrade.save();
   }
+
+  vault.save();
 }
 
 export function handlePositionReduced(event: PositionReduced): void {}
 
-export function handleRoundStart(event: RoundStarted): void {}
+export function handleRoundStart(event: RoundStarted): void {
+  let otusVaultAddress = event.address as Address;
+  let vault = Vault.load(otusVaultAddress.toHex());
+  if (vault == null) {
+    vault = new Vault(otusVaultAddress.toHex());
+  }
 
-export function handleRoundClosed(event: RoundClosed): void {}
+  vault.round = event.params.roundId;
+  vault.roundLockedAmount = event.params.lockAmount;
+  vault.inProgress = true;
+  vault.save();
+}
+
+export function handleRoundClosed(event: RoundClosed): void {
+  let otusVaultAddress = event.address as Address;
+  let vault = Vault.load(otusVaultAddress.toHex());
+  if (vault == null) {
+    vault = new Vault(otusVaultAddress.toHex());
+  }
+  vault.round = event.params.roundId;
+  vault.round = event.params.roundId;
+  vault.roundLockedAmount = event.params.lockAmount;
+  vault.inProgress = false;
+  vault.save();
+}
 
 export function handleRoundSettled(event: RoundSettled): void {}
 
@@ -82,9 +102,15 @@ export function handleDeposit(event: Deposit): void {
   let userPortfolioEntity = UserPortfolio.load(depositor.toHex());
   if (!userPortfolioEntity) {
     userPortfolioEntity = new UserPortfolio(depositor.toHex());
-    userPortfolioEntity.balance = event.params.amount;
   }
+  userPortfolioEntity.balance = event.params.amount;
 
+  let otusVaultEntity = Vault.load(otusVaultAddress.toHex());
+  if (!otusVaultEntity) {
+    otusVaultEntity = new Vault(otusVaultAddress.toHex());
+  }
+  let existingDeposit = otusVaultEntity.totalDeposit;
+  otusVaultEntity.totalDeposit = existingDeposit.plus(event.params.amount);
   userAction.timestamp = timestamp;
   userAction.txhash = txhash;
   userAction.isDeposit = true;
@@ -94,6 +120,7 @@ export function handleDeposit(event: Deposit): void {
 
   userAction.save();
   userPortfolioEntity.save();
+  otusVaultEntity.save();
 }
 
 export function handleInitiateWithdraw(event: InitiateWithdraw): void {}
