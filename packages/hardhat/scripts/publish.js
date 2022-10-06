@@ -6,6 +6,7 @@ const deploymentsDir = "./deployments";
 const publishDir = "../react-app/src/contracts";
 
 function publishContract(contractName, networkName) {
+  console.log({ contractName, networkName })
   try {
     let contract = fs
       .readFileSync(`${deploymentsDir}/${networkName}/${contractName}.json`)

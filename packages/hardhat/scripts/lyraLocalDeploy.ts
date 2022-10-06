@@ -7,12 +7,15 @@ import { LyraGlobal, LyraMarket } from '@lyrafinance/protocol/dist/test/utils/pa
 import { DEFAULT_OPTION_MARKET_PARAMS } from '@lyrafinance/protocol/dist/test/utils/defaultParams';
 import { seedTestSystem } from '@lyrafinance/protocol/dist/test/utils/seedTestSystem';
 
+import ERC20ABI from './helpers/abi/ERC20ABI';
+
 // run this script using `yarn hardhat run --network local` if running directly from repo (not @lyrafinance/protocol)
 // otherwise OZ will think it's deploying to hardhat network and not local
 async function main() {
   // 1. get deployer and network
   const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545');
 
+  const pkLocalDeployer = '0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a';
   const privateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'; // enter address with ETH
   provider.getGasPrice = async () => {
     return ethers.BigNumber.from('0');
@@ -42,7 +45,11 @@ async function main() {
   console.log('address:', lyraGlobal.SynthetixAdapter.address);
   // console.log("abi:", lyraGlobal.SynthetixAdapter.abi)
   console.log('bytecode:', lyraGlobal.SynthetixAdapter.bytecode.slice(0, 20) + '...');
-
+  // const susd = lyraGlobal.QuoteAsset.address;
+  // console.log({ susd });
+  // const susdContract = await ethers.getContractAt(ERC20ABI, susd);
+  // console.log({ susdContract });
+  // susdContract.mint
   // 5. get market contracts
   let lyraMarket: any = getMarketDeploys('local', 'sETH');
   console.log('contract name:', lyraMarket.OptionMarket.contractName);
