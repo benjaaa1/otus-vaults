@@ -18,7 +18,7 @@
     "@eth-optimism/sdk": "^1.0.0",
     "@headlessui/react": "^1.5.0",
     "@heroicons/react": "^2.0.11",
-    "@lyrafinance/lyra-js": "^0.0.15",
+    "@lyrafinance/lyra-js": "^0.0.18",
     "@synthetixio/transaction-notifier": "^2.74.13",
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/forms": "^0.4.0",

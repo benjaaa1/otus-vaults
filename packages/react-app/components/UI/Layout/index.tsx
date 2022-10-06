@@ -9,7 +9,7 @@ export default function Layout({ children }) {
   console.log({ network })
   return (
     <div className="bg-zinc-900 font-sans">
-      {network?.chainId != 69 ? <NetworkSwitch /> : null}
+      {network?.chainId != 10 ? <NetworkSwitch /> : null}
 
       <Navbar />
       <main className="mx-auto max-w-6xl bg-zinc-900 px-4 sm:px-6 lg:px-8">

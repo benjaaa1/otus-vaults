@@ -3,21 +3,41 @@ import request, { gql } from 'graphql-request'
 import { getOtusEndpoint } from '../utils'
 import { useWeb3Context } from '../../context'
 import QUERY_KEYS from '../../constants/queryKeys'
-import { BigNumberish } from 'ethers'
+import { BigNumber } from 'ethers'
 
-type Vault = {
+export type VaultStrategy = {
+  id: string
+  allowedMarkets: string[]
+  collatBuffer: BigNumber
+  collatPercent: BigNumber
+  minTimeToExpiry: number
+  maxTimeToExpiry: number
+  minTradeInterval: number
+  gwavPeriod: number
+}
+
+type Strategy = {
+  id: string
+  latestUpdate: number
+  hedgeType: number
+  vaultStrategy: VaultStrategy
+}
+
+export type Vault = {
   id: string
   manager: string
   round: number
   isActive: boolean
   isPublic: boolean
-  strategy: string
+  inProgress: boolean
+  strategy: Strategy
   name: string
   description: string
-  performanceFee: BigNumberish
-  managementFee: BigNumberish
+  totalDeposit: BigNumber
+  performanceFee: BigNumber
+  managementFee: BigNumber
   asset: string
-  vaultCap: BigNumberish
+  vaultCap: BigNumber
 }
 
 type AllAvailableVaults = {
@@ -47,6 +67,7 @@ export const useVaultProducts = () => {
                 strategy
                 name
                 description
+                totalDeposit
                 performanceFee
                 managementFee
                 asset
@@ -94,6 +115,7 @@ export const useVaultProduct = (vaultId: any) => {
               strategy
               name
               description
+              totalDeposit
               performanceFee
               managementFee
               asset
@@ -105,6 +127,31 @@ export const useVaultProduct = (vaultId: any) => {
                 amount
                 vault
                 userPortfolio
+              }
+              strategy {
+                id
+                latestUpdate
+                hedgeType
+                vaultStrategy {
+                  id
+                  collatBuffer
+                  collatPercent
+                  minTimeToExpiry
+                  maxTimeToExpiry
+                  minTradeInterval
+                  gwavPeriod
+                  allowedMarkets
+                }
+              }
+              vaultTrades {
+                id
+                strikeId
+                positionId
+                premiumEarned
+                strikePrice
+                size
+                openedAt
+                expiry
               }
             }
           }

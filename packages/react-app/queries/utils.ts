@@ -1,22 +1,32 @@
-import { ethers } from 'ethers';
-import { ContractsMap } from '../utils/types';
-import { FUTURES_ENDPOINT_MAINNET, FUTURES_ENDPOINT_TESTNET, OTUS_ENDPOINT_MAINNET, OTUS_ENDPOINT_TESTNET } from './constants';
+import { ethers } from 'ethers'
+import { ContractsMap } from '../utils/types'
+import {
+  FUTURES_ENDPOINT_MAINNET,
+  FUTURES_ENDPOINT_TESTNET,
+  OTUS_ENDPOINT_MAINNET,
+  OTUS_ENDPOINT_TESTNET,
+  OTUS_ENDPOINT_LOCALHOST,
+} from './constants'
 
-export const getFuturesEndpoint = (network: ethers.providers.Network | null | undefined): string => {
-	return network && network.chainId === 10
-		? FUTURES_ENDPOINT_MAINNET
-		: network && network.chainId === 69
-		? FUTURES_ENDPOINT_TESTNET
-		: FUTURES_ENDPOINT_MAINNET;
-};
+export const getFuturesEndpoint = (
+  network: ethers.providers.Network | null | undefined
+): string => {
+  return network && network.chainId === 10
+    ? FUTURES_ENDPOINT_MAINNET
+    : network && network.chainId === 69
+    ? FUTURES_ENDPOINT_TESTNET
+    : FUTURES_ENDPOINT_MAINNET
+}
 
-export const getOtusEndpoint = (network: ethers.providers.Network | null | undefined): string => {
-	return network && network.chainId === 10
-		? OTUS_ENDPOINT_MAINNET
-		: network && network.chainId === 69
-		? OTUS_ENDPOINT_TESTNET
-		: OTUS_ENDPOINT_MAINNET;
-};
+export const getOtusEndpoint = (
+  network: ethers.providers.Network | null | undefined
+): string => {
+  return network && network.chainId === 10
+    ? OTUS_ENDPOINT_MAINNET
+    : network && network.chainId === 69
+    ? OTUS_ENDPOINT_TESTNET
+    : OTUS_ENDPOINT_LOCALHOST
+}
 
 export const getOtusContract = (
   contractName: string | null,
@@ -27,4 +37,3 @@ export const getOtusContract = (
   if (!contract) throw new Error(`${contractName} does not exist`)
   return contract
 }
-

@@ -1,7 +1,11 @@
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import { CREATE_STEPS, CREATE_STEP_LINKS } from '../../../constants/tabs'
+import {
+  CREATE_STEPS,
+  CREATE_STEP_LINKS,
+  CREATE_STEP_STATUS,
+} from '../../../constants/tabs'
 import { Input } from '../../UI/Components/Input/Input'
 import { RangeSlider } from '../../UI/Components/RangeSlider'
 import { Switch } from '../../UI/Components/Switch'
@@ -106,7 +110,24 @@ export default function Create({ setOpen, open }) {
     router.push(`vault-manager/${href}`)
   }
 
-  const [step, setStep] = useState(CREATE_STEPS[0])
+  const CREATE_STEPS = [
+    {
+      id: 1,
+      name: 'Vault Information & Settings',
+      href: CREATE_STEP_LINKS.INFORMATION,
+      status: CREATE_STEP_STATUS.CURRENT,
+      isActive: true,
+    },
+    {
+      id: 2,
+      name: 'Vault Strategy',
+      href: CREATE_STEP_LINKS.STRATEGY,
+      status: CREATE_STEP_STATUS.UPCOMING,
+      isActive: false,
+    },
+  ]
+
+  const [steps, setSteps] = useState(CREATE_STEPS)
   const [isCreating, setIsCreating] = useState(false)
 
   const [vaultInfo, setVaultInfo] = useState<VaultInformationStruct>({
@@ -192,306 +213,314 @@ export default function Create({ setOpen, open }) {
       open={open}
       title={'Create a Vault'}
     >
-      <CreateSteps activeStep={step} setStep={setStep} />
+      <CreateSteps steps={steps} setSteps={setSteps} />
       <div className="py-4">
         <form className="space-y-4 divide-y divide-zinc-700">
           <div className="space-y-4">
-            {step.href == CREATE_STEP_LINKS.INFORMATION ? (
-              <div className="pt-8">
-                <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                  <div className="sm:col-span-6">
-                    <Input
-                      showLabel={true}
-                      label={'Name'}
-                      type="text"
-                      id="name"
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        setVaultInfo((info) => ({
-                          ...info,
-                          name: e.target.value,
-                        }))
-                      }}
-                      value={vaultInfo.name}
-                      placeholder="Vault Name"
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+            {steps.map((step) => {
+              return (
+                <>
+                  {step.status == CREATE_STEP_STATUS.CURRENT &&
+                  step.href == CREATE_STEP_LINKS.INFORMATION ? (
+                    <div className="pt-8">
+                      <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-6">
+                          <Input
+                            showLabel={true}
+                            label={'Name'}
+                            type="text"
+                            id="name"
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              setVaultInfo((info) => ({
+                                ...info,
+                                name: e.target.value,
+                              }))
+                            }}
+                            value={vaultInfo.name}
+                            placeholder="Vault Name"
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <Input
-                      showLabel={true}
-                      label={'Token Name'}
-                      type="text"
-                      id="tokenName"
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        setVaultInfo((info) => ({
-                          ...info,
-                          tokenName: e.target.value,
-                        }))
-                      }}
-                      value={vaultInfo.tokenName}
-                      placeholder="Token Name"
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+                        <div className="sm:col-span-6">
+                          <Input
+                            showLabel={true}
+                            label={'Token Name'}
+                            type="text"
+                            id="tokenName"
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              setVaultInfo((info) => ({
+                                ...info,
+                                tokenName: e.target.value,
+                              }))
+                            }}
+                            value={vaultInfo.tokenName}
+                            placeholder="Token Name"
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <TextArea
-                      showLabel={true}
-                      label={'Token Description'}
-                      id="tokenDescription"
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        setVaultInfo((info) => ({
-                          ...info,
-                          description: e.target.value,
-                        }))
-                      }}
-                      value={vaultInfo.description}
-                      placeholder="Token Description"
-                      radius={'xs'}
-                      variant={'default'}
-                      rows={2}
-                    />
-                  </div>
+                        <div className="sm:col-span-6">
+                          <TextArea
+                            showLabel={true}
+                            label={'Token Description'}
+                            id="tokenDescription"
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              setVaultInfo((info) => ({
+                                ...info,
+                                description: e.target.value,
+                              }))
+                            }}
+                            value={vaultInfo.description}
+                            placeholder="Token Description"
+                            radius={'xs'}
+                            variant={'default'}
+                            rows={2}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <Switch
-                      label={'Is Pubilc'}
-                      value={vaultInfo.isPublic}
-                      onChange={(checked: any) => {
-                        console.log({ checked })
+                        <div className="sm:col-span-6">
+                          <Switch
+                            label={'Is Pubilc'}
+                            value={vaultInfo.isPublic}
+                            onChange={(checked: any) => {
+                              console.log({ checked })
 
-                        setVaultInfo((vaultInfo) => ({
-                          ...vaultInfo,
-                          isPublic: checked,
-                        }))
-                      }}
-                    />
-                  </div>
+                              setVaultInfo((vaultInfo) => ({
+                                ...vaultInfo,
+                                isPublic: checked,
+                              }))
+                            }}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultParamsStep.cap}
-                      min={vaultParamsMin.cap}
-                      max={vaultParamsMax.cap}
-                      id={'cap'}
-                      label={'Maximum Cap'}
-                      value={fromBigNumber(vaultParams.cap)}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const cap = toBN(e.target.value)
-                        setVaultParams((params) => ({
-                          ...params,
-                          cap,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultParamsStep.cap}
+                            min={vaultParamsMin.cap}
+                            max={vaultParamsMax.cap}
+                            id={'cap'}
+                            label={'Maximum Cap'}
+                            value={fromBigNumber(vaultParams.cap)}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const cap = toBN(e.target.value)
+                              setVaultParams((params) => ({
+                                ...params,
+                                cap,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultInfoStep.performanceFee}
-                      min={vaultInfoMin.performanceFee}
-                      max={vaultInfoMax.performanceFee}
-                      id={'performance-fee'}
-                      label={'Performance Fee'}
-                      value={fromBigNumber(vaultInfo.performanceFee)}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const performanceFee = toBN(e.target.value)
-                        setVaultInfo((params) => ({
-                          ...params,
-                          performanceFee,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultInfoStep.performanceFee}
+                            min={vaultInfoMin.performanceFee}
+                            max={vaultInfoMax.performanceFee}
+                            id={'performance-fee'}
+                            label={'Performance Fee'}
+                            value={fromBigNumber(vaultInfo.performanceFee)}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const performanceFee = toBN(e.target.value)
+                              setVaultInfo((params) => ({
+                                ...params,
+                                performanceFee,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultInfoStep.managementFee}
-                      min={vaultInfoMin.managementFee}
-                      max={vaultInfoMax.managementFee}
-                      id={'management-fee'}
-                      label={'Management Fee'}
-                      value={fromBigNumber(vaultInfo.managementFee)}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const managementFee = toBN(e.target.value)
-                        setVaultInfo((params) => ({
-                          ...params,
-                          managementFee,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : null}
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultInfoStep.managementFee}
+                            min={vaultInfoMin.managementFee}
+                            max={vaultInfoMax.managementFee}
+                            id={'management-fee'}
+                            label={'Management Fee'}
+                            value={fromBigNumber(vaultInfo.managementFee)}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const managementFee = toBN(e.target.value)
+                              setVaultInfo((params) => ({
+                                ...params,
+                                managementFee,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
 
-            {step.href == CREATE_STEP_LINKS.STRATEGY ? (
-              <div className="pt-8">
-                <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultStrategyStep.collatBuffer}
-                      min={vaultStrategyMin.collatBuffer}
-                      max={vaultStrategyMax.collatBuffer}
-                      id={'collateral-buffer'}
-                      label={'Colalteral Buffer'}
-                      value={fromBigNumber(vaultStrategy.collatBuffer)}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const collatBuffer = toBN(e.target.value)
-                        setVaultStrategy((params) => ({
-                          ...params,
-                          collatBuffer,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+                  {step.status == CREATE_STEP_STATUS.CURRENT &&
+                  step.href == CREATE_STEP_LINKS.STRATEGY ? (
+                    <div className="pt-8">
+                      <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultStrategyStep.collatBuffer}
+                            min={vaultStrategyMin.collatBuffer}
+                            max={vaultStrategyMax.collatBuffer}
+                            id={'collateral-buffer'}
+                            label={'Colalteral Buffer'}
+                            value={fromBigNumber(vaultStrategy.collatBuffer)}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const collatBuffer = toBN(e.target.value)
+                              setVaultStrategy((params) => ({
+                                ...params,
+                                collatBuffer,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultStrategyStep.collatPercent}
-                      min={vaultStrategyMin.collatPercent}
-                      max={vaultStrategyMax.collatPercent}
-                      id={'collateral-percent'}
-                      label={'Collateral Percent'}
-                      value={fromBigNumber(vaultStrategy.collatPercent)}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const collatPercent = toBN(e.target.value)
-                        setVaultStrategy((params) => ({
-                          ...params,
-                          collatPercent,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultStrategyStep.collatPercent}
+                            min={vaultStrategyMin.collatPercent}
+                            max={vaultStrategyMax.collatPercent}
+                            id={'collateral-percent'}
+                            label={'Collateral Percent'}
+                            value={fromBigNumber(vaultStrategy.collatPercent)}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const collatPercent = toBN(e.target.value)
+                              setVaultStrategy((params) => ({
+                                ...params,
+                                collatPercent,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultStrategyStep.hedgeReserve}
-                      min={vaultStrategyMin.hedgeReserve}
-                      max={vaultStrategyMax.hedgeReserve}
-                      id={'hedge-reserve'}
-                      label={'Funds reserved for Hedging'}
-                      value={fromBigNumber(vaultStrategy.hedgeReserve)}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const hedgeReserve = toBN(e.target.value)
-                        setVaultStrategy((params) => ({
-                          ...params,
-                          hedgeReserve,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultStrategyStep.hedgeReserve}
+                            min={vaultStrategyMin.hedgeReserve}
+                            max={vaultStrategyMax.hedgeReserve}
+                            id={'hedge-reserve'}
+                            label={'Funds reserved for Hedging'}
+                            value={fromBigNumber(vaultStrategy.hedgeReserve)}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const hedgeReserve = toBN(e.target.value)
+                              setVaultStrategy((params) => ({
+                                ...params,
+                                hedgeReserve,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultStrategyStep.minTimeToExpiry}
-                      min={vaultStrategyMin.minTimeToExpiry}
-                      max={vaultStrategyMax.minTimeToExpiry}
-                      id={'min-time-to-expiry'}
-                      label={'Min. Time to Expiry'}
-                      value={vaultStrategy.minTimeToExpiry}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const minTimeToExpiry = parseInt(e.target.value)
-                        setVaultStrategy((params) => ({
-                          ...params,
-                          minTimeToExpiry,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultStrategyStep.minTimeToExpiry}
+                            min={vaultStrategyMin.minTimeToExpiry}
+                            max={vaultStrategyMax.minTimeToExpiry}
+                            id={'min-time-to-expiry'}
+                            label={'Min. Time to Expiry'}
+                            value={vaultStrategy.minTimeToExpiry}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const minTimeToExpiry = parseInt(e.target.value)
+                              setVaultStrategy((params) => ({
+                                ...params,
+                                minTimeToExpiry,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultStrategyStep.maxTimeToExpiry}
-                      min={vaultStrategyMin.maxTimeToExpiry}
-                      max={vaultStrategyMax.maxTimeToExpiry}
-                      id={'max-time-to-expiry'}
-                      label={'Max Time to Expiry'}
-                      value={vaultStrategy.maxTimeToExpiry}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const maxTimeToExpiry = parseInt(e.target.value)
-                        setVaultStrategy((params) => ({
-                          ...params,
-                          maxTimeToExpiry,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultStrategyStep.maxTimeToExpiry}
+                            min={vaultStrategyMin.maxTimeToExpiry}
+                            max={vaultStrategyMax.maxTimeToExpiry}
+                            id={'max-time-to-expiry'}
+                            label={'Max Time to Expiry'}
+                            value={vaultStrategy.maxTimeToExpiry}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const maxTimeToExpiry = parseInt(e.target.value)
+                              setVaultStrategy((params) => ({
+                                ...params,
+                                maxTimeToExpiry,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultStrategyStep.minTradeInterval}
-                      min={vaultStrategyMin.minTradeInterval}
-                      max={vaultStrategyMax.minTradeInterval}
-                      id={'min-trade-interval'}
-                      label={'Min. Trade Interval'}
-                      value={vaultStrategy.minTradeInterval}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const minTradeInterval = parseInt(e.target.value)
-                        setVaultStrategy((params) => ({
-                          ...params,
-                          minTradeInterval,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultStrategyStep.minTradeInterval}
+                            min={vaultStrategyMin.minTradeInterval}
+                            max={vaultStrategyMax.minTradeInterval}
+                            id={'min-trade-interval'}
+                            label={'Min. Trade Interval'}
+                            value={vaultStrategy.minTradeInterval}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const minTradeInterval = parseInt(e.target.value)
+                              setVaultStrategy((params) => ({
+                                ...params,
+                                minTradeInterval,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
 
-                  <div className="sm:col-span-6">
-                    <RangeSlider
-                      step={vaultStrategyStep.gwavPeriod}
-                      min={vaultStrategyMin.gwavPeriod}
-                      max={vaultStrategyMax.gwavPeriod}
-                      id={'gwav-period'}
-                      label={'GWAV Period'}
-                      value={vaultStrategy.gwavPeriod}
-                      onChange={(e) => {
-                        console.log(e.target.value)
-                        const gwavPeriod = parseInt(e.target.value)
-                        setVaultStrategy((params) => ({
-                          ...params,
-                          gwavPeriod,
-                        }))
-                      }}
-                      radius={'xs'}
-                      variant={'default'}
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : null}
+                        <div className="sm:col-span-6">
+                          <RangeSlider
+                            step={vaultStrategyStep.gwavPeriod}
+                            min={vaultStrategyMin.gwavPeriod}
+                            max={vaultStrategyMax.gwavPeriod}
+                            id={'gwav-period'}
+                            label={'GWAV Period'}
+                            value={vaultStrategy.gwavPeriod}
+                            onChange={(e) => {
+                              console.log(e.target.value)
+                              const gwavPeriod = parseInt(e.target.value)
+                              setVaultStrategy((params) => ({
+                                ...params,
+                                gwavPeriod,
+                              }))
+                            }}
+                            radius={'xs'}
+                            variant={'default'}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              )
+            })}
           </div>
         </form>
       </div>

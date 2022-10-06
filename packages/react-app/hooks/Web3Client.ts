@@ -25,7 +25,7 @@ const providerOptions = {
 let web3Modal: Web3Modal | null
 if (typeof window !== 'undefined') {
   web3Modal = new Web3Modal({
-    network: 'optimism-kovan', // optional
+    network: 'localhost', // 'optimism-kovan', // optional
     cacheProvider: true,
     providerOptions, // required
   })
@@ -54,7 +54,7 @@ export const useWeb3 = () => {
           ? transactionNotifier.setProvider(web3Provider)
           : new TransactionNotifier(web3Provider)
         toast.success('Connected to Web3')
-        console.log('connected to web3')
+        console.log('connected to web3', network)
 
         console.log({ _transactionNotifier })
         dispatch({

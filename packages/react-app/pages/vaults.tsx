@@ -13,7 +13,7 @@ const Vaults: NextPage = () => {
   const { data, isLoading } = useVaultProducts()
 
   const vaults = data?.vaults || []
-
+  console.log({ vaults })
   return (
     <div>
       <Head>

@@ -1,8 +1,17 @@
 import { parseUnits } from 'ethers/lib/utils'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { BYTES32_MARKET, getMarketInBytes } from '../../../../constants/markets'
 import { useVaultManagerContext } from '../../../../context'
+import { useOtusVaultContracts } from '../../../../hooks/Contracts'
+import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
 import { getStrikeQuote, LyraStrike } from '../../../../queries/lyra/useLyra'
-import { formatUSD, fromBigNumber } from '../../../../utils/formatters/numbers'
+import { Vault } from '../../../../queries/myVaults/useMyVaults'
+import {
+  formatUSD,
+  fromBigNumber,
+  toBN,
+} from '../../../../utils/formatters/numbers'
+import { StrikeTrade } from '../../../../utils/types'
 import { Button } from '../../../UI/Components/Button'
 import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
@@ -27,6 +36,19 @@ const computeCosts = (trades: LyraStrike[] | null | undefined) => {
   )
 }
 
+const formatTrades = (trades: LyraStrike[]): StrikeTrade[] => {
+  return trades?.map((trade: LyraStrike) => {
+    return {
+      market: getMarketInBytes(trade.market),
+      optionType: trade.selectedOptionType,
+      strikeId: toBN(trade.id.toString()),
+      size: trade.quote.size,
+      positionId: toBN('0'),
+      strikePrice: trade.strikePrice,
+    }
+  })
+}
+
 const isLong = (optionType: number): boolean => {
   return optionType == 0 || optionType == 1
 }
@@ -38,13 +60,48 @@ const isCallText = (optionType: number): string => {
   return optionType == 0 || optionType == 3 ? 'Call' : 'Put'
 }
 
-export default function TradeExecute() {
+export default function TradeExecute({ vault }: { vault: Vault }) {
   const { builtTrades } = useVaultManagerContext()
+  const otusContracts = useOtusVaultContracts()
 
+  const monitorTransaction = useTransactionNotifier()
+  const otusVaultContract = otusContracts ? otusContracts[vault?.id] : null
   console.log({ builtTrades })
+  const [isExecutingTrade, setExecutingTrade] = useState(false)
 
   const costs = useMemo(() => computeCosts(builtTrades), [builtTrades])
-  console.log({ costs })
+  const formattedBuiltTrades: StrikeTrade[] = useMemo(
+    () => formatTrades(builtTrades || []),
+    [builtTrades]
+  )
+
+  const handleTrade = useCallback(async () => {
+    if (otusVaultContract == null || vault == null) {
+      console.warn('Vault does not exist for deposit')
+      return null
+    }
+
+    setExecutingTrade(true)
+
+    const tx = await otusVaultContract.trade(formattedBuiltTrades)
+    if (tx) {
+      monitorTransaction({
+        txHash: tx.hash,
+        onTxConfirmed: () => {
+          setTimeout(() => {
+            setExecutingTrade(false)
+            // refetch()
+          }, 5 * 1000)
+        },
+        onTxFailed: () => {
+          setTimeout(() => {
+            setExecutingTrade(false)
+          }, 5 * 1000)
+        },
+      })
+    }
+  }, [otusVaultContract, vault, monitorTransaction, formattedBuiltTrades])
+
   return builtTrades && builtTrades.length > 0 ? (
     <>
       <div className="overflow-hidden border border-zinc-800 bg-transparent sm:rounded-sm">
@@ -87,11 +144,11 @@ export default function TradeExecute() {
       <div className="justify-stretch mt-6 flex flex-col">
         <Button
           label={'Execute Trade'}
-          isLoading={false}
+          isLoading={isExecutingTrade}
           variant={'action'}
           radius={'xs'}
           size={'full'}
-          onClick={() => console.log('Execute Trade')}
+          onClick={handleTrade}
         />
       </div>
     </>
@@ -170,7 +227,7 @@ const Trade = ({ trade }: { trade: LyraStrike }) => {
               </p>
               <div className="ml-2 flex flex-shrink-0">
                 <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                  {formatUSD(fromBigNumber(trade.strikePrice))}
+                  {formatUSD(fromBigNumber(trade.strikePrice) * size)}
                 </p>
               </div>
             </div>

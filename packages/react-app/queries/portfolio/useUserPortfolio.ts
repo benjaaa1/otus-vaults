@@ -64,6 +64,8 @@ export const useUserPortfolio = () => {
               balance
               yieldEarned
               userActions {
+                timestamp
+                txhash
                 id
                 isDeposit
                 amount

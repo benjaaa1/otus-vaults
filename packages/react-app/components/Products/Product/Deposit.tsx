@@ -7,7 +7,7 @@ import { useBalance } from '../../../hooks/Balances'
 import { useContracts, useOtusVaultContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
 import { lyra } from '../../../queries/lyra/useLyra'
-import { Vault } from '../../../queries/myVaults/useMyVaults'
+import { Vault } from '../../../queries/vaults/useVaultProducts'
 import {
   formatNumber,
   formatUSD,
@@ -38,7 +38,13 @@ export default function Deposit({ vault }: { vault: Vault }) {
   const [allowanceAmount, setAllowanceAmount] = useState<BigNumber>(ZERO_BN)
 
   const checkAllowanceStatus = useCallback(async () => {
-    if (susdContract != null && address != null && vault) {
+    if (
+      susdContract != null &&
+      susdContract.allowance != null &&
+      address != null &&
+      vault
+    ) {
+      console.log({ address, vault })
       const allowanceStatus = await susdContract.allowance(address, vault.id)
       if (fromBigNumber(allowanceStatus) > 0) {
         setApproved(true)
@@ -58,7 +64,12 @@ export default function Deposit({ vault }: { vault: Vault }) {
   }, [susdContract, address, vault])
 
   useEffect(() => {
-    if (network?.chainId == 69 && signer != null) {
+    if (
+      (network?.chainId == 69 ||
+        network?.chainId == 10 ||
+        network?.chainId == 31337) &&
+      signer != null
+    ) {
       setCanTransact(true)
     }
   }, [signer, network])
@@ -79,13 +90,12 @@ export default function Deposit({ vault }: { vault: Vault }) {
         txHash: tx.hash,
         onTxConfirmed: () => {
           setTimeout(() => {
+            setIsApproveLoading(false)
             setApproved(true)
           }, 5 * 1000)
         },
       })
     }
-
-    setIsApproveLoading(false)
   }, [susdContract, vault, monitorTransaction])
 
   const handleDepositQuote = useCallback(async () => {
@@ -103,6 +113,7 @@ export default function Deposit({ vault }: { vault: Vault }) {
         onTxConfirmed: () => {
           setTimeout(() => {
             setIsDepositLoading(false)
+            setAmount(0)
             balance.refetch()
           }, 5 * 1000)
         },
@@ -124,7 +135,7 @@ export default function Deposit({ vault }: { vault: Vault }) {
             <span className="text-zinc-500 sm:text-sm">$</span>
           </div>
           <Input
-            isDisabled={allowanceAmount.eq(ZERO_BN)}
+            isDisabled={allowanceAmount.eq(ZERO_BN) && !isApproved}
             type="number"
             id="amount"
             onChange={(e) => {

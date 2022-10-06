@@ -9,7 +9,7 @@ import QUERY_KEYS from '../constants/queryKeys'
 
 export const useBalance = () => {
   const { address, network } = useWeb3Context()
-
+  console.log({ network })
   const contracts = useContracts()
   const susdContract = contracts ? contracts['SUSD'] : null
   return useQuery<BigNumber>(

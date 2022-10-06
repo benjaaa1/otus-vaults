@@ -6,16 +6,24 @@ import QUERY_KEYS from '../../constants/queryKeys'
 import { MONTHS } from '../../constants/dates'
 import { ONE_BN } from '../../constants/bn'
 import { INFURA_ID } from '../../constants/api'
+import { MarketType } from '../../constants/markets'
 
-const isProduction = true //process.env.NODE_ENV === "production";
-
+const isProduction = process.env.NODE_ENV === 'production'
+console.log({ isProduction, env: process.env })
 let provider = new ethers.providers.InfuraProvider(10, INFURA_ID)
-
-export const lyra = isProduction
-  ? new Lyra({
-      provider,
-    })
-  : new Lyra(69)
+// let provider = new ethers.providers.JsonRpcProvider(
+//   'http://localhost:8545',
+//   31337
+// )
+// export const lyra = isProduction
+//   ? new Lyra({
+//       provider,
+//     })
+//   : new Lyra(69)
+console.log({ provider })
+export const lyra = new Lyra({
+  provider,
+})
 
 export const getLyraMarkets = async () => await lyra.markets()
 
@@ -47,7 +55,6 @@ export type LyraMarket = {
 }
 
 export const useLyraMarket = () => {
-  console.log('lyra market')
   return useQuery<LyraMarket[] | null>(
     QUERY_KEYS.Lyra.Markets(),
     async () => {

@@ -9,3 +9,6 @@ export const OTUS_ENDPOINT_MAINNET =
 
 export const OTUS_ENDPOINT_TESTNET =
   'https://api.thegraph.com/subgraphs/name/otus-finance/optimism-kovan'
+
+export const OTUS_ENDPOINT_LOCALHOST =
+  'http://localhost:8000/subgraphs/name/otus/test-subgraph'

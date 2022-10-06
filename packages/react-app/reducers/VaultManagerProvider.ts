@@ -6,43 +6,11 @@ export type VaultManagerProviderState = {
   currentHedges: any | null | undefined
   strategies: any | null | undefined
   builtTrades: any[] | null | undefined
-  builtHedges: any[] | null | undefined
+  builtStrikeToHedge: any | null | undefined
   toggleTrade: (trade: any) => void
   updateTradeSize: (trade: any) => void
-  addToHedges: (hedge: any) => void
-  removeFromHedges: (hedge: any) => void
+  toggleToHedge: (hedge: any) => void
 }
-
-/**************************************************/
-/******************* STATE MANAGE *****************/
-/**************************************************/
-
-/******************** IF ACTIVE *******************/
-// vaultinfo (active)
-// expiry
-// strikes
-// strategy info
-// hedges
-/************* IF PREVIOUSLY ACTIVE ****************/
-// strikes traded (expiry, asset)
-
-/***************** IF BRAND NEW ********************/
-// vaultinfo (active)
-// those active fields will start to populate
-// + have a trade value StrategyBase.StrikeTrade[] memory _strikes
-
-// the lyra stuff wont be part of our state will just query for those and display only information we have in graph
-// if we need we'll query for it
-
-/**************************************************/
-/**************** NON STATE MANAGE ****************/
-/**************************************************/
-// get lyra market info
-// get lyra boards
-// get lyra board's strikes
-// calculate pricing
-// we should be able to do this through out
-// view current pricing info (24 hour % and price)
 
 export const vaultManagerInitialState: VaultManagerProviderState = {
   vaultInfo: null,
@@ -51,11 +19,10 @@ export const vaultManagerInitialState: VaultManagerProviderState = {
   currentHedges: [],
   strategies: null,
   builtTrades: [],
-  builtHedges: [],
+  builtStrikeToHedge: null,
   toggleTrade: (any) => void any,
   updateTradeSize: (any) => void any,
-  addToHedges: (any) => void any,
-  removeFromHedges: (any) => void any,
+  toggleToHedge: (any) => void any,
 }
 
 export type VaultManagerAction =
@@ -82,7 +49,7 @@ export type VaultManagerAction =
     }
   | {
       type: 'ADD_NEW_HEDGE' | 'REMOVE_NEW_HEDGE'
-      builtHedges?: VaultManagerProviderState['builtHedges']
+      builtStrikeToHedge?: VaultManagerProviderState['builtStrikeToHedge']
     }
   | {
       type: 'RESET_VAULT_MANAGER_PROVIDER'
@@ -132,12 +99,7 @@ export function vaultManagerReducer(
     case 'ADD_NEW_HEDGE':
       return {
         ...state,
-        builtHedges: action.builtHedges,
-      }
-    case 'REMOVE_NEW_HEDGE':
-      return {
-        ...state,
-        builtHedges: action.builtHedges,
+        builtStrikeToHedge: action.builtStrikeToHedge,
       }
     case 'RESET_VAULT_MANAGER_PROVIDER':
       return vaultManagerInitialState

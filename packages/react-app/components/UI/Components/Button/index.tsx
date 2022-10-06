@@ -2,7 +2,14 @@ import { Spinner } from '../Spinner'
 
 export type ButtonFontSize = 'xs' | 'sm' | 'md' | 'lg'
 
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'full' | 'fixed-xs'
+export type ButtonSize =
+  | 'xs'
+  | 'sm'
+  | 'md'
+  | 'full-sm'
+  | 'full'
+  | 'fixed-xs'
+  | 'fixed-xxs'
 
 export type ButtonRadius = 'xs' | 'md' | 'full'
 
@@ -33,6 +40,7 @@ export type ButtonProps = {
   size: ButtonSize
   isLoading?: boolean
   isActive?: boolean
+  textColor?: string
 } & BaseButtonProps
 
 export const getButtonFontSize = (fontSize: ButtonFontSize): string => {
@@ -56,27 +64,31 @@ export const getButtonSize = (size: ButtonSize): string => {
       return 'text-xs font-normal px-8 py-2'
     case 'md':
       return 'text-md font-normal px-12 py-3'
+    case 'full-sm':
+      return 'text-xs font-normal w-full px-12 py-2'
     case 'full':
       return 'text-md font-normal w-full px-12 py-3'
     case 'fixed-xs':
       return 'text-xs font-normal py-2 w-24'
+    case 'fixed-xxs':
+      return 'text-xxs font-normal py-1 w-20'
   }
 }
 
 export const getButtonVariant = (variant: ButtonVariant): string => {
   switch (variant) {
     case 'default':
-      return 'text-white border border-zinc-700 bg-transparent shadow-sm hover:bg-zinc-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
+      return 'border border-zinc-700 bg-transparent shadow-sm hover:bg-zinc-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
     case 'primary':
-      return 'text-white border border-zinc-700 bg-zinc-800 shadow-sm hover:bg-zinc-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
+      return 'border border-zinc-700 bg-zinc-800 shadow-sm hover:bg-zinc-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
     case 'action':
-      return 'text-white border border-emerald-600 bg-zinc-900 shadow-sm hover:bg-black shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
+      return 'border border-emerald-600 bg-zinc-900 shadow-sm hover:bg-black shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
     case 'secondary':
-      return 'text-white border border-orange-500 bg-transparent shadow-sm hover:bg-black shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
+      return 'border border-orange-500 bg-transparent shadow-sm hover:bg-black shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
     case 'error':
-      return 'text-white border border-emerald-200 bg-zinc-900 shadow-sm hover:bg-black shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
+      return 'border border-emerald-200 bg-zinc-900 shadow-sm hover:bg-black shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
     case 'warning':
-      return 'text-white border border-emerald-200 bg-zinc-900 shadow-sm hover:bg-black shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
+      return 'border border-emerald-200 bg-zinc-900 shadow-sm hover:bg-black shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
   }
 }
 
@@ -99,24 +111,21 @@ export const Button = ({
   size,
   onClick,
   isDisabled,
+  textColor,
   isActive = false,
 }: ButtonProps) => {
   const buttonSize = getButtonSize(size)
   const buttonVariant = getButtonVariant(variant)
   const buttonRadius = getButtonRadius(radius)
   const activeButton = isActive ? 'ring-2 ring-emerald-600' : ''
-
-  return isLoading ? (
-    <button>
-      <Spinner />
-    </button>
-  ) : (
+  const buttonTextColor = textColor ? textColor : 'text-white'
+  return (
     <button
       disabled={isDisabled}
-      className={`items-center ${buttonSize} ${buttonVariant} ${buttonRadius} ${activeButton}`}
+      className={`items-center ${buttonTextColor} ${buttonSize} ${buttonVariant} ${buttonRadius} ${activeButton}`}
       onClick={onClick}
     >
-      {label}
+      {isLoading ? <Spinner /> : label}
     </button>
   )
 }

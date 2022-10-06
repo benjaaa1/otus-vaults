@@ -3,6 +3,7 @@ import { CURRENCY_BY_ADDRESS } from '../../constants/currency'
 import { useWeb3Context } from '../../context'
 
 import { useMyVaults, Vault } from '../../queries/myVaults/useMyVaults'
+import { formatDate } from '../../utils/formatters/dates'
 import { Cell } from '../UI/Components/Table/Cell'
 import { HeaderCell } from '../UI/Components/Table/HeaderCell'
 import Table from '../UI/Components/Table/Table'
@@ -50,7 +51,10 @@ export default function MyVaultsTable() {
             return (
               <tr key={vault.id}>
                 <Cell variant="default" label={vault.isActive ? 'Yes' : 'No'} />
-                <Cell variant="default" label={vault.createdAt} />
+                <Cell
+                  variant="default"
+                  label={vault.createdAt ? formatDate(vault.createdAt) : ''}
+                />
 
                 <Cell variant="default" label={vault.name} isButton={false} />
                 <Cell

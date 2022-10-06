@@ -1,3 +1,6 @@
+import { useVaultManagerContext } from '../../../../context'
+import { VaultTrade } from '../../../../queries/myVaults/useMyVaults'
+import { formatUSD, fromBigNumber } from '../../../../utils/formatters/numbers'
 import { Cell } from '../../../UI/Components/Table/Cell'
 import { HeaderCell } from '../../../UI/Components/Table/HeaderCell'
 import Table from '../../../UI/Components/Table/Table'
@@ -22,7 +25,13 @@ const currentPositions = [
   },
 ]
 
-export default function Current() {
+export default function Current({
+  activeVaultTrades,
+}: {
+  activeVaultTrades: VaultTrade[]
+}) {
+  const { toggleToHedge } = useVaultManagerContext()
+
   // positions in vaults
 
   return (
@@ -30,22 +39,64 @@ export default function Current() {
       variant="primary"
       headers={
         <tr>
-          {['Asset', 'Strike Id', 'Expiry', 'P&L', 'Close', 'Hedge'].map(
-            (column, i) => {
-              return <HeaderCell key={i} variant="primary" label={column} />
-            }
-          )}
+          {[
+            'Asset',
+            'Type',
+            'Strike Price',
+            'Size',
+            'Premium',
+            'Close',
+            'Hedge',
+          ].map((column, i) => {
+            return <HeaderCell key={i} variant="primary" label={column} />
+          })}
         </tr>
       }
     >
-      {currentPositions.map((position) => (
-        <tr key={position.positionId}>
-          <Cell variant="primary" label={position.asset} isButton={false} />
-          <Cell variant="primary" label={position.strikeId} isButton={false} />
-          <Cell variant="primary" label={position.expiry} isButton={false} />
-          <Cell variant="primary" label={position.pandl} isButton={false} />
-          <Cell variant="primary" label={'Close'} isButton={true} />
-          <Cell variant="primary" label={'Hedge'} isButton={true} />
+      {activeVaultTrades.map((activeTrade) => (
+        <tr key={fromBigNumber(activeTrade.positionId)}>
+          <Cell variant="primary" label={'ETH'} isButton={false} />
+          <Cell
+            variant="primary"
+            label={activeTrade.optionType}
+            isButton={false}
+          />
+          <Cell
+            variant="primary"
+            label={formatUSD(fromBigNumber(activeTrade.strikePrice))}
+            isButton={false}
+          />
+          <Cell
+            variant="primary"
+            label={fromBigNumber(activeTrade.size)}
+            isButton={false}
+          />
+          <Cell
+            variant="primary"
+            label={formatUSD(fromBigNumber(activeTrade.premiumEarned))}
+            isButton={false}
+          />
+
+          {/* <Cell variant="primary" label={activeTrade.pandl} isButton={false} /> */}
+          <Cell
+            variant="primary"
+            label={'Close'}
+            isButton={true}
+            buttonSize={'fixed-xxs'}
+            onClick={() => {
+              // setPositionForClose()
+            }}
+          />
+
+          <Cell
+            variant="primary"
+            label={'Hedge'}
+            isButton={true}
+            buttonSize={'fixed-xxs'}
+            onClick={() => {
+              toggleToHedge(activeTrade)
+            }}
+          />
         </tr>
       ))}
     </Table>

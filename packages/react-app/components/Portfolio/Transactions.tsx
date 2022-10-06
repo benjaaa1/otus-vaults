@@ -1,14 +1,18 @@
 import { useRouter } from 'next/router'
+import { useWeb3Context } from '../../context'
 import {
   UserAction,
   useUserPortfolio,
 } from '../../queries/portfolio/useUserPortfolio'
+import { formatDate } from '../../utils/formatters/dates'
 import { formatUSD, fromBigNumber } from '../../utils/formatters/numbers'
+import { getBlockExplorerUrl } from '../../utils/getBlockExplorer'
 import { Cell } from '../UI/Components/Table/Cell'
 import { HeaderCell } from '../UI/Components/Table/HeaderCell'
 import Table from '../UI/Components/Table/Table'
 
 export default function Transactions() {
+  const { network } = useWeb3Context()
   const { data, isLoading } = useUserPortfolio()
   const actions = data?.userActions || []
 
@@ -45,16 +49,18 @@ export default function Transactions() {
               <tr key={action.id}>
                 <Cell
                   variant="default"
-                  label={action.txhash}
-                  isButton={false}
+                  label={'View TX'}
+                  isButton={true}
+                  onClick={(e) => {
+                    const url = `${getBlockExplorerUrl(
+                      network?.chainId || 10
+                    )}tx/${action.txhash}`
+                    window.open(url, '_blank')
+                  }}
                 />
                 <Cell
                   variant="default"
-                  label={
-                    action.timestamp
-                      ? new Date(fromBigNumber(action.timestamp)).toString()
-                      : ''
-                  }
+                  label={action.timestamp ? formatDate(action.timestamp) : ''}
                   isButton={false}
                 />
                 <Cell

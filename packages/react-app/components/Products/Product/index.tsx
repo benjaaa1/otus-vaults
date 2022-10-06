@@ -1,28 +1,30 @@
-import { Fragment, useState } from 'react'
-import { Menu, Popover, Transition } from '@headlessui/react'
+import { useState } from 'react'
 import {
-  ArrowLongLeftIcon,
-  CheckIcon,
-  HandThumbUpIcon,
-  HomeIcon,
-  MagnifyingGlassIcon,
-  PaperClipIcon,
-  QuestionMarkCircleIcon,
-  UserIcon,
-} from '@heroicons/react/20/solid'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { useVaultProduct } from '../../../queries/vaults/useVaultProducts'
+  useVaultProduct,
+  VaultStrategy,
+} from '../../../queries/vaults/useVaultProducts'
 import { useRouter } from 'next/router'
 import Transact from './Transact'
 import { UserActionTabs } from '../../../constants/tabs'
 import Deposit from './Deposit'
 import { Button } from '../../UI/Components/Button'
+import Withdraw from './Withdrawal'
+import { useWeb3Context } from '../../../context'
+import { getBlockExplorerUrl } from '../../../utils/getBlockExplorer'
+import Modal from '../../UI/Modal'
+import { fromBigNumber } from '../../../utils/formatters/numbers'
+import { HOUR_SEC } from '../../../constants/period'
 
 export default function Product() {
-  const { query } = useRouter()
+  const { network } = useWeb3Context()
+  const router = useRouter()
+  const { query } = router
   const { data: vault, isLoading } = useVaultProduct(query?.vault)
   console.log({ vault })
   const [tab, setTab] = useState(UserActionTabs.DEPOSIT.HREF)
+  const [openVaultStrategy, setOpenVaultStrategy] = useState(false)
+  const [openStrikeStrategy, setOpenStrikeStrategy] = useState(false)
+  const [openHedgeStrategy, setOpenHedgeStrategy] = useState(false)
 
   return (
     <>
@@ -59,7 +61,7 @@ export default function Product() {
                       variant={'secondary'}
                       size={'xs'}
                       radius={'full'}
-                      onClick={() => console.log('test')}
+                      onClick={() => setOpenVaultStrategy(true)}
                     />
                   </div>
                   <div>
@@ -69,7 +71,7 @@ export default function Product() {
                       variant={'secondary'}
                       size={'xs'}
                       radius={'full'}
-                      onClick={() => console.log('test')}
+                      onClick={() => setOpenStrikeStrategy(true)}
                     />
                   </div>
                   <div>
@@ -80,7 +82,7 @@ export default function Product() {
                       variant={'secondary'}
                       size={'xs'}
                       radius={'full'}
-                      onClick={() => console.log('test')}
+                      onClick={() => setOpenHedgeStrategy(true)}
                     />
                   </div>
                 </div>
@@ -187,12 +189,87 @@ export default function Product() {
                 <Transact setTab={setTab} active={tab} />
                 {tab == UserActionTabs.DEPOSIT.HREF ? (
                   <Deposit vault={vault} />
-                ) : null}
+                ) : (
+                  <Withdraw vault={vault} />
+                )}
+              </div>
+              <div className="mt-4">
+                <Button
+                  label={`Contract Address: ${vault?.id.substring(0, 10)}...`}
+                  variant={'primary'}
+                  textVariant={'lowercase'}
+                  size={'full-sm'}
+                  radius={'full'}
+                  textColor={'text-zinc-500'}
+                  onClick={() => {
+                    const url = getBlockExplorerUrl(network?.chainId || 10)
+                    window.open(`${url}address/${vault?.id}`)
+                  }}
+                ></Button>
               </div>
             </div>
           </div>
         </main>
       </div>
+      <Modal
+        title={'Vault Strategy'}
+        setOpen={setOpenVaultStrategy}
+        open={openVaultStrategy}
+      >
+        <VaultStrategyInfo strategy={vault?.strategy.vaultStrategy} />
+      </Modal>
+      <Modal
+        title={'Strike Strategy'}
+        setOpen={setOpenStrikeStrategy}
+        open={openStrikeStrategy}
+      >
+        strike strategy
+      </Modal>
+      <Modal
+        title={'Hedge Strategy'}
+        setOpen={setOpenHedgeStrategy}
+        open={openHedgeStrategy}
+      >
+        hedge strategy
+      </Modal>
     </>
+  )
+}
+
+const VaultStrategyInfo = ({ strategy }: { strategy: VaultStrategy }) => {
+  const { collatPercent, minTimeToExpiry, maxTimeToExpiry } = strategy
+  return (
+    <div className="grid grid-cols-3">
+      <div>
+        <div className="p-4">
+          <div className="text-xxs font-normal uppercase text-zinc-300">
+            Collateral Percent
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-white">
+            {`${fromBigNumber(collatPercent) * 100}%`}
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="p-4">
+          <div className="text-xxs font-normal uppercase text-zinc-300">
+            Min. Time to Expiry (Hours)
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-white">
+            {minTimeToExpiry / HOUR_SEC}
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="p-4">
+          <div className="text-xxs font-normal uppercase text-zinc-300">
+            Max Time to Expiry (Hours)
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-white">
+            {maxTimeToExpiry / HOUR_SEC}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

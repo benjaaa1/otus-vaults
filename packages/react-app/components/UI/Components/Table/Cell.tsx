@@ -1,5 +1,7 @@
 import { Button } from '../Button'
 
+export type CellButtonSize = 'fixed-xs' | 'fixed-xxs'
+
 export type CellVariant =
   | 'default' // bg gray border-gray
   | 'primary' // bg dark gradient no border
@@ -10,6 +12,7 @@ export type CellProps = {
   variant: CellVariant
   onClick?: any
   isSelected?: boolean
+  buttonSize?: CellButtonSize
 }
 
 export const getCellVariant = (variant: CellVariant): string => {
@@ -28,6 +31,7 @@ export const Cell = ({
   isButton = false,
   isSelected = false,
   onClick,
+  buttonSize,
 }: CellProps) => {
   const cellVariant = getCellVariant(variant)
 
@@ -38,7 +42,7 @@ export const Cell = ({
           label={label}
           onClick={onClick}
           isActive={isSelected}
-          size={'fixed-xs'}
+          size={buttonSize || 'fixed-xs'}
           radius={'full'}
           variant={'primary'}
         />

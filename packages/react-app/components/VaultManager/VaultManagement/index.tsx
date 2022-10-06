@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/router'
-import { useMyVault } from '../../../queries/myVaults/useMyVaults'
+import { useMyVault, Vault } from '../../../queries/myVaults/useMyVaults'
 import ManagerTabs from './UI/ManagerTabs'
 import Trade from './Trade'
 import Current from './Current'
@@ -9,14 +9,19 @@ import { VaultManagerContextProvider } from '../../../context'
 import TradeExecute from './Trade/TradeExecute'
 import { Button } from '../../UI/Components/Button'
 import HedgeExecute from './Current/HedgeExecute'
-import { CheckIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowRightCircleIcon,
+  CheckIcon,
+  XCircleIcon,
+} from '@heroicons/react/20/solid'
 import { useOtusVaultContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
+import { formatUSD, fromBigNumber } from '../../../utils/formatters/numbers'
 
 export default function VaultManagement() {
   const { query } = useRouter()
   console.log({ vault: query?.vault })
-  const { data, isLoading } = useMyVault(query?.vault)
+  const { data, isLoading, refetch } = useMyVault(query?.vault)
 
   const [tab, setTab] = useState(VaultManagerTabs.CURRENT.HREF)
 
@@ -33,6 +38,29 @@ export default function VaultManagement() {
                 </h1>
               </div>
             </div>
+            <div className="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
+              <Button
+                label={'Vault Settings'}
+                variant={'secondary'}
+                size={'sm'}
+                onClick={() => console.log('vault settings')}
+                radius={'full'}
+              />
+              <Button
+                label={'Strike Settings'}
+                variant={'secondary'}
+                size={'sm'}
+                onClick={() => console.log('Strike settings')}
+                radius={'full'}
+              />
+              <Button
+                label={'Hedge Settings'}
+                variant={'secondary'}
+                size={'sm'}
+                onClick={() => console.log('Hedge settings')}
+                radius={'full'}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-12 gap-8 py-8">
@@ -43,19 +71,28 @@ export default function VaultManagement() {
                   <Trade />
                 ) : (
                   <>
-                    <CurrentRoundProgress vaultId={data?.id} />
-                    <Current />
+                    {data?.id != null ? (
+                      <>
+                        <CurrentRoundProgress vault={data} refetch={refetch} />
+                        <CurrentDetails vault={data} />
+                      </>
+                    ) : null}
+                    {data?.id != null && data?.vaultTrades.length > 0 ? (
+                      <Current activeVaultTrades={data?.vaultTrades} />
+                    ) : null}
                   </>
                 )}
               </div>
             </div>
 
             <div className="col-span-4">
-              {tab === VaultManagerTabs.TRADE.HREF ? (
-                <TradeExecute />
-              ) : (
-                <HedgeExecute />
-              )}
+              {data != null ? (
+                tab === VaultManagerTabs.TRADE.HREF ? (
+                  <TradeExecute vault={data} />
+                ) : (
+                  <HedgeExecute strategyId={data?.strategy.id} />
+                )
+              ) : null}
             </div>
           </div>
         </main>
@@ -64,22 +101,38 @@ export default function VaultManagement() {
   )
 }
 
-const steps = [
-  { id: '01', name: 'Start Round', href: '#', status: 'complete' }, // complete is "In progres"
-  { id: '02', name: 'In Progress', href: '#', status: 'current' },
-  { id: '03', name: 'Close Round', href: '#', status: 'upcoming' },
-]
-
-const CurrentRoundProgress = ({ vaultId }: { vaultId: string }) => {
+const CurrentRoundProgress = ({
+  vault,
+  refetch,
+}: {
+  vault: Vault
+  refetch: any
+}) => {
+  const { id, inProgress } = vault
   const otusContracts = useOtusVaultContracts()
-  const otusVaultContract = otusContracts ? otusContracts[vaultId] : null
+  const otusVaultContract = otusContracts ? otusContracts[id] : null
   const monitorTransaction = useTransactionNotifier()
 
+  const [isStartRoundLoading, setStartRoundLoading] = useState(false)
+  const [isEndRoundLoading, setEndRoundLoading] = useState(false)
+
+  const startRoundStyle = inProgress
+    ? 'text-zinc-500'
+    : 'text-emerald-600 hover:text-emerald-900'
+  const inProgressStyle = inProgress
+    ? 'text-emerald-600 hover:text-emerald-900'
+    : 'text-zinc-500'
+
+  const startPointer = inProgress ? 'cursor-not-allowed' : 'cursor-pointer'
+  const closePointer = inProgress ? 'cursor-pointer' : 'cursor-not-allowed'
+
   const handleStartRound = useCallback(async () => {
-    if (otusVaultContract == null || vaultId == null) {
+    if (otusVaultContract == null || id == null) {
       console.warn('Vault does not exist to start')
       return null
     }
+
+    setStartRoundLoading(true)
 
     const tx = await otusVaultContract.startNextRound()
     if (tx) {
@@ -88,6 +141,8 @@ const CurrentRoundProgress = ({ vaultId }: { vaultId: string }) => {
         onTxConfirmed: () => {
           setTimeout(() => {
             // set vault state (in progress);
+            setStartRoundLoading(false)
+            refetch()
           }, 5 * 1000)
         },
       })
@@ -95,11 +150,12 @@ const CurrentRoundProgress = ({ vaultId }: { vaultId: string }) => {
   }, [otusVaultContract])
 
   const handleCloseRound = useCallback(async () => {
-    if (otusVaultContract == null || vaultId == null) {
+    if (otusVaultContract == null || id == null) {
       console.warn('Vault does not exist to start')
       return null
     }
 
+    setEndRoundLoading(true)
     const tx = await otusVaultContract.closeRound()
     if (tx) {
       monitorTransaction({
@@ -107,6 +163,9 @@ const CurrentRoundProgress = ({ vaultId }: { vaultId: string }) => {
         onTxConfirmed: () => {
           setTimeout(() => {
             // set vault state (to ready to start round);
+            setEndRoundLoading(false)
+
+            refetch()
           }, 5 * 1000)
         },
       })
@@ -114,81 +173,190 @@ const CurrentRoundProgress = ({ vaultId }: { vaultId: string }) => {
   }, [otusVaultContract])
 
   return (
-    <nav aria-label="Progress" className="border-b border-zinc-700 p-4 py-6">
+    <nav aria-label="Progress" className="p-4 py-6 pb-2">
       <ol
         role="list"
         className="divide-y divide-zinc-800 rounded-md border border-zinc-800 md:flex md:divide-y-0"
       >
-        {steps.map((step, stepIdx) => (
-          <li key={step.name} className="relative md:flex md:flex-1">
-            {step.status === 'current' ? (
-              <a href={step.href} className="group flex w-full items-center">
-                <span className="flex items-center px-6 py-4 text-sm font-light">
-                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-600 group-hover:bg-emerald-800">
-                    <CheckIcon
-                      className="h-3 w-3 text-white"
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <span className="ml-4 text-sm font-light text-gray-900">
-                    {step.name}
-                  </span>
-                </span>
-              </a>
-            ) : step.status === 'complete' ? (
-              <a
-                href={step.href}
-                className="flex items-center px-6 py-4 text-sm font-medium"
-                aria-current="step"
+        <li
+          onClick={handleStartRound}
+          key={1}
+          className={`${startPointer} relative md:flex md:flex-1`}
+        >
+          <a
+            className="flex items-center px-6 py-4 text-sm font-medium"
+            aria-current="step"
+          >
+            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full">
+              <ArrowRightCircleIcon
+                className={`h-4 w-4 ${startRoundStyle}`}
+                aria-hidden="true"
+              />
+            </span>
+            <span className={`ml-4 text-sm font-light ${startRoundStyle}`}>
+              Start Round
+            </span>
+          </a>
+          <>
+            {/* Arrow separator for lg screens and up */}
+            <div
+              className="absolute top-0 right-0 hidden h-full w-5 md:block"
+              aria-hidden="true"
+            >
+              <svg
+                className="h-full w-full text-zinc-800"
+                viewBox="0 0 22 80"
+                fill="none"
+                preserveAspectRatio="none"
               >
-                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-emerald-600">
-                  <span className="text-zinc-600">{step.id}</span>
-                </span>
-                <span className="ml-4 text-sm font-light text-zinc-500">
-                  {step.name}
-                </span>
-              </a>
-            ) : (
-              <a href={step.href} className="group flex items-center">
-                <span className="flex items-center px-6 py-4 text-sm font-medium">
-                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-gray-300 group-hover:border-gray-400">
-                    <span className="text-zinc-200 group-hover:text-zinc-500">
-                      {step.id}
-                    </span>
-                  </span>
-                  <span className="ml-4 text-sm font-light text-zinc-200 group-hover:text-zinc-500">
-                    {step.name}
-                  </span>
-                </span>
-              </a>
-            )}
+                <path
+                  d="M0 -2L20 40L0 82"
+                  vectorEffect="non-scaling-stroke"
+                  stroke="currentcolor"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </>
+        </li>
+        <li key={0} className={`relative md:flex md:flex-1`}>
+          <a className="group flex w-full items-center">
+            <span className="flex items-center px-6 py-4 text-sm font-light">
+              <span
+                className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full`}
+              >
+                {inProgress ? (
+                  <CheckIcon
+                    className="h-3 w-3 text-emerald-600"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <XCircleIcon
+                    className="h-3 w-3 text-zinc-200 bg-zinc-900"
+                    aria-hidden="true"
+                  />
+                )}
+              </span>
+              <span className={`ml-4 text-sm font-light ${inProgressStyle}`}>
+                In Progress
+              </span>
+            </span>
+          </a>
+          <>
+            {/* Arrow separator for lg screens and up */}
+            <div
+              className="absolute top-0 right-0 hidden h-full w-5 md:block"
+              aria-hidden="true"
+            >
+              <svg
+                className="h-full w-full text-zinc-800"
+                viewBox="0 0 22 80"
+                fill="none"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M0 -2L20 40L0 82"
+                  vectorEffect="non-scaling-stroke"
+                  stroke="currentcolor"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </>
+        </li>
 
-            {stepIdx !== steps.length - 1 ? (
-              <>
-                {/* Arrow separator for lg screens and up */}
-                <div
-                  className="absolute top-0 right-0 hidden h-full w-5 md:block"
-                  aria-hidden="true"
-                >
-                  <svg
-                    className="h-full w-full text-zinc-800"
-                    viewBox="0 0 22 80"
-                    fill="none"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d="M0 -2L20 40L0 82"
-                      vectorEffect="non-scaling-stroke"
-                      stroke="currentcolor"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-              </>
-            ) : null}
-          </li>
-        ))}
+        <li
+          onClick={handleCloseRound}
+          key={2}
+          className={`${closePointer} relative md:flex md:flex-1`}
+        >
+          <a
+            className="flex items-center px-6 py-4 text-sm font-medium"
+            aria-current="step"
+          >
+            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full">
+              <ArrowRightCircleIcon
+                className={`h-4 w-4 ${inProgressStyle}`}
+                aria-hidden="true"
+              />
+            </span>
+            <span className={`ml-4 text-sm font-light ${inProgressStyle}`}>
+              Close Round
+            </span>
+          </a>
+        </li>
       </ol>
     </nav>
   )
+}
+
+const CurrentDetails = ({ vault }: { vault: Vault }) => {
+  const {
+    round,
+    isPublic,
+    totalDeposit,
+    vaultCap,
+    strategy: { hedgeType },
+  } = vault
+  return (
+    <div className="grid sm:grid-cols-5 gap-2 border-b border-zinc-700 px-6 py-3 items-center">
+      <div>
+        <div className="py-2">
+          <div className="text-xxs font-normal text-zinc-300">Round</div>
+          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
+            {round}
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="py-2">
+          <div className="text-xxs font-normal text-zinc-300">Public Vault</div>
+          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
+            {isPublic ? 'True' : 'False'}
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="py-2">
+          <div className="text-xxs font-normal text-zinc-300">
+            Total Deposits
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
+            {`${formatUSD(fromBigNumber(totalDeposit))}`}
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="py-2">
+          <div className="text-xxs font-normal text-zinc-300">Vault Cap</div>
+          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
+            {`${formatUSD(fromBigNumber(vaultCap))}`}
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="py-2">
+          <div className="text-xxs font-normal text-zinc-300">Hedge Type</div>
+          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
+            {getHedgeType(hedgeType)}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const getHedgeType = (hedgeType: number) => {
+  switch (hedgeType) {
+    case 0:
+      return 'None'
+    case 1:
+      return 'User'
+    case 2:
+      return 'Static'
+    case 3:
+      return 'Dynamic'
+    default:
+      break
+  }
 }

@@ -1,9 +1,15 @@
 import { useRouter } from 'next/router'
 import React from 'react'
-import { Vault } from '../../../queries/myVaults/useMyVaults'
+import { Vault } from '../../../queries/vaults/useVaultProducts'
+import {
+  formatUSD,
+  fromBigNumber,
+  toBN,
+} from '../../../utils/formatters/numbers'
 import ETHBWIcon from '../../UI/Components/Icons/BW/ETHBWIcon'
 import SUSDIcon from '../../UI/Components/Icons/Color/SUSD'
 import { Tag } from '../../UI/Components/Tag'
+import { BigNumber } from 'ethers'
 
 const Vault = ({ vault }: { vault: Vault }) => {
   const router = useRouter()
@@ -70,7 +76,7 @@ const Vault = ({ vault }: { vault: Vault }) => {
           <div className="grid grid-cols-2">
             <div className="py-2">
               <div className="py-2 font-mono text-lg font-normal text-white">
-                0%
+                {fromBigNumber(vault.managementFee)}%
               </div>
               <div className="text-xxs font-light text-zinc-300">
                 Management Fees
@@ -79,7 +85,7 @@ const Vault = ({ vault }: { vault: Vault }) => {
 
             <div className="py-2">
               <div className="py-2 font-mono text-lg font-normal text-white">
-                0%
+                {fromBigNumber(vault.performanceFee)}%
               </div>
               <div className="text-xxs font-light text-zinc-300">
                 Performance Fees
@@ -93,29 +99,31 @@ const Vault = ({ vault }: { vault: Vault }) => {
         <div className="flex flex-wrap justify-between py-2">
           <div className="text-xxs font-light text-white">Total Deposits</div>
           <div className="font-mono text-xxs font-normal text-white">
-            $80000
+            {formatUSD(fromBigNumber(vault.totalDeposit))}
           </div>
         </div>
         <div className="rounded-xs h-3 w-full bg-zinc-800">
-          <div className="progress-bar h-3 w-5/12 bg-emerald-600"></div>
+          <div
+            className={`progress-bar h-3 bg-emerald-600`}
+            style={{ width: percentWidth(vault.totalDeposit, vault.vaultCap) }}
+          ></div>
         </div>
         <div className="flex flex-wrap justify-between py-2">
           <div className="text-xxs font-light text-white">Maximum Capacity</div>
           <div className="font-mono text-xxs font-normal text-white">
-            $120000
+            {formatUSD(fromBigNumber(vault.vaultCap))}
           </div>
         </div>
       </div>
-
-      {/* <p className="text-sm font-medium text-gray">{vault.name}</p>
-        <p className="truncate text-sm text-gray">{vault.description}</p>
-        <p className="truncate text-sm text-gray">{vault.strategy}</p>
-        <p className="truncate text-sm text-gray">{vault.isPublic}</p>
-        <p className="truncate text-sm text-gray">{vault.manager}</p>
-        <p className="truncate text-sm text-gray">{vault.vaultCap}</p>
-        <p className="truncate text-sm text-gray">{vault.asset}</p> */}
     </div>
   )
+}
+
+const percentWidth = (totalDeposit: BigNumber, vaultCap: BigNumber): string => {
+  const formatTotalDeposit = fromBigNumber(totalDeposit)
+  const formatVaultCap = fromBigNumber(vaultCap)
+
+  return `${(formatTotalDeposit / formatVaultCap) * 10}%`
 }
 
 export default Vault

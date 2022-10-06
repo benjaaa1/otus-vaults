@@ -39,7 +39,7 @@ export const CREATE_STEPS = [
     status: CREATE_STEP_STATUS.CURRENT,
   },
   {
-    id: 3,
+    id: 2,
     name: 'Vault Strategy',
     href: CREATE_STEP_LINKS.STRATEGY,
     status: CREATE_STEP_STATUS.UPCOMING,

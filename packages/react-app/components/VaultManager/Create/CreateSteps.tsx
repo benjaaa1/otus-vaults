@@ -1,8 +1,20 @@
 import { CheckIcon } from '@heroicons/react/24/solid'
 import { CREATE_STEPS, CREATE_STEP_STATUS } from '../../../constants/tabs'
 
-export default function CreateSteps({ activeStep, setStep }) {
-  console.log({ activeStep })
+export default function CreateSteps({ steps, setSteps }) {
+  const setAsActiveStep = (id) => {
+    const updatedSteps = steps.map((step) => {
+      if (step.id == id) {
+        return { ...step, status: CREATE_STEP_STATUS.CURRENT }
+      } else if (step.id == 2) {
+        return { ...step, status: CREATE_STEP_STATUS.COMPLETE }
+      }
+
+      return { ...step, status: CREATE_STEP_STATUS.UPCOMING }
+    })
+
+    setSteps(updatedSteps)
+  }
   return (
     <nav aria-label="Progress">
       <ol
@@ -11,9 +23,11 @@ export default function CreateSteps({ activeStep, setStep }) {
       >
         {CREATE_STEPS.map((step, stepIdx) => (
           <li key={step.name} className="relative md:flex md:flex-1">
-            {activeStep.status === CREATE_STEP_STATUS.CURRENT ? (
+            {step.status === CREATE_STEP_STATUS.COMPLETE ? (
               <a
-                onClick={() => setStep(step)}
+                onClick={() => {
+                  setAsActiveStep(step.id)
+                }}
                 className="group flex w-full items-center"
               >
                 <span className="flex items-center px-6 py-2 text-sm font-medium">
@@ -28,13 +42,13 @@ export default function CreateSteps({ activeStep, setStep }) {
                   </span>
                 </span>
               </a>
-            ) : activeStep.status === CREATE_STEP_STATUS.UPCOMING ? (
+            ) : step.status === CREATE_STEP_STATUS.UPCOMING ? (
               <a
-                onClick={() => setStep(step)}
+                onClick={() => setAsActiveStep(step.id)}
                 className="flex items-center px-6 py-2 text-sm font-medium"
                 aria-current="step"
               >
-                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 border-indigo-600">
+                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 border-emerald-600">
                   <span className="text-zinc-200">{step.id}</span>
                 </span>
                 <span className="ml-4 text-sm font-medium text-zinc-200">
@@ -43,7 +57,7 @@ export default function CreateSteps({ activeStep, setStep }) {
               </a>
             ) : (
               <a
-                onClick={() => setStep(step)}
+                onClick={() => setAsActiveStep(step.id)}
                 className="group flex items-center"
               >
                 <span className="flex items-center px-6 py-2 text-sm font-medium">

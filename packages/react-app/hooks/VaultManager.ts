@@ -10,6 +10,7 @@ import {
 
 import { toast } from 'react-toastify'
 import { getStrikeQuote, LyraStrike } from '../queries/lyra/useLyra'
+import { VaultTrade } from '../queries/myVaults/useMyVaults'
 
 export const useVaultManager = () => {
   const [state, dispatch] = useReducer(
@@ -23,7 +24,7 @@ export const useVaultManager = () => {
     currentHedges,
     strategies,
     builtTrades,
-    builtHedges,
+    builtStrikeToHedge,
   } = state
 
   const toggleTrade = (trade: LyraStrike) => {
@@ -71,25 +72,16 @@ export const useVaultManager = () => {
     })
   }
 
-  const addToHedges = (hedge) => {
+  const toggleToHedge = (hedge) => {
     dispatch({
       type: 'ADD_NEW_HEDGE',
-      builtHedges: builtHedges?.concat([hedge]),
+      builtStrikeToHedge: hedge,
     } as VaultManagerAction)
   }
 
-  const removeFromHedges = (hedge) => {
-    dispatch({
-      type: 'REMOVE_NEW_HEDGE',
-      builtHedges: builtHedges?.filter(
-        (existingTrade) => existingTrade.strikeId != hedge.strikeId
-      ),
-    } as VaultManagerAction)
-  }
+  // const selectHedge = (position: VaultTrade) => {}
 
-  const executeTrade = () => {
-    // builttrades will be transformed here
-  }
+  // const selectClose = (position: VaultTrade) => {}
 
   return {
     vaultInfo,
@@ -98,10 +90,9 @@ export const useVaultManager = () => {
     currentHedges,
     strategies,
     builtTrades,
-    builtHedges,
+    builtStrikeToHedge,
     toggleTrade,
     updateTradeSize,
-    addToHedges,
-    removeFromHedges,
+    toggleToHedge,
   }
 }

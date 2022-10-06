@@ -25,8 +25,8 @@ export const useContractConfig = () => {
 
 export const useContracts = () => {
   const contractsConfig = useContractConfig()
-  const { signer } = useWeb3Context()
-  const contracts = useContractLoader(signer, contractsConfig, 69)
+  const { signer, network } = useWeb3Context()
+  const contracts = useContractLoader(signer, contractsConfig, network?.chainId)
   console.log({ contracts, contractsConfig })
   return contracts
 }
