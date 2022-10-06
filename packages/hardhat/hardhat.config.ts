@@ -16,6 +16,7 @@ import '@typechain/hardhat';
 import 'hardhat-dependency-compiler';
 import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths';
 import 'hardhat-contract-sizer';
+import 'hardhat-ethernal';
 
 dotenv.config();
 
@@ -48,7 +49,8 @@ module.exports = {
   },
   networks: {
     localhost: {
-      url: 'http://localhost:8545',
+      url: 'http://localhost:8545', // http://hardhat:8545
+      deploy: ['deploy_local'],
     },
     mainnet: {
       url: 'https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', // <---- YOUR INFURA ID! (or it won't work)
@@ -96,7 +98,8 @@ module.exports = {
       },
     },
     localOptimism: {
-      url: 'http://localhost:8545',
+      chainId: 31337,
+      url: 'http://127.0.0.1:8545',
       accounts: {
         mnemonic: mnemonic(),
       },
