@@ -29,6 +29,9 @@ export const QUERY_KEYS = {
   Balance: {
     Susd: (address: string | null | undefined) => ['susd', address],
   },
+  Synthetix: {
+    Rates: (asset: string) => ['synthetixRates', asset],
+  },
 }
 
 export default QUERY_KEYS

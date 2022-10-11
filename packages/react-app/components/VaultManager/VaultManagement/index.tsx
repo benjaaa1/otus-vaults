@@ -8,7 +8,6 @@ import { VaultManagerTabs } from '../../../constants/tabs'
 import { VaultManagerContextProvider } from '../../../context'
 import TradeExecute from './Trade/TradeExecute'
 import { Button } from '../../UI/Components/Button'
-import HedgeExecute from './Current/HedgeExecute'
 import {
   ArrowRightCircleIcon,
   CheckIcon,
@@ -17,6 +16,7 @@ import {
 import { useOtusVaultContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
 import { formatUSD, fromBigNumber } from '../../../utils/formatters/numbers'
+import { CurrentExecute } from './Current/Execute'
 
 export default function VaultManagement() {
   const { query } = useRouter()
@@ -78,7 +78,10 @@ export default function VaultManagement() {
                       </>
                     ) : null}
                     {data?.id != null && data?.vaultTrades.length > 0 ? (
-                      <Current activeVaultTrades={data?.vaultTrades} />
+                      <Current
+                        hedgeType={data?.strategy.hedgeType}
+                        activeVaultTrades={data?.vaultTrades}
+                      />
                     ) : null}
                   </>
                 )}
@@ -90,7 +93,7 @@ export default function VaultManagement() {
                 tab === VaultManagerTabs.TRADE.HREF ? (
                   <TradeExecute vault={data} />
                 ) : (
-                  <HedgeExecute strategyId={data?.strategy.id} />
+                  <CurrentExecute strategyId={data?.strategy.id} />
                 )
               ) : null}
             </div>

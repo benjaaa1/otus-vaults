@@ -7,9 +7,11 @@ export type VaultManagerProviderState = {
   strategies: any | null | undefined
   builtTrades: any[] | null | undefined
   builtStrikeToHedge: any | null | undefined
+  builtStrikeToClose: any | null | undefined
   toggleTrade: (trade: any) => void
   updateTradeSize: (trade: any) => void
   toggleToHedge: (hedge: any) => void
+  toggleToClose: (close: any) => void
 }
 
 export const vaultManagerInitialState: VaultManagerProviderState = {
@@ -20,9 +22,11 @@ export const vaultManagerInitialState: VaultManagerProviderState = {
   strategies: null,
   builtTrades: [],
   builtStrikeToHedge: null,
+  builtStrikeToClose: null,
   toggleTrade: (any) => void any,
   updateTradeSize: (any) => void any,
   toggleToHedge: (any) => void any,
+  toggleToClose: (any) => void any,
 }
 
 export type VaultManagerAction =
@@ -50,6 +54,10 @@ export type VaultManagerAction =
   | {
       type: 'ADD_NEW_HEDGE' | 'REMOVE_NEW_HEDGE'
       builtStrikeToHedge?: VaultManagerProviderState['builtStrikeToHedge']
+    }
+  | {
+      type: 'ADD_NEW_CLOSE' | 'REMOVE_NEW_CLOSE'
+      builtStrikeToClose?: VaultManagerProviderState['builtStrikeToClose']
     }
   | {
       type: 'RESET_VAULT_MANAGER_PROVIDER'
@@ -100,6 +108,11 @@ export function vaultManagerReducer(
       return {
         ...state,
         builtStrikeToHedge: action.builtStrikeToHedge,
+      }
+    case 'ADD_NEW_CLOSE':
+      return {
+        ...state,
+        builtStrikeToClose: action.builtStrikeToClose,
       }
     case 'RESET_VAULT_MANAGER_PROVIDER':
       return vaultManagerInitialState

@@ -25,6 +25,7 @@ export const useVaultManager = () => {
     strategies,
     builtTrades,
     builtStrikeToHedge,
+    builtStrikeToClose,
   } = state
 
   const toggleTrade = (trade: LyraStrike) => {
@@ -72,10 +73,45 @@ export const useVaultManager = () => {
     })
   }
 
-  const toggleToHedge = (hedge) => {
+  const toggleToHedge = (hedge: VaultTrade) => {
+    console.log({ hedge })
+
+    if (builtStrikeToHedge != null && builtStrikeToHedge.id == hedge.id) {
+      dispatch({
+        type: 'ADD_NEW_HEDGE',
+        builtStrikeToHedge: null,
+      } as VaultManagerAction)
+    } else {
+      dispatch({
+        type: 'ADD_NEW_HEDGE',
+        builtStrikeToHedge: hedge,
+      } as VaultManagerAction)
+    }
+
+    dispatch({
+      type: 'ADD_NEW_CLOSE',
+      builtStrikeToClose: null,
+    } as VaultManagerAction)
+  }
+
+  const toggleToClose = (close: VaultTrade) => {
+    console.log({ close })
+
+    if (builtStrikeToClose != null && builtStrikeToClose.id == close.id) {
+      dispatch({
+        type: 'ADD_NEW_CLOSE',
+        builtStrikeToClose: null,
+      } as VaultManagerAction)
+    } else {
+      dispatch({
+        type: 'ADD_NEW_CLOSE',
+        builtStrikeToClose: close,
+      } as VaultManagerAction)
+    }
+
     dispatch({
       type: 'ADD_NEW_HEDGE',
-      builtStrikeToHedge: hedge,
+      builtStrikeToHedge: null,
     } as VaultManagerAction)
   }
 
@@ -91,8 +127,10 @@ export const useVaultManager = () => {
     strategies,
     builtTrades,
     builtStrikeToHedge,
+    builtStrikeToClose,
     toggleTrade,
     updateTradeSize,
     toggleToHedge,
+    toggleToClose,
   }
 }

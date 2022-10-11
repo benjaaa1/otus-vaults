@@ -101,7 +101,7 @@ const defaultStrategyDetail = {
 };
 
 const vaultInfo = {
-  name: 'New Vault',
+  name: 'New Vault 2',
   tokenName: 'OtusVault Share',
   tokenSymbol: 'Otus VS',
   description: 'Sell ETH Puts',
@@ -167,6 +167,9 @@ const create = async () => {
       .connect(deployer)
       .setStrikeStrategyDetail([defaultStrikeStrategyDetail]);
     const strikeStrategiesSetReceipt = strikeStrategiesSet.wait();
+
+    await strategyInstance.connect(deployer).setHedgeStrategyType(2);
+
     // console.log('strikeStrategiesSet');
 
     // // in future set hedge strategy

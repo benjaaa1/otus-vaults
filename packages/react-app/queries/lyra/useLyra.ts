@@ -86,7 +86,11 @@ export const useStrikes = (market: string, strikeId: number) => {
   )
 }
 
-const OPTION_TYPES = {
+type OPTION_TYPE = {
+  [key: number]: boolean[]
+}
+
+const OPTION_TYPES: OPTION_TYPE = {
   0: [true, true], // buy call
   1: [false, true], // buy put
   2: [true, false], // sell covered call
@@ -156,9 +160,14 @@ const parseMarketBoards = (boards: Board[]): LyraBoard[] => {
     const strikes: Strike[] = board
       .strikes()
       .filter((strike) => strike.isDeltaInRange)
+      .sort(sortStrikes)
     const name = formatBoardName(expiryTimestamp)
     return { name, id, expiryTimestamp, baseIv, strikes, marketName }
   })
+}
+
+const sortStrikes = (a: Strike, b: Strike) => {
+  return a.strikePrice.gte(b.strikePrice) ? 1 : 0
 }
 
 const parseBoardStrikes = async (boards: LyraBoard[]) => {

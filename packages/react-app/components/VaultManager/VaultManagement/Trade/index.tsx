@@ -1,4 +1,8 @@
-import { LyraMarket, useLyraMarket } from '../../../../queries/lyra/useLyra'
+import {
+  LyraBoard,
+  LyraMarket,
+  useLyraMarket,
+} from '../../../../queries/lyra/useLyra'
 import SelectStrikes from './SelectStrikes'
 import SelectExpiry from './SelectExpiry'
 import SelectOptionType from './SelectOptionType'
@@ -24,17 +28,29 @@ export default function Trade() {
   const [isLong, setLong] = useState(true)
   const [isCall, setCall] = useState(true)
   const [selectedOptionType, setSelectedOptionType] = useState(0)
+  const [strikes, setStrikes] = useState([])
 
   useEffect(() => {
     const _optionType = calculateOptionType(isLong, isCall)
     setSelectedOptionType(_optionType)
   }, [isLong, isCall])
 
-  const [selectedExpiry, setSelectedExpiry] = useState(null)
+  const [selectedExpiry, setSelectedExpiry] = useState<
+    LyraBoard | null | undefined
+  >(null)
 
   useEffect(() => {
     setSelectedExpiry(null)
   }, [selectedMarket])
+
+  useEffect(() => {
+    if (selectedExpiry != null && selectedExpiry.strikesByOptionTypes != null) {
+      const _strikes = selectedExpiry?.strikesByOptionTypes[selectedOptionType]
+      setStrikes(_strikes)
+    } else {
+      setStrikes([])
+    }
+  }, [selectedOptionType, selectedExpiry])
 
   return (
     <div>
@@ -68,6 +84,7 @@ export default function Trade() {
               </div>
             </div>
             <SelectStrikes
+              selectedStrikes={strikes}
               selectedOptionType={selectedOptionType}
               selectedExpiry={selectedExpiry}
             />

@@ -26,11 +26,13 @@ const currentPositions = [
 ]
 
 export default function Current({
+  hedgeType,
   activeVaultTrades,
 }: {
+  hedgeType: number
   activeVaultTrades: VaultTrade[]
 }) {
-  const { toggleToHedge } = useVaultManagerContext()
+  const { toggleToHedge, toggleToClose } = useVaultManagerContext()
 
   // positions in vaults
 
@@ -84,21 +86,44 @@ export default function Current({
             isButton={true}
             buttonSize={'fixed-xxs'}
             onClick={() => {
-              // setPositionForClose()
+              toggleToClose(activeTrade)
             }}
           />
 
-          <Cell
-            variant="primary"
-            label={'Hedge'}
-            isButton={true}
-            buttonSize={'fixed-xxs'}
-            onClick={() => {
-              toggleToHedge(activeTrade)
-            }}
-          />
+          {hedgeType == 1 ? ( // SIMPLE HEDGE - USER Controlled
+            <Cell
+              variant="primary"
+              label={'Hedge'}
+              isButton={true}
+              buttonSize={'fixed-xxs'}
+              onClick={() => {
+                toggleToHedge(activeTrade)
+              }}
+            />
+          ) : (
+            <Cell
+              variant="primary"
+              label={getHedgeLabel(hedgeType)}
+              isButton={false}
+            />
+          )}
         </tr>
       ))}
     </Table>
   )
+}
+
+const getHedgeLabel = (hedgeType: number): string => {
+  switch (hedgeType) {
+    case 0:
+      return 'No Hedge'
+    case 1:
+      return 'Manager'
+    case 2:
+      return 'Static'
+    case 3:
+      return 'Dynamic'
+    default:
+      return 'No Hedge'
+  }
 }

@@ -13,7 +13,7 @@ export const getFuturesEndpoint = (
 ): string => {
   return network && network.chainId === 10
     ? FUTURES_ENDPOINT_MAINNET
-    : network && network.chainId === 69
+    : network && network.chainId === 420
     ? FUTURES_ENDPOINT_TESTNET
     : FUTURES_ENDPOINT_MAINNET
 }
@@ -23,7 +23,7 @@ export const getOtusEndpoint = (
 ): string => {
   return network && network.chainId === 10
     ? OTUS_ENDPOINT_MAINNET
-    : network && network.chainId === 69
+    : network && network.chainId === 420
     ? OTUS_ENDPOINT_TESTNET
     : OTUS_ENDPOINT_LOCALHOST
 }

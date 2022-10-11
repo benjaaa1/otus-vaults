@@ -1,5 +1,4 @@
 import { BigNumber } from 'ethers'
-import { useCallback, useEffect, useState } from 'react'
 import { ZERO_ADDRESS, ZERO_BN } from '../constants/bn'
 import { useWeb3Context } from '../context'
 import { useContracts } from './Contracts'

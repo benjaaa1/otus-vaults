@@ -7,7 +7,7 @@ import { Entity, HOURLY_PERIODS, HOUR_SECONDS, PERIODS, UNIT, UNITDECIMAL, ZERO 
 
 export function handleVaultCreated(event: VaultCreated): void {
   OtusVault.create(event.params.vault);
-  // Strategy.create(event.params.strategy);
+  Strategy.create(event.params.strategy);
 
   let _vaultManager = event.params.user;
   let _vaultAddress = event.params.vault.toHex();
@@ -16,14 +16,14 @@ export function handleVaultCreated(event: VaultCreated): void {
   let _vaultParams = event.params.vaultParams;
 
   let vault = new Vault(_vaultAddress);
-  // let strategy = new OtusStrategy(_vaultStrategy.toHex());
+  let strategy = new OtusStrategy(_vaultStrategy.toHex());
 
   let manager = Manager.load(_vaultManager.toHex());
   if (!manager) {
     manager = new Manager(_vaultManager.toHex());
   }
 
-  // strategy.vault = _vaultAddress;
+  strategy.vault = _vaultAddress;
   vault.strategy = _vaultStrategy.toHex();
   vault.manager = manager.id;
   vault.round = 0;
@@ -45,5 +45,5 @@ export function handleVaultCreated(event: VaultCreated): void {
 
   manager.save();
   vault.save();
-  // strategy.save();
+  strategy.save();
 }

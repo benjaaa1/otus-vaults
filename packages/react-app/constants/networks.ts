@@ -2,7 +2,7 @@ import { INFURA_ID } from '../constants/api'
 
 export enum OptimismChainId {
   OptimismMainnet = 10,
-  OptimismKovan = 69,
+  OptimismGoerli = 420,
   Local = 31337, // Optimism
 }
 
@@ -77,10 +77,10 @@ export const NETWORK_CONFIGS: Record<ChainId, NetworkConfig> = {
       'https://optimism.io/images/metamask_icon.png',
     ],
   },
-  [OptimismChainId.OptimismKovan]: {
-    name: 'Optimistic Ethereum (Kovan)',
-    shortName: 'Optimistic Kovan',
-    chainId: OptimismChainId.OptimismKovan,
+  [OptimismChainId.OptimismGoerli]: {
+    name: 'Optimistic Ethereum (Goerli)',
+    shortName: 'Optimistic Goerli',
+    chainId: OptimismChainId.OptimismGoerli,
     network: Network.Optimism,
     walletRpcUrl: 'https://kovan.optimism.io',
     readRpcUrl: `https://optimism-kovan.infura.io/v3/${INFURA_ID}`,

@@ -11,21 +11,12 @@ import { HeaderCell } from '../../../UI/Components/Table/HeaderCell'
 import Table from '../../../UI/Components/Table/Table'
 
 export default function SelectStrikes({
+  selectedStrikes,
   selectedOptionType,
-  selectedExpiry,
 }: {
+  selectedStrikes: []
   selectedOptionType: number
-  selectedExpiry: LyraBoard | null | undefined
 }) {
-  const [strikes, setStrikes] = useState([])
-
-  useEffect(() => {
-    if (selectedExpiry != null && selectedExpiry.strikesByOptionTypes != null) {
-      const _strikes = selectedExpiry?.strikesByOptionTypes[selectedOptionType]
-      setStrikes(_strikes)
-    }
-  }, [selectedOptionType, selectedExpiry])
-
   const { toggleTrade } = useVaultManagerContext()
 
   const [activeIds, setActiveIds] = useState<Record<string, boolean>>({})
@@ -43,7 +34,7 @@ export default function SelectStrikes({
         </tr>
       }
     >
-      {strikes.map((strike: LyraStrike) => (
+      {selectedStrikes.map((strike: LyraStrike) => (
         <tr key={strike.id + selectedOptionType}>
           <Cell
             variant="primary"

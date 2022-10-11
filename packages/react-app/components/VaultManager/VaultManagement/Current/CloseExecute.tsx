@@ -1,5 +1,4 @@
 import { useVaultManagerContext, useWeb3Context } from '../../../../context'
-import { usePositionDelta } from '../../../../hooks/Positions'
 import { useLatestRates } from '../../../../queries/synth/useLatestRates'
 import {
   formatNumber,
@@ -21,14 +20,9 @@ const isCallText = (optionType: number): string => {
   return optionType == 0 || optionType == 3 ? 'Call' : 'Put'
 }
 
-export default function HedgeExecute({ strategyId }: { strategyId: string }) {
-  console.log({ strategyId })
-  const { builtStrikeToHedge } = useVaultManagerContext()
-  console.log({ builtStrikeToHedge })
-
-  // get delta here
-  const delta = usePositionDelta(strategyId, builtStrikeToHedge)
-  console.log({ delta })
+export default function CloseExecute() {
+  const { builtStrikeToClose } = useVaultManagerContext()
+  console.log({ builtStrikeToClose })
 
   const { data, isLoading } = useLatestRates('ETH')
   console.log({ data })
@@ -46,16 +40,6 @@ export default function HedgeExecute({ strategyId }: { strategyId: string }) {
                 <div className="ml-2 flex flex-shrink-0">
                   <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
                     {isLoading ? <>...</> : <>{formatUSD(data)}</>}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pt-2">
-                <p className="truncate font-sans text-xs font-semibold text-white">
-                  Vault Hedge Funds Available
-                </p>
-                <div className="ml-2 flex flex-shrink-0">
-                  <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                    $12200
                   </p>
                 </div>
               </div>
@@ -80,23 +64,9 @@ export default function HedgeExecute({ strategyId }: { strategyId: string }) {
                   </p>
                   <div className="ml-2 flex flex-shrink-0">
                     <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                      {builtStrikeToHedge
-                        ? fromBigNumber(builtStrikeToHedge.size)
+                      {builtStrikeToClose
+                        ? fromBigNumber(builtStrikeToClose.size)
                         : null}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pt-2">
-                  <p className="truncate font-sans text-xs font-normal text-white">
-                    Current Delta
-                  </p>
-                  <div className="ml-2 flex flex-shrink-0">
-                    <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                      {delta != null ? (
-                        formatNumber(fromBigNumber(delta), { maxDps: 2 })
-                      ) : (
-                        <>...</>
-                      )}
                     </p>
                   </div>
                 </div>
@@ -115,43 +85,13 @@ export default function HedgeExecute({ strategyId }: { strategyId: string }) {
           </li>
           <li>
             <div className="flex-1 px-4 py-6 sm:px-6">
-              <div className="flex items-center justify-between">
-                <p className="truncate font-sans text-xs font-semibold text-white">
-                  Delta Hedge
-                </p>
-                <div className="ml-2 flex flex-shrink-0">
-                  <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                    {delta != null ? fromBigNumber(delta) : <>...</>}
-                  </p>
-                </div>
-              </div>
               <div className="flex items-center justify-between pt-2">
                 <p className="truncate font-sans text-xs font-semibold text-white">
-                  Estimated Fees
+                  Closing Fees
                 </p>
                 <div className="ml-2 flex flex-shrink-0">
                   <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
                     $120.12
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pt-2">
-                <p className="truncate font-sans text-xs font-semibold text-white">
-                  Leverage Required
-                </p>
-                <div className="ml-2 flex flex-shrink-0">
-                  <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                    1.2x
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pt-2">
-                <p className="truncate font-sans text-xs font-semibold text-white">
-                  Total
-                </p>
-                <div className="ml-2 flex flex-shrink-0">
-                  <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                    $12200.11
                   </p>
                 </div>
               </div>
@@ -161,7 +101,7 @@ export default function HedgeExecute({ strategyId }: { strategyId: string }) {
       </div>
       <div className="justify-stretch mt-6 flex flex-col">
         <Button
-          label={'Open Hedge'}
+          label={'Close Position'}
           isLoading={false}
           variant={'action'}
           radius={'xs'}

@@ -16,7 +16,7 @@ import '@typechain/hardhat';
 import 'hardhat-dependency-compiler';
 import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths';
 import 'hardhat-contract-sizer';
-import 'hardhat-ethernal';
+// import 'hardhat-ethernal';
 
 dotenv.config();
 
@@ -63,15 +63,15 @@ module.exports = {
         l2: 'optimism',
       },
     },
-    kovan: {
-      url: 'https://kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', // <---- YOUR INFURA ID! (or it won't work)
+    goerli: {
+      url: 'https://goerli.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', // <---- YOUR INFURA ID! (or it won't work)
       //    url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXXXXX/eth/kovan", // <---- YOUR MORALIS ID! (not limited to infura)
       accounts: {
         mnemonic: 'wear bubble foil piano inherit cram talent cute minute neglect three play',
       },
       deploy: ['deploy_l1'],
       companionNetworks: {
-        l2: 'kovanOptimism',
+        l2: 'goerliOptimism',
       },
     },
     optimism: {
@@ -82,6 +82,19 @@ module.exports = {
       deploy: ['deploy_l2'],
       companionNetworks: {
         l1: 'mainnet',
+      },
+    },
+    goerliOptimism: {
+      chainId: 420,
+      url: 'https://optimism-goerli.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925',
+      ovm: true,
+      timeout: 60000,
+      accounts: {
+        mnemonic: 'wear bubble foil piano inherit cram talent cute minute neglect three play',
+      },
+      deploy: ['deploy_l2'],
+      companionNetworks: {
+        l1: 'goerli',
       },
     },
     kovanOptimism: {

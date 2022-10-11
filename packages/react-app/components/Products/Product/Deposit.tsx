@@ -65,7 +65,7 @@ export default function Deposit({ vault }: { vault: Vault }) {
 
   useEffect(() => {
     if (
-      (network?.chainId == 69 ||
+      (network?.chainId == 420 ||
         network?.chainId == 10 ||
         network?.chainId == 31337) &&
       signer != null
