@@ -41,6 +41,7 @@ contract OtusVault is BaseVault {
   bool public isPublic;
 
   struct ActiveTrade {
+    bytes32 market;
     uint optionType;
     uint strikeId;
     uint size;
@@ -57,6 +58,10 @@ contract OtusVault is BaseVault {
   uint[] public strikeIdsHedged; // [10, 12, 11];
   mapping(uint => uint) public hedgeAttemptsByStrikeId;
   mapping(uint => bool) public activeHedgeByStrikeId;
+
+  uint[] public positionIdsHedged;
+  mapping(uint => uint) public hedgeAttemptsByPositionId;
+  mapping(uint => bool) public activeHedgeByPositionId;
 
   /************************************************
    *  EVENTS
@@ -169,13 +174,13 @@ contract OtusVault is BaseVault {
    */
   function _clearHedgeTracking() internal {
     // withdraw all margin from futures market
-    for (uint i = 0; i < strikeIdsHedged.length; i++) {
-      uint strikeIdHedged = strikeIdsHedged[i]; // [12, 123, 454, 11, 112]
-      delete hedgeAttemptsByStrikeId[strikeIdHedged];
-      delete activeHedgeByStrikeId[strikeIdHedged];
+    for (uint i = 0; i < positionIdsHedged.length; i++) {
+      uint positionIdHedged = positionIdsHedged[i]; // [12, 123, 454, 11, 112]
+      delete hedgeAttemptsByStrikeId[positionIdHedged];
+      delete activeHedgeByStrikeId[positionIdHedged];
     }
 
-    strikeIdsHedged = new uint[](0);
+    positionIdsHedged = new uint[](0);
   }
 
   /**
@@ -239,13 +244,13 @@ contract OtusVault is BaseVault {
 
     for (uint i = 0; i < len; i++) {
       StrategyBase.StrikeTrade memory _trade = _strikes[i];
-      console.log("strategy");
-      console.log(strategy);
+
       (positionId, premium, capitalUsed, expiry) = IStrategy(strategy).doTrade(_trade);
       allCapitalUsed += capitalUsed;
       positionIds[i] = positionId;
       require(premium > 0, "no premium?");
       ActiveTrade memory activeTrade = ActiveTrade(
+        _trade.market,
         _trade.optionType,
         _trade.strikeId,
         _trade.size,
@@ -257,7 +262,6 @@ contract OtusVault is BaseVault {
       activeTrades[i] = activeTrade;
     }
 
-    // update the remaining locked amount -- lockedAmountLeft can be used for hedge
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
     vaultState.tradesExecuted = true;
 
@@ -299,41 +303,46 @@ contract OtusVault is BaseVault {
   /**
    * @notice delta hedge based on strategy settings
    */
-  function dynamicDeltaHedge(int deltaToHedge, uint strikeId) external onlyKeeper {
+  function dynamicDeltaHedge(int deltaToHedge, uint positionId) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
     // probably check by position id not strike id
-    require(activeHedgeByStrikeId[strikeId] == false, "Vault has hedge for option type");
+    require(activeHedgeByPositionId[positionId] == false, "Vault has hedge for option type");
 
-    uint deltaHedgeAttempts = hedgeAttemptsByStrikeId[strikeId];
+    uint deltaHedgeAttempts = hedgeAttemptsByPositionId[positionId];
 
     IStrategy(strategy)._dynamicDeltaHedge(deltaToHedge, deltaHedgeAttempts);
 
-    hedgeAttemptsByStrikeId[strikeId] = deltaHedgeAttempts + 1;
-    activeHedgeByStrikeId[strikeId] = true;
+    hedgeAttemptsByPositionId[positionId] = deltaHedgeAttempts + 1;
+    activeHedgeByPositionId[positionId] = true;
   }
 
   /**
    * @notice delta hedge based on user set min. delta to hedge
    * @param deltaToHedge set by user to minimize delta exposure
    */
-  function staticDeltaHedge(int deltaToHedge, uint strikeId) external onlyKeeper {
+  function staticDeltaHedge(
+    bytes32 market,
+    int deltaToHedge,
+    uint positionId
+  ) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
-    require(activeHedgeByStrikeId[strikeId] == false, "Vault has active hedge for strike");
-
-    IStrategy(strategy)._staticDeltaHedge(deltaToHedge);
+    require(activeHedgeByPositionId[positionId] == false, "Vault has active hedge for strike");
+    // transfer funds reserved for hedging
+    IStrategy(strategy)._staticDeltaHedge(market, deltaToHedge, positionId);
   }
 
   /**
-   * @notice Close hedge by strikeId
-   * @param strikeId close hedge for strikeId
+   * @notice Close hedge by positionId
+   * @param positionId close hedge for positionId
+   * @dev can check for events of closed rounds?
    */
-  function closeHedgeByStrikeId(uint strikeId) external onlyKeeper {
-    require(activeHedgeByStrikeId[strikeId], "Vault has no active hedge for option type");
+  function closeHedgeByPositionId(uint positionId) external onlyKeeper {
+    require(activeHedgeByPositionId[positionId], "Vault has no active hedge for position");
     IStrategy(strategy)._closeHedge();
-    delete activeHedgeByStrikeId[strikeId];
+    delete activeHedgeByPositionId[positionId];
 
-    for (uint i = 0; i < strikeIdsHedged.length; i++) {
-      strikeIdsHedged[i] = 0; // clear strike for now
+    for (uint i = 0; i < positionIdsHedged.length; i++) {
+      positionIdsHedged[i] = 0; // clear strike for now
     }
   }
 }

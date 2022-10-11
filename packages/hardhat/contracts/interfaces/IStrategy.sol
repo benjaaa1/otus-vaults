@@ -30,7 +30,11 @@ interface IStrategy {
 
   function _dynamicDeltaHedge(int deltaToHedge, uint deltaHedgeAttempts) external;
 
-  function _staticDeltaHedge(int deltaToHedge) external;
+  function _staticDeltaHedge(
+    bytes32 market,
+    int deltaToHedge,
+    uint positionId
+  ) external;
 
   function _transferFunds(uint reservedHedgeFunds) external;
 

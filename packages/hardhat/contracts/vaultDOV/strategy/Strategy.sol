@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import {SignedDecimalMath} from "@lyrafinance/protocol/contracts/synthetix/SignedDecimalMath.sol";
 import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
 
 // Libraries
@@ -39,9 +40,9 @@ contract Strategy is StrategyBase {
    *  EVENTS
    ***********************************************/
 
-  event HedgeClosePosition(address closer, uint spotPrice, uint strikeId);
+  event HedgeClosePosition(address closer, uint spotPrice, uint positionId);
 
-  event Hedge(HEDGETYPE _hedgeType, int size, uint spotPrice, uint strikeId);
+  event Hedge(HEDGETYPE _hedgeType, int size, uint spotPrice, uint positionId);
 
   event StrikeStrategyUpdated(address vault, StrikeStrategyDetail[] currentStrikeStrategies);
 
@@ -538,31 +539,36 @@ contract Strategy is StrategyBase {
    * @param deltaToHedge set by user
    * @dev refactor this to move away from futuresadapter
    */
-  function _staticDeltaHedge(bytes32 market, int deltaToHedge) external onlyVault {
+  function _staticDeltaHedge(
+    bytes32 market,
+    int deltaToHedge,
+    uint positionId
+  ) external onlyVault {
     require(hedgeType == HEDGETYPE.STATIC_DELTA_HEDGE, "Not allowed");
     address futuresMarket = futuresMarketsByKey[market];
-
-    (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
-
-    require(marginRemaining > 0, "Remaining margin is 0");
 
     address lyraBase = lyraBases[market];
 
     uint spotPrice = ILyraBase(lyraBase).getSpotPriceForMarket();
     uint fundsRequiredSUSD = _abs(deltaToHedge).multiplyDecimal(spotPrice); // 20 * 2000 = 40000
 
-    // marginRemaining = 44000 | marginRemaining / fundsRequired = 1.1x == 110%
-    // marginRemaining = 24000 | marginRemaining / fundsRequired = .6x == 60%
+    quoteAsset.transferFrom(address(vault), address(this), fundsRequiredSUSD);
+
+    transferToFuturesMarket(market, int(fundsRequiredSUSD));
+
+    (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
+
+    require(marginRemaining > 0, "Remaining margin is 0");
+
     uint currentLeverage = marginRemaining.divideDecimal(fundsRequiredSUSD);
 
-    // need to calculate max size possible by taking into account max leverage allowed
-    // deltaToHedge is +10 == buy 10 units = $20k current marginRemaining = $10k // 20k / 10k = 2x leverage / maxlevarge is 150% * marginRemaining / 10k * 1.5x = 15k / spotprice (2k) = 7.5
-    // deltaToHedge is -10 == sell 10 units = $20k
     int size = staticHedgeStrategy.maxLeverageSize > currentLeverage
       ? deltaToHedge
       : _maxLeverageSize(deltaToHedge, staticHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
 
     IFuturesMarket(futuresMarket).modifyPosition(size);
+
+    emit Hedge(HEDGETYPE.STATIC_DELTA_HEDGE, size, spotPrice, positionId);
   }
 
   /*****************************************************
@@ -653,11 +659,13 @@ contract Strategy is StrategyBase {
   /**
    * @dev checks delta for strikeid
    */
-  function _checkDeltaByPositionId(bytes32 market, uint[] memory strikeIds) external view returns (int delta) {
+  function _checkDeltaByPositionId(bytes32 market, uint positionId) external view returns (int delta) {
     address lyraBase = lyraBases[market];
-    delta = ILyraBase(lyraBase).getDeltas(strikeIds)[0];
+    StrikeTrade memory _strikeTrade = activeStrikeByPositionId[positionId];
+    require(_strikeTrade.strikeId > 0, "No strike Id");
+    int callDelta = ILyraBase(lyraBase).getDeltas(_toDynamic(_strikeTrade.strikeId))[0];
     // check direction
-    // int delta = _isCall(currentStrikeStrategy.optionType) ? callDelta : callDelta - SignedDecimalMath.UNIT;
+    delta = _isCall(_strikeTrade.optionType) ? callDelta : callDelta - SignedDecimalMath.UNIT;
   }
 
   function _maxLeverageSize(

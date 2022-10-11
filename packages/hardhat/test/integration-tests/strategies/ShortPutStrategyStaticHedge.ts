@@ -24,6 +24,7 @@ import { Strategy, StrategyBase } from '../../../typechain-types/Strategy';
 import { LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
 import { Vault } from '../../../typechain-types/OtusVault';
 import { OptionMarket } from '@lyrafinance/protocol/dist/typechain-types';
+import { formatUnits, parseUnits } from 'ethers/lib/utils';
 
 const ethMarketKey = '0x7345544800000000000000000000000000000000000000000000000000000000';
 
@@ -219,8 +220,6 @@ describe('Short Put No Hedge Strategy Test', async () => {
 
     const lyraMarket = getMarketDeploys('kovan-ovm', 'sETH');
 
-    await otusController.connect(otusMultiSig).setOptionMarketDetails(lyraTestSystem.optionMarket.address);
-
     await otusController
       .connect(otusMultiSig)
       .setLyraAdapter(lyraBaseETH.address, lyraTestSystem.optionMarket.address, ethMarketKey);
@@ -257,7 +256,7 @@ describe('Short Put No Hedge Strategy Test', async () => {
     });
   });
 
-  describe('set strategy', async () => {
+  describe('set strategy, set static hedge', async () => {
     it('setting strategy should correctly update strategy variables', async () => {
       const owner = await managersStrategy.owner();
 
@@ -336,9 +335,10 @@ describe('Short Put No Hedge Strategy Test', async () => {
     it('can update hedge type', async () => {
       const _hedgeTypeBefore = await managersStrategy.connect(manager).hedgeType();
       expect(_hedgeTypeBefore == 0).to.be.true;
-      await managersStrategy.connect(manager).setHedgeStrategyType(1);
+      await managersStrategy.connect(manager).setHedgeStrategyType(2);
       const _hedgeType = await managersStrategy.connect(manager).hedgeType();
-      expect(_hedgeType == 1).to.be.true;
+
+      expect(_hedgeType == 2).to.be.true;
     });
 
     it('can set strike strategies', async () => {
@@ -384,6 +384,28 @@ describe('Short Put No Hedge Strategy Test', async () => {
 
       const strategySUSDBalanceAfter = await susd.balanceOf(managersStrategy.address);
       console.log({ strategySUSDBalanceAfter });
+    });
+
+    it('should delta hedge after trade', async () => {
+      await TestSystem.marketActions.mockPrice(lyraTestSystem, toBN('2000'), 'sETH');
+
+      const strikeTrade = await managersStrategy.activeStrikeTrades(0);
+
+      const _checkDeltaByPositionId = await managersStrategy._checkDeltaByPositionId(
+        ethMarketKey,
+        strikeTrade.positionId,
+      );
+
+      const size = parseFloat(formatUnits(strikeTrade.size));
+      const formattedDelta = parseFloat(formatUnits(_checkDeltaByPositionId));
+
+      const deltaToHedge = toBN((size * formattedDelta).toString());
+
+      await managersVault.connect(keeper).staticDeltaHedge(strikeTrade.market, deltaToHedge, strikeTrade.positionId);
+    });
+
+    it('should close hedge at round close', async () => {
+      await managersVault.connect(manager).closeRound();
     });
   });
 });

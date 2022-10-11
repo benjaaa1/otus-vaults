@@ -63,7 +63,6 @@ contract OtusController is Ownable {
    ***********************************************/
 
   event VaultCreated(
-    uint indexed vaultId,
     address indexed user,
     address indexed vault,
     address strategy,
@@ -137,8 +136,6 @@ contract OtusController is Ownable {
     );
 
     // initialize strategy
-    console.log(strategy);
-    console.log(vault);
     IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(
       lyraAdapterKeys,
       lyraAdapterValues,
@@ -150,11 +147,9 @@ contract OtusController is Ownable {
       currentStrategy
     );
 
-    uint vaultId = nextVaultId++;
-
     _addVault(vault);
 
-    emit VaultCreated(vaultId, msg.sender, vault, strategy, _vaultInfo, _vaultParams);
+    emit VaultCreated(msg.sender, vault, strategy, _vaultInfo, _vaultParams);
   }
 
   /**
