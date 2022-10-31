@@ -5,22 +5,12 @@ import { BigNumber, ethers } from 'ethers'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { MONTHS } from '../../constants/dates'
 import { ONE_BN } from '../../constants/bn'
-import { INFURA_ID } from '../../constants/api'
 import { MarketType } from '../../constants/markets'
 
 const isProduction = process.env.NODE_ENV === 'production'
-console.log({ isProduction, env: process.env })
-let provider = new ethers.providers.InfuraProvider(10, INFURA_ID)
-// let provider = new ethers.providers.JsonRpcProvider(
-//   'http://localhost:8545',
-//   31337
-// )
-// export const lyra = isProduction
-//   ? new Lyra({
-//       provider,
-//     })
-//   : new Lyra(69)
-console.log({ provider })
+
+const provider = new ethers.providers.InfuraProvider(isProduction ? 10 : 420, process.env.INFURA_ID)
+
 export const lyra = new Lyra({
   provider,
 })
@@ -114,20 +104,6 @@ export const getStrikeQuote = async (
     selectedOptionType: optionType,
     market: marketName,
   }
-  // return useQuery<any>(
-  //   QUERY_KEYS.Lyra.Quote(strike.id),
-  //   async () => {
-
-  //     return response
-  //       ? { ...response, quote: response, selectedOptionType: optionType }
-  //       : null
-  //   },
-  //   {
-  //     refetchInterval: false,
-  //     refetchOnWindowFocus: false,
-  //     refetchOnMount: false,
-  //   }
-  // )
 }
 /**
  * @dev add types to liveBoardsWithQuotedStrikes

@@ -43,7 +43,7 @@
     "export-keepers": "cp -R ../react-app/contracts/hardhat_contracts.json ../../../Otus-DOV-Keeper/src/contracts/hardhat_contracts.json",
     "postdeploy": "hardhat run scripts/publish.js",
     "mint": "hardhat run scripts/mint.js",
-    "mock": "hardhat run scripts/mockFutures.js",
+    "mockFutures": "hardhat run scripts/mockFutures.js",
     "registry": "hardhat run scripts/registry.js",
     "tenderly": "hardhat run scripts/tenderly.js",
     "createStrategy": "hardhat run scripts/create.ts",

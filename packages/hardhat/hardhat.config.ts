@@ -1,7 +1,5 @@
 import * as dotenv from 'dotenv';
-import { utils } from 'ethers';
 import fs from 'fs';
-import chalk from 'chalk';
 
 import '@nomiclabs/hardhat-waffle';
 import '@tenderly/hardhat-tenderly';
@@ -16,7 +14,6 @@ import '@typechain/hardhat';
 import 'hardhat-dependency-compiler';
 import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths';
 import 'hardhat-contract-sizer';
-// import 'hardhat-ethernal';
 
 dotenv.config();
 
@@ -52,28 +49,6 @@ module.exports = {
       url: 'http://localhost:8545', // http://hardhat:8545
       deploy: ['deploy_local'],
     },
-    mainnet: {
-      url: 'https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', // <---- YOUR INFURA ID! (or it won't work)
-      gasPrice: mainnetGwei * 1000000000,
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-      deploy: ['deploy_l1'],
-      companionNetworks: {
-        l2: 'optimism',
-      },
-    },
-    goerli: {
-      url: 'https://goerli.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', // <---- YOUR INFURA ID! (or it won't work)
-      //    url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXXXXX/eth/kovan", // <---- YOUR MORALIS ID! (not limited to infura)
-      accounts: {
-        mnemonic: 'wear bubble foil piano inherit cram talent cute minute neglect three play',
-      },
-      deploy: ['deploy_l1'],
-      companionNetworks: {
-        l2: 'goerliOptimism',
-      },
-    },
     optimism: {
       url: 'https://mainnet.optimism.io',
       accounts: {
@@ -97,43 +72,6 @@ module.exports = {
         l1: 'goerli',
       },
     },
-    kovanOptimism: {
-      chainId: 69,
-      url: 'https://optimism-kovan.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925',
-      ovm: true,
-      timeout: 60000,
-      accounts: {
-        mnemonic: 'wear bubble foil piano inherit cram talent cute minute neglect three play',
-      },
-      deploy: ['deploy_l2'],
-      companionNetworks: {
-        l1: 'kovan',
-      },
-    },
-    localOptimism: {
-      chainId: 31337,
-      url: 'http://127.0.0.1:8545',
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-      companionNetworks: {
-        l1: 'localOptimismL1',
-      },
-      deploy: ['deploy_l2'],
-    },
-    localOptimismL1: {
-      url: 'http://localhost:9545',
-      gasPrice: 0,
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-      companionNetworks: {
-        l2: 'localOptimism',
-      },
-    },
-    // hardhat: {
-    //   allowUnlimitedContractSize: true
-    // }
   },
   solidity: {
     compilers: [

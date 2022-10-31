@@ -2,7 +2,7 @@ import { Dispatch, Fragment, useState } from 'react'
 
 function activeClasses(active: boolean) {
   if (active) {
-    return 'border-emerald-600 bg-transparent text-white relative inline-flex cursor-pointer items-center border px-4 py-2 text-sm font-normal focus:z-10 focus:border-black focus:outline-none focus:ring-1 focus:ring-black'
+    return 'bg-emerald-600 border-zinc-800 bg-transparent text-white relative inline-flex cursor-pointer items-center border px-4 py-2 text-sm font-normal focus:z-10 focus:border-black focus:outline-none focus:ring-1 focus:ring-black'
   }
 
   return 'border-zinc-800 text-zinc-200 hover:bg-transparent relative inline-flex cursor-pointer items-center border bg-zinc-900 px-4 py-2 text-sm font-normal'
@@ -21,7 +21,7 @@ export default function SelectOptionType({
 }) {
   return (
     <div className="grid grid-cols-1 gap-1 md:grid-cols-2">
-      <span className="isolate inline-flex shadow-sm">
+      <span className="isolate inline-flex shadow-sm border-top">
         <div
           onClick={() => setLong(true)}
           className={`${activeClasses(isLong)} rounded-l-full`}
