@@ -118,7 +118,6 @@ module.exports = {
   etherscan: {
     apiKey: {
       mainnet: '582EMV38X8492YGM6IIB22YVXIBFDB3RU5',
-      optimisticKovan: '582EMV38X8492YGM6IIB22YVXIBFDB3RU5',
     },
   },
   dependencyCompiler: {
