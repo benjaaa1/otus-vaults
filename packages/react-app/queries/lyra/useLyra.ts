@@ -8,7 +8,7 @@ import { ONE_BN } from '../../constants/bn'
 import { MarketType } from '../../constants/markets'
 
 const isProduction = process.env.NODE_ENV === 'production'
-const provider = new ethers.providers.InfuraProvider(isProduction ? 10 : 420, process.env.INFURA_ID)
+const provider = new ethers.providers.InfuraProvider(isProduction ? 10 : 10, process.env.INFURA_ID)
 export const lyra = new Lyra({
   provider,
 })

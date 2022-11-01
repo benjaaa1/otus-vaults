@@ -92,7 +92,7 @@ export const Navbar = () => {
                 <Disclosure.Button
                   className={linkStyleMobile('/vaults', router.pathname)}
                 >
-                  Vaults2
+                  Vaults
                 </Disclosure.Button>
               </Link>
             </div>
