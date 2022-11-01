@@ -24,6 +24,8 @@ export default function CloseExecute() {
   const { builtStrikeToClose } = useVaultManagerContext()
   console.log({ builtStrikeToClose })
 
+  // get more position data in order to close 
+
   const { data, isLoading } = useLatestRates('ETH')
   console.log({ data })
 

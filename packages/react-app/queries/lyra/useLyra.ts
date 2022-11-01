@@ -1,6 +1,6 @@
 import { useQuery } from 'react-query'
 
-import Lyra, { Board, Market, Quote, Strike } from '@lyrafinance/lyra-js'
+import Lyra, { Board, Market, Quote, Strike, AccountPortfolioBalance, PositionPnl } from '@lyrafinance/lyra-js'
 import { BigNumber, ethers } from 'ethers'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { MONTHS } from '../../constants/dates'

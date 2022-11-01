@@ -4,6 +4,8 @@ import { getOtusEndpoint } from '../utils'
 import { useWeb3Context } from '../../context'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { BigNumber, BigNumberish } from 'ethers'
+import { lyra } from '../lyra/useLyra';
+import{ AccountPortfolioBalance, PositionPnl } from '@lyrafinance/lyra-js'
 
 export type VaultTrade = {
   id: string
@@ -168,10 +170,52 @@ export const useMyVault = (vaultId: any) => {
         { managerId: managerId?.toLowerCase(), vaultId: vaultId?.toLowerCase() }
       )
       console.log({ response })
-      return response.vaults.length > 0 ? response.vaults[0] : null
+      const account = lyra.account(vaultId);
+      console.log({ account })
+      const portfolio: AccountPortfolioBalance = await account.portfolioBalance();
+      const positions = portfolio.positions.map((position) => {
+        const { isOpen, id } = position;
+        const _breakEven = fromBigNumber(position.breakEven());
+        const { unrealizedPnlPercentage }: PositionPnl = position.pnl();
+        const _profitPercentage = fromBigNumber(unrealizedPnlPercentage);
+        return {
+          id, 
+          breakEven: _breakEven,
+          profitPercentage: _profitPercentage,
+          isActive: isOpen,
+        }
+      });
+      console.log({ positions, vaults: response.vaults })
+
+      const vaults = response.vaults.length > 0 ? prepareVault([{ id: 1, breakEven: 10, profitPecentage: .9, isActive: true }], response.vaults[0]) : null; 
+      console.log({ vaults })
+      return vaults;
     },
     {
       enabled: !!managerId && !!vaultId,
     }
   )
+}
+
+const prepareVault = (positions, vault) => {
+
+  const { vaultTrades } = vault; 
+
+  const positionsById = positions.reduce((accum, position) => {
+    console.log({ position })
+    const id = position.id;
+    return { ...accum, [id]: position }
+  }, {}); 
+
+  console.log({ positionsById })
+
+  const vaultTradesDetail = vaultTrades.map(vaultTrade => {
+    const { positionId } = vaultTrade; 
+    const position = positionId != null ? positionsById[parseInt(positionId)] : {}; 
+    return { ...vaultTrade, position }
+  })
+
+  console.log({ vaultTradesDetail  }); 
+  
+  return { ...vault, vaultTrades: vaultTradesDetail }
 }
