@@ -61,7 +61,7 @@ module.exports = {
     },
     goerliOptimism: {
       chainId: 420,
-      url: 'https://optimism-goerli.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925',
+      url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_ID}`,
       ovm: true,
       timeout: 60000,
       accounts: {

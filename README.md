@@ -20,7 +20,22 @@ cd otus
 yarn deploy
 ```
 
-> Kovan Optimism 
+```
+yarn chain
+yarn lyraDeploy
+yarn deploy
+yarn mockFutures
+yarn registry
+yarn createStrategy
+
+services - yarn compose
+subgraph - yarn create-local
+subgraph - yarn deploy-local
+
+react-app - yarn run dev
+```
+
+> Goerlie Optimism 
 
 > Lyra Test 
 
