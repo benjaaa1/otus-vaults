@@ -1,5 +1,5 @@
 import { useVaultManagerContext } from '../../../../context'
-import { VaultTrade } from '../../../../queries/myVaults/useMyVaults'
+import { VaultTrade, CurrentPosition } from '../../../../queries/myVaults/useMyVaults'
 import { formatUSD, fromBigNumber } from '../../../../utils/formatters/numbers'
 import { Cell } from '../../../UI/Components/Table/Cell'
 import { HeaderCell } from '../../../UI/Components/Table/HeaderCell'
@@ -70,7 +70,7 @@ export default function Current({
           />
           <Cell
             variant="primary"
-            label={fromBigNumber(activeTrade.size)}
+            label={fromBigNumber(activeTrade.position.size)}
             isButton={false}
           />
           <Cell

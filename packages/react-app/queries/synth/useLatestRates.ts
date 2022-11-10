@@ -8,7 +8,7 @@ export const useLatestRates = (asset: string) => {
   const { network } = useWeb3Context()
 
   const futuresEndpoint = getFuturesEndpoint(network) // getOtusEndpoint(network);
-  return useQuery<number>(
+  return useQuery<number | null>(
     QUERY_KEYS.Synthetix.Rates(asset),
     async () => {
       if (!asset) return null

@@ -1,5 +1,9 @@
+import { useCallback, useEffect, useState } from 'react'
 import { useVaultManagerContext, useWeb3Context } from '../../../../context'
 import { useLatestRates } from '../../../../queries/synth/useLatestRates'
+import {
+  buildTradeTitle
+} from '../../../../utils/formatters/trades'
 import {
   formatNumber,
   formatUSD,
@@ -8,24 +12,44 @@ import {
 import { Button } from '../../../UI/Components/Button'
 import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
+import { lyra } from '../../../../queries/lyra/useLyra';
+import { ZERO_BN } from '../../../../constants/bn'
 
-const isLong = (optionType: number): boolean => {
-  return optionType == 0 || optionType == 1
-}
-
-const isLongText = (optionType: number): string => {
-  return optionType == 0 || optionType == 1 ? 'Buy' : 'Sell'
-}
-const isCallText = (optionType: number): string => {
-  return optionType == 0 || optionType == 3 ? 'Call' : 'Put'
-}
 
 export default function CloseExecute() {
   const { builtStrikeToClose } = useVaultManagerContext()
   console.log({ builtStrikeToClose })
 
-  // get more position data in order to close 
+  const [closeFee, setCloseFee] = useState(ZERO_BN);
+  const [forceCloseFee, setForceCloseFee] = useState(ZERO_BN);
+  const [isForceClose, setIsForceClose] = useState(false);
 
+  const calculateCloseCosts = useCallback(async () => {
+    if (builtStrikeToClose.strikeId != null) {
+      const { strikeId, isCall, isLong, size } = builtStrikeToClose;
+      // get strike
+      const strike = await lyra.strike('ETH', strikeId);
+      // get quote 
+      const quote = await strike.quote(isCall, isLong, size);
+      console.log({ quote });
+      const { isForceClose: _isForceClose, fee, forceClosePenalty } = quote;
+
+      setCloseFee(fee);
+      setForceCloseFee(forceClosePenalty);
+      setIsForceClose(_isForceClose);
+
+    }
+  }, [builtStrikeToClose])
+
+  useEffect(() => {
+    try {
+      calculateCloseCosts()
+    } catch (error) {
+      console.log({ error })
+    }
+  }, [builtStrikeToClose])
+
+  // get more position data in order to close 
   const { data, isLoading } = useLatestRates('ETH')
   console.log({ data })
 
@@ -57,7 +81,7 @@ export default function CloseExecute() {
               <div className="flex-1 px-4 py-6 sm:px-6">
                 <div className="flex items-center justify-between">
                   <p className="text-md truncate font-sans font-semibold text-zinc-500">
-                    Sell $1400 ETH Call
+                    {buildTradeTitle(builtStrikeToClose.optionType, 'ETH', builtStrikeToClose.strikePrice)}
                   </p>
                 </div>
                 <div className="flex items-center justify-between pt-2">
@@ -67,18 +91,20 @@ export default function CloseExecute() {
                   <div className="ml-2 flex flex-shrink-0">
                     <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
                       {builtStrikeToClose
-                        ? fromBigNumber(builtStrikeToClose.size)
+                        ? fromBigNumber(builtStrikeToClose.position.size)
                         : null}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between pt-2">
                   <p className="truncate font-sans text-xs font-normal text-white">
-                    P&L
+                    Profit / Loss
                   </p>
                   <div className="ml-2 flex flex-shrink-0">
                     <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                      $1001.23
+                      {builtStrikeToClose
+                        ? formatUSD(fromBigNumber(builtStrikeToClose.position.settlementPnl))
+                        : null}
                     </p>
                   </div>
                 </div>
@@ -93,12 +119,32 @@ export default function CloseExecute() {
                 </p>
                 <div className="ml-2 flex flex-shrink-0">
                   <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                    $120.12
+                    {fromBigNumber(closeFee)}
                   </p>
                 </div>
               </div>
             </div>
           </li>
+
+          {
+            isForceClose ?
+              <li>
+                <div className="flex-1 px-4 py-6 sm:px-6">
+                  <div className="flex items-center justify-between pt-2">
+                    <p className="truncate font-sans text-xs font-semibold text-white">
+                      Force Close Penalty
+                    </p>
+                    <div className="ml-2 flex flex-shrink-0">
+                      <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
+                        {fromBigNumber(forceCloseFee)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </li> :
+              null
+          }
+
         </ul>
       </div>
       <div className="justify-stretch mt-6 flex flex-col">

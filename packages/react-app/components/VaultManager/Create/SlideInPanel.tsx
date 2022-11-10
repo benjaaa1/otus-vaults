@@ -2,8 +2,11 @@
 import { Fragment, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Button } from '../../UI/Components/Button'
 
 export default function SlideInPanel({
+  step,
+  setStep,
   isCreating,
   handleCreateVault,
   setOpen,
@@ -29,7 +32,7 @@ export default function SlideInPanel({
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-3xl">
-                  <div className="flex h-full flex-col divide-y divide-gray-200 border-l border-zinc-800 bg-gradient-to-b from-black to-zinc-900 shadow-xl">
+                  <div className="flex h-full flex-col divide-y divide-zinc-700 border-l border-zinc-800 bg-gradient-to-b from-black to-zinc-900 shadow-xl">
                     <div className="flex min-h-0 flex-1 flex-col overflow-y-scroll py-6">
                       <div className="px-4 sm:px-6">
                         <div className="flex items-end justify-between">
@@ -57,22 +60,43 @@ export default function SlideInPanel({
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-shrink-0 justify-end px-4 py-4">
-                      <button
-                        type="button"
-                        className="border-gray rounded-md border bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        onClick={() => setOpen(false)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleCreateVault}
-                        type="submit"
-                        className="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                      >
-                        Save
-                      </button>
+
+                    <div className="flex flex-shrink-0 space-x-4 justify-end px-4 py-4">
+
+                      {
+                        step == 1 ?
+                          <>
+                            <Button
+                              label={'Next'}
+                              isLoading={false}
+                              variant={'action'}
+                              radius={'xs'}
+                              size={'md'}
+                              onClick={() => setStep(2)}
+                            />
+                          </> :
+                          <>
+                            <Button
+                              label={'Previous'}
+                              isLoading={false}
+                              variant={'action'}
+                              radius={'xs'}
+                              size={'md'}
+                              onClick={() => setStep(1)}
+                            />
+                            <Button
+                              label={'Create'}
+                              isLoading={false}
+                              variant={'action'}
+                              radius={'xs'}
+                              size={'md'}
+                              onClick={handleCreateVault}
+                            />
+                          </>
+                      }
+
                     </div>
+
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

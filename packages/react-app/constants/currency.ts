@@ -75,3 +75,19 @@ export const CURRENCY_BY_ADDRESS = {
   },
   31337: {},
 }
+
+export const CURRENCIES: Currency = {
+  10: {
+    'ETH': ''
+  },
+  420: {
+    'ETH': '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8'
+  },
+  31337: {
+    'ETH': '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8'
+  }
+}
+
+type Currency = {
+  [key: number]: Record<string, string>
+}

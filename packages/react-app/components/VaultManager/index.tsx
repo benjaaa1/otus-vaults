@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useWeb3Context } from '../../context'
 import { useMyVaults } from '../../queries/myVaults/useMyVaults'
-import { Spinner } from '../UI/Components/UI/Spinner'
+import { Spinner } from '../UI/Components/Spinner'
 import { MyBlockies } from '../UI/Web3/Address'
 import EmptyState from './EmptyState'
 import MyVaultsTable from './MyVaultsTable'
@@ -11,9 +11,9 @@ export default function VaultManager() {
   const { address: managerId, network } = useWeb3Context()
 
   const { data, isLoading } = useMyVaults()
-  console.log({ data, isLoading })
+
   const vaults = data?.vaults || []
-  console.log({ vaults })
+
   const [open, setOpen] = useState(false)
 
   return (
@@ -47,7 +47,7 @@ export default function VaultManager() {
           ) : (
             <>
               {vaults.length ? (
-                <MyVaultsTable vaults={vaults} />
+                <MyVaultsTable />
               ) : (
                 <EmptyState createNew={setOpen} />
               )}

@@ -5,7 +5,9 @@ import { useWeb3Context } from '../../context'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { BigNumber, BigNumberish } from 'ethers'
 import { lyra } from '../lyra/useLyra';
-import{ AccountPortfolioBalance, PositionPnl } from '@lyrafinance/lyra-js'
+import { AccountPortfolioBalance, PositionPnl } from '@lyrafinance/lyra-js'
+import { fromBigNumber } from '../../utils/formatters/numbers'
+import { ZERO_BN } from '../../constants/bn'
 
 export type VaultTrade = {
   id: string
@@ -17,6 +19,7 @@ export type VaultTrade = {
   optionType: number
   openedAt: number
   expiry: number
+  position: CurrentPosition
 }
 
 export type VaultStrategy = {
@@ -111,14 +114,13 @@ export const useMyVault = (vaultId: any) => {
 
   const otusEndpoint = getOtusEndpoint(network) // getOtusEndpoint(network);
 
-  return useQuery<Vault>(
+  return useQuery<Vault | null>(
     QUERY_KEYS.Vaults.ManageMyVault(
       managerId?.toLowerCase(),
       vaultId?.toLowerCase()
     ),
     async () => {
       if (!managerId) return null
-      console.log({ managerId })
       const response = await request(
         otusEndpoint,
         gql`
@@ -159,7 +161,6 @@ export const useMyVault = (vaultId: any) => {
                 positionId
                 premiumEarned
                 strikePrice
-                size
                 openedAt
                 expiry
                 optionType
@@ -169,26 +170,40 @@ export const useMyVault = (vaultId: any) => {
         `,
         { managerId: managerId?.toLowerCase(), vaultId: vaultId?.toLowerCase() }
       )
-      console.log({ response })
+
       const account = lyra.account(vaultId);
-      console.log({ account })
+
       const portfolio: AccountPortfolioBalance = await account.portfolioBalance();
-      const positions = portfolio.positions.map((position) => {
-        const { isOpen, id } = position;
+      const positions: CurrentPosition[] = portfolio.positions.map((position) => {
+        const { isOpen, id, strikeId, size } = position;
         const _breakEven = fromBigNumber(position.breakEven());
-        const { unrealizedPnlPercentage }: PositionPnl = position.pnl();
-        const _profitPercentage = fromBigNumber(unrealizedPnlPercentage);
+        const { unrealizedPnlPercentage, settlementPnl }: PositionPnl = position.pnl();
         return {
-          id, 
+          id,
+          strikeId,
+          size,
           breakEven: _breakEven,
-          profitPercentage: _profitPercentage,
+          settlementPnl,
           isActive: isOpen,
         }
       });
-      console.log({ positions, vaults: response.vaults })
 
-      const vaults = response.vaults.length > 0 ? prepareVault([{ id: 1, breakEven: 10, profitPecentage: .9, isActive: true }], response.vaults[0]) : null; 
-      console.log({ vaults })
+      const vaults = response.vaults.length > 0 ?
+        prepareMyVault(
+          [
+            {
+              id: 1,
+              strikeId: 1,
+              breakEven: 10,
+              profitPercentage: .9,
+              size: ZERO_BN,
+              settlementPnl: ZERO_BN,
+              isActive: true
+            }
+          ],
+          response.vaults[0]
+        ) : null;
+
       return vaults;
     },
     {
@@ -197,25 +212,39 @@ export const useMyVault = (vaultId: any) => {
   )
 }
 
-const prepareVault = (positions, vault) => {
+export type CurrentPosition = {
+  id: number
+  strikeId: number
+  breakEven: number
+  size: BigNumber
+  settlementPnl: BigNumber
+  profitPercentage: number
+  isActive: boolean
+}
 
-  const { vaultTrades } = vault; 
+type PositionId = {
+  [key: number]: CurrentPosition
+}
 
-  const positionsById = positions.reduce((accum, position) => {
+const prepareMyVault = (positions: CurrentPosition[], vault: Vault) => {
+
+  const { vaultTrades } = vault;
+
+  const positionsById: PositionId = positions.reduce((accum, position) => {
     console.log({ position })
     const id = position.id;
     return { ...accum, [id]: position }
-  }, {}); 
+  }, {});
 
   console.log({ positionsById })
 
   const vaultTradesDetail = vaultTrades.map(vaultTrade => {
-    const { positionId } = vaultTrade; 
-    const position = positionId != null ? positionsById[parseInt(positionId)] : {}; 
+    const { positionId } = vaultTrade;
+    const position = positionId != null ? positionsById[parseInt(positionId)] : {};
     return { ...vaultTrade, position }
   })
 
-  console.log({ vaultTradesDetail  }); 
-  
+  console.log({ vaultTradesDetail });
+
   return { ...vault, vaultTrades: vaultTradesDetail }
 }
