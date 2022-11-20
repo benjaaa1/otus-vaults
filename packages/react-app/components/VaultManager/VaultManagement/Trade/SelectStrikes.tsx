@@ -20,7 +20,7 @@ export default function SelectStrikes({
   const { toggleTrade } = useVaultManagerContext()
 
   const [activeIds, setActiveIds] = useState<Record<string, boolean>>({})
-
+  console.log({ activeIds })
   return (
     <Table
       variant="primary"
@@ -58,20 +58,23 @@ export default function SelectStrikes({
             isSelected={activeIds[`${strike.id}-${selectedOptionType}`]}
             onClick={() => {
               setActiveIds((_activeIds: Record<string, boolean>) => {
+                console.log({ _activeIds, strikeId: strike.id, selectedOptionType })
+                let prop = `${strike.id}-${selectedOptionType}`;
                 if (
                   Object.hasOwn(
                     _activeIds,
-                    `${strike.id}-${selectedOptionType}`
+                    prop
                   )
                 ) {
+                  let val = _activeIds[prop];
                   return {
                     ..._activeIds,
-                    [`${strike.id}-${selectedOptionType}`]: false,
+                    [prop]: !val,
                   }
                 } else {
                   return {
                     ..._activeIds,
-                    [`${strike.id}-${selectedOptionType}`]: true,
+                    [prop]: true,
                   }
                 }
               })

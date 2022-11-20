@@ -86,7 +86,6 @@ export default function Trade() {
             <SelectStrikes
               selectedStrikes={strikes}
               selectedOptionType={selectedOptionType}
-              selectedExpiry={selectedExpiry}
             />
           </>
         )}
