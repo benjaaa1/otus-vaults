@@ -17,14 +17,44 @@ import {
   ManagerAction,
   VaultStrategy,
   Strategy,
-  DynamicHedgeStrategy
+  DynamicHedgeStrategy,
+  StrikeStrategy
 } from '../../generated/schema';
 
 export function handleHedgeClosePosition(event: HedgeClosePosition): void { }
 
 export function handleHedge(event: Hedge): void { }
 
-export function handeStrikeStrategyUpdate(event: StrikeStrategyUpdated): void { }
+export function handeStrikeStrategyUpdate(event: StrikeStrategyUpdated): void {
+  let strategyAddress = event.address as Address;
+  let strikeStrategies = event.params.currentStrikeStrategies;
+
+  let strategy = Strategy.load(strategyAddress.toHex());
+  if (!strategy) {
+    strategy = new Strategy(strategyAddress.toHex());
+  }
+
+  for (let i = 0; i < strikeStrategies.length; i++) {
+    let strikeStrategy = strikeStrategies[i];
+
+    let newStrikeStrategy = StrikeStrategy.load(strikeStrategy.optionType.toHex() + strategy.id);
+    if (newStrikeStrategy == null) {
+      newStrikeStrategy = new StrikeStrategy(strikeStrategy.optionType.toHex() + strategy.id);
+    }
+
+    newStrikeStrategy.strategy = strategy.id;
+    newStrikeStrategy.targetDelta = strikeStrategy.targetDelta;
+    newStrikeStrategy.maxDeltaGap = strikeStrategy.maxDeltaGap;
+    newStrikeStrategy.minVol = strikeStrategy.minVol;
+    newStrikeStrategy.maxVol = strikeStrategy.maxVol;
+    newStrikeStrategy.maxVolVariance = strikeStrategy.maxVolVariance;
+    newStrikeStrategy.optionType = strikeStrategy.optionType;
+    newStrikeStrategy.save();
+  }
+
+  strategy.save()
+
+}
 
 export function handleVaultStrategyUpdate(event: StrategyUpdated): void {
   let strategyAddress = event.address as Address;
