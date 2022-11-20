@@ -11,6 +11,7 @@ import { ZERO_BN } from '../../constants/bn'
 
 export type VaultTrade = {
   id: string
+  txhash: string
   strikeId: string
   positionId: string
   premiumEarned: BigNumber
@@ -157,6 +158,7 @@ export const useMyVault = (vaultId: any) => {
               }
               vaultTrades {
                 id
+                txhash
                 strikeId
                 positionId
                 premiumEarned

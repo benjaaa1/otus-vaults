@@ -52,10 +52,11 @@ export function handleVaultTrade(event: Trade): void {
     newTrade.save();
   }
 
+  vault.isActive = true;
   vault.save();
 }
 
-export function handlePositionReduced(event: PositionReduced): void {}
+export function handlePositionReduced(event: PositionReduced): void { }
 
 export function handleRoundStart(event: RoundStarted): void {
   let otusVaultAddress = event.address as Address;
@@ -77,13 +78,12 @@ export function handleRoundClosed(event: RoundClosed): void {
     vault = new Vault(otusVaultAddress.toHex());
   }
   vault.round = event.params.roundId;
-  vault.round = event.params.roundId;
   vault.roundLockedAmount = event.params.lockAmount;
   vault.inProgress = false;
   vault.save();
 }
 
-export function handleRoundSettled(event: RoundSettled): void {}
+export function handleRoundSettled(event: RoundSettled): void { }
 
 // let otusVaultEntity = Vault.load(otusVaultAddress.toHex());
 // if(otusVaultEntity == null) {
@@ -123,8 +123,8 @@ export function handleDeposit(event: Deposit): void {
   otusVaultEntity.save();
 }
 
-export function handleInitiateWithdraw(event: InitiateWithdraw): void {}
+export function handleInitiateWithdraw(event: InitiateWithdraw): void { }
 
-export function handleRedeem(event: Redeem): void {}
+export function handleRedeem(event: Redeem): void { }
 
-export function handleWithdraw(event: Withdraw): void {}
+export function handleWithdraw(event: Withdraw): void { }

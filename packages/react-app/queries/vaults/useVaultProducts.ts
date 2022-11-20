@@ -4,6 +4,7 @@ import { getOtusEndpoint } from '../utils'
 import { useWeb3Context } from '../../context'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { BigNumber } from 'ethers'
+import { VaultTrade } from '../myVaults/useMyVaults'
 
 export type VaultStrategy = {
   id: string
@@ -31,6 +32,7 @@ export type Vault = {
   isPublic: boolean
   inProgress: boolean
   strategy: Strategy
+  vaultTrades: VaultTrade[]
   name: string
   description: string
   totalDeposit: BigNumber
@@ -145,6 +147,7 @@ export const useVaultProduct = (vaultId: any) => {
               }
               vaultTrades {
                 id
+                txhash
                 strikeId
                 positionId
                 premiumEarned

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   useVaultProduct,
   VaultStrategy,
@@ -12,19 +12,44 @@ import Withdraw from './Withdrawal'
 import { useWeb3Context } from '../../../context'
 import { getBlockExplorerUrl } from '../../../utils/getBlockExplorer'
 import Modal from '../../UI/Modal'
-import { fromBigNumber } from '../../../utils/formatters/numbers'
+import { formatUSD, fromBigNumber } from '../../../utils/formatters/numbers'
 import { HOUR_SEC } from '../../../constants/period'
+import { CheckIcon } from '@heroicons/react/24/solid'
+import TradeTransactions from './TradeTransactions'
 
 export default function Product() {
   const { network } = useWeb3Context()
   const router = useRouter()
   const { query } = router
   const { data: vault, isLoading } = useVaultProduct(query?.vault)
-
+  console.log({ vault })
   const [tab, setTab] = useState(UserActionTabs.DEPOSIT.HREF)
   const [openVaultStrategy, setOpenVaultStrategy] = useState(false)
   const [openStrikeStrategy, setOpenStrikeStrategy] = useState(false)
   const [openHedgeStrategy, setOpenHedgeStrategy] = useState(false)
+
+  const [premiumCollected, setPremiumCollected] = useState(0);
+
+  const calculatePremiumEarned = useCallback(() => {
+    if (vault != null && vault.vaultTrades.length > 0) {
+      const _premium = vault.vaultTrades.reduce((accum, trade) => {
+        let { premiumEarned } = trade;
+        let _premiumCollectedInTrade = fromBigNumber(premiumEarned);
+        return accum + _premiumCollectedInTrade;;
+      }, 0);
+      setPremiumCollected(_premium);
+    } else {
+      setPremiumCollected(0);
+    }
+  }, [vault])
+
+  useEffect(() => {
+    try {
+      calculatePremiumEarned()
+    } catch (error) {
+      console.log({ error })
+    }
+  }, [vault])
 
   return (
     <>
@@ -39,7 +64,7 @@ export default function Product() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-12 gap-8 py-8">
+          <div className="grid grid-cols-12 gap-8 pt-8 pb-4">
             <div className="col-span-7 grid grid-cols-1 rounded-sm border border-zinc-700 bg-gradient-to-b from-black to-zinc-900 p-9">
               <div className="py-2">
                 <div className="text-xxs font-bold uppercase text-zinc-300">
@@ -124,34 +149,41 @@ export default function Product() {
                       Premium Collected
                     </div>
                     <div className="py-2 font-mono text-xl font-normal text-white">
-                      $291.00
+                      {formatUSD(premiumCollected)}
                     </div>
                   </div>
 
                   <div className="py-2">
                     <div className="text-xxs font-normal uppercase text-zinc-300">
-                      Expiry
+                      Current Round
                     </div>
                     <div className="py-2 font-mono text-xl font-normal text-white">
-                      October 8, 2022
+                      {vault?.round}
+                    </div>
+                  </div>
+
+                  <div className="py-2">
+                    <div className="text-xxs font-normal uppercase text-zinc-300">
+                      Is Active
+                    </div>
+                    <div className="py-2 font-mono text-xl font-bold text-white">
+                      {vault?.isActive ? <CheckIcon
+                        className="h-5 w-5 text-emerald-600"
+                        aria-hidden="true"
+                      /> : 'No'}
                     </div>
                   </div>
                 </div>
-                {/* <div>
-                  <div>Strikes</div>
-                  <div className="grid grid-cols-5">
-                    <div>$1200</div>
-                    <div>$1300</div>
-                    <div>$1400</div>
-                  </div>
-                </div> */}
+
                 <div className="py-2">
                   <div className="grid grid-cols-4">
                     <div className="py-2">
                       <div className="text-xxs font-normal uppercase text-zinc-300">
                         Managed By
                       </div>
-                      <div className="py-2 font-mono text-xl font-normal text-white"></div>
+                      <div className="py-2 font-mono text-xl font-normal text-white">
+
+                      </div>
                     </div>
 
                     <div className="py-2">
@@ -159,7 +191,7 @@ export default function Product() {
                         Management Fees
                       </div>
                       <div className="py-2 font-mono text-xl font-normal text-white">
-                        0%
+                        {vault?.managementFee}%
                       </div>
                     </div>
 
@@ -168,7 +200,7 @@ export default function Product() {
                         Performance Fees
                       </div>
                       <div className="py-2 font-mono text-xl font-normal text-white">
-                        0%
+                        {vault?.performanceFee}%
                       </div>
                     </div>
 
@@ -210,6 +242,13 @@ export default function Product() {
             </div>
           </div>
         </main>
+
+        <div className="grid grid-cols-12 gap-8">
+          <div className='col-span-7'>
+            <TradeTransactions vaultTrades={vault?.vaultTrades || []} />
+          </div>
+        </div>
+
       </div>
       <Modal
         title={'Vault Strategy'}
