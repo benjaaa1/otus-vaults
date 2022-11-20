@@ -34,11 +34,20 @@ export type VaultStrategy = {
   gwavPeriod: number
 }
 
+export type DynamicHedgeStrategy = {
+  id: string
+  period: number
+  maxLeverageSize: BigNumber
+  maxHedgeAttempts: BigNumber
+  threshold: BigNumber
+}
+
 type Strategy = {
   id: string
   latestUpdate: number
   hedgeType: number
   vaultStrategy: VaultStrategy
+  dynamicHedgeStrategy: DynamicHedgeStrategy
 }
 
 export type Vault = {
@@ -154,6 +163,13 @@ export const useMyVault = (vaultId: any) => {
                   minTradeInterval
                   gwavPeriod
                   allowedMarkets
+                }
+                dynamicHedgeStrategy {
+                  id
+                  period
+                  maxHedgeAttempts
+                  maxLeverageSize
+                  threshold
                 }
               }
               vaultTrades {

@@ -40,7 +40,7 @@ const Vault = ({ vault }: { vault: Vault }) => {
               <SUSDIcon />
             </div>
             <div className="pt-4">
-              <Tag label={'No Hedge'} size={'xs'} variant={'default'} />
+              <Tag label={getHedgeLabel(vault.strategy.hedgeType)} size={'xs'} variant={'default'} />
             </div>
           </div>
           <div className="sm:absolute sm:ml-48 sm:mt-[-8px]">
@@ -126,4 +126,18 @@ const percentWidth = (totalDeposit: BigNumber, vaultCap: BigNumber): string => {
   return `${(formatTotalDeposit / formatVaultCap) * 10}%`
 }
 
+const getHedgeLabel = (hedgeType: number): string => {
+  switch (hedgeType) {
+    case 0:
+      return 'No Hedge'
+    case 1:
+      return 'Manager'
+    case 2:
+      return 'Dynamic'
+    default:
+      return 'No Hedge'
+  }
+}
+
 export default Vault
+
