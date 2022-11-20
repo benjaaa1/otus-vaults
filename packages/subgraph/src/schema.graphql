@@ -53,7 +53,10 @@ type VaultStrategy @entity {
 
 type DynamicHedgeStrategy @entity {
   id: ID!
+  strategy: Strategy!
   threshold: BigInt!
+  maxHedgeAttempts: BigInt!
+  maxLeverageSize: BigInt!
   period: BigInt!
 }
 

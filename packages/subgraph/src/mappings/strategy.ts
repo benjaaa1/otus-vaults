@@ -83,10 +83,17 @@ export function handleHedgeStrategyUpdate(event: HedgeStrategyUpdated): void {
     dynamicHedgeStrategy = new DynamicHedgeStrategy(strategyAddress.toHex());
   }
 
-  dynamicHedgeStrategy.threshold = event.params.threshold;
-  dynamicHedgeStrategy.period = event.params.period;
-  dynamicHedgeStrategy.maxHedgeAttempts = event.params.maxHedgeAttempts;
-  dynamicHedgeStrategy.maxLeverageSize = event.params.maxLeverageSize;
+  let strategy = Strategy.load(strategyAddress.toHex());
+  if (!strategy) {
+    strategy = new Strategy(strategyAddress.toHex());
+  }
+
+  dynamicHedgeStrategy.strategy = strategy.id;
+
+  dynamicHedgeStrategy.threshold = event.params.dynamicStrategy.threshold;
+  dynamicHedgeStrategy.period = event.params.dynamicStrategy.period;
+  dynamicHedgeStrategy.maxHedgeAttempts = event.params.dynamicStrategy.maxHedgeAttempts;
+  dynamicHedgeStrategy.maxLeverageSize = event.params.dynamicStrategy.maxLeverageSize;
 
   dynamicHedgeStrategy.save();
 }

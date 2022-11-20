@@ -356,8 +356,6 @@ const getHedgeType = (hedgeType: number) => {
     case 1:
       return 'User'
     case 2:
-      return 'Static'
-    case 3:
       return 'Dynamic'
     default:
       break

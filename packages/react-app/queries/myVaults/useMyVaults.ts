@@ -12,7 +12,7 @@ import { ZERO_BN } from '../../constants/bn'
 export type VaultTrade = {
   id: string
   strikeId: string
-  positionId: BigNumber
+  positionId: string
   premiumEarned: BigNumber
   strikePrice: BigNumber
   size: BigNumber
@@ -191,7 +191,7 @@ export const useMyVault = (vaultId: any) => {
         prepareMyVault(
           [
             {
-              id: 3,
+              id: 1,
               strikeId: 1,
               breakEven: 10,
               profitPercentage: .9,
@@ -204,6 +204,7 @@ export const useMyVault = (vaultId: any) => {
         ) : null;
 
       return vaults;
+
     },
     {
       enabled: !!managerId && !!vaultId,
@@ -222,27 +223,33 @@ export type CurrentPosition = {
 }
 
 type PositionId = {
-  [key: number]: CurrentPosition
+  [key: string]: CurrentPosition
 }
 
-const prepareMyVault = (positions: CurrentPosition[], vault: Vault) => {
+const prepareMyVault = (positions: CurrentPosition[], vault: Vault): Vault => {
 
   const { vaultTrades } = vault;
 
   const positionsById: PositionId = positions.reduce((accum, position) => {
-    console.log({ position })
     const id = position.id;
-    return { ...accum, [id]: position }
+    return { ...accum, [id.toString()]: position }
   }, {});
 
-  console.log({ positionsById, vaultTrades })
+  console.log({ positionsById })
 
   const vaultTradesDetail = vaultTrades.map(vaultTrade => {
     const { positionId } = vaultTrade;
     console.log({ positionId })
-    const position = positionId != null ? positionsById[parseInt(positionId)] : {};
+    const position = positionId != null ? positionsById[parseInt(positionId)] : {
+      id: 0,
+      strikeId: 0,
+      breakEven: 0,
+      size: ZERO_BN,
+      settlementPnl: ZERO_BN,
+      profitPercentage: 0,
+      isActive: false
+    };
     console.log({ position })
-
     return { ...vaultTrade, position }
   })
 

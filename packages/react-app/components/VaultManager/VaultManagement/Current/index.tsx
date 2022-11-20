@@ -120,8 +120,6 @@ const getHedgeLabel = (hedgeType: number): string => {
     case 1:
       return 'Manager'
     case 2:
-      return 'Static'
-    case 3:
       return 'Dynamic'
     default:
       return 'No Hedge'

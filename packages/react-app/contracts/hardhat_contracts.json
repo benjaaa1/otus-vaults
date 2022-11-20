@@ -1723,25 +1723,6 @@
                   "type": "uint256"
                 }
               ],
-              "name": "activeHedgeByPositionId",
-              "outputs": [
-                {
-                  "internalType": "bool",
-                  "name": "",
-                  "type": "bool"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
               "name": "activeHedgeByStrikeId",
               "outputs": [
                 {
@@ -1946,6 +1927,11 @@
             },
             {
               "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "market",
+                  "type": "bytes32"
+                },
                 {
                   "internalType": "int256",
                   "name": "deltaToHedge",
@@ -2438,49 +2424,8 @@
               "type": "function"
             },
             {
-              "inputs": [
-                {
-                  "internalType": "int256",
-                  "name": "size",
-                  "type": "int256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "strikeId",
-                  "type": "uint256"
-                }
-              ],
-              "name": "simpleHedge",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
               "inputs": [],
               "name": "startNextRound",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "bytes32",
-                  "name": "market",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "int256",
-                  "name": "deltaToHedge",
-                  "type": "int256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "positionId",
-                  "type": "uint256"
-                }
-              ],
-              "name": "staticDeltaHedge",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -2669,6 +2614,24 @@
                 }
               ],
               "name": "transferOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "int256",
+                  "name": "size",
+                  "type": "int256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "strikeId",
+                  "type": "uint256"
+                }
+              ],
+              "name": "userHedge",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -2883,26 +2846,13 @@
                 {
                   "components": [
                     {
-                      "internalType": "uint256",
-                      "name": "deltaToHedge",
-                      "type": "uint256"
+                      "internalType": "int256",
+                      "name": "threshold",
+                      "type": "int256"
                     },
                     {
                       "internalType": "uint256",
-                      "name": "maxLeverageSize",
-                      "type": "uint256"
-                    }
-                  ],
-                  "indexed": false,
-                  "internalType": "struct StrategyBase.StaticDeltaHedgeStrategy",
-                  "name": "staticStrategy",
-                  "type": "tuple"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "deltaToHedge",
+                      "name": "period",
                       "type": "uint256"
                     },
                     {
@@ -2913,11 +2863,6 @@
                     {
                       "internalType": "uint256",
                       "name": "maxLeverageSize",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "period",
                       "type": "uint256"
                     }
                   ],
@@ -3329,30 +3274,7 @@
                   "type": "int256"
                 }
               ],
-              "name": "_simpleHedge",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "bytes32",
-                  "name": "market",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "int256",
-                  "name": "deltaToHedge",
-                  "type": "int256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "positionId",
-                  "type": "uint256"
-                }
-              ],
-              "name": "_staticDeltaHedge",
+              "name": "_userHedge",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -3603,8 +3525,13 @@
               "name": "dynamicHedgeStrategy",
               "outputs": [
                 {
+                  "internalType": "int256",
+                  "name": "threshold",
+                  "type": "int256"
+                },
+                {
                   "internalType": "uint256",
-                  "name": "deltaToHedge",
+                  "name": "period",
                   "type": "uint256"
                 },
                 {
@@ -3615,11 +3542,6 @@
                 {
                   "internalType": "uint256",
                   "name": "maxLeverageSize",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "period",
                   "type": "uint256"
                 }
               ],
@@ -4135,25 +4057,13 @@
                 {
                   "components": [
                     {
-                      "internalType": "uint256",
-                      "name": "deltaToHedge",
-                      "type": "uint256"
+                      "internalType": "int256",
+                      "name": "threshold",
+                      "type": "int256"
                     },
                     {
                       "internalType": "uint256",
-                      "name": "maxLeverageSize",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct StrategyBase.StaticDeltaHedgeStrategy",
-                  "name": "_staticStrategy",
-                  "type": "tuple"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "deltaToHedge",
+                      "name": "period",
                       "type": "uint256"
                     },
                     {
@@ -4164,11 +4074,6 @@
                     {
                       "internalType": "uint256",
                       "name": "maxLeverageSize",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "period",
                       "type": "uint256"
                     }
                   ],
@@ -4293,24 +4198,6 @@
               "name": "setStrikeStrategyDetail",
               "outputs": [],
               "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "staticHedgeStrategy",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "deltaToHedge",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "maxLeverageSize",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
               "type": "function"
             },
             {
