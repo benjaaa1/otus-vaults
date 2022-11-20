@@ -69,7 +69,7 @@ export default function SlideInPanel({
                             <Button
                               label={'Next'}
                               isLoading={false}
-                              variant={'action'}
+                              variant={'primary'}
                               radius={'xs'}
                               size={'md'}
                               onClick={() => setStep(2)}
@@ -79,14 +79,14 @@ export default function SlideInPanel({
                             <Button
                               label={'Previous'}
                               isLoading={false}
-                              variant={'action'}
+                              variant={'primary'}
                               radius={'xs'}
                               size={'md'}
                               onClick={() => setStep(1)}
                             />
                             <Button
                               label={'Create'}
-                              isLoading={false}
+                              isLoading={isCreating}
                               variant={'action'}
                               radius={'xs'}
                               size={'md'}

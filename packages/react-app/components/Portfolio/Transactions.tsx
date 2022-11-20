@@ -23,7 +23,6 @@ export default function Transactions() {
     router.push(`/vault/${href}`)
   }
 
-  console.log({ actions })
   return (
     <div className="relative pt-8 pb-8 font-sans">
       <div className="sm:flex sm:items-center">

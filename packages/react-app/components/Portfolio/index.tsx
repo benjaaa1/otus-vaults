@@ -7,8 +7,6 @@ import Transactions from './Transactions'
 
 export default function UserPortfolio() {
   const { data, isLoading } = useUserPortfolio()
-  console.log({ data, isLoading })
-  // const userPortfolio = data;
 
   return (
     <div className="relative pt-8 pb-8">

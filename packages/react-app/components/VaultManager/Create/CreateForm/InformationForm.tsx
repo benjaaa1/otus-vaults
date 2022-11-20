@@ -81,6 +81,26 @@ export default function InformationForm(
         </div>
 
         <div className="sm:col-span-6">
+          <Input
+            showLabel={true}
+            label={'Token Symbol'}
+            type="text"
+            id="tokenSymbol"
+            onChange={(e) => {
+              console.log(e.target.value)
+              setVaultInfo((info) => ({
+                ...info,
+                tokenSymbol: e.target.value,
+              }))
+            }}
+            value={vaultInfo.tokenSymbol}
+            placeholder="TOKEN-SYMBOL"
+            radius={'xs'}
+            variant={'default'}
+          />
+        </div>
+
+        <div className="sm:col-span-6">
           <TextArea
             showLabel={true}
             label={'Token Description'}

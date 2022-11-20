@@ -6,10 +6,10 @@ import NetworkSwitch from '../NetworkSwitch'
 
 export default function Layout({ children }) {
   const { network } = useWeb3Context()
-  console.log({ network })
+
   return (
     <div className="bg-zinc-900 font-sans">
-      {network?.chainId != 10 ? <NetworkSwitch /> : null}
+      {network?.chainId == 10 || network?.chainId == 31337 ? null : < NetworkSwitch />}
 
       <Navbar />
       <main className="mx-auto max-w-6xl bg-zinc-900 px-4 sm:px-6 lg:px-8">

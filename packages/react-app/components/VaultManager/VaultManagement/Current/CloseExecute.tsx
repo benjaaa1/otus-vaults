@@ -18,7 +18,6 @@ import { ZERO_BN } from '../../../../constants/bn'
 
 export default function CloseExecute() {
   const { builtStrikeToClose } = useVaultManagerContext()
-  console.log({ builtStrikeToClose })
 
   const [closeFee, setCloseFee] = useState(ZERO_BN);
   const [forceCloseFee, setForceCloseFee] = useState(ZERO_BN);
@@ -31,7 +30,7 @@ export default function CloseExecute() {
       const strike = await lyra.strike('ETH', strikeId);
       // get quote 
       const quote = await strike.quote(isCall, isLong, size);
-      console.log({ quote });
+
       const { isForceClose: _isForceClose, fee, forceClosePenalty } = quote;
 
       setCloseFee(fee);
@@ -51,7 +50,6 @@ export default function CloseExecute() {
 
   // get more position data in order to close 
   const { data, isLoading } = useLatestRates('ETH')
-  console.log({ data })
 
   return (
     <>

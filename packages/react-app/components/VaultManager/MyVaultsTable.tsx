@@ -10,7 +10,6 @@ import Table from '../UI/Components/Table/Table'
 
 export default function MyVaultsTable() {
   const { network } = useWeb3Context()
-  console.log({ network })
 
   const { data, isLoading } = useMyVaults()
   const vaults = data?.vaults || []

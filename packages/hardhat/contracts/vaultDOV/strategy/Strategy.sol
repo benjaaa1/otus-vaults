@@ -50,11 +50,7 @@ contract Strategy is StrategyBase {
 
   event StrategyHedgeTypeUpdated(address vault, HEDGETYPE hedgeType);
 
-  event HedgeStrategyUpdated(
-    address vault,
-    StaticDeltaHedgeStrategy staticStrategy,
-    DynamicDeltaHedgeStrategy dynamicStrategy
-  );
+  event HedgeStrategyUpdated(address vault, DynamicDeltaHedgeStrategy dynamicStrategy);
 
   /************************************************
    *  Modifiers
@@ -131,20 +127,15 @@ contract Strategy is StrategyBase {
 
   /**
    * @notice Update the strike hedge strategy
-   * @param _staticStrategy vault strategy settings
    * @param _dynamicStrategy vault strategy settings
    * @dev should be able to accept multiple strategy types (1 click / delta / auto simple)
    */
-  function setHedgeStrategies(
-    StaticDeltaHedgeStrategy memory _staticStrategy,
-    DynamicDeltaHedgeStrategy memory _dynamicStrategy
-  ) external onlyOwner {
+  function setHedgeStrategies(DynamicDeltaHedgeStrategy memory _dynamicStrategy) external onlyOwner {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
 
-    staticHedgeStrategy = _staticStrategy;
     dynamicHedgeStrategy = _dynamicStrategy;
-    emit HedgeStrategyUpdated(vault, staticHedgeStrategy, dynamicHedgeStrategy);
+    emit HedgeStrategyUpdated(vault, dynamicHedgeStrategy);
   }
 
   /**
@@ -492,6 +483,7 @@ contract Strategy is StrategyBase {
 
   /**
    * @notice delta hedging using synthetix futures based on strategy
+   * @param market btc or eth
    * @param deltaToHedge deltaToHedge calcualted by keeper
    * @param hedgeAttempts attempts
    * @dev refactor this to move away from futuresadapter
@@ -516,59 +508,13 @@ contract Strategy is StrategyBase {
     uint spotPrice = ILyraBase(lyraBase).getSpotPriceForMarket();
     uint fundsRequiredSUSD = _abs(deltaToHedge).multiplyDecimal(spotPrice); // 20 * 2000 = 40000
 
-    // marginRemaining = 44000 | marginRemaining / fundsRequired = 1.1x == 110%
-    // marginRemaining = 24000 | marginRemaining / fundsRequired = .6x == 60%
     uint currentLeverage = marginRemaining.divideDecimal(fundsRequiredSUSD);
 
-    // need to calculate max size possible by taking into account max leverage allowed
-    // deltaToHedge is +10 == buy 10 units = $20k current marginRemaining = $10k // 20k / 10k = 2x leverage / maxlevarge is 150% * marginRemaining / 10k * 1.5x = 15k / spotprice (2k) = 7.5
-    // deltaToHedge is -10 == sell 10 units = $20k
-    int size = staticHedgeStrategy.maxLeverageSize > currentLeverage
+    int size = dynamicHedgeStrategy.maxLeverageSize > currentLeverage
       ? deltaToHedge
-      : _maxLeverageSize(deltaToHedge, staticHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
+      : _maxLeverageSize(deltaToHedge, dynamicHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
 
     IFuturesMarket(futuresMarket).modifyPosition(size);
-  }
-
-  /******************************************************
-   *  STATIC HEDGE - DELTA HEDGE
-   *****************************************************/
-
-  /**
-   * @notice static delta hedging using synthetix futures based on strategy
-   * @param deltaToHedge set by user
-   * @dev refactor this to move away from futuresadapter
-   */
-  function _staticDeltaHedge(
-    bytes32 market,
-    int deltaToHedge,
-    uint positionId
-  ) external onlyVault {
-    require(hedgeType == HEDGETYPE.STATIC_DELTA_HEDGE, "Not allowed");
-    address futuresMarket = futuresMarketsByKey[market];
-
-    address lyraBase = lyraBases[market];
-
-    uint spotPrice = ILyraBase(lyraBase).getSpotPriceForMarket();
-    uint fundsRequiredSUSD = _abs(deltaToHedge).multiplyDecimal(spotPrice); // 20 * 2000 = 40000
-
-    quoteAsset.transferFrom(address(vault), address(this), fundsRequiredSUSD);
-
-    transferToFuturesMarket(market, int(fundsRequiredSUSD));
-
-    (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
-
-    require(marginRemaining > 0, "Remaining margin is 0");
-
-    uint currentLeverage = marginRemaining.divideDecimal(fundsRequiredSUSD);
-
-    int size = staticHedgeStrategy.maxLeverageSize > currentLeverage
-      ? deltaToHedge
-      : _maxLeverageSize(deltaToHedge, staticHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
-
-    IFuturesMarket(futuresMarket).modifyPosition(size);
-
-    emit Hedge(HEDGETYPE.STATIC_DELTA_HEDGE, size, spotPrice, positionId);
   }
 
   /*****************************************************
@@ -579,8 +525,8 @@ contract Strategy is StrategyBase {
    * @notice one click delta hedge
    * @param size total size of hedge
    */
-  function _simpleHedge(bytes32 market, int size) external onlyVault {
-    require(hedgeType == HEDGETYPE.SIMPLE_HEDGE, "Not allowed");
+  function _userHedge(bytes32 market, int size) external onlyVault {
+    require(hedgeType == HEDGETYPE.USER_HEDGE, "Not allowed");
     address futuresMarket = futuresMarketsByKey[market];
 
     (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));

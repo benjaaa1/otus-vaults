@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
+import "hardhat/console.sol";
+
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -121,7 +123,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     performanceFee = _performanceFee;
     managementFee = _managementFee;
-
+    console.log("vaultParams.asset");
+    console.log(vaultParams.asset);
     uint assetBalance = IERC20(vaultParams.asset).balanceOf(address(this));
 
     ShareMath.assertUint104(assetBalance);

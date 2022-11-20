@@ -20,7 +20,7 @@ import { CurrentExecute } from './Current/Execute'
 
 export default function VaultManagement() {
   const { query } = useRouter()
-  console.log({ vault: query?.vault })
+
   const { data, isLoading, refetch } = useMyVault(query?.vault)
 
   const [tab, setTab] = useState(VaultManagerTabs.CURRENT.HREF)

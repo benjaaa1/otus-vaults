@@ -112,6 +112,8 @@ contract OtusController is Ownable {
   ) external {
     // create vault
     address vault = IOtusCloneFactory(otusCloneFactory).cloneVault();
+    console.log("vault");
+    console.log(vault); 
     // add vault created to mapping
     address[] memory _vaults = vaults[msg.sender];
     uint len = _vaults.length;

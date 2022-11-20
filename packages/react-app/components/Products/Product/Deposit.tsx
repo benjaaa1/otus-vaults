@@ -44,7 +44,6 @@ export default function Deposit({ vault }: { vault: Vault }) {
       address != null &&
       vault
     ) {
-      console.log({ address, vault })
       const allowanceStatus = await susdContract.allowance(address, vault.id)
       if (fromBigNumber(allowanceStatus) > 0) {
         setApproved(true)

@@ -38,7 +38,7 @@ export default function Withdraw({ vault }: { vault: Vault }) {
         await otusVaultContract.shareBalances(address)
 
       const bal = await otusVaultContract.balanceOf(address)
-      console.log({ heldByAccount, heldByVault, bal })
+
       if (fromBigNumber(heldByAccount) > 0) {
         setHasDeposit(true)
       } else {

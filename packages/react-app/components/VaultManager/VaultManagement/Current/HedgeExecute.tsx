@@ -22,16 +22,11 @@ const isCallText = (optionType: number): string => {
 }
 
 export default function HedgeExecute({ strategyId }: { strategyId: string }) {
-  console.log({ strategyId })
   const { builtStrikeToHedge } = useVaultManagerContext()
-  console.log({ builtStrikeToHedge })
-
   // get delta here
   const delta = usePositionDelta(strategyId, builtStrikeToHedge)
-  console.log({ delta })
 
   const { data, isLoading } = useLatestRates('ETH')
-  console.log({ data })
 
   return (
     <>

@@ -131,7 +131,7 @@ const create = async () => {
     const lyraMarket = getMarketDeploys('local', 'sETH');
 
     const susd = lyraGlobal.QuoteAsset;
-
+    console.log({ susd })
     const vaultParams = {
       decimals: 18,
       cap: toBN('500000'),
@@ -170,25 +170,18 @@ const create = async () => {
 
     await strategyInstance.connect(deployer).setHedgeStrategyType(2);
 
-    // console.log('strikeStrategiesSet');
+    // in future set hedge strategy
+    const _dynamicStrategy = {
+      threshold: toBN('.80'),
+      maxLeverageSize: toBN('2'),
+      maxHedgeAttempts: toBN('4'),
+      period: lyraConstants.HOUR_SEC,
+    };
 
-    // // in future set hedge strategy
-    // const [_staticStrategy, _dynamicStrategy] = buildHedgeStrategies();
-
-    // console.log({ _staticStrategy, _dynamicStrategy });
-
-    // const strikeHedgeDetailSet = await strategyInstance
-    //   .connect(deployer)
-    //   .setHedgeStrategies(_staticStrategy, _dynamicStrategy);
-    // const strikeHedgeDetailSetReceipt = strikeHedgeDetailSet.wait();
-    // console.log('strikeHedgeDetailSet');
-
-    // // start round
-    // // const liveBoards = await getLiveBoards(); // remove this
-    // const selectedBoard = liveBoards[1];
-    // console.log({ selectedBoard: selectedBoard.id });
-
-    lyraGlobal;
+    const strikeHedgeDetailSet = await strategyInstance
+      .connect(deployer)
+      .setHedgeStrategies(_dynamicStrategy);
+    await strikeHedgeDetailSet.wait();
 
     const startRound = await otusVaultInstance.connect(deployer).startNextRound();
     await startRound.wait();

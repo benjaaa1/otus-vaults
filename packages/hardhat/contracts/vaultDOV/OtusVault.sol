@@ -61,7 +61,6 @@ contract OtusVault is BaseVault {
 
   uint[] public positionIdsHedged;
   mapping(uint => uint) public hedgeAttemptsByPositionId;
-  mapping(uint => bool) public activeHedgeByPositionId;
 
   /************************************************
    *  EVENTS
@@ -289,46 +288,32 @@ contract OtusVault is BaseVault {
    ***********************************************/
 
   /**
-   * @notice Simple hedge based on pricing of base asset
+   * @notice User hedge based on pricing of base asset
    * @param size hedge by size
    * @param size hedge by strikeId
    */
-  function simpleHedge(int size, uint strikeId) external onlyOwner {
+  function userHedge(int size, uint strikeId) external onlyOwner {
     require(vaultState.roundInProgress, "Round closed");
     require(activeHedgeByStrikeId[strikeId] == false, "Vault has active hedge for strike");
 
-    IStrategy(strategy)._simpleHedge(size);
+    IStrategy(strategy)._userHedge(size);
   }
 
   /**
    * @notice delta hedge based on strategy settings
    */
-  function dynamicDeltaHedge(int deltaToHedge, uint positionId) external onlyKeeper {
-    require(vaultState.roundInProgress, "Round closed");
-    // probably check by position id not strike id
-    require(activeHedgeByPositionId[positionId] == false, "Vault has hedge for option type");
-
-    uint deltaHedgeAttempts = hedgeAttemptsByPositionId[positionId];
-
-    IStrategy(strategy)._dynamicDeltaHedge(deltaToHedge, deltaHedgeAttempts);
-
-    hedgeAttemptsByPositionId[positionId] = deltaHedgeAttempts + 1;
-    activeHedgeByPositionId[positionId] = true;
-  }
-
-  /**
-   * @notice delta hedge based on user set min. delta to hedge
-   * @param deltaToHedge set by user to minimize delta exposure
-   */
-  function staticDeltaHedge(
+  function dynamicDeltaHedge(
     bytes32 market,
     int deltaToHedge,
     uint positionId
   ) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
-    require(activeHedgeByPositionId[positionId] == false, "Vault has active hedge for strike");
-    // transfer funds reserved for hedging
-    IStrategy(strategy)._staticDeltaHedge(market, deltaToHedge, positionId);
+
+    uint deltaHedgeAttempts = hedgeAttemptsByPositionId[positionId];
+
+    IStrategy(strategy)._dynamicDeltaHedge(market, deltaToHedge, deltaHedgeAttempts);
+
+    hedgeAttemptsByPositionId[positionId] = deltaHedgeAttempts + 1;
   }
 
   /**
@@ -337,10 +322,7 @@ contract OtusVault is BaseVault {
    * @dev can check for events of closed rounds?
    */
   function closeHedgeByPositionId(uint positionId) external onlyKeeper {
-    require(activeHedgeByPositionId[positionId], "Vault has no active hedge for position");
     IStrategy(strategy)._closeHedge();
-    delete activeHedgeByPositionId[positionId];
-
     for (uint i = 0; i < positionIdsHedged.length; i++) {
       positionIdsHedged[i] = 0; // clear strike for now
     }

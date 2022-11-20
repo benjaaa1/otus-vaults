@@ -17,13 +17,14 @@ import {
   ManagerAction,
   VaultStrategy,
   Strategy,
+  DynamicHedgeStrategy
 } from '../../generated/schema';
 
-export function handleHedgeClosePosition(event: HedgeClosePosition): void {}
+export function handleHedgeClosePosition(event: HedgeClosePosition): void { }
 
-export function handleHedge(event: Hedge): void {}
+export function handleHedge(event: Hedge): void { }
 
-export function handeStrikeStrategyUpdate(event: StrikeStrategyUpdated): void {}
+export function handeStrikeStrategyUpdate(event: StrikeStrategyUpdated): void { }
 
 export function handleVaultStrategyUpdate(event: StrategyUpdated): void {
   let strategyAddress = event.address as Address;
@@ -74,4 +75,18 @@ export function handleHedgeTypeUpdate(event: StrategyHedgeTypeUpdated): void {
   strategy.save();
 }
 
-export function handleHedgeStrategyUpdate(event: HedgeStrategyUpdated): void {}
+export function handleHedgeStrategyUpdate(event: HedgeStrategyUpdated): void {
+  let strategyAddress = event.address as Address;
+
+  let dynamicHedgeStrategy = DynamicHedgeStrategy.load(strategyAddress.toHex());
+  if (!dynamicHedgeStrategy) {
+    dynamicHedgeStrategy = new DynamicHedgeStrategy(strategyAddress.toHex());
+  }
+
+  dynamicHedgeStrategy.threshold = event.params.threshold;
+  dynamicHedgeStrategy.period = event.params.period;
+  dynamicHedgeStrategy.maxHedgeAttempts = event.params.maxHedgeAttempts;
+  dynamicHedgeStrategy.maxLeverageSize = event.params.maxLeverageSize;
+
+  dynamicHedgeStrategy.save();
+}

@@ -78,13 +78,13 @@ export const CURRENCY_BY_ADDRESS = {
 
 export const CURRENCIES: Currency = {
   10: {
-    'ETH': ''
+    'ETH': '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
   },
   420: {
     'ETH': '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8'
   },
   31337: {
-    'ETH': '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8'
+    'ETH': '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
   }
 }
 

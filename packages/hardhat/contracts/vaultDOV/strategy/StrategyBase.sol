@@ -39,8 +39,6 @@ contract StrategyBase is LyraAdapter {
   StrategyDetail public currentStrategy;
   // dynamic hedge strategy
   DynamicDeltaHedgeStrategy public dynamicHedgeStrategy;
-  // dynamic hedge strategy
-  StaticDeltaHedgeStrategy public staticHedgeStrategy;
 
   // option type => strike strategy
   mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
@@ -53,8 +51,7 @@ contract StrategyBase is LyraAdapter {
   // hedge type selected
   enum HEDGETYPE {
     NO_HEDGE,
-    SIMPLE_HEDGE,
-    STATIC_DELTA_HEDGE,
+    USER_HEDGE,
     DYNAMIC_DELTA_HEDGE
   }
 
@@ -88,16 +85,11 @@ contract StrategyBase is LyraAdapter {
     uint strikePrice;
   }
 
-  struct StaticDeltaHedgeStrategy {
-    uint deltaToHedge; // 50% - 100% -> dependent on risk appetite
-    uint maxLeverageSize; // 150% ~ 1.5x 200% 2x
-  }
-
   struct DynamicDeltaHedgeStrategy {
-    uint deltaToHedge; // 50% - 100% -> dependent on risk appetite
-    uint maxHedgeAttempts; // ~6 dependent on fees mostly
-    uint maxLeverageSize; // 150% ~ 1.5x 200% 2x - sometimes not enough funds to cover the delta
-    uint period; // 4 hours 12 hours 24 hours hedge attempt allowed once per period
+    int threshold; // if delta is .8 and threshold is .6 then reduce expoosure to .6 by making the .2 difference
+    uint period;
+    uint maxHedgeAttempts;
+    uint maxLeverageSize;
   }
 
   constructor(address _quoteAsset) LyraAdapter() {

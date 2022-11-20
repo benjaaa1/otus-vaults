@@ -26,14 +26,12 @@ interface IStrategy {
 
   function getVaultStrategy() external returns (StrategyBase.StrategyDetail memory currentStrategy);
 
-  function _simpleHedge(int size) external;
+  function _userHedge(int size) external;
 
-  function _dynamicDeltaHedge(int deltaToHedge, uint deltaHedgeAttempts) external;
-
-  function _staticDeltaHedge(
+  function _dynamicDeltaHedge(
     bytes32 market,
     int deltaToHedge,
-    uint positionId
+    uint deltaHedgeAttempts
   ) external;
 
   function _transferFunds(uint reservedHedgeFunds) external;

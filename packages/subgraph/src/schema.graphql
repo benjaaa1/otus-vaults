@@ -33,7 +33,6 @@ type Strategy @entity {
   latestUpdate: BigInt!
   vault: Vault!
   vaultStrategy: VaultStrategy! @derivedFrom(field: "strategy")
-  staticHedgeStrategy: StaticHedgeStrategy! @derivedFrom(field: "strategy")
   dynamicHedgeStrategy: DynamicHedgeStrategy! @derivedFrom(field: "strategy")
   strikeStrategies: [StrikeStrategy!]! @derivedFrom(field: "strategy")
   hedgeType: Int!
@@ -52,14 +51,10 @@ type VaultStrategy @entity {
   allowedMarkets: [Bytes!]
 }
 
-type StaticHedgeStrategy @entity {
-  id: ID!
-  strategy: Strategy!
-}
-
 type DynamicHedgeStrategy @entity {
   id: ID!
-  strategy: Strategy!
+  threshold: BigInt!
+  period: BigInt!
 }
 
 type StrikeStrategy @entity {
