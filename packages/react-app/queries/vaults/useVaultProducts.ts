@@ -25,12 +25,23 @@ type DynamicHedgeStrategy = {
   threshold: BigNumber
 }
 
+export type StrikeStrategy = {
+  id: string
+  targetDelta: BigNumber
+  maxDeltaGap: BigNumber
+  minVol: BigNumber
+  maxVol: BigNumber
+  maxVolVariance: BigNumber
+  optionType: BigNumber
+}
+
 type Strategy = {
   id: string
   latestUpdate: number
   hedgeType: number
   vaultStrategy: VaultStrategy
   dynamicHedgeStrategy: DynamicHedgeStrategy
+  strikeStrategies: StrikeStrategy[]
 }
 
 export type Vault = {
@@ -173,6 +184,15 @@ export const useVaultProduct = (vaultId: any) => {
                   maxHedgeAttempts
                   maxLeverageSize
                   threshold
+                }
+                strikeStrategies {
+                  id
+                  optionType
+                  maxVol
+                  maxDeltaGap
+                  targetDelta
+                  minVol
+                  maxVolVariance
                 }
               }
               vaultTrades {

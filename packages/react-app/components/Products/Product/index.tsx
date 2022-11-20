@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import {
+  StrikeStrategy,
   useVaultProduct,
   VaultStrategy,
 } from '../../../queries/vaults/useVaultProducts'
@@ -263,7 +264,7 @@ export default function Product() {
         setOpen={setOpenStrikeStrategy}
         open={openStrikeStrategy}
       >
-        strike strategy
+        <StrikeStrategyInfo strikeStrategies={vault?.strategy.strikeStrategies} />
       </Modal>
       <Modal
         title={'Hedge Strategy'}
@@ -310,6 +311,80 @@ const VaultStrategyInfo = ({ strategy }: { strategy: VaultStrategy }) => {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+const StrikeStrategyInfo = ({ strikeStrategies }: { strikeStrategies: StrikeStrategy[] }) => {
+
+  return (
+    <div className="grid grid-cols-7">
+      <div>
+        <div className="p-4">
+          <div className="text-xxs font-normal uppercase text-zinc-300">
+            Option Type
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-white">
+
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="p-4">
+          <div className="text-xxs font-normal uppercase text-zinc-300">
+            Target Delta
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-white">
+
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="p-4">
+          <div className="text-xxs font-normal uppercase text-zinc-300">
+            Max Delta Gap
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-white">
+
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="p-4">
+          <div className="text-xxs font-normal uppercase text-zinc-300">
+            Min Vol
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-white">
+
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="p-4">
+          <div className="text-xxs font-normal uppercase text-zinc-300">
+            Max Vol
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-white">
+
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="p-4">
+          <div className="text-xxs font-normal uppercase text-zinc-300">
+            Max Vol Variance
+          </div>
+          <div className="py-2 font-mono text-xl font-normal text-white">
+
+          </div>
+        </div>
+      </div>
+
     </div>
   )
 }
