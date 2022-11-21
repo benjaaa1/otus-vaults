@@ -17,6 +17,8 @@ import { useOtusVaultContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
 import { formatUSD, fromBigNumber } from '../../../utils/formatters/numbers'
 import { CurrentExecute } from './Current/Execute'
+import Modal from '../../UI/Modal'
+import HedgeStrategyForm from './StrategyModals/HedgeStrategyForm'
 
 export default function VaultManagement() {
   const { query } = useRouter()
@@ -24,6 +26,10 @@ export default function VaultManagement() {
   const { data, isLoading, refetch } = useMyVault(query?.vault)
 
   const [tab, setTab] = useState(VaultManagerTabs.CURRENT.HREF)
+
+  const [openVaultStrategy, setOpenVaultStrategy] = useState(false)
+  const [openStrikeStrategy, setOpenStrikeStrategy] = useState(false)
+  const [openHedgeStrategy, setOpenHedgeStrategy] = useState(false)
 
   return (
     <VaultManagerContextProvider>
@@ -43,21 +49,21 @@ export default function VaultManagement() {
                 label={'Vault Settings'}
                 variant={'secondary'}
                 size={'sm'}
-                onClick={() => console.log('vault settings')}
+                onClick={() => setOpenVaultStrategy(true)}
                 radius={'full'}
               />
               <Button
                 label={'Strike Settings'}
                 variant={'secondary'}
                 size={'sm'}
-                onClick={() => console.log('Strike settings')}
+                onClick={() => setOpenStrikeStrategy(true)}
                 radius={'full'}
               />
               <Button
                 label={'Hedge Settings'}
                 variant={'secondary'}
                 size={'sm'}
-                onClick={() => console.log('Hedge settings')}
+                onClick={() => setOpenHedgeStrategy(true)}
                 radius={'full'}
               />
             </div>
@@ -100,6 +106,27 @@ export default function VaultManagement() {
           </div>
         </main>
       </div>
+      <Modal
+        title={'Vault Strategy'}
+        setOpen={setOpenVaultStrategy}
+        open={openVaultStrategy}
+      >
+        Vault
+      </Modal>
+      <Modal
+        title={'Strike Strategy'}
+        setOpen={setOpenStrikeStrategy}
+        open={openStrikeStrategy}
+      >
+        Strike
+      </Modal>
+      <Modal
+        title={'Hedge Strategy'}
+        setOpen={setOpenHedgeStrategy}
+        open={openHedgeStrategy}
+      >
+        <HedgeStrategyForm hedgeType={data?.strategy.hedgeType} />
+      </Modal>
     </VaultManagerContextProvider>
   )
 }
