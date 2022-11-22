@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useVaultManagerContext } from '../../../../context/VaultManagerContext'
-import { LyraBoard, LyraStrike } from '../../../../queries/lyra/useLyra'
+import { LyraStrike } from '../../../../queries/lyra/useLyra'
 import {
   fromBigNumber,
   formatPercentage,
@@ -17,10 +17,22 @@ export default function SelectStrikes({
   selectedStrikes: []
   selectedOptionType: number
 }) {
-  const { toggleTrade } = useVaultManagerContext()
+  const { builtTrades, toggleTrade } = useVaultManagerContext()
 
-  const [activeIds, setActiveIds] = useState<Record<string, boolean>>({})
-  console.log({ activeIds })
+  const [activeIds, setActiveIds] = useState<Record<string, boolean>>({});
+
+  const buildActiveIds = useCallback(() => {
+    let _activeIds = builtTrades?.reduce((accum, trade) => {
+      let prop = `${trade.id}-${selectedOptionType}`;
+      return { ...accum, [prop]: true }
+    }, {});
+    setActiveIds(_activeIds);
+  }, [builtTrades])
+
+  useEffect(() => {
+    buildActiveIds();
+  }, [builtTrades])
+
   return (
     <Table
       variant="primary"
@@ -57,27 +69,6 @@ export default function SelectStrikes({
             isButton={true}
             isSelected={activeIds[`${strike.id}-${selectedOptionType}`]}
             onClick={() => {
-              setActiveIds((_activeIds: Record<string, boolean>) => {
-                console.log({ _activeIds, strikeId: strike.id, selectedOptionType })
-                let prop = `${strike.id}-${selectedOptionType}`;
-                if (
-                  Object.hasOwn(
-                    _activeIds,
-                    prop
-                  )
-                ) {
-                  let val = _activeIds[prop];
-                  return {
-                    ..._activeIds,
-                    [prop]: !val,
-                  }
-                } else {
-                  return {
-                    ..._activeIds,
-                    [prop]: true,
-                  }
-                }
-              })
               toggleTrade({ ...strike, selectedOptionType })
             }}
           />

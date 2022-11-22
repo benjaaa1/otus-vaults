@@ -1,3 +1,4 @@
+import { XMarkIcon } from '@heroicons/react/20/solid'
 import { parseUnits } from 'ethers/lib/utils'
 import { useCallback, useMemo, useState } from 'react'
 import { BYTES32_MARKET, getMarketInBytes } from '../../../../constants/markets'
@@ -61,7 +62,7 @@ const isCallText = (optionType: number): string => {
 }
 
 export default function TradeExecute({ vault }: { vault: Vault }) {
-  const { builtTrades } = useVaultManagerContext()
+  const { builtTrades, toggleTrade } = useVaultManagerContext()
   const otusContracts = useOtusVaultContracts()
 
   const monitorTransaction = useTransactionNotifier()
@@ -107,7 +108,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
       <div className="overflow-hidden border border-zinc-800 bg-transparent sm:rounded-sm">
         <ul role="list" className="divide-y divide-zinc-700">
           {builtTrades?.map((trade: LyraStrike) => (
-            <Trade trade={trade} />
+            <Trade toggleTrade={toggleTrade} trade={trade} />
           ))}
 
           {/** max cost & min received  */}
@@ -157,7 +158,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
   )
 }
 
-const Trade = ({ trade }: { trade: LyraStrike }) => {
+const Trade = ({ toggleTrade, trade }: { toggleTrade: (trade: LyraStrike) => void, trade: LyraStrike }) => {
   const { updateTradeSize } = useVaultManagerContext()
   const [size, setSize] = useState(fromBigNumber(trade.quote.size))
   console.log({ trade, newSize: fromBigNumber(trade.quote.size) })
@@ -166,16 +167,16 @@ const Trade = ({ trade }: { trade: LyraStrike }) => {
 
   return (
     <li key={trade.id}>
-      <div className="flex hover:bg-black">
-        <div className="flex-none-1 w-14">
-          <div className="p-4 text-white sm:px-6">
+      <div className="grid grid-cols-9 gap-4 hover:bg-black">
+        <div className="col-span-1">
+          <div className="py-4 px-2 text-white">
             {market == 'BTC' ? <BTCIcon /> : <ETHIcon />}
           </div>
         </div>
-        <div className="flex-1 px-4 py-6 sm:px-6">
+        <div className="col-span-7 px-1 py-6 sm:px-6">
           <div className="flex items-center justify-between">
             <p className="text-md truncate font-sans font-semibold text-zinc-500">
-              {`${isLongText(trade.selectedOptionType)} ETH ${formatUSD(
+              {`${isLongText(trade.selectedOptionType)} ${market} ${formatUSD(
                 fromBigNumber(trade.strikePrice)
               )} ${isCallText(trade.selectedOptionType)}`}
             </p>
@@ -232,6 +233,14 @@ const Trade = ({ trade }: { trade: LyraStrike }) => {
               </div>
             </div>
           ) : null}
+        </div>
+        <div className="col-span-1">
+          <div onClick={() => toggleTrade(trade)} className="py-2 text-white cursor-pointer">
+            <XMarkIcon
+              className="block h-5 w-5 text-zinc-500"
+              aria-hidden="true"
+            />
+          </div>
         </div>
       </div>
     </li>

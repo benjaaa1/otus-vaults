@@ -11,7 +11,7 @@ const VaultManagerContext = createContext<VaultManagerProviderState>(
 )
 
 interface Props {
-  children: ReactChild
+  children: ReactChild[]
 }
 
 // not ready
