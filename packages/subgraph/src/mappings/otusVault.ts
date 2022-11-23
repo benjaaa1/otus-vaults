@@ -112,6 +112,7 @@ export function handleDeposit(event: Deposit): void {
   let existingDeposit = otusVaultEntity.totalDeposit;
   otusVaultEntity.totalDeposit = existingDeposit.plus(event.params.amount);
   userAction.timestamp = timestamp;
+
   userAction.txhash = txhash;
   userAction.isDeposit = true;
   userAction.amount = event.params.amount;
