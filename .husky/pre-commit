@@ -4,3 +4,5 @@
 # yarn lint
 
 # yarn lint:ts
+
+npx lint-staged

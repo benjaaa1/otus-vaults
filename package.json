@@ -12,25 +12,6 @@
         "src": "packages/hardhat/test/**/*.ts packages/hardhat/scripts/**/*.ts packages/hardhat/contracts/**/*.sol packages/hardhat/contracts/*.sol packages/hardhat/hardhat.config.ts"
     },
     "private": true,
-    "husky": {
-        "hooks": {
-            "pre-commit": "lint-staged"
-        }
-    },
-    "lint-staged": {
-        "packages/hardhat/contracts/**/*.sol": [
-            "yarn prettier:sol"
-        ],
-        "*.{ts,tsx}": [
-            "prettier --write",
-            "eslint --fix",
-            "git add"
-        ],
-        "*.{html,css,less,ejs}": [
-            "prettier --write",
-            "git add"
-        ]
-    },
     "scripts": {
         "chain": "yarn workspace @otus-finance/hardhat chain",
         "start": "yarn workspace @otus-finance/react-app start",
@@ -78,6 +59,7 @@
         ]
     },
     "devDependencies": {
-        "husky": "^8.0.0"
+        "husky": "^8.0.0",
+        "lint-staged": "^13.0.3"
     }
 }
