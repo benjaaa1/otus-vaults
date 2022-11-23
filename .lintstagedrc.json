@@ -4,8 +4,7 @@
   ],
   "packages/react-app/**/*.{ts,tsx}": [
     "prettier --write",
-    "eslint --fix",
-    "git add"
+    "eslint --fix"
   ],
   "packages/react-app/**/*.{html,css,less,ejs}": [
     "prettier --write",
