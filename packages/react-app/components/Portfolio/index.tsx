@@ -10,13 +10,9 @@ export default function UserPortfolio() {
 
   return (
     <div className="relative pt-8 pb-8">
-      <Stats
-        balance={data?.balance}
-        yieldEarned={data?.yieldEarned}
-        roi={null}
-      />
+      <Stats />
       <Positions />
-      <Transactions actions={data?.userActions} />
+      <Transactions />
     </div>
   )
 }

@@ -1,13 +1,76 @@
-import { UserAction } from '../../queries/portfolio/useUserPortfolio'
+import { useRouter } from 'next/router'
+import { useCallback, useEffect, useState } from 'react'
+import { UserAction, useUserPortfolio } from '../../queries/portfolio/useUserPortfolio'
 import { formatUSD, fromBigNumber } from '../../utils/formatters/numbers'
 import { Cell } from '../UI/Components/Table/Cell'
 import { HeaderCell } from '../UI/Components/Table/HeaderCell'
 import Table from '../UI/Components/Table/Table'
-import EmptyState from './EmptyState'
+
+type VaultUserPosition = {
+  [key: string]: Position
+}
+
+type Position = {
+  active: boolean
+  vault: string
+  balance: number
+  apy: number
+}
 
 export default function Positions() {
   // positions in vaults
-  const positions = []
+  const router = useRouter()
+
+  const handleVaultClick = (e: any, href: string) => {
+    e.preventDefault()
+    router.push(`/vault/${href}`)
+  }
+
+  const { data, isLoading } = useUserPortfolio();
+
+  const [positions, setPositions] = useState<Position[]>([]);
+
+  const formatUserVaultActions = useCallback(() => {
+    if (data?.userActions && data?.userActions.length > 0) {
+      let _vaultPositions: VaultUserPosition = data?.userActions.reduce((accum: VaultUserPosition, action) => {
+        let { vault: { id } } = action;
+        if (accum.hasOwnProperty(id)) {
+          let existingPosition = accum[id];
+          let { balance: existingBalance } = existingPosition;
+          let { amount, isDeposit } = action;
+          let balance = isDeposit ? fromBigNumber(amount) + existingBalance : existingBalance - fromBigNumber(amount);
+          let position = {
+            vault: id,
+            active: true,
+            balance,
+            apy: 0
+          }
+          return { ...accum, [id]: position }
+        } else {
+          let { amount, isDeposit } = action;
+          let balance = isDeposit ? fromBigNumber(amount) + 0 : 0 - fromBigNumber(amount);
+          let position = {
+            vault: id,
+            active: true,
+            balance,
+            apy: 0
+          }
+          return { ...accum, [id]: position }
+        }
+      }, {});
+
+      let _positions: Position[] = Object.values(_vaultPositions);
+      setPositions(_positions);
+    } else {
+      setPositions([])
+    }
+  }, [data]);
+
+  useEffect(() => {
+    formatUserVaultActions();
+  }, [data])
+
+  console.log({ positions })
 
   return (
     <div className="relative pt-8 pb-8 font-sans">
@@ -29,30 +92,32 @@ export default function Positions() {
             </tr>
           }
         >
-          {positions.map((position: any, index: number) => {
-            ;<tr key={index}>
-              <Cell
-                variant="default"
-                label={position.txhash}
-                isButton={false}
-              />
-              <Cell
-                variant="default"
-                label={position.timestamp}
-                isButton={false}
-              />
-              <Cell
-                variant="default"
-                label={position.isDeposit}
-                isButton={false}
-              />
-              <Cell
-                variant="default"
-                label={formatUSD(fromBigNumber(position.amount))}
-                isButton={false}
-              />
-              <Cell variant="default" label={position.vault} isButton={false} />
-            </tr>
+          {positions.map((position: Position, index: number) => {
+            return (
+              <tr key={index}>
+                <Cell
+                  variant="default"
+                  label={position.active ? 'Yes' : 'False'}
+                  isButton={false}
+                />
+                <Cell
+                  variant="default"
+                  label={formatUSD(position.balance)}
+                  isButton={false}
+                />
+                <Cell
+                  variant="default"
+                  label={'View Vault'}
+                  isButton={true}
+                  onClick={(e: React.MouseEvent<HTMLElement>) => handleVaultClick(e, position.vault)}
+                />
+                <Cell
+                  variant="default"
+                  label={position.apy}
+                  isButton={false}
+                />
+              </tr>
+            )
           })}
         </Table>
       </div>

@@ -54,9 +54,7 @@ module.exports = {
       url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_ID}`,
       ovm: true,
       timeout: 60000,
-      accounts: {
-        mnemonic: process.env.PRIVATE_KEY,
-      },
+      accounts: [process.env.PRIVATE_KEY],
       deploy: ['deploy_l2'],
       companionNetworks: {
         l1: 'goerli',

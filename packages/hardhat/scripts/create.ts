@@ -131,7 +131,7 @@ const create = async () => {
     const lyraMarket = getMarketDeploys('local', 'sETH');
 
     const susd = lyraGlobal.QuoteAsset;
-    console.log({ susd })
+
     const vaultParams = {
       decimals: 18,
       cap: toBN('500000'),
@@ -156,8 +156,8 @@ const create = async () => {
     const otusVaultInstance = otusVault.attach(_vault);
     const strategyInstance = strategy.attach(_strategy);
 
-    console.log({ _vault });
     // approve and deposit susd
+    console.log({ _vault })
     await drip(susd, otusVaultInstance, _vault);
 
     // // set strike options strategies
@@ -185,17 +185,12 @@ const create = async () => {
 
     const startRound = await otusVaultInstance.connect(deployer).startNextRound();
     await startRound.wait();
-    console.log('startRound');
-
-    console.log({ lyraMarket: lyraMarket.OptionMarket.address });
 
     const optionMarket = await ethers.getContractAt(lyraMarket.OptionMarket.abi, lyraMarket.OptionMarket.address);
 
     const boards = await optionMarket.getLiveBoards();
-    console.log({ boards });
 
     const strikes = await optionMarket.getBoardStrikes(boards[0]);
-    console.log({ strikes });
 
     const strikeDetails = await Promise.all(
       strikes.map(async strike => {
@@ -209,30 +204,20 @@ const create = async () => {
     // // select strikes StrategyBase.StrikeTrade[] and trade
     const trades = await buildTrades(strikeDetails, deployer, strategyInstance);
     // console.log({ trades });
-    console.log({ otusVaultInstance: otusVaultInstance.address });
 
     const lyraBaseAddress = await strategyInstance.lyraBases(ethMarketKey);
-    console.log({ lyraBaseAddress });
 
     const lyraOptionMarket = await strategyInstance.lyraOptionMarkets(ethMarketKey);
-    console.log({ lyraOptionMarket });
 
-    const strike = await lyraBase.getStrikes([strikes[1]]);
+    const strike = await lyraBase.getStrikes([strikes[2]]);
     console.log({ strike });
 
     const spotPrice = await lyraBase.getExchangeParams();
-    console.log({ spotPrice });
 
-    console.log({ trades });
     const trade = await otusVaultInstance.connect(deployer).trade([trades]);
     await trade.wait();
-    console.log({ trade });
 
-    const _checkDeltaByPositionId = await strategyInstance._checkDeltaByPositionId(ethMarketKey, [strikes[1]]);
-    console.log({
-      _checkDeltaByPositionId: formatUnits(_checkDeltaByPositionId) * formatUnits(trades.size),
-      strategyInstance: strategyInstance.address,
-    });
+    // const _checkDeltaByPositionId = await strategyInstance._checkDeltaByPositionId(ethMarketKey, [strikes[1]]);
     // get positions opened
     // const [strikes, optionTypes, positionIds] = await strategyInstance.getStrikeOptionTypes();
     // console.log({ strikes, optionTypes, positionIds })
@@ -265,7 +250,7 @@ const drip = async (susd, otusVaultInstance, _vault) => {
 
   for (let i = 0; i < 4; i++) {
     let wallet = ethers.Wallet.createRandom();
-    // console.log({ wallet: wallet._signingKey(), address: wallet.address });
+    console.log({ wallet: wallet._signingKey(), address: wallet.address });
     wallet = wallet.connect(provider);
     signers.push(wallet);
   }

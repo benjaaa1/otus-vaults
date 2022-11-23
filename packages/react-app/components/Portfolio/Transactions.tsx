@@ -50,7 +50,7 @@ export default function Transactions() {
                   variant="default"
                   label={'View TX'}
                   isButton={true}
-                  onClick={(e) => {
+                  onClick={(e: any) => {
                     const url = `${getBlockExplorerUrl(
                       network?.chainId || 10
                     )}tx/${action.txhash}`
@@ -76,7 +76,7 @@ export default function Transactions() {
                   variant="default"
                   label={'View Vault'}
                   isButton={true}
-                  onClick={(e) => handleVaultClick(e, action.vault)}
+                  onClick={(e: React.MouseEvent<HTMLElement>) => handleVaultClick(e, action.vault.id)}
                 />
               </tr>
             )

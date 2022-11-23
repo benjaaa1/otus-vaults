@@ -10,13 +10,17 @@ import {
   fromBigNumber,
 } from '../../utils/formatters/numbers'
 
+type Vault = {
+  id: string
+}
+
 export type UserAction = {
   id: string
   txhash: string
   timestamp: string | any
   amount: BigNumber
   isDeposit: boolean
-  vault: string
+  vault: Vault
 }
 
 type UserPortfolio = {
@@ -69,6 +73,9 @@ export const useUserPortfolio = () => {
                 id
                 isDeposit
                 amount
+                userPortfolio {
+                  id
+                }
                 vault {
                   id
                 }
@@ -78,31 +85,13 @@ export const useUserPortfolio = () => {
         `,
         { userId: userId.toLowerCase() }
       )
+      console.log({ response })
       return response.userPortfolios.length > 0
-        ? parseUserPortfolio(response.userPortfolios[0])
+        ? response.userPortfolios[0]
         : null
     },
     {
       enabled: !!userId,
     }
   )
-}
-
-const parseUserPortfolio = (user: RawUserPortfolio): UserPortfolio => {
-  const { userActions } = user
-  console.log({ userActions })
-
-  return {
-    ...user,
-    userActions: userActions.length > 0 ? parseUserActions(userActions) : [],
-  }
-}
-
-const parseUserActions = (userActions: RawUserAction[]): UserAction[] => {
-  return userActions.map((action) => {
-    return {
-      ...action,
-      vault: action.vault.id,
-    }
-  })
 }
