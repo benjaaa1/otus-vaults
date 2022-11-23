@@ -19,8 +19,6 @@ dotenv.config();
 
 const defaultNetwork = 'localhost';
 
-const mainnetGwei = 21;
-
 function mnemonic() {
   try {
     return fs.readFileSync('./mnemonic.txt').toString().trim();
@@ -35,15 +33,7 @@ function mnemonic() {
 }
 
 module.exports = {
-  tenderly: {
-    project: 'otus-finance-vault-factory',
-    username: '0xbenjaaa',
-  },
   defaultNetwork,
-  gasReporter: {
-    currency: 'USD',
-    coinmarketcap: process.env.COINMARKETCAP || null,
-  },
   networks: {
     localhost: {
       url: 'http://localhost:8545', // http://hardhat:8545
@@ -65,7 +55,7 @@ module.exports = {
       ovm: true,
       timeout: 60000,
       accounts: {
-        mnemonic: 'wear bubble foil piano inherit cram talent cute minute neglect three play',
+        mnemonic: process.env.PRIVATE_KEY,
       },
       deploy: ['deploy_l2'],
       companionNetworks: {
@@ -117,7 +107,7 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-      mainnet: '582EMV38X8492YGM6IIB22YVXIBFDB3RU5',
+      mainnet: process.env.ETHERSCAN_API_KEY,
     },
   },
   dependencyCompiler: {
