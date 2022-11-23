@@ -2,12 +2,12 @@
   "packages/hardhat/contracts/**/*.sol": [
     "yarn prettier:sol"
   ],
-  "*.{ts,tsx}": [
+  "packages/react-app/**/*.{ts,tsx}": [
     "prettier --write",
     "eslint --fix",
     "git add"
   ],
-  "*.{html,css,less,ejs}": [
+  "packages/react-app/**/*.{html,css,less,ejs}": [
     "prettier --write",
     "git add"
   ]
