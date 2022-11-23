@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers';
 import {
   formatNumber,
   formatUSD,
@@ -11,6 +12,6 @@ const isCallText = (optionType: number): string => {
   return optionType == 0 || optionType == 3 ? 'Call' : 'Put'
 }
 
-export const buildTradeTitle = (optionType, market, strikePrice) => `${isLongText(optionType)} ${market} ${formatUSD(fromBigNumber(strikePrice))} ${isCallText(optionType)}`
+export const buildTradeTitle = (optionType: number, market: string, strikePrice: BigNumber) => `${isLongText(optionType)} ${market} ${formatUSD(fromBigNumber(strikePrice))} ${isCallText(optionType)}`
 
 

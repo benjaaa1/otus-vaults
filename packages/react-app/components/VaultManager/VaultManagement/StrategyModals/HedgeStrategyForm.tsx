@@ -30,9 +30,9 @@ export default function HedgeStrategyForm({ hedgeType }: { hedgeType: number }) 
   const [maxHedgeAttempts, setMaxHedgeAttempts] = useState(ZERO_BN)
   const [threshold, setThreshold] = useState(ZERO_BN)
 
-  const handleHedgeChange = (event) => {
+  const handleHedgeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     let value = event.target.value;
-    _setHedgeType(value)
+    _setHedgeType(parseInt(value))
   }
 
   return (

@@ -37,7 +37,7 @@ export default function TradeTransactions({ vaultTrades }: { vaultTrades: VaultT
                   variant="default"
                   label={'View TX'}
                   isButton={true}
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     const url = `${getBlockExplorerUrl(
                       network?.chainId || 10
                     )}tx/${trade.txhash}`

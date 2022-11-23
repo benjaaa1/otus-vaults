@@ -1,3 +1,4 @@
+import { Dispatch } from 'react';
 import { UserActionTabs } from '../../../constants/tabs'
 
 const tabs = [
@@ -5,11 +6,11 @@ const tabs = [
   { name: UserActionTabs.WITHDRAW.TITLE, href: UserActionTabs.WITHDRAW.HREF },
 ]
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function Transact({ setTab, active }) {
+export default function Transact({ setTab, active }: { setTab: Dispatch<string>, active: string }) {
   return (
     <div>
       <div className="sm:hidden">
@@ -21,7 +22,7 @@ export default function Transact({ setTab, active }) {
           id="tabs"
           name="tabs"
           className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-          defaultValue={tabs.find((tab) => tab.href == active).name}
+          defaultValue={tabs.find((tab) => tab.href == active)?.name}
         >
           {tabs.map((tab) => (
             <option key={tab.name}>{tab.name}</option>

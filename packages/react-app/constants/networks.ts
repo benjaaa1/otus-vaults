@@ -1,4 +1,4 @@
-import { INFURA_ID } from '../constants/api'
+const INFURA_ID = process.env.INFURA_ID;
 
 export enum OptimismChainId {
   OptimismMainnet = 10,

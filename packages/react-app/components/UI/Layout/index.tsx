@@ -1,10 +1,14 @@
-import React from 'react'
+import React, { ReactChild } from 'react'
 import { useWeb3Context } from '../../../context'
 import { Navbar } from '../Navbar'
 import { FooterNav } from '../Navbar/footer'
 import NetworkSwitch from '../NetworkSwitch'
 
-export default function Layout({ children }) {
+interface Props {
+  children: ReactChild
+}
+
+export default function Layout({ children }: Props) {
   const { network } = useWeb3Context()
 
   return (

@@ -125,7 +125,7 @@ export default function VaultManagement() {
         setOpen={setOpenHedgeStrategy}
         open={openHedgeStrategy}
       >
-        <HedgeStrategyForm hedgeType={data?.strategy.hedgeType} />
+        <HedgeStrategyForm hedgeType={data?.strategy.hedgeType || 0} />
       </Modal>
     </VaultManagerContextProvider>
   )

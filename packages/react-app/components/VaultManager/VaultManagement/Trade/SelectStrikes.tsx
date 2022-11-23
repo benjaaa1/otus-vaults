@@ -14,7 +14,7 @@ export default function SelectStrikes({
   selectedStrikes,
   selectedOptionType,
 }: {
-  selectedStrikes: []
+  selectedStrikes: LyraStrike[]
   selectedOptionType: number
 }) {
   const { builtTrades, toggleTrade } = useVaultManagerContext()

@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { Dispatch } from 'react'
 import { RangeSlider } from '../../../UI/Components/RangeSlider'
 import { fromBigNumber, toBN } from '../../../../utils/formatters/numbers'
 import { DAY_SEC, HOUR_SEC, WEEK_SEC } from '../../../../constants/period'
+import { StrategyDetailStruct } from '..'
 
 const vaultStrategyStep = {
   collatBuffer: 0.05,
@@ -31,7 +32,7 @@ const vaultStrategyMax = {
   gwavPeriod: HOUR_SEC,
 }
 
-export default function StrategyForm({ vaultStrategy, setVaultStrategy }) {
+export default function StrategyForm({ vaultStrategy, setVaultStrategy }: { vaultStrategy: StrategyDetailStruct, setVaultStrategy: Dispatch<any> }) {
 
   return (
     <div className="pt-8">
@@ -47,7 +48,7 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }) {
             onChange={(e) => {
               console.log(e.target.value)
               const collatBuffer = toBN(e.target.value)
-              setVaultStrategy((params) => ({
+              setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
                 collatBuffer,
               }))
@@ -68,7 +69,7 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }) {
             onChange={(e) => {
               console.log(e.target.value)
               const collatPercent = toBN(e.target.value)
-              setVaultStrategy((params) => ({
+              setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
                 collatPercent,
               }))
@@ -89,7 +90,7 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }) {
             onChange={(e) => {
               console.log(e.target.value)
               const hedgeReserve = toBN(e.target.value)
-              setVaultStrategy((params) => ({
+              setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
                 hedgeReserve,
               }))
@@ -110,7 +111,7 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }) {
             onChange={(e) => {
               console.log(e.target.value)
               const minTimeToExpiry = parseInt(e.target.value)
-              setVaultStrategy((params) => ({
+              setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
                 minTimeToExpiry,
               }))
@@ -131,7 +132,7 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }) {
             onChange={(e) => {
               console.log(e.target.value)
               const maxTimeToExpiry = parseInt(e.target.value)
-              setVaultStrategy((params) => ({
+              setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
                 maxTimeToExpiry,
               }))
@@ -152,7 +153,7 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }) {
             onChange={(e) => {
               console.log(e.target.value)
               const minTradeInterval = parseInt(e.target.value)
-              setVaultStrategy((params) => ({
+              setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
                 minTradeInterval,
               }))
@@ -173,7 +174,7 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }) {
             onChange={(e) => {
               console.log(e.target.value)
               const gwavPeriod = parseInt(e.target.value)
-              setVaultStrategy((params) => ({
+              setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
                 gwavPeriod,
               }))

@@ -1,3 +1,4 @@
+import { Dispatch } from 'react';
 import { VaultManagerTabs } from '../../../../constants/tabs'
 
 const tabs = [
@@ -5,11 +6,11 @@ const tabs = [
   { name: VaultManagerTabs.CURRENT.TITLE, href: VaultManagerTabs.CURRENT.HREF },
 ]
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function ManagerTabs({ setTab, active }) {
+export default function ManagerTabs({ setTab, active }: { setTab: Dispatch<string>, active: string }) {
   return (
     <div>
       <div className="sm:hidden">
@@ -20,7 +21,7 @@ export default function ManagerTabs({ setTab, active }) {
           id="tabs"
           name="tabs"
           className="border-gray focus:border-gray block w-full rounded-md focus:ring-zinc-900"
-          defaultValue={tabs.find((tab) => tab.href == active).name}
+          defaultValue={tabs.find((tab) => tab.href == active)?.name}
         >
           {tabs.map((tab) => (
             <option key={tab.name}>{tab.name}</option>

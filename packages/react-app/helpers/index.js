@@ -1,1 +1,0 @@
-export * as ipfs from "./ipfs";

@@ -56,7 +56,7 @@ export default function Current({
       }
     >
       {activeVaultTrades.map((activeTrade) => (
-        <tr key={fromBigNumber(activeTrade.positionId)}>
+        <tr key={activeTrade.positionId}>
           <Cell variant="primary" label={'ETH'} isButton={false} />
           <Cell
             variant="primary"

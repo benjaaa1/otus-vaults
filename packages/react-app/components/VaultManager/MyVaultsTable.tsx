@@ -70,7 +70,7 @@ export default function MyVaultsTable() {
                   variant="default"
                   label={'View'}
                   isButton={true}
-                  onClick={(e) => handleVaultClick(e, vault.id)}
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleVaultClick(e, vault.id)}
                 />
               </tr>
             )

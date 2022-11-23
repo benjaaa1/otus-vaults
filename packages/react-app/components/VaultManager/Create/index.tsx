@@ -94,7 +94,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
   })
 
   const handleCreateVault = useCallback(async () => {
-    console.log({ otusControllerContract })
+
     if (otusControllerContract == null || address == null || signer == null) {
       console.warn('Otus Controller not Available')
       return null
@@ -102,11 +102,6 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
 
     setIsCreating(true)
 
-    console.log({
-      vaultInfo,
-      vaultParams,
-      vaultStrategy,
-    })
     const tx = await otusControllerContract.createOptionsVault(
       vaultInfo,
       vaultParams,

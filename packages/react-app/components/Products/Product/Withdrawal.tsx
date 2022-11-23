@@ -15,14 +15,14 @@ import {
 import { Button } from '../../UI/Components/Button'
 import { Input } from '../../UI/Components/Input/Input'
 
-export default function Withdraw({ vault }: { vault: Vault }) {
+export default function Withdraw({ vault }: { vault: Vault | undefined }) {
   const { signer, address, network } = useWeb3Context()
 
   const otusContracts = useOtusVaultContracts()
 
   const monitorTransaction = useTransactionNotifier()
 
-  const otusVaultContract = otusContracts ? otusContracts[vault?.id] : null
+  const otusVaultContract = otusContracts && vault?.id ? otusContracts[vault?.id] : null
 
   // const [isDepositLoading, setIsDepositLoading] = useState(false)
   // const [isApproveLoading, setIsApproveLoading] = useState(false)

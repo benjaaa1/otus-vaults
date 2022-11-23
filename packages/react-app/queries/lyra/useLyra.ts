@@ -47,7 +47,6 @@ export const useLyraMarket = () => {
     QUERY_KEYS.Lyra.Markets(),
     async () => {
       const response: Market[] = await lyra.markets()
-      console.log({ response })
       return response ? parseMarketResponse(response) : null
     },
     {
@@ -113,7 +112,7 @@ const parseMarketResponse = async (
     markets.map(async (market) => {
       const { address, name, isPaused } = market
       const liveBoards: LyraBoard[] = parseMarketBoards(market.liveBoards())
-      const liveBoardsWithQuotedStrikes: LyraBoard[] = await parseBoardStrikes(
+      const liveBoardsWithQuotedStrikes: any[] = await parseBoardStrikes(
         liveBoards
       )
       console.log({ liveBoardsWithQuotedStrikes })

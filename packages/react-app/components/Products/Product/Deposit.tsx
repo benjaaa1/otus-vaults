@@ -16,7 +16,7 @@ import {
 import { Button } from '../../UI/Components/Button'
 import { Input } from '../../UI/Components/Input/Input'
 
-export default function Deposit({ vault }: { vault: Vault }) {
+export default function Deposit({ vault }: { vault: Vault | undefined }) {
   const { signer, address, network } = useWeb3Context()
   const contracts = useContracts()
   const otusContracts = useOtusVaultContracts()
@@ -25,7 +25,7 @@ export default function Deposit({ vault }: { vault: Vault }) {
 
   const susdContract = contracts ? contracts['SUSD'] : null
 
-  const otusVaultContract = otusContracts ? otusContracts[vault?.id] : null
+  const otusVaultContract = otusContracts && vault?.id ? otusContracts[vault?.id] : null
 
   const balance = useBalance()
 

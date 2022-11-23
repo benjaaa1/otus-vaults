@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Dispatch } from 'react'
 import { useRouter } from 'next/router'
 
 import { Input } from '../../../UI/Components/Input/Input'
@@ -34,7 +34,7 @@ const vaultInfoMax = {
 
 export default function InformationForm(
   { vaultParams, setVaultParams, vaultInfo, setVaultInfo }:
-    { vaultParams: VaultParamsStruct, setVaultParams: any, vaultInfo: VaultInformationStruct, setVaultInfo: any }
+    { vaultParams: VaultParamsStruct, setVaultParams: any, vaultInfo: VaultInformationStruct, setVaultInfo: Dispatch<any> }
 ) {
 
   return (
@@ -48,7 +48,7 @@ export default function InformationForm(
             id="name"
             onChange={(e) => {
               console.log(e.target.value)
-              setVaultInfo((info) => ({
+              setVaultInfo((info: VaultInformationStruct) => ({
                 ...info,
                 name: e.target.value,
               }))
@@ -68,7 +68,7 @@ export default function InformationForm(
             id="tokenName"
             onChange={(e) => {
               console.log(e.target.value)
-              setVaultInfo((info) => ({
+              setVaultInfo((info: VaultInformationStruct) => ({
                 ...info,
                 tokenName: e.target.value,
               }))
@@ -88,7 +88,7 @@ export default function InformationForm(
             id="tokenSymbol"
             onChange={(e) => {
               console.log(e.target.value)
-              setVaultInfo((info) => ({
+              setVaultInfo((info: VaultInformationStruct) => ({
                 ...info,
                 tokenSymbol: e.target.value,
               }))
@@ -107,7 +107,7 @@ export default function InformationForm(
             id="tokenDescription"
             onChange={(e) => {
               console.log(e.target.value)
-              setVaultInfo((info) => ({
+              setVaultInfo((info: VaultInformationStruct) => ({
                 ...info,
                 description: e.target.value,
               }))
@@ -127,7 +127,7 @@ export default function InformationForm(
             onChange={(checked: any) => {
               console.log({ checked })
 
-              setVaultInfo((vaultInfo) => ({
+              setVaultInfo((vaultInfo: VaultInformationStruct) => ({
                 ...vaultInfo,
                 isPublic: checked,
               }))
@@ -146,7 +146,7 @@ export default function InformationForm(
             onChange={(e) => {
               console.log(e.target.value)
               const cap = toBN(e.target.value)
-              setVaultParams((params) => ({
+              setVaultParams((params: VaultParamsStruct) => ({
                 ...params,
                 cap,
               }))
@@ -167,7 +167,7 @@ export default function InformationForm(
             onChange={(e) => {
               console.log(e.target.value)
               const performanceFee = toBN(e.target.value)
-              setVaultInfo((params) => ({
+              setVaultInfo((params: VaultInformationStruct) => ({
                 ...params,
                 performanceFee,
               }))
@@ -188,7 +188,7 @@ export default function InformationForm(
             onChange={(e) => {
               console.log(e.target.value)
               const managementFee = toBN(e.target.value)
-              setVaultInfo((params) => ({
+              setVaultInfo((params: VaultInformationStruct) => ({
                 ...params,
                 managementFee,
               }))

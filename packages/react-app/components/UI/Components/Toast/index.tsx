@@ -71,7 +71,7 @@ export function updatePendingToast(
 ): void {
   updateToast(toastId, {
     variant: 'info',
-    icon: <Spinner size={20} />,
+    icon: <Spinner />,
     ...options,
   })
 }

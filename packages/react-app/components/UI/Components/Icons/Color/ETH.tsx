@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-const ETHIcon = (props) => (
+const ETHIcon = (props: any) => (
   <svg
     width={44}
     height={44}

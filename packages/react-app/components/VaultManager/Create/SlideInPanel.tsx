@@ -1,8 +1,19 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useState } from 'react'
+import { Dispatch, Fragment, ReactChild, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Button } from '../../UI/Components/Button'
+
+type SlideInPanelProps = {
+  step: number
+  setStep: Dispatch<number>
+  isCreating: boolean
+  handleCreateVault: () => Promise<null | undefined>
+  setOpen: Dispatch<boolean>
+  open: boolean
+  title: string
+  children: ReactChild[]
+}
 
 export default function SlideInPanel({
   step,
@@ -13,7 +24,7 @@ export default function SlideInPanel({
   open,
   title,
   children,
-}) {
+}: SlideInPanelProps) {
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={setOpen}>

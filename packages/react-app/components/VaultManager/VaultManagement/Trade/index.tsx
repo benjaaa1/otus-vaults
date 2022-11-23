@@ -1,6 +1,7 @@
 import {
   LyraBoard,
   LyraMarket,
+  LyraStrike,
   useLyraMarket,
 } from '../../../../queries/lyra/useLyra'
 import SelectStrikes from './SelectStrikes'
@@ -24,11 +25,11 @@ const calculateOptionType = (isLong: boolean, isCall: boolean) => {
 
 export default function Trade() {
   const { data, isLoading } = useLyraMarket() // return markets, boards
-  const [selectedMarket, setSelectedMarket] = useState(null)
+  const [selectedMarket, setSelectedMarket] = useState<LyraMarket>()
   const [isLong, setLong] = useState(true)
   const [isCall, setCall] = useState(true)
   const [selectedOptionType, setSelectedOptionType] = useState(0)
-  const [strikes, setStrikes] = useState([])
+  const [strikes, setStrikes] = useState<LyraStrike[]>([])
 
   useEffect(() => {
     const _optionType = calculateOptionType(isLong, isCall)

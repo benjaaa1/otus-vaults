@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-const AllIcons = (props) => (
+const AllIcons = (props: any) => (
   <svg
     width={44}
     height={163}

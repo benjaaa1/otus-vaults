@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-const ETHBWIcon = (props) => (
+const ETHBWIcon = (props: any) => (
   <svg
     width={64}
     height={64}

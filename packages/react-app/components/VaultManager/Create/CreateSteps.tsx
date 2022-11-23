@@ -1,7 +1,7 @@
-import { CheckIcon } from '@heroicons/react/24/solid'
-import { CREATE_STEPS, CREATE_STEP_STATUS } from '../../../constants/tabs'
+import { Dispatch } from 'react'
+import { CREATE_STEPS } from '../../../constants/tabs'
 
-export default function CreateSteps({ step, setStep }) {
+export default function CreateSteps({ step, setStep }: { step: number, setStep: Dispatch<number> }) {
   const setAsActiveStep = (id: number) => {
     setStep(id)
   }

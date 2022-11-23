@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-const BTCBWIcon = (props) => (
+const BTCBWIcon = (props: any) => (
   <svg
     width={64}
     height={64}

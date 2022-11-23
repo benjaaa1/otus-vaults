@@ -54,7 +54,7 @@ export const useVaultManager = () => {
     }
   }
 
-  const updateTradeSize = (strike) => {
+  const updateTradeSize = (strike: LyraStrike) => {
     console.log({ strike })
     const _updatedBuiltTrades = builtTrades?.map((existingTrade) => {
       if (

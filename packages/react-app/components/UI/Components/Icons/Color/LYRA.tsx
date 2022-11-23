@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-const LyraIcon = (props) => (
+const LyraIcon = (props: any) => (
   <svg
     width={28}
     height={28}

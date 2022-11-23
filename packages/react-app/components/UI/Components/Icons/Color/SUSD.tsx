@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-const SUSDIcon = (props) => (
+const SUSDIcon = (props: any) => (
   <svg
     width={30}
     height={30}

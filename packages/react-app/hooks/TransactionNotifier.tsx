@@ -2,11 +2,21 @@
 import { useWeb3Context } from '../context'
 import { toast } from 'react-toastify'
 import { TransactionStatusData } from '@synthetixio/transaction-notifier'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { NetworkIdByName } from '@synthetixio/contracts-interface';
+import { ethers } from 'ethers';
 
-const NotificationSuccess = () => {}
+type BlockExplorerInstance = {
+  baseLink: string;
+  txLink: (txId: string) => string;
+  addressLink: (address: string) => string;
+  tokenLink: (address: string) => string;
+  blockLink: (blockNumber: string) => string;
+};
 
-const NotificationPending = () => {}
+const NotificationSuccess = () => { }
+
+const NotificationPending = () => { }
 
 const NotificationError = ({
   failureReason,
@@ -16,9 +26,42 @@ const NotificationError = ({
   return <div>{failureReason}</div>
 }
 
+const getBaseUrl = () => {
+  return `https://goerli-optimism.etherscan.io`;
+};
+
+const generateExplorerFunctions = (baseUrl: string) => {
+  return {
+    baseLink: baseUrl,
+    txLink: (txId: string) => `${baseUrl}/tx/${txId}`,
+    addressLink: (address: string) => `${baseUrl}/address/${address}`,
+    tokenLink: (address: string) => `${baseUrl}/token/${address}`,
+    blockLink: (blockNumber: string) => `${baseUrl}/block/${blockNumber}`,
+  };
+};
+
+const useBlockExplorer = () => {
+  const { network } = useWeb3Context() // Connector.useContainer();
+
+  const [blockExplorerInstance, setBlockExplorerInstance] = useState<BlockExplorerInstance | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (network) {
+      const baseUrl = getBaseUrl();
+      setBlockExplorerInstance(generateExplorerFunctions(baseUrl));
+    }
+  }, [network]);
+
+  return {
+    blockExplorerInstance,
+  };
+};
+
 export const useTransactionNotifier = () => {
   const { transactionNotifier } = useWeb3Context() // Connector.useContainer();
-  const blockExplorerInstance = null
+  const { blockExplorerInstance } = useBlockExplorer();
   console.log({ transactionNotifier })
   return useCallback(
     ({

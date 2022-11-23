@@ -63,7 +63,7 @@ export default function CloseExecute() {
                 </p>
                 <div className="ml-2 flex flex-shrink-0">
                   <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                    {isLoading ? <>...</> : <>{formatUSD(data)}</>}
+                    {isLoading ? <>...</> : <>{formatUSD(data || 0)}</>}
                   </p>
                 </div>
               </div>

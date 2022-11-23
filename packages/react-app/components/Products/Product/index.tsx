@@ -24,8 +24,8 @@ export default function Product() {
   const router = useRouter()
   const { query } = router
   const { data: vault, isLoading } = useVaultProduct(query?.vault)
-  console.log({ vault })
-  const [tab, setTab] = useState(UserActionTabs.DEPOSIT.HREF)
+
+  const [tab, setTab] = useState<string>(UserActionTabs.DEPOSIT.HREF)
   const [openVaultStrategy, setOpenVaultStrategy] = useState(false)
   const [openStrikeStrategy, setOpenStrikeStrategy] = useState(false)
   const [openHedgeStrategy, setOpenHedgeStrategy] = useState(false)
@@ -257,21 +257,21 @@ export default function Product() {
         setOpen={setOpenVaultStrategy}
         open={openVaultStrategy}
       >
-        <VaultStrategyInfo strategy={vault?.strategy.vaultStrategy} />
+        {vault?.strategy.vaultStrategy ? <VaultStrategyInfo strategy={vault?.strategy.vaultStrategy} /> : null}
       </Modal>
       <Modal
         title={'Strike Strategy'}
         setOpen={setOpenStrikeStrategy}
         open={openStrikeStrategy}
       >
-        <StrikeStrategyInfo strikeStrategies={vault?.strategy.strikeStrategies} />
+        {vault?.strategy.strikeStrategies ? <StrikeStrategyInfo strikeStrategies={vault?.strategy.strikeStrategies} /> : null}
       </Modal>
       <Modal
         title={'Hedge Strategy'}
         setOpen={setOpenHedgeStrategy}
         open={openHedgeStrategy}
       >
-        <HedgeStrategyInfo strategy={vault?.strategy.dynamicHedgeStrategy} />
+        {vault?.strategy.dynamicHedgeStrategy ? <HedgeStrategyInfo hedgeType={vault?.strategy.hedgeType} strategy={vault?.strategy.dynamicHedgeStrategy} /> : null}
       </Modal>
     </>
   )
