@@ -5,11 +5,11 @@
       "chainId": "31337",
       "contracts": {
         "SafeMath": {
-          "address": "0xAA292E8611aDF267e563f334Ee42320aC96D0463",
+          "address": "0xD84379CEae14AA33C123Af12424A37803F885889",
           "abi": []
         },
         "SafeDecimalMath": {
-          "address": "0x5c74c94173F05dA1720953407cbb920F3DF9f887",
+          "address": "0x2B0d36FACD61B71CC05ab8F3D2355ec3631C0dd5",
           "abi": [
             {
               "inputs": [],
@@ -92,7 +92,7 @@
           ]
         },
         "SignedSafeDecimalMath": {
-          "address": "0x720472c8ce72c2A2D711333e064ABD3E6BbEAdd3",
+          "address": "0xfbC22278A96299D91d41C453234d97b4F5Eb9B2d",
           "abi": [
             {
               "inputs": [],
@@ -175,19 +175,19 @@
           ]
         },
         "SignedSafeMath": {
-          "address": "0xe8D2A1E88c91DCd5433208d4152Cc4F399a7e91d",
+          "address": "0x46b142DD1E924FAb83eCc3c08e4D46E82f005e0E",
           "abi": []
         },
         "Vault": {
-          "address": "0x5067457698Fd6Fa1C6964e416b3f42713513B3dD",
+          "address": "0xC9a43158891282A2B1475592D5719c001986Aaec",
           "abi": []
         },
         "VaultLifeCycle": {
-          "address": "0x18E317A7D70d8fBf8e6E893616b52390EbBdb629",
+          "address": "0x1c85638e118b37167e9298c2268758e058DdfDA0",
           "abi": []
         },
         "Keeper": {
-          "address": "0x4b6aB5F819A515382B0dEB6935D793817bB4af28",
+          "address": "0x367761085BF3C12e5DA2Df99AC6E1a824612b8fb",
           "abi": [
             {
               "inputs": [],
@@ -335,7 +335,7 @@
           ]
         },
         "MockFuturesMarketManager": {
-          "address": "0xCace1b78160AE76398F486c8a18044da0d66d86D",
+          "address": "0x4C2F7092C2aE51D986bEFEe378e50BD4dB99C901",
           "abi": [
             {
               "inputs": [],
@@ -382,7 +382,7 @@
           ]
         },
         "MockFuturesMarket": {
-          "address": "0xD5ac451B0c50B9476107823Af206eD814a2e2580",
+          "address": "0x7A9Ec1d04904907De0ED7b6839CcdD59c3716AC9",
           "abi": [
             {
               "inputs": [],
@@ -475,7 +475,7 @@
           ]
         },
         "OtusController": {
-          "address": "0xF8e31cb472bc70500f08Cd84917E5A1912Ec8397",
+          "address": "0x49fd2BE640DB2910c2fAb69bB8531Ab6E76127ff",
           "abi": [
             {
               "inputs": [
@@ -1239,7 +1239,7 @@
           ]
         },
         "OtusVault": {
-          "address": "0xc0F115A19107322cFBf1cDBC7ea011C19EbDB4F8",
+          "address": "0x4631BCAbD6dF18D94796344963cB60d44a4136b6",
           "abi": [
             {
               "inputs": [
@@ -2765,7 +2765,7 @@
           ]
         },
         "Strategy": {
-          "address": "0xc96304e3c037f81dA488ed9dEa1D8F2a48278a75",
+          "address": "0x86A2EE8FAf9A840F7a2c64CA3d51209F9A02081D",
           "abi": [
             {
               "inputs": [
@@ -4247,7 +4247,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x34B40BA116d5Dec75548a9e9A8f15411461E8c70",
+          "address": "0xA4899D35897033b927acFCf422bc745916139776",
           "abi": [
             {
               "inputs": [
@@ -4558,7 +4558,7 @@
           ]
         },
         "LyraBase": {
-          "address": "0xD0141E899a65C95a556fE2B27e5982A6DE7fDD7A",
+          "address": "0xf953b3A269d80e3eB0F2947630Da976B896A8C5b",
           "abi": [
             {
               "inputs": [

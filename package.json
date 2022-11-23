@@ -2,34 +2,34 @@
     "name": "@otus-finance/monorepo",
     "version": "1.0.0",
     "keywords": [
-      "ethereum",
-      "react",
-      "uniswap",
-      "workspaces",
-      "yarn"
+        "ethereum",
+        "react",
+        "uniswap",
+        "workspaces",
+        "yarn"
     ],
     "config": {
-      "src": "packages/hardhat/test/**/*.ts packages/hardhat/scripts/**/*.ts packages/hardhat/contracts/**/*.sol packages/hardhat/contracts/*.sol packages/hardhat/hardhat.config.ts"
+        "src": "packages/hardhat/test/**/*.ts packages/hardhat/scripts/**/*.ts packages/hardhat/contracts/**/*.sol packages/hardhat/contracts/*.sol packages/hardhat/hardhat.config.ts"
     },
     "private": true,
     "husky": {
-      "hooks": {
-        "pre-commit": "lint-staged"
-      }
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
     },
     "lint-staged": {
-      "packages/hardhat/contracts/**/*.sol": [
-        "yarn prettier:sol"
-      ],
-      "*.{js,jsx}": [
-        "prettier --write",
-        "eslint --fix",
-        "git add"
-      ],
-      "*.{html,css,less,ejs}": [
-        "prettier --write",
-        "git add"
-      ]
+        "packages/hardhat/contracts/**/*.sol": [
+            "yarn prettier:sol"
+        ],
+        "*.{ts,tsx}": [
+            "prettier --write",
+            "eslint --fix",
+            "git add"
+        ],
+        "*.{html,css,less,ejs}": [
+            "prettier --write",
+            "git add"
+        ]
     },
     "scripts": {
         "chain": "yarn workspace @otus-finance/hardhat chain",
@@ -61,20 +61,23 @@
         "prettier:ts": "prettier --config .prettierrc --write \"**/*.{js,ts}\"",
         "prettier:json:md": "prettier --config .prettierrc --write \"**/*.{json,md}\"",
         "prettier": "yarn prettier:sol && yarn prettier:ts",
-        "prettier:list-different": "prettier --config .prettierrc --list-different \"**/*.{js,sol,ts}\""
+        "prettier:list-different": "prettier --config .prettierrc --list-different \"**/*.{js,sol,ts}\"",
+        "prepare": "husky install"
     },
     "workspaces": {
-      "packages": [
-        "packages/*"
-      ],
-      "nohoist": [
-        "**/@graphprotocol/graph-ts",
-        "**/@graphprotocol/graph-ts/**",
-        "**/hardhat",
-        "**/hardhat/**",
-        "**/hardhat-ts",
-        "**/hardhat-ts/**"
-      ]
+        "packages": [
+            "packages/*"
+        ],
+        "nohoist": [
+            "**/@graphprotocol/graph-ts",
+            "**/@graphprotocol/graph-ts/**",
+            "**/hardhat",
+            "**/hardhat/**",
+            "**/hardhat-ts",
+            "**/hardhat-ts/**"
+        ]
+    },
+    "devDependencies": {
+        "husky": "^8.0.0"
     }
-  }
-  
+}
