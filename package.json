@@ -17,7 +17,7 @@
         "start": "yarn workspace @otus-finance/react-app start",
         "deploy": "yarn workspace @otus-finance/hardhat deploy",
         "deploy-kovan": "yarn workspace @otus-finance/hardhat deploy --network kovan",
-        "deploy-kovan-optimism": "yarn workspace @otus-finance/hardhat deploy --network kovanOptimism",
+        "deploy-goerli-optimism": "yarn workspace @otus-finance/hardhat deploy --network goerliOptimism",
         "verify": "yarn workspace @otus-finance/hardhat verify",
         "surge": "yarn workspace @otus-finance/react-app surge",
         "build": "yarn workspace @otus-finance/react-app build --max-old-space-size=12288",

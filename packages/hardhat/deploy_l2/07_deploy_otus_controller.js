@@ -1,27 +1,18 @@
 // deploy/00_deploy_your_contract.js
 const { ethers } = require("hardhat");
 
-const localChainId = "31337";
-const kovanOptimism = "69"; 
-const mainnetOptimism = "10";
-
 module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const lyraMarketRegistry = { // optionmarketviewer
-    address: "0x91a1AB0DDa247CE6D8666c5A49c183f8978a9797"
-  }
-
   const futuresMarketManager = {
-    address: "0xA3e4c049dA5Fe1c5e046fb3dCe270297D9b2c6a9"
+    address: "0x95d6B120862986Fb605B0ccD1f0E8a71f5f4fB2c" // optimism mainnet 0xc704c9AA89d1ca60F67B3075d05fBb92b3B00B3B
   }
   // 0x95d6B120862986Fb605B0ccD1f0E8a71f5f4fB2c goerlie
   await deploy("OtusController", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ 
-      lyraMarketRegistry.address, // lyra market
       futuresMarketManager.address,
       deployer // keeper 
     ],

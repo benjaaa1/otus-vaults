@@ -10,7 +10,6 @@ import {StrategyBase} from "./vaultDOV/strategy/StrategyBase.sol";
 
 import {IOtusCloneFactory} from "./interfaces/IOtusCloneFactory.sol";
 import {IFuturesMarketManager} from "./interfaces/IFuturesMarketManager.sol";
-import {LyraRegistry} from "@lyrafinance/protocol/contracts/periphery/LyraRegistry.sol";
 import {OptionGreekCache} from "@lyrafinance/protocol/contracts/OptionGreekCache.sol";
 import {LiquidityPool} from "@lyrafinance/protocol/contracts/LiquidityPool.sol";
 import {LiquidityToken} from "@lyrafinance/protocol/contracts/LiquidityToken.sol";
@@ -32,7 +31,6 @@ import {Vault} from "./libraries/Vault.sol";
  */
 contract OtusController is Ownable {
   IFuturesMarketManager public immutable futuresMarketManager;
-  LyraRegistry public lyraRegistry;
   address public keeper;
 
   address public otusCloneFactory;
@@ -76,16 +74,10 @@ contract OtusController is Ownable {
 
   /**
    * @notice Assign lyra registry and snx market managers
-   * @param _lyraRegistry Lyra registry address
    * @param _futuresMarketManager Synthetix futures market manager address
    * @param _keeper keeper address
    */
-  constructor(
-    address _lyraRegistry,
-    address _futuresMarketManager,
-    address _keeper
-  ) Ownable() {
-    lyraRegistry = LyraRegistry(_lyraRegistry);
+  constructor(address _futuresMarketManager, address _keeper) Ownable() {
     futuresMarketManager = IFuturesMarketManager(_futuresMarketManager);
     keeper = _keeper;
   }
@@ -112,8 +104,7 @@ contract OtusController is Ownable {
   ) external {
     // create vault
     address vault = IOtusCloneFactory(otusCloneFactory).cloneVault();
-    console.log("vault");
-    console.log(vault); 
+
     // add vault created to mapping
     address[] memory _vaults = vaults[msg.sender];
     uint len = _vaults.length;

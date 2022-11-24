@@ -2,7 +2,7 @@
 const { ethers } = require("hardhat");
 
 const localChainId = "31337";
-const kovanOptimism = "69"; 
+const goerliOptimism = "420"; 
 const mainnetOptimism = "10";
 
 module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
@@ -12,10 +12,8 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const vault = await ethers.getContract("Vault");
   const vaultLifeCycle = await ethers.getContract("VaultLifeCycle");
   const _roundDuration = 86400 * 7; // uint, // remove this if rounds can last longer
-  // const _keeper = "0x2A48Cea7dEF88436ba90d81eE6f55D416804bD54"; // address,
 
   await deploy("OtusVault", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ 
       _roundDuration

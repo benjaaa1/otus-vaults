@@ -101,11 +101,14 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
     }
 
     setIsCreating(true)
-
+    console.log({ otusControllerContract })
     const tx = await otusControllerContract.createOptionsVault(
       vaultInfo,
       vaultParams,
-      vaultStrategy
+      vaultStrategy,
+      {
+        gasLimit: 600000
+      }
     )
     if (tx) {
       monitorTransaction({

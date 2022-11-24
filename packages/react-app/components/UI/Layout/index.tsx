@@ -13,7 +13,11 @@ export default function Layout({ children }: Props) {
 
   return (
     <div className="bg-zinc-900 font-sans">
-      {network?.chainId == 10 || network?.chainId == 31337 ? null : < NetworkSwitch />}
+      {
+        network?.chainId == 10 || network?.chainId == 31337 || network?.chainId == 420 ?
+          null :
+          < NetworkSwitch />
+      }
 
       <Navbar />
       <main className="mx-auto max-w-6xl bg-zinc-900 px-4 sm:px-6 lg:px-8">

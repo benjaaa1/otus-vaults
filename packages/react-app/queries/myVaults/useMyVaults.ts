@@ -209,7 +209,7 @@ export const useMyVault = (vaultId: any) => {
         prepareMyVault(
           [
             {
-              id: 1,
+              id: 3,
               strikeId: 1,
               breakEven: 10,
               profitPercentage: .9,

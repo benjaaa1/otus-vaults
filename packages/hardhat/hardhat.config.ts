@@ -31,7 +31,6 @@ function mnemonic() {
   }
   return '';
 }
-
 module.exports = {
   defaultNetwork,
   networks: {
@@ -50,15 +49,12 @@ module.exports = {
       },
     },
     goerliOptimism: {
-      chainId: 420,
       url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_ID}`,
       ovm: true,
       timeout: 60000,
+      chainId: 420,
       accounts: [process.env.PRIVATE_KEY],
-      deploy: ['deploy_l2'],
-      companionNetworks: {
-        l1: 'goerli',
-      },
+      deploy: ['deploy_l2']
     },
   },
   solidity: {
