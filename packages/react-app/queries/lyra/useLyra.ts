@@ -6,14 +6,7 @@ import QUERY_KEYS from '../../constants/queryKeys'
 import { MONTHS } from '../../constants/dates'
 import { ONE_BN } from '../../constants/bn'
 import { MarketType } from '../../constants/markets'
-
-const isProduction = process.env.NODE_ENV === 'production'
-const provider = new ethers.providers.InfuraProvider(isProduction ? 10 : 10, process.env.INFURA_ID)
-export const lyra = new Lyra({
-  provider,
-})
-
-export const getLyraMarkets = async () => await lyra.markets()
+import { useWeb3Context } from '../../context'
 
 export type LyraStrike = {
   market: string
@@ -42,11 +35,34 @@ export type LyraMarket = {
   liveBoards: LyraBoard[]
 }
 
+// const provider = () => {
+
+//   const { network } = useWeb3Context()
+
+//   return 
+
+// }
+
+// export 
+
+export const useLyra = () => {
+  const { network } = useWeb3Context()
+  console.log({ chainId: network?.chainId })
+  const provider = new ethers.providers.InfuraProvider(network?.chainId, process.env.INFURA_ID);
+  console.log({ provider })
+  const lyra = new Lyra({ provider });
+
+  return lyra;
+}
+
 export const useLyraMarket = () => {
+  const lyra = useLyra();
+
   return useQuery<LyraMarket[] | null>(
     QUERY_KEYS.Lyra.Markets(),
     async () => {
       const response: Market[] = await lyra.markets()
+      console.log({ response })
       return response ? parseMarketResponse(response) : null
     },
     {
@@ -58,6 +74,8 @@ export const useLyraMarket = () => {
 }
 
 export const useStrikes = (market: string, strikeId: number) => {
+  const lyra = useLyra();
+
   return useQuery<Strike>(
     QUERY_KEYS.Lyra.Strike(market, strikeId),
     async () => {
@@ -73,23 +91,13 @@ export const useStrikes = (market: string, strikeId: number) => {
   )
 }
 
-type OPTION_TYPE = {
-  [key: number]: boolean[]
-}
-
-const OPTION_TYPES: OPTION_TYPE = {
-  0: [true, true], // buy call
-  1: [false, true], // buy put
-  2: [true, false], // sell covered call
-  3: [true, false], // sell call
-  4: [false, false], // sell put
-}
-
 export const getStrikeQuote = async (
   trade: LyraStrike,
   optionType: number,
   size: BigNumber
 ) => {
+  const lyra = useLyra();
+
   const [isCall, isBuy] = OPTION_TYPES[optionType]
   const marketName = trade.market
   const _strike = await lyra.strike(marketName, trade.id)
@@ -206,4 +214,16 @@ const formatBoardName = (expiryTimestamp: number) => {
   const day = date.getDate()
   const hours = date.getHours()
   return `Expires ${month} ${day}, ${hours}:00`
+}
+
+type OPTION_TYPE = {
+  [key: number]: boolean[]
+}
+
+const OPTION_TYPES: OPTION_TYPE = {
+  0: [true, true], // buy call
+  1: [false, true], // buy put
+  2: [true, false], // sell covered call
+  3: [true, false], // sell call
+  4: [false, false], // sell put
 }
