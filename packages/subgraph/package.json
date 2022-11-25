@@ -3,8 +3,9 @@
     "license": "UNLICENSED",
     "version": "1.0.0",
     "scripts": {
+      "auth": "graph auth --product hosted-service 0c693c88e9a84cf5a77e85d998e65885",
       "codegen": "graph codegen",
-      "deploy": "graph deploy --product hosted-service otus-finance/optimism-kovan",
+      "deploy": "graph deploy --product hosted-service otus-finance/goerli-optimism",
       "create-local": "graph create --node http://localhost:8020/ otus/test-subgraph",
       "deploy-local": "graph deploy --ipfs http://localhost:5001 --node http://localhost:8020 otus/test-subgraph"
     },

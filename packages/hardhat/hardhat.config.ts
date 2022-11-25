@@ -14,7 +14,9 @@ import '@typechain/hardhat';
 import 'hardhat-dependency-compiler';
 import { lyraContractPaths } from '@lyrafinance/protocol/dist/test/utils/package/index-paths';
 import 'hardhat-contract-sizer';
+import * as tdly from "@tenderly/hardhat-tenderly";
 
+tdly.setup();
 dotenv.config();
 
 const defaultNetwork = 'localhost';

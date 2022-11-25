@@ -21,12 +21,13 @@ export const getFuturesEndpoint = (
 export const getOtusEndpoint = (
   network: ethers.providers.Network | null | undefined
 ): string => {
-  console.log({ chainId: network?.chainId, OTUS_ENDPOINT_LOCALHOST })
-  return network && network.chainId === 10
+  const _endpoint = network && network.chainId === 10
     ? OTUS_ENDPOINT_MAINNET
     : network && network.chainId === 420
       ? OTUS_ENDPOINT_TESTNET
       : OTUS_ENDPOINT_LOCALHOST
+  console.log({ _endpoint })
+  return _endpoint;
 }
 
 export const getOtusContract = (

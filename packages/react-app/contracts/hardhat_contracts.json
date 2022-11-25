@@ -418,7 +418,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0x99A8D170BFFfF3b1f50Fb49CC0b90b3641D6Ae8b",
+          "address": "0x3D564FdfcF5bb91e80Aeb59FE54FB0355D0f76Fc",
           "abi": [
             {
               "inputs": [
@@ -729,7 +729,7 @@
           ]
         },
         "OtusController": {
-          "address": "0x4C3775439Af0f8C03cAD4F54517D2e2E66d284dF",
+          "address": "0xC7F3476AF2ABc29D909231CC60df3525cc2E3dC5",
           "abi": [
             {
               "inputs": [
@@ -4672,188 +4672,6 @@
       "name": "localhost",
       "chainId": "31337",
       "contracts": {
-        "SafeMath": {
-          "address": "0xAA292E8611aDF267e563f334Ee42320aC96D0463",
-          "abi": []
-        },
-        "SafeDecimalMath": {
-          "address": "0x5c74c94173F05dA1720953407cbb920F3DF9f887",
-          "abi": [
-            {
-              "inputs": [],
-              "name": "PRECISE_UNIT",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "UNIT",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "decimals",
-              "outputs": [
-                {
-                  "internalType": "uint8",
-                  "name": "",
-                  "type": "uint8"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "highPrecisionDecimals",
-              "outputs": [
-                {
-                  "internalType": "uint8",
-                  "name": "",
-                  "type": "uint8"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "preciseUnit",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "pure",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "unit",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "pure",
-              "type": "function"
-            }
-          ]
-        },
-        "SignedSafeDecimalMath": {
-          "address": "0x720472c8ce72c2A2D711333e064ABD3E6BbEAdd3",
-          "abi": [
-            {
-              "inputs": [],
-              "name": "PRECISE_UNIT",
-              "outputs": [
-                {
-                  "internalType": "int256",
-                  "name": "",
-                  "type": "int256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "UNIT",
-              "outputs": [
-                {
-                  "internalType": "int256",
-                  "name": "",
-                  "type": "int256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "decimals",
-              "outputs": [
-                {
-                  "internalType": "uint8",
-                  "name": "",
-                  "type": "uint8"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "highPrecisionDecimals",
-              "outputs": [
-                {
-                  "internalType": "uint8",
-                  "name": "",
-                  "type": "uint8"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "preciseUnit",
-              "outputs": [
-                {
-                  "internalType": "int256",
-                  "name": "",
-                  "type": "int256"
-                }
-              ],
-              "stateMutability": "pure",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "unit",
-              "outputs": [
-                {
-                  "internalType": "int256",
-                  "name": "",
-                  "type": "int256"
-                }
-              ],
-              "stateMutability": "pure",
-              "type": "function"
-            }
-          ]
-        },
-        "SignedSafeMath": {
-          "address": "0xe8D2A1E88c91DCd5433208d4152Cc4F399a7e91d",
-          "abi": []
-        },
-        "Vault": {
-          "address": "0x5067457698Fd6Fa1C6964e416b3f42713513B3dD",
-          "abi": []
-        },
-        "VaultLifeCycle": {
-          "address": "0x18E317A7D70d8fBf8e6E893616b52390EbBdb629",
-          "abi": []
-        },
         "Keeper": {
           "address": "0x4b6aB5F819A515382B0dEB6935D793817bB4af28",
           "abi": [
@@ -5002,46 +4820,412 @@
             }
           ]
         },
-        "MockFuturesMarketManager": {
-          "address": "0xCace1b78160AE76398F486c8a18044da0d66d86D",
+        "LyraBase": {
+          "address": "0xD0141E899a65C95a556fE2B27e5982A6DE7fDD7A",
           "abi": [
             {
-              "inputs": [],
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "_marketKey",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_synthetixAdapter",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_optionToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_optionMarket",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_liquidityPool",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_shortCollateral",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_optionPricer",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_greekCache",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_gwavOracle",
+                  "type": "address"
+                }
+              ],
               "stateMutability": "nonpayable",
               "type": "constructor"
             },
             {
               "inputs": [
                 {
-                  "internalType": "bytes32",
-                  "name": "synth",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "address",
-                  "name": "market",
-                  "type": "address"
+                  "internalType": "uint256[]",
+                  "name": "strikeIds",
+                  "type": "uint256[]"
                 }
               ],
-              "name": "addMarket",
-              "outputs": [],
-              "stateMutability": "nonpayable",
+              "name": "getDeltas",
+              "outputs": [
+                {
+                  "internalType": "int256[]",
+                  "name": "callDeltas",
+                  "type": "int256[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "getExchangeParams",
+              "outputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "spotPrice",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "quoteBaseFeeRate",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "baseQuoteFeeRate",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct LyraBase.ExchangeRateParams",
+                  "name": "",
+                  "type": "tuple"
+                }
+              ],
+              "stateMutability": "view",
               "type": "function"
             },
             {
               "inputs": [
                 {
-                  "internalType": "bytes32",
-                  "name": "",
-                  "type": "bytes32"
+                  "internalType": "enum LyraBase.OptionType",
+                  "name": "optionType",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "strikePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiry",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "spotPrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
                 }
               ],
-              "name": "marketForKey",
+              "name": "getMinCollateral",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "positionId",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getMinCollateralForPosition",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "getOptionMarket",
               "outputs": [
                 {
                   "internalType": "address",
                   "name": "",
                   "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "positionIds",
+                  "type": "uint256[]"
+                }
+              ],
+              "name": "getPositions",
+              "outputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "positionId",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "strikeId",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "enum LyraBase.OptionType",
+                      "name": "optionType",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "collateral",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "enum LyraBase.PositionState",
+                      "name": "state",
+                      "type": "uint8"
+                    }
+                  ],
+                  "internalType": "struct LyraBase.OptionPosition[]",
+                  "name": "",
+                  "type": "tuple[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "secondsToExpiry",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "vol",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "spotPrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "strikePrice",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getPurePremium",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "call",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "put",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "getSpotPriceForMarket",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "spotPrice",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "strikeIds",
+                  "type": "uint256[]"
+                }
+              ],
+              "name": "getStrikes",
+              "outputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "id",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "expiry",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "strikePrice",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "skew",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "boardIv",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct LyraBase.Strike[]",
+                  "name": "allStrikes",
+                  "type": "tuple[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "strikeIds",
+                  "type": "uint256[]"
+                }
+              ],
+              "name": "getVegas",
+              "outputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "vegas",
+                  "type": "uint256[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "strikeIds",
+                  "type": "uint256[]"
+                }
+              ],
+              "name": "getVols",
+              "outputs": [
+                {
+                  "internalType": "uint256[]",
+                  "name": "vols",
+                  "type": "uint256[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "marketKey",
+              "outputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "",
+                  "type": "bytes32"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "optionMarket",
+              "outputs": [
+                {
+                  "internalType": "contract OptionMarket",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "strikeId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "secondsAgo",
+                  "type": "uint256"
+                }
+              ],
+              "name": "volGWAV",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
                 }
               ],
               "stateMutability": "view",
@@ -5138,6 +5322,364 @@
               "name": "withdrawAllMargin",
               "outputs": [],
               "stateMutability": "nonpayable",
+              "type": "function"
+            }
+          ]
+        },
+        "MockFuturesMarketManager": {
+          "address": "0xCace1b78160AE76398F486c8a18044da0d66d86D",
+          "abi": [
+            {
+              "inputs": [],
+              "stateMutability": "nonpayable",
+              "type": "constructor"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "synth",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "market",
+                  "type": "address"
+                }
+              ],
+              "name": "addMarket",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "",
+                  "type": "bytes32"
+                }
+              ],
+              "name": "marketForKey",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        },
+        "OtusCloneFactory": {
+          "address": "0x34B40BA116d5Dec75548a9e9A8f15411461E8c70",
+          "abi": [
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_otusVault",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_strategyAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_otusController",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "constructor"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "_clone",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "_owner",
+                  "type": "address"
+                }
+              ],
+              "name": "NewStrategyClone",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "_clone",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "_owner",
+                  "type": "address"
+                }
+              ],
+              "name": "NewVaultClone",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32[]",
+                  "name": "lyraAdapterKeys",
+                  "type": "bytes32[]"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "lyraAdapterValues",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "lyraOptionMarkets",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "futuresMarkets",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_owner",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_vault",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_strategy",
+                  "type": "address"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "hedgeReserve",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "collatBuffer",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "collatPercent",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minTimeToExpiry",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "maxTimeToExpiry",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "minTradeInterval",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "gwavPeriod",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "bytes32[]",
+                      "name": "allowedMarkets",
+                      "type": "bytes32[]"
+                    }
+                  ],
+                  "internalType": "struct StrategyBase.StrategyDetail",
+                  "name": "_currentStrategy",
+                  "type": "tuple"
+                }
+              ],
+              "name": "_initializeClonedStrategy",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_otusVaultClone",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_owner",
+                  "type": "address"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "string",
+                      "name": "name",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "tokenName",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "tokenSymbol",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "description",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isPublic",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "performanceFee",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "managementFee",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct Vault.VaultInformation",
+                  "name": "_vaultInfo",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint8",
+                      "name": "decimals",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint104",
+                      "name": "cap",
+                      "type": "uint104"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "asset",
+                      "type": "address"
+                    }
+                  ],
+                  "internalType": "struct Vault.VaultParams",
+                  "name": "_vaultParams",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_strategy",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_keeper",
+                  "type": "address"
+                }
+              ],
+              "name": "_initializeClonedVault",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "cloneStrategy",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "strategyClone",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "cloneVault",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "otusVaultClone",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "otusController",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "otusVault",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "strategy",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
               "type": "function"
             }
           ]
@@ -7414,6 +7956,180 @@
             }
           ]
         },
+        "SafeDecimalMath": {
+          "address": "0x5c74c94173F05dA1720953407cbb920F3DF9f887",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "PRECISE_UNIT",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "UNIT",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "decimals",
+              "outputs": [
+                {
+                  "internalType": "uint8",
+                  "name": "",
+                  "type": "uint8"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "highPrecisionDecimals",
+              "outputs": [
+                {
+                  "internalType": "uint8",
+                  "name": "",
+                  "type": "uint8"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "preciseUnit",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "pure",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "unit",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "pure",
+              "type": "function"
+            }
+          ]
+        },
+        "SafeMath": {
+          "address": "0xAA292E8611aDF267e563f334Ee42320aC96D0463",
+          "abi": []
+        },
+        "SignedSafeDecimalMath": {
+          "address": "0x720472c8ce72c2A2D711333e064ABD3E6BbEAdd3",
+          "abi": [
+            {
+              "inputs": [],
+              "name": "PRECISE_UNIT",
+              "outputs": [
+                {
+                  "internalType": "int256",
+                  "name": "",
+                  "type": "int256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "UNIT",
+              "outputs": [
+                {
+                  "internalType": "int256",
+                  "name": "",
+                  "type": "int256"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "decimals",
+              "outputs": [
+                {
+                  "internalType": "uint8",
+                  "name": "",
+                  "type": "uint8"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "highPrecisionDecimals",
+              "outputs": [
+                {
+                  "internalType": "uint8",
+                  "name": "",
+                  "type": "uint8"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "preciseUnit",
+              "outputs": [
+                {
+                  "internalType": "int256",
+                  "name": "",
+                  "type": "int256"
+                }
+              ],
+              "stateMutability": "pure",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "unit",
+              "outputs": [
+                {
+                  "internalType": "int256",
+                  "name": "",
+                  "type": "int256"
+                }
+              ],
+              "stateMutability": "pure",
+              "type": "function"
+            }
+          ]
+        },
+        "SignedSafeMath": {
+          "address": "0xe8D2A1E88c91DCd5433208d4152Cc4F399a7e91d",
+          "abi": []
+        },
         "Strategy": {
           "address": "0xc96304e3c037f81dA488ed9dEa1D8F2a48278a75",
           "abi": [
@@ -8896,729 +9612,13 @@
             }
           ]
         },
-        "OtusCloneFactory": {
-          "address": "0x34B40BA116d5Dec75548a9e9A8f15411461E8c70",
-          "abi": [
-            {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "_otusVault",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_strategyAddress",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_otusController",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "nonpayable",
-              "type": "constructor"
-            },
-            {
-              "anonymous": false,
-              "inputs": [
-                {
-                  "indexed": false,
-                  "internalType": "address",
-                  "name": "_clone",
-                  "type": "address"
-                },
-                {
-                  "indexed": false,
-                  "internalType": "address",
-                  "name": "_owner",
-                  "type": "address"
-                }
-              ],
-              "name": "NewStrategyClone",
-              "type": "event"
-            },
-            {
-              "anonymous": false,
-              "inputs": [
-                {
-                  "indexed": false,
-                  "internalType": "address",
-                  "name": "_clone",
-                  "type": "address"
-                },
-                {
-                  "indexed": false,
-                  "internalType": "address",
-                  "name": "_owner",
-                  "type": "address"
-                }
-              ],
-              "name": "NewVaultClone",
-              "type": "event"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "bytes32[]",
-                  "name": "lyraAdapterKeys",
-                  "type": "bytes32[]"
-                },
-                {
-                  "internalType": "address[]",
-                  "name": "lyraAdapterValues",
-                  "type": "address[]"
-                },
-                {
-                  "internalType": "address[]",
-                  "name": "lyraOptionMarkets",
-                  "type": "address[]"
-                },
-                {
-                  "internalType": "address[]",
-                  "name": "futuresMarkets",
-                  "type": "address[]"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_owner",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_vault",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_strategy",
-                  "type": "address"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "hedgeReserve",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collatBuffer",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collatPercent",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minTimeToExpiry",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "maxTimeToExpiry",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "minTradeInterval",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "gwavPeriod",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "bytes32[]",
-                      "name": "allowedMarkets",
-                      "type": "bytes32[]"
-                    }
-                  ],
-                  "internalType": "struct StrategyBase.StrategyDetail",
-                  "name": "_currentStrategy",
-                  "type": "tuple"
-                }
-              ],
-              "name": "_initializeClonedStrategy",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "_otusVaultClone",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_owner",
-                  "type": "address"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "string",
-                      "name": "name",
-                      "type": "string"
-                    },
-                    {
-                      "internalType": "string",
-                      "name": "tokenName",
-                      "type": "string"
-                    },
-                    {
-                      "internalType": "string",
-                      "name": "tokenSymbol",
-                      "type": "string"
-                    },
-                    {
-                      "internalType": "string",
-                      "name": "description",
-                      "type": "string"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "isPublic",
-                      "type": "bool"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "performanceFee",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "managementFee",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct Vault.VaultInformation",
-                  "name": "_vaultInfo",
-                  "type": "tuple"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "uint8",
-                      "name": "decimals",
-                      "type": "uint8"
-                    },
-                    {
-                      "internalType": "uint104",
-                      "name": "cap",
-                      "type": "uint104"
-                    },
-                    {
-                      "internalType": "address",
-                      "name": "asset",
-                      "type": "address"
-                    }
-                  ],
-                  "internalType": "struct Vault.VaultParams",
-                  "name": "_vaultParams",
-                  "type": "tuple"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_strategy",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_keeper",
-                  "type": "address"
-                }
-              ],
-              "name": "_initializeClonedVault",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "cloneStrategy",
-              "outputs": [
-                {
-                  "internalType": "address",
-                  "name": "strategyClone",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "cloneVault",
-              "outputs": [
-                {
-                  "internalType": "address",
-                  "name": "otusVaultClone",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "otusController",
-              "outputs": [
-                {
-                  "internalType": "address",
-                  "name": "",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "otusVault",
-              "outputs": [
-                {
-                  "internalType": "address",
-                  "name": "",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "strategy",
-              "outputs": [
-                {
-                  "internalType": "address",
-                  "name": "",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            }
-          ]
+        "Vault": {
+          "address": "0x5067457698Fd6Fa1C6964e416b3f42713513B3dD",
+          "abi": []
         },
-        "LyraBase": {
-          "address": "0xD0141E899a65C95a556fE2B27e5982A6DE7fDD7A",
-          "abi": [
-            {
-              "inputs": [
-                {
-                  "internalType": "bytes32",
-                  "name": "_marketKey",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_synthetixAdapter",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_optionToken",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_optionMarket",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_liquidityPool",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_shortCollateral",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_optionPricer",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_greekCache",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "_gwavOracle",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "nonpayable",
-              "type": "constructor"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256[]",
-                  "name": "strikeIds",
-                  "type": "uint256[]"
-                }
-              ],
-              "name": "getDeltas",
-              "outputs": [
-                {
-                  "internalType": "int256[]",
-                  "name": "callDeltas",
-                  "type": "int256[]"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "getExchangeParams",
-              "outputs": [
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "spotPrice",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "quoteBaseFeeRate",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "baseQuoteFeeRate",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct LyraBase.ExchangeRateParams",
-                  "name": "",
-                  "type": "tuple"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "enum LyraBase.OptionType",
-                  "name": "optionType",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "strikePrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "expiry",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "spotPrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "amount",
-                  "type": "uint256"
-                }
-              ],
-              "name": "getMinCollateral",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "positionId",
-                  "type": "uint256"
-                }
-              ],
-              "name": "getMinCollateralForPosition",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "getOptionMarket",
-              "outputs": [
-                {
-                  "internalType": "address",
-                  "name": "",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256[]",
-                  "name": "positionIds",
-                  "type": "uint256[]"
-                }
-              ],
-              "name": "getPositions",
-              "outputs": [
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "positionId",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "strikeId",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "enum LyraBase.OptionType",
-                      "name": "optionType",
-                      "type": "uint8"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "amount",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "collateral",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "enum LyraBase.PositionState",
-                      "name": "state",
-                      "type": "uint8"
-                    }
-                  ],
-                  "internalType": "struct LyraBase.OptionPosition[]",
-                  "name": "",
-                  "type": "tuple[]"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "secondsToExpiry",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "vol",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "spotPrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "strikePrice",
-                  "type": "uint256"
-                }
-              ],
-              "name": "getPurePremium",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "call",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "put",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "getSpotPriceForMarket",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "spotPrice",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256[]",
-                  "name": "strikeIds",
-                  "type": "uint256[]"
-                }
-              ],
-              "name": "getStrikes",
-              "outputs": [
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "id",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "expiry",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "strikePrice",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "skew",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "boardIv",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct LyraBase.Strike[]",
-                  "name": "allStrikes",
-                  "type": "tuple[]"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256[]",
-                  "name": "strikeIds",
-                  "type": "uint256[]"
-                }
-              ],
-              "name": "getVegas",
-              "outputs": [
-                {
-                  "internalType": "uint256[]",
-                  "name": "vegas",
-                  "type": "uint256[]"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256[]",
-                  "name": "strikeIds",
-                  "type": "uint256[]"
-                }
-              ],
-              "name": "getVols",
-              "outputs": [
-                {
-                  "internalType": "uint256[]",
-                  "name": "vols",
-                  "type": "uint256[]"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "marketKey",
-              "outputs": [
-                {
-                  "internalType": "bytes32",
-                  "name": "",
-                  "type": "bytes32"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "optionMarket",
-              "outputs": [
-                {
-                  "internalType": "contract OptionMarket",
-                  "name": "",
-                  "type": "address"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "strikeId",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "secondsAgo",
-                  "type": "uint256"
-                }
-              ],
-              "name": "volGWAV",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            }
-          ]
+        "VaultLifeCycle": {
+          "address": "0x18E317A7D70d8fBf8e6E893616b52390EbBdb629",
+          "abi": []
         }
       }
     }

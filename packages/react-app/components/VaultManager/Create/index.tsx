@@ -77,7 +77,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
   const [vaultParams, setVaultParams] = useState<VaultParamsStruct>({
     decimals: 18,
     cap: toBN('50000'),
-    asset: CURRENCIES[network?.chainId || 10].ETH, // quote asset
+    asset: CURRENCIES[network?.chainId || 420].ETH, // quote asset
   })
 
   const [vaultStrategy, setVaultStrategy] = useState<StrategyDetailStruct>({
@@ -107,7 +107,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
       vaultParams,
       vaultStrategy,
       {
-        gasLimit: 600000
+        gasLimit: 1600000
       }
     )
     if (tx) {
