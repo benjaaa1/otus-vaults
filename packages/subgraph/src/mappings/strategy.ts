@@ -87,6 +87,15 @@ export function handleVaultStrategyUpdate(event: StrategyUpdated): void {
 
   strategy.save();
   vaultStrategy.save();
+
+  let dynamicHedgeStrategy = DynamicHedgeStrategy.load(strategyAddress.toHex());
+  if (!dynamicHedgeStrategy) {
+    dynamicHedgeStrategy = new DynamicHedgeStrategy(strategyAddress.toHex());
+  }
+
+  dynamicHedgeStrategy.strategy = strategy.id;
+  dynamicHedgeStrategy.save();
+
 }
 
 export function handleHedgeTypeUpdate(event: StrategyHedgeTypeUpdated): void {
@@ -107,6 +116,7 @@ export function handleHedgeTypeUpdate(event: StrategyHedgeTypeUpdated): void {
 
 export function handleHedgeStrategyUpdate(event: HedgeStrategyUpdated): void {
   let strategyAddress = event.address as Address;
+  let timestamp = event.block.timestamp;
 
   let dynamicHedgeStrategy = DynamicHedgeStrategy.load(strategyAddress.toHex());
   if (!dynamicHedgeStrategy) {
@@ -118,6 +128,8 @@ export function handleHedgeStrategyUpdate(event: HedgeStrategyUpdated): void {
     strategy = new Strategy(strategyAddress.toHex());
   }
 
+  strategy.latestUpdate = timestamp;
+
   dynamicHedgeStrategy.strategy = strategy.id;
 
   dynamicHedgeStrategy.threshold = event.params.dynamicStrategy.threshold;
@@ -125,5 +137,6 @@ export function handleHedgeStrategyUpdate(event: HedgeStrategyUpdated): void {
   dynamicHedgeStrategy.maxHedgeAttempts = event.params.dynamicStrategy.maxHedgeAttempts;
   dynamicHedgeStrategy.maxLeverageSize = event.params.dynamicStrategy.maxLeverageSize;
 
+  strategy.save();
   dynamicHedgeStrategy.save();
 }

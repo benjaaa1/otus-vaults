@@ -134,8 +134,8 @@ export const useMyVault = (vaultId: any) => {
       const response = await request(
         otusEndpoint,
         gql`
-          query ($managerId: String!, $vaultId: String!) {
-            vaults(where: { manager: $managerId, id: $vaultId }) {
+          query ($vaultId: String!) {
+            vaults(where: { id: $vaultId }) {
               id
               round
               createdAt
@@ -186,7 +186,7 @@ export const useMyVault = (vaultId: any) => {
             }
           }
         `,
-        { managerId: managerId?.toLowerCase(), vaultId: vaultId?.toLowerCase() }
+        { vaultId: vaultId?.toLowerCase() }
       )
 
       // const account = lyra.account(vaultId);

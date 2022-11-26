@@ -35,16 +35,6 @@ export type LyraMarket = {
   liveBoards: LyraBoard[]
 }
 
-// const provider = () => {
-
-//   const { network } = useWeb3Context()
-
-//   return 
-
-// }
-
-// export 
-
 export const useLyra = () => {
   const { network } = useWeb3Context()
   console.log({ chainId: network?.chainId })

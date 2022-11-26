@@ -52,24 +52,24 @@ const verify = async () => {
         //   name: "OtusVault",
         //   address: otusVault.address
         // },
-        // {
-        //   name: "Strategy",
-        //   address: strategy.address
-        // },
+        {
+          name: "Strategy",
+          address: strategy.address
+        },
         // {
         //   name: "OtusCloneFactory",
         //   address: otusCloneFactory.address
         // },
-        {
-          name: "OtusController",
-          address: otusController.address
-        },
+        // {
+        //   name: "OtusController",
+        //   address: otusController.address
+        // },
         // {
         //   name: "LyraBase",
         //   address: lyraBase.address
         // }
     ]
-  
+    console.log({ strategy: strategy.address })
     // await hre.tenderly.persistArtifacts(...contracts);
     await hre.tenderly.verify(...contracts);
     
