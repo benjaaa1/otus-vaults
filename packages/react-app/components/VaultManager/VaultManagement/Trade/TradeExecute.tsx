@@ -1,11 +1,12 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
+import Lyra from '@lyrafinance/lyra-js'
 import { parseUnits } from 'ethers/lib/utils'
 import { useCallback, useMemo, useState } from 'react'
 import { BYTES32_MARKET, getMarketInBytes } from '../../../../constants/markets'
 import { useVaultManagerContext } from '../../../../context'
 import { useOtusVaultContracts } from '../../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
-import { getStrikeQuote, LyraStrike } from '../../../../queries/lyra/useLyra'
+import { getStrikeQuote, LyraStrike, useLyra } from '../../../../queries/lyra/useLyra'
 import { Vault } from '../../../../queries/myVaults/useMyVaults'
 import {
   formatUSD,
@@ -62,6 +63,7 @@ const isCallText = (optionType: number): string => {
 }
 
 export default function TradeExecute({ vault }: { vault: Vault }) {
+  const lyra = useLyra();
   const { builtTrades, toggleTrade } = useVaultManagerContext()
   const otusContracts = useOtusVaultContracts()
 
@@ -108,7 +110,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
       <div className="overflow-hidden border border-zinc-800 bg-transparent sm:rounded-sm">
         <ul role="list" className="divide-y divide-zinc-700">
           {builtTrades?.map((trade: LyraStrike) => (
-            <Trade toggleTrade={toggleTrade} trade={trade} />
+            <Trade lyra={lyra} toggleTrade={toggleTrade} trade={trade} />
           ))}
 
           {/** max cost & min received  */}
@@ -158,7 +160,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
   )
 }
 
-const Trade = ({ toggleTrade, trade }: { toggleTrade: (trade: LyraStrike) => void, trade: LyraStrike }) => {
+const Trade = ({ lyra, toggleTrade, trade }: { lyra: Lyra, toggleTrade: (trade: LyraStrike) => void, trade: LyraStrike }) => {
   const { updateTradeSize } = useVaultManagerContext()
   const [size, setSize] = useState(fromBigNumber(trade.quote.size))
   console.log({ trade, newSize: fromBigNumber(trade.quote.size) })
@@ -196,6 +198,7 @@ const Trade = ({ toggleTrade, trade }: { toggleTrade: (trade: LyraStrike) => voi
                     if (e.target.value == '') return
                     setSize(parseInt(e.target.value))
                     const strikeWithUpdatedQuote = await getStrikeQuote(
+                      lyra,
                       trade,
                       trade.selectedOptionType,
                       parseUnits(parseInt(e.target.value).toString(), 18)

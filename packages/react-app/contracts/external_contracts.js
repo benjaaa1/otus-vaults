@@ -242,7 +242,7 @@ module.exports = {
   420: {
     contracts: {
       SUSD: {
-        address: "0x2400D0469bfdA59FB0233c3027349D83F1a0f4c8",
+        address: "0x42688EcDA9Dd35cbB44C90Ad53734EE0f30d0E57",
         abi: ERC20ABI,
       },
       SUSDSNX: {

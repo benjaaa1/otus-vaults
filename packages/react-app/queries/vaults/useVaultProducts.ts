@@ -71,7 +71,8 @@ type AllAvailableVaults = {
 export const useVaultProducts = () => {
   const { network } = useWeb3Context()
 
-  const otusEndpoint = getOtusEndpoint(network) // getOtusEndpoint(network);
+  const otusEndpoint = getOtusEndpoint(network);
+  if (!otusEndpoint) return;
   return useQuery<AllAvailableVaults | null>(
     QUERY_KEYS.Vaults.AllVaults(),
     async () => {
@@ -123,7 +124,7 @@ export const useVaultProducts = () => {
     {
       enabled: true,
       staleTime: Infinity,
-      cacheTime: Infinity /*isAppReady && isL2 && !!currencyKey, ...options*/,
+      cacheTime: Infinity
     }
   )
 }
@@ -132,12 +133,11 @@ export const useVaultProduct = (vaultId: any) => {
   const { network } = useWeb3Context()
 
   const otusEndpoint = getOtusEndpoint(network) // getOtusEndpoint(network);
-
+  console.log({ vaultId, otusEndpoint })
   return useQuery<Vault>(
     QUERY_KEYS.Vaults.Vault(vaultId),
     async () => {
       if (!vaultId) return null
-      console.log({ vaultId })
       const responses = await request(
         otusEndpoint,
         gql`
@@ -209,7 +209,7 @@ export const useVaultProduct = (vaultId: any) => {
             }
           }
         `,
-        { vaultId: vaultId }
+        { vaultId: vaultId?.toLowerCase() }
       )
       console.log({ responses })
       return responses.vaults.length > 0 ? responses.vaults[0] : null

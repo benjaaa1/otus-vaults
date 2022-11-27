@@ -24,28 +24,40 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
 
   const otusVaultContract = otusContracts && vault?.id ? otusContracts[vault?.id] : null
 
-  // const [isDepositLoading, setIsDepositLoading] = useState(false)
-  // const [isApproveLoading, setIsApproveLoading] = useState(false)
+
   const [hasDeposit, setHasDeposit] = useState(false)
   const [canTransact, setCanTransact] = useState(false)
-  const [amount, setAmount] = useState(0)
 
-  const [balanceAmount, setBalanceAmount] = useState<BigNumber>(ZERO_BN)
+  const [requestAmount, setRequestAmount] = useState(0)
+  const [immediateAmount, setImmediateAmount] = useState(0)
+
+  const [isLoading, setLoading] = useState(true)
+
+  const [availableWithdrawalRequestAmount, setAvailableWithdrawalRequestAmount] = useState<BigNumber>(ZERO_BN)
+  const [immediateWithdrawalAmount, setImmediateWithdrawalAmount] = useState<BigNumber>(ZERO_BN)
+  const [isWithdrawLoading, setIsWithdrawLoading] = useState(false)
 
   const checkBalanceStatus = useCallback(async () => {
+    console.log({ address })
     if (otusVaultContract != null && address != null) {
-      const [heldByAccount, heldByVault] =
+      const [heldByAccount] =
         await otusVaultContract.shareBalances(address)
 
-      const bal = await otusVaultContract.balanceOf(address)
+      const { amount } = await otusVaultContract.depositReceipts(address)
 
-      if (fromBigNumber(heldByAccount) > 0) {
+      if (fromBigNumber(heldByAccount) > 0 || fromBigNumber(amount) > 0) {
         setHasDeposit(true)
       } else {
         setHasDeposit(false)
       }
-      setBalanceAmount(heldByAccount)
+      console.log({ heldByAccount, amount })
+      setAvailableWithdrawalRequestAmount(heldByAccount)
+      setImmediateWithdrawalAmount(amount)
+
     }
+
+    setLoading(false);
+
   }, [otusVaultContract, address])
 
   useEffect(() => {
@@ -57,86 +69,119 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
   }, [otusVaultContract, address])
 
   useEffect(() => {
-    if (network?.chainId == 69 && signer != null) {
+    if (network?.chainId && signer != null) {
       setCanTransact(true)
     }
   }, [signer, network])
 
   // add log events
   return (
-    <div className="p-8">
-      <div>
-        <label
-          htmlFor="price"
-          className="hidden text-sm font-medium text-gray-700"
-        >
-          Price
-        </label>
-        <div className="relative mt-1 rounded-md shadow-sm">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <span className="text-zinc-500 sm:text-sm">$</span>
+    <div className="p-8  divide-y divide-zinc-500">
+
+      {/* request withdrawal  */}
+      <div className="pb-10">
+        <div className="py-2">
+          <label
+            htmlFor="price"
+            className="hidden text-sm font-medium text-gray-700"
+          >
+            Price
+          </label>
+          <div className="relative mt-1 rounded-md shadow-sm">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <span className="text-zinc-500 sm:text-sm">$</span>
+            </div>
+            <Input
+              isDisabled={availableWithdrawalRequestAmount.eq(ZERO_BN)}
+              type="number"
+              id="amount"
+              onChange={(e) => {
+                setAmount(parseInt(e.target.value))
+              }}
+              value={amount}
+              placeholder="0.00"
+              radius={'xs'}
+              variant={'default'}
+              style={'pl-6'}
+            />
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-9">
+              <span className="text-zinc-500 sm:text-sm" id="price-currency">
+                sUSD
+              </span>
+            </div>
+
           </div>
-          <Input
-            isDisabled={balanceAmount.eq(ZERO_BN)}
-            type="number"
-            id="amount"
-            onChange={(e) => {
-              setAmount(parseInt(e.target.value))
-            }}
-            value={amount}
-            placeholder="0.00"
-            radius={'xs'}
-            variant={'default'}
-            style={'pl-6'}
-          />
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-9">
-            <span className="text-zinc-500 sm:text-sm" id="price-currency">
-              sUSD
-            </span>
+
+          <div className="mt-2 flex flex-wrap justify-between">
+            <div className="text-xs text-white">Amount In Vault</div>
+            <div className="text-xs text-white">
+              {formatUSD(fromBigNumber(availableWithdrawalRequestAmount || ZERO_BN))}
+            </div>
           </div>
         </div>
+
+        <Button
+          isDisabled={amount <= 0}
+          label={'Request Withdrawal'}
+          isLoading={isLoading}
+          variant={'action'}
+          radius={'xs'}
+          size={'full-sm'}
+          onClick={() => console.log('request withdraw')}
+        />
       </div>
-      <div className="mt-2 flex flex-wrap justify-between">
-        <div className="text-xs text-white">Wallet Balance</div>
-        <div className="text-xs text-white">
-          {formatUSD(fromBigNumber(balanceAmount || ZERO_BN))}
+
+      {/* withdraw immediately available  */}
+      <div className="pt-10">
+        <div className="py-2">
+          <label
+            htmlFor="price"
+            className="hidden text-sm font-medium text-gray-700"
+          >
+            Price
+          </label>
+          <div className="relative mt-1 rounded-md shadow-sm">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <span className="text-zinc-500 sm:text-sm">$</span>
+            </div>
+            <Input
+              isDisabled={immediateWithdrawalAmount.eq(ZERO_BN)}
+              type="number"
+              id="amount"
+              onChange={(e) => {
+                setImmediateAmount(parseInt(e.target.value))
+              }}
+              value={immediateAmount}
+              placeholder="0.00"
+              radius={'xs'}
+              variant={'default'}
+              style={'pl-6'}
+            />
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-9">
+              <span className="text-zinc-500 sm:text-sm" id="price-currency">
+                sUSD
+              </span>
+            </div>
+
+          </div>
+          <div className="mt-2 flex flex-wrap justify-between">
+            <div className="text-xs text-white">Available</div>
+            <div className="text-xs text-white">
+              {formatUSD(fromBigNumber(immediateWithdrawalAmount || ZERO_BN))}
+            </div>
+          </div>
         </div>
+        <Button
+          label={'Immmediate Withdrawal'}
+          isLoading={isLoading}
+          variant={'action'}
+          radius={'xs'}
+          size={'full-sm'}
+          onClick={() => console.log('withdraw')}
+        />
+
       </div>
-      <div className="py-6 text-center text-xs text-white">
-        Your deposit will be deployed in the Vault’s weekly strategy on Friday
-        at 11am UTC
-      </div>
-      <div className="justify-stretch mt-6 flex flex-col">
-        {/* {canTransact && isApproved ? (
-          <Button
-            isDisabled={amount <= 0}
-            label={'Deposit'}
-            isLoading={isDepositLoading}
-            variant={'action'}
-            radius={'xs'}
-            size={'full'}
-            onClick={handleDepositQuote}
-          />
-        ) : canTransact && !isApproved ? (
-          <Button
-            label={'Approve'}
-            isLoading={isApproveLoading}
-            variant={'action'}
-            radius={'xs'}
-            size={'full'}
-            onClick={handleClickApproveQuote}
-          />
-        ) : !canTransact ? (
-          <Button
-            label={'Wallet Connect'}
-            isLoading={false}
-            variant={'action'}
-            radius={'xs'}
-            size={'full'}
-            onClick={() => console.log('deposit')}
-          />
-        ) : null} */}
-      </div>
+
     </div>
   )
 }

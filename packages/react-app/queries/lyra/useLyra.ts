@@ -38,7 +38,7 @@ export type LyraMarket = {
 export const useLyra = () => {
   const { network } = useWeb3Context()
   console.log({ chainId: network?.chainId })
-  const provider = new ethers.providers.InfuraProvider(network?.chainId, process.env.INFURA_ID);
+  const provider = new ethers.providers.InfuraProvider(10, process.env.INFURA_ID);
   console.log({ provider })
   const lyra = new Lyra({ provider });
 
@@ -82,12 +82,11 @@ export const useStrikes = (market: string, strikeId: number) => {
 }
 
 export const getStrikeQuote = async (
+  lyra: Lyra,
   trade: LyraStrike,
   optionType: number,
   size: BigNumber
 ) => {
-  const lyra = useLyra();
-
   const [isCall, isBuy] = OPTION_TYPES[optionType]
   const marketName = trade.market
   const _strike = await lyra.strike(marketName, trade.id)

@@ -9,7 +9,7 @@ import {
 } from '../reducers'
 
 import { toast } from 'react-toastify'
-import { getStrikeQuote, LyraStrike } from '../queries/lyra/useLyra'
+import { LyraStrike } from '../queries/lyra/useLyra'
 import { VaultTrade } from '../queries/myVaults/useMyVaults'
 
 export const useVaultManager = () => {

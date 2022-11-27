@@ -17,7 +17,7 @@ import { Button } from '../../UI/Components/Button'
 import { Input } from '../../UI/Components/Input/Input'
 
 export default function Deposit({ vault }: { vault: Vault | undefined }) {
-  const { signer, address, network } = useWeb3Context()
+  const { signer, address, network, connect } = useWeb3Context()
   const contracts = useContracts()
   const otusContracts = useOtusVaultContracts()
 
@@ -191,7 +191,7 @@ export default function Deposit({ vault }: { vault: Vault | undefined }) {
             variant={'action'}
             radius={'xs'}
             size={'full'}
-            onClick={() => console.log('deposit')}
+            onClick={connect}
           />
         ) : null}
       </div>
