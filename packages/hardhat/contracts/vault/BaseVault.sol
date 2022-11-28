@@ -91,6 +91,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
   event Withdraw(address indexed account, uint amount, uint shares);
 
+  event InstantWithdraw(address indexed account, uint256 amount, uint256 round);
+
   event CollectVaultFees(uint performanceFee, uint vaultFee, uint round, address indexed feeRecipient);
 
   /************************************************
@@ -388,6 +390,29 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   /************************************************
    *  VAULT OPERATIONS
    ***********************************************/
+
+  /**
+   * @notice Withdraws the assets on the vault using the outstanding `DepositReceipt.amount`
+   * @param amount is the amount to withdraw
+   */
+  function withdrawInstantly(uint256 amount) external nonReentrant {
+    Vault.DepositReceipt storage depositReceipt = depositReceipts[msg.sender];
+
+    uint256 currentRound = vaultState.round;
+    require(amount > 0, "!amount");
+    require(depositReceipt.round == currentRound, "Invalid round");
+
+    uint256 receiptAmount = depositReceipt.amount;
+    require(receiptAmount >= amount, "Exceed amount");
+
+    // Subtraction underflow checks already ensure it is smaller than uint104
+    depositReceipt.amount = uint104(receiptAmount.sub(amount));
+    vaultState.totalPending = uint128(uint256(vaultState.totalPending).sub(amount));
+
+    emit InstantWithdraw(msg.sender, amount, currentRound);
+
+    _transferAsset(msg.sender, amount);
+  }
 
   /*
    * @notice Helper function that performs most administrative tasks

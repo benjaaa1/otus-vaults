@@ -119,6 +119,7 @@ export const Button = ({
   const buttonRadius = getButtonRadius(radius)
   const activeButton = isActive ? 'ring-2 ring-emerald-600' : ''
   const buttonTextColor = textColor ? textColor : 'text-white'
+
   return (
     <button
       disabled={isDisabled}
