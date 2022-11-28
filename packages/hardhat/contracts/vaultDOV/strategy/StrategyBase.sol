@@ -87,7 +87,6 @@ contract StrategyBase is LyraAdapter {
 
   struct DynamicDeltaHedgeStrategy {
     int threshold; // if delta is .8 and threshold is .6 then reduce expoosure to .6 by making the .2 difference
-    uint period;
     uint maxHedgeAttempts;
     uint maxLeverageSize;
   }
@@ -152,11 +151,7 @@ contract StrategyBase is LyraAdapter {
   /**
    * @dev add strike id to activeStrikeIds array
    */
-  function _addActiveStrike(
-    StrikeTrade memory strike,
-    uint tradedPositionId,
-    uint optionType
-  ) internal {
+  function _addActiveStrike(StrikeTrade memory strike, uint tradedPositionId, uint optionType) internal {
     if (!_isActiveStrike(strike.strikeId, optionType)) {
       positionIdByStrikeOption[keccak256(abi.encode(strike.strikeId, optionType))] = tradedPositionId;
       activeStrikeByPositionId[tradedPositionId] = strike;
@@ -233,11 +228,7 @@ contract StrategyBase is LyraAdapter {
   /**
    * @dev check if the vol variance for the given strike is within certain range
    */
-  function _isValidVolVariance(
-    address lyraBase,
-    uint strikeId,
-    uint optionType
-  ) internal view returns (bool isValid) {
+  function _isValidVolVariance(address lyraBase, uint strikeId, uint optionType) internal view returns (bool isValid) {
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[optionType];
 
     uint volGWAV = ILyraBase(lyraBase).volGWAV(strikeId, currentStrategy.gwavPeriod);
@@ -261,11 +252,7 @@ contract StrategyBase is LyraAdapter {
   // Trade Parameter Helpers //
   /////////////////////////////
 
-  function _getFullCollateral(
-    uint strikePrice,
-    uint amount,
-    uint _optionType
-  ) internal pure returns (uint fullCollat) {
+  function _getFullCollateral(uint strikePrice, uint amount, uint _optionType) internal pure returns (uint fullCollat) {
     // calculate required collat based on collatBuffer and collatPercent
     fullCollat = _isBaseCollat(_optionType) ? amount : amount.multiplyDecimal(strikePrice);
   }

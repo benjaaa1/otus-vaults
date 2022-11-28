@@ -3,13 +3,14 @@ import { parseUnits } from 'ethers/lib/utils'
 import { useCallback, useEffect, useState } from 'react'
 import { MAX_BN, ZERO_BN } from '../../../constants/bn'
 import { useWeb3Context } from '../../../context'
-import { useContracts, useOtusVaultContracts } from '../../../hooks/Contracts'
+import { useContracts, useOtusContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
 import { Vault } from '../../../queries/vaults/useVaultProducts'
 import {
   formatNumber,
   formatUSD,
   fromBigNumber,
+  toBN,
 } from '../../../utils/formatters/numbers'
 import { Button } from '../../UI/Components/Button'
 import { Input } from '../../UI/Components/Input/Input'
@@ -17,7 +18,7 @@ import { Input } from '../../UI/Components/Input/Input'
 export default function Withdraw({ vault }: { vault: Vault | undefined }) {
   const { signer, address, network, connect } = useWeb3Context()
 
-  const otusContracts = useOtusVaultContracts()
+  const otusContracts = useOtusContracts()
 
   const monitorTransaction = useTransactionNotifier()
 
@@ -29,7 +30,7 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
 
   const [requestAmount, setRequestAmount] = useState(0)
   const [immediateAmount, setImmediateAmount] = useState(0)
-  console.log({ immediateAmount, requestAmount })
+
   const [isLoading, setLoading] = useState(true)
 
   const [availableWithdrawalRequestAmount, setAvailableWithdrawalRequestAmount] = useState<BigNumber>(ZERO_BN)
@@ -37,7 +38,6 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
   const [isWithdrawLoading, setIsWithdrawLoading] = useState(false)
 
   const checkBalanceStatus = useCallback(async () => {
-    console.log({ address })
     if (otusVaultContract != null && address != null) {
       const [heldByAccount] =
         await otusVaultContract.shareBalances(address)
@@ -49,10 +49,8 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
       } else {
         setHasDeposit(false)
       }
-      console.log({ heldByAccount, amount })
       setAvailableWithdrawalRequestAmount(heldByAccount)
       setImmediateWithdrawalAmount(amount)
-
     }
 
     setLoading(false);
@@ -79,9 +77,14 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
       return null
     }
 
+    if (immediateAmount == 0) {
+      console.warn('Must be non zero amount')
+      return null
+    }
+
     setIsWithdrawLoading(true)
 
-    const tx = await otusVaultContract.withdrawInstantly(parseUnits(immediateAmount.toString()))
+    const tx = await otusVaultContract.withdrawInstantly(parseUnits(immediateAmount.toString()), { gasLimit: 500000 })
     if (tx) {
       monitorTransaction({
         txHash: tx.hash,
@@ -95,7 +98,7 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
         },
       })
     }
-  }, [otusVaultContract, vault, address, monitorTransaction])
+  }, [otusVaultContract, vault, address, immediateAmount, monitorTransaction])
 
   return (
     <div className="p-8  divide-y divide-zinc-500">

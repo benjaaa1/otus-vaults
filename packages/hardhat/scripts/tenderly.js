@@ -14,6 +14,7 @@ const verify = async () => {
     const vault = await ethers.getContract("Vault");
     const vaultLifeCycle = await ethers.getContract("VaultLifeCycle");
     const otusVault = await ethers.getContract("OtusVault");
+    const baseVault = await ethers.getContract("BaseVault");
     const strategy = await ethers.getContract("Strategy");
     const otusCloneFactory = await ethers.getContract("OtusCloneFactory");
     const otusController = await ethers.getContract("OtusController");
@@ -48,14 +49,14 @@ const verify = async () => {
         //   name: "VaultLifeCycle",
         //   address: vaultLifeCycle.address
         // },
-        // {
-        //   name: "OtusVault",
-        //   address: otusVault.address
-        // },
         {
-          name: "Strategy",
-          address: strategy.address
+          name: "BaseVault",
+          address: baseVault.address
         },
+        // {
+        //   name: "Strategy",
+        //   address: strategy.address
+        // },
         // {
         //   name: "OtusCloneFactory",
         //   address: otusCloneFactory.address
@@ -69,7 +70,6 @@ const verify = async () => {
         //   address: lyraBase.address
         // }
     ]
-    console.log({ strategy: strategy.address })
     // await hre.tenderly.persistArtifacts(...contracts);
     await hre.tenderly.verify(...contracts);
     

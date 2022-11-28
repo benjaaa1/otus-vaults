@@ -47,7 +47,6 @@ export default function InformationForm(
             type="text"
             id="name"
             onChange={(e) => {
-              console.log(e.target.value)
               setVaultInfo((info: VaultInformationStruct) => ({
                 ...info,
                 name: e.target.value,
@@ -67,7 +66,6 @@ export default function InformationForm(
             type="text"
             id="tokenName"
             onChange={(e) => {
-              console.log(e.target.value)
               setVaultInfo((info: VaultInformationStruct) => ({
                 ...info,
                 tokenName: e.target.value,
@@ -87,7 +85,6 @@ export default function InformationForm(
             type="text"
             id="tokenSymbol"
             onChange={(e) => {
-              console.log(e.target.value)
               setVaultInfo((info: VaultInformationStruct) => ({
                 ...info,
                 tokenSymbol: e.target.value,
@@ -106,7 +103,6 @@ export default function InformationForm(
             label={'Token Description'}
             id="tokenDescription"
             onChange={(e) => {
-              console.log(e.target.value)
               setVaultInfo((info: VaultInformationStruct) => ({
                 ...info,
                 description: e.target.value,
@@ -125,8 +121,6 @@ export default function InformationForm(
             label={'Is Pubilc'}
             value={vaultInfo.isPublic}
             onChange={(checked: any) => {
-              console.log({ checked })
-
               setVaultInfo((vaultInfo: VaultInformationStruct) => ({
                 ...vaultInfo,
                 isPublic: checked,
@@ -144,7 +138,6 @@ export default function InformationForm(
             label={'Maximum Cap'}
             value={fromBigNumber(vaultParams.cap)}
             onChange={(e) => {
-              console.log(e.target.value)
               const cap = toBN(e.target.value)
               setVaultParams((params: VaultParamsStruct) => ({
                 ...params,
@@ -165,7 +158,6 @@ export default function InformationForm(
             label={'Performance Fee'}
             value={fromBigNumber(vaultInfo.performanceFee)}
             onChange={(e) => {
-              console.log(e.target.value)
               const performanceFee = toBN(e.target.value)
               setVaultInfo((params: VaultInformationStruct) => ({
                 ...params,
@@ -186,7 +178,6 @@ export default function InformationForm(
             label={'Management Fee'}
             value={fromBigNumber(vaultInfo.managementFee)}
             onChange={(e) => {
-              console.log(e.target.value)
               const managementFee = toBN(e.target.value)
               setVaultInfo((params: VaultInformationStruct) => ({
                 ...params,

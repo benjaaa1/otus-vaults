@@ -26,7 +26,7 @@ export const getOtusEndpoint = (
     ? OTUS_ENDPOINT_MAINNET
     : network && network.chainId === 420
       ? OTUS_ENDPOINT_TESTNET
-      : OTUS_ENDPOINT_TESTNET
+      : OTUS_ENDPOINT_LOCALHOST
 
   return _endpoint;
 }

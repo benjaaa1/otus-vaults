@@ -101,7 +101,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
     }
 
     setIsCreating(true)
-    console.log({ otusControllerContract })
+
     const tx = await otusControllerContract.createOptionsVault(
       vaultInfo,
       vaultParams,
@@ -120,8 +120,6 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
               address
             )
             setIsCreating(false)
-            console.log({ vaultCloneAddress })
-
             routeToVault(vaultCloneAddress[vaultCloneAddress.length - 1])
           }, 5 * 1000)
         },
@@ -136,7 +134,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
     vaultParams,
     vaultStrategy,
   ])
-  console.log({ step })
+
   return (
     <SlideInPanel
       step={step}

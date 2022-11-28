@@ -114,7 +114,6 @@ export const useVaultProducts = () => {
           `,
           {}
         )
-        console.log({ response })
         return response ? response : null
       } catch (e) {
         console.log(e)
@@ -133,7 +132,6 @@ export const useVaultProduct = (vaultId: any) => {
   const { network } = useWeb3Context()
 
   const otusEndpoint = getOtusEndpoint(network) // getOtusEndpoint(network);
-  console.log({ vaultId, otusEndpoint })
   return useQuery<Vault>(
     QUERY_KEYS.Vaults.Vault(vaultId),
     async () => {
@@ -211,7 +209,7 @@ export const useVaultProduct = (vaultId: any) => {
         `,
         { vaultId: vaultId?.toLowerCase() }
       )
-      console.log({ responses })
+
       return responses.vaults.length > 0 ? responses.vaults[0] : null
     },
     {

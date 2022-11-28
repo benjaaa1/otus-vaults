@@ -7,7 +7,6 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   const lyraGlobal = await  getGlobalDeploys('goerli-ovm');
   const quoteAsset = lyraGlobal.QuoteAsset.address;
-  console.log({ quoteAsset })
   const blackScholes = lyraGlobal.BlackScholes.address;
 
   await deploy("Strategy", {

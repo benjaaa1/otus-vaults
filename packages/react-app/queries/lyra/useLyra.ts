@@ -37,11 +37,8 @@ export type LyraMarket = {
 
 export const useLyra = () => {
   const { network } = useWeb3Context()
-  console.log({ chainId: network?.chainId })
   const provider = new ethers.providers.InfuraProvider(10, process.env.INFURA_ID);
-  console.log({ provider })
   const lyra = new Lyra({ provider });
-
   return lyra;
 }
 
@@ -52,7 +49,6 @@ export const useLyraMarket = () => {
     QUERY_KEYS.Lyra.Markets(),
     async () => {
       const response: Market[] = await lyra.markets()
-      console.log({ response })
       return response ? parseMarketResponse(response) : null
     },
     {
@@ -70,7 +66,6 @@ export const useStrikes = (market: string, strikeId: number) => {
     QUERY_KEYS.Lyra.Strike(market, strikeId),
     async () => {
       const response = await lyra.strike(market, strikeId)
-      console.log({ response })
       return response
     },
     {
@@ -91,7 +86,6 @@ export const getStrikeQuote = async (
   const marketName = trade.market
   const _strike = await lyra.strike(marketName, trade.id)
   const quote = await _strike.quote(isCall, isBuy, size)
-  console.log({ quote })
   return {
     ..._strike,
     quote,
@@ -112,7 +106,6 @@ const parseMarketResponse = async (
       const liveBoardsWithQuotedStrikes: any[] = await parseBoardStrikes(
         liveBoards
       )
-      console.log({ liveBoardsWithQuotedStrikes })
       return {
         address,
         name,

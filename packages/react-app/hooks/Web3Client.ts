@@ -54,9 +54,7 @@ export const useWeb3 = () => {
           ? transactionNotifier.setProvider(web3Provider)
           : new TransactionNotifier(web3Provider)
         toast.success('Connected to Web3')
-        console.log('connected to web3', network)
 
-        console.log({ _transactionNotifier })
         dispatch({
           type: 'SET_WEB3_PROVIDER',
           signer,

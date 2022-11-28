@@ -25,7 +25,6 @@ export const useLatestRates = (asset: string) => {
         `,
         { asset: asset }
       )
-      console.log({ responses })
       return responses.latestRates.length > 0
         ? parseFloat(responses.latestRates[0].rate)
         : null

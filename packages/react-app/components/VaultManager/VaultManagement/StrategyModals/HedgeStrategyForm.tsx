@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { Input } from '../../../UI/Components/Input/Input'
 import { RangeSlider } from '../../../UI/Components/RangeSlider'
@@ -7,6 +7,10 @@ import { Switch } from '../../../UI/Components/Switch'
 import { fromBigNumber, toBN } from '../../../../utils/formatters/numbers'
 import { ZERO_BN } from '../../../../constants/bn'
 import { Button } from '../../../UI/Components/Button'
+import { BigNumber } from 'ethers'
+import { DynamicHedgeStrategy } from '../../../../queries/myVaults/useMyVaults'
+import { useOtusContracts } from '../../../../hooks/Contracts'
+import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
 
 const types = [
   {
@@ -23,23 +27,86 @@ const types = [
   }
 ]
 
-export default function HedgeStrategyForm({ hedgeType }: { hedgeType: number }) {
+const dynamicHedgeInfoPlaceholder: DynamicHedgeStrategy = {
+  maxLeverageSize: toBN(String(1)),
+  maxHedgeAttempts: toBN(String(1)),
+  threshold: toBN(String(1)),
+}
+
+const dynamicHedgeInfoStep = {
+  maxLeverageSize: .1,
+  maxHedgeAttempts: 1,
+  threshold: .05
+}
+
+const dynamicHedgeInfoMin = {
+  maxLeverageSize: 1,
+  maxHedgeAttempts: 1,
+  threshold: 0
+}
+const dynamicHedgeInfoMax = {
+  maxLeverageSize: 3,
+  maxHedgeAttempts: 10,
+  threshold: 1
+}
+
+export default function HedgeStrategyForm({ strategyId, hedgeType, dynamicHedge }: { strategyId: string | null, hedgeType: number, dynamicHedge?: DynamicHedgeStrategy }) {
+
+  const otusContracts = useOtusContracts()
+  const monitorTransaction = useTransactionNotifier()
+  const strategyContract = otusContracts && strategyId ? otusContracts[strategyId] : null
 
   const [_hedgeType, _setHedgeType] = useState(hedgeType)
-  const [maxLeverageSize, setMaxLeverageSize] = useState(ZERO_BN)
-  const [maxHedgeAttempts, setMaxHedgeAttempts] = useState(ZERO_BN)
-  const [threshold, setThreshold] = useState(ZERO_BN)
+  const [dynamicHedgeInfo, setDynamicHedgeInfo] = useState<DynamicHedgeStrategy>(dynamicHedge || dynamicHedgeInfoPlaceholder)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleHedgeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     let value = event.target.value;
     _setHedgeType(parseInt(value))
   }
 
+  const handleStrategyUpdate = useCallback(async () => {
+    if (strategyContract == null) {
+      console.warn('Vault does not exist for deposit')
+      return null
+    }
+
+    setIsLoading(true)
+
+    const tx = await strategyContract.setHedgeStrategyType(toBN(_hedgeType.toString()))
+
+    if (tx) {
+      monitorTransaction({
+        txHash: tx.hash,
+        onTxConfirmed: () => {
+          setTimeout(() => {
+            setIsLoading(false)
+          }, 5 * 1000)
+        },
+      })
+    }
+
+    if (_hedgeType == 2) { // dynamic type
+      const tx = await strategyContract.setHedgeStrategies(dynamicHedgeInfo)
+      if (tx) {
+        monitorTransaction({
+          txHash: tx.hash,
+          onTxConfirmed: () => {
+            setTimeout(() => {
+              setIsLoading(false)
+            }, 5 * 1000)
+          },
+        })
+      }
+    }
+
+  }, [strategyContract, _hedgeType, dynamicHedgeInfo, isLoading, monitorTransaction])
+
   return (
     <div className="pt-8">
-      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+      <div className="grid grid-cols-1 gap-y-6 gap-x-4">
 
-        <div className="sm:col-span-6">
+        <div className="col-span-1">
           <label htmlFor={'hedgeType'} className={'text-xs text-zinc-200 font-normal pb-2'}>
             Hedge Type
           </label>
@@ -57,23 +124,22 @@ export default function HedgeStrategyForm({ hedgeType }: { hedgeType: number }) 
         </div>
 
         {
-          _hedgeType == 2 ?
+          _hedgeType == 2 && dynamicHedge != null ?
             <>
-              test
-              {/* <div className="sm:col-span-6">
+              <div className="sm:col-span-6">
                 <RangeSlider
-                  step={vaultStrategyStep.collatBuffer}
-                  min={vaultStrategyMin.collatBuffer}
-                  max={vaultStrategyMax.collatBuffer}
-                  id={'collateral-buffer'}
-                  label={'Colalteral Buffer'}
-                  value={fromBigNumber(vaultStrategy.collatBuffer)}
+                  step={dynamicHedgeInfoStep.maxLeverageSize}
+                  min={dynamicHedgeInfoMin.maxLeverageSize}
+                  max={dynamicHedgeInfoMax.maxLeverageSize}
+                  id={'maxLeverageSize'}
+                  label={'Max Leverage Size'}
+                  value={fromBigNumber(dynamicHedge.maxLeverageSize)}
                   onChange={(e) => {
                     console.log(e.target.value)
-                    const collatBuffer = toBN(e.target.value)
-                    setVaultStrategy((params) => ({
+                    const maxLeverageSize = toBN(e.target.value)
+                    setDynamicHedgeInfo((params) => ({
                       ...params,
-                      collatBuffer,
+                      maxLeverageSize,
                     }))
                   }}
                   radius={'xs'}
@@ -83,18 +149,18 @@ export default function HedgeStrategyForm({ hedgeType }: { hedgeType: number }) 
 
               <div className="sm:col-span-6">
                 <RangeSlider
-                  step={vaultStrategyStep.collatBuffer}
-                  min={vaultStrategyMin.collatBuffer}
-                  max={vaultStrategyMax.collatBuffer}
-                  id={'collateral-buffer'}
-                  label={'Colalteral Buffer'}
-                  value={fromBigNumber(vaultStrategy.collatBuffer)}
+                  step={dynamicHedgeInfoStep.maxHedgeAttempts}
+                  min={dynamicHedgeInfoMin.maxHedgeAttempts}
+                  max={dynamicHedgeInfoMax.maxHedgeAttempts}
+                  id={'maxHedgeAttempts'}
+                  label={'Max Hedge Attempts'}
+                  value={fromBigNumber(dynamicHedge.maxHedgeAttempts)}
                   onChange={(e) => {
                     console.log(e.target.value)
-                    const collatBuffer = toBN(e.target.value)
-                    setVaultStrategy((params) => ({
+                    const maxHedgeAttempts = toBN(e.target.value)
+                    setDynamicHedgeInfo((params) => ({
                       ...params,
-                      collatBuffer,
+                      maxHedgeAttempts,
                     }))
                   }}
                   radius={'xs'}
@@ -105,37 +171,37 @@ export default function HedgeStrategyForm({ hedgeType }: { hedgeType: number }) 
 
               <div className="sm:col-span-6">
                 <RangeSlider
-                  step={vaultStrategyStep.collatBuffer}
-                  min={vaultStrategyMin.collatBuffer}
-                  max={vaultStrategyMax.collatBuffer}
-                  id={'collateral-buffer'}
-                  label={'Colalteral Buffer'}
-                  value={fromBigNumber(vaultStrategy.collatBuffer)}
+                  step={dynamicHedgeInfoStep.threshold}
+                  min={dynamicHedgeInfoMin.threshold}
+                  max={dynamicHedgeInfoMax.threshold}
+                  id={'threshold'}
+                  label={'Threshold'}
+                  value={fromBigNumber(dynamicHedge.threshold)}
                   onChange={(e) => {
                     console.log(e.target.value)
-                    const collatBuffer = toBN(e.target.value)
-                    setVaultStrategy((params) => ({
+                    const threshold = toBN(e.target.value)
+                    setDynamicHedgeInfo((params) => ({
                       ...params,
-                      collatBuffer,
+                      threshold,
                     }))
                   }}
                   radius={'xs'}
                   variant={'default'}
                 />
-              </div> */}
+              </div>
             </> :
             null
         }
 
-        <div className="justify-end px-4 py-4">
+        <div className="col-span-1">
           <>
             <Button
-              label={'Next'}
+              label={'Update Hedge Strategy'}
               isLoading={false}
               variant={'primary'}
               radius={'xs'}
-              size={'md'}
-              onClick={() => console.log(2)}
+              size={'full-sm'}
+              onClick={handleStrategyUpdate}
             />
           </>
         </div>

@@ -35,8 +35,8 @@ export type VaultStrategy = {
 }
 
 export type DynamicHedgeStrategy = {
-  id: string
-  period: number
+  id?: string
+  period?: number
   maxLeverageSize: BigNumber
   maxHedgeAttempts: BigNumber
   threshold: BigNumber
@@ -84,7 +84,6 @@ export const useMyVaults = () => {
     QUERY_KEYS.Vaults.ManagerVaults(managerId?.toLowerCase()),
     async () => {
       if (!managerId) return null
-      console.log({ managerId })
       const response = await request(
         otusEndpoint,
         gql`
@@ -110,7 +109,6 @@ export const useMyVaults = () => {
         `,
         { managerId: managerId.toLowerCase() }
       )
-      console.log({ response })
       return response ? response : null
     },
     {
@@ -253,11 +251,9 @@ const prepareMyVault = (positions: CurrentPosition[], vault: Vault): Vault => {
     return { ...accum, [id.toString()]: position }
   }, {});
 
-  console.log({ positionsById })
 
   const vaultTradesDetail = vaultTrades.map(vaultTrade => {
     const { positionId } = vaultTrade;
-    console.log({ positionId })
     const position = positionId != null ? positionsById[parseInt(positionId)] : {
       id: 0,
       strikeId: 0,
@@ -267,11 +263,7 @@ const prepareMyVault = (positions: CurrentPosition[], vault: Vault): Vault => {
       profitPercentage: 0,
       isActive: false
     };
-    console.log({ position })
     return { ...vaultTrade, position }
   })
-
-  console.log({ vaultTradesDetail });
-
   return { ...vault, vaultTrades: vaultTradesDetail }
 }

@@ -13,8 +13,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const lyraGlobal = await getGlobalDeploys('local');
   const quoteAsset = lyraGlobal.QuoteAsset.address;
   const blackScholes = lyraGlobal.BlackScholes.address;
-  console.log({ quoteAsset, blackScholes });
-  // console.log({lyraGlobal})
+
   await deploy("Strategy", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { MAX_BN, ZERO_BN } from '../../../constants/bn'
 import { useWeb3Context } from '../../../context'
 import { useBalance } from '../../../hooks/Balances'
-import { useContracts, useOtusVaultContracts } from '../../../hooks/Contracts'
+import { useContracts, useOtusContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
 import { lyra } from '../../../queries/lyra/useLyra'
 import { Vault } from '../../../queries/vaults/useVaultProducts'
@@ -19,7 +19,7 @@ import { Input } from '../../UI/Components/Input/Input'
 export default function Deposit({ vault }: { vault: Vault | undefined }) {
   const { signer, address, network, connect } = useWeb3Context()
   const contracts = useContracts()
-  const otusContracts = useOtusVaultContracts()
+  const otusContracts = useOtusContracts()
 
   const monitorTransaction = useTransactionNotifier()
 

@@ -22,17 +22,14 @@ export const usePositionDelta = (
         builtStrikeToHedge != null &&
         builtStrikeToHedge.positionId != null
       ) {
-        console.log({ strategyId })
         const contract = contracts['Strategy']
         const strategyContract = contract.attach(strategyId)
 
         const { positionId } = builtStrikeToHedge
-        console.log({ positionId, strategyContract })
         const delta = await strategyContract._checkDeltaByPositionId(
           '0x7345544800000000000000000000000000000000000000000000000000000000',
           positionId
         )
-        console.log({ delta })
         setPositionDelta(delta)
       }
     }

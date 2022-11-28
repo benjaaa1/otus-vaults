@@ -51,11 +51,7 @@ contract OtusCloneFactory {
    * @param _strategyAddress implementation strategy contract address
    * @param _otusController controller contract address
    */
-  constructor(
-    address _otusVault,
-    address _strategyAddress,
-    address _otusController
-  ) {
+  constructor(address _otusVault, address _strategyAddress, address _otusController) {
     otusVault = _otusVault;
     strategy = _strategyAddress;
     otusController = _otusController;
@@ -99,9 +95,6 @@ contract OtusCloneFactory {
     address _keeper
   ) public {
     require(msg.sender == otusController, "Not allowed to create");
-    console.log("otusVaultClone");
-    console.log(_otusVaultClone);
-    console.log(_vaultParams.asset);
     IOtusVault(_otusVaultClone).initialize(_owner, _vaultInfo, _vaultParams, _strategy, _keeper);
   }
 

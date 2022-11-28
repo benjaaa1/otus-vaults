@@ -46,7 +46,6 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }: { vaul
             label={'Colalteral Buffer'}
             value={fromBigNumber(vaultStrategy.collatBuffer)}
             onChange={(e) => {
-              console.log(e.target.value)
               const collatBuffer = toBN(e.target.value)
               setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
@@ -67,7 +66,6 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }: { vaul
             label={'Collateral Percent'}
             value={fromBigNumber(vaultStrategy.collatPercent)}
             onChange={(e) => {
-              console.log(e.target.value)
               const collatPercent = toBN(e.target.value)
               setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
@@ -88,7 +86,6 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }: { vaul
             label={'Funds reserved for Hedging'}
             value={fromBigNumber(vaultStrategy.hedgeReserve)}
             onChange={(e) => {
-              console.log(e.target.value)
               const hedgeReserve = toBN(e.target.value)
               setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
@@ -109,7 +106,6 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }: { vaul
             label={'Min. Time to Expiry'}
             value={vaultStrategy.minTimeToExpiry}
             onChange={(e) => {
-              console.log(e.target.value)
               const minTimeToExpiry = parseInt(e.target.value)
               setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
@@ -130,7 +126,6 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }: { vaul
             label={'Max Time to Expiry'}
             value={vaultStrategy.maxTimeToExpiry}
             onChange={(e) => {
-              console.log(e.target.value)
               const maxTimeToExpiry = parseInt(e.target.value)
               setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
@@ -151,7 +146,6 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }: { vaul
             label={'Min. Trade Interval'}
             value={vaultStrategy.minTradeInterval}
             onChange={(e) => {
-              console.log(e.target.value)
               const minTradeInterval = parseInt(e.target.value)
               setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,
@@ -172,7 +166,6 @@ export default function StrategyForm({ vaultStrategy, setVaultStrategy }: { vaul
             label={'GWAV Period'}
             value={vaultStrategy.gwavPeriod}
             onChange={(e) => {
-              console.log(e.target.value)
               const gwavPeriod = parseInt(e.target.value)
               setVaultStrategy((params: StrategyDetailStruct) => ({
                 ...params,

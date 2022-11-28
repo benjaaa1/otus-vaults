@@ -4,7 +4,7 @@ import { parseUnits } from 'ethers/lib/utils'
 import { useCallback, useMemo, useState } from 'react'
 import { BYTES32_MARKET, getMarketInBytes } from '../../../../constants/markets'
 import { useVaultManagerContext } from '../../../../context'
-import { useOtusVaultContracts } from '../../../../hooks/Contracts'
+import { useOtusContracts } from '../../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
 import { getStrikeQuote, LyraStrike, useLyra } from '../../../../queries/lyra/useLyra'
 import { Vault } from '../../../../queries/myVaults/useMyVaults'
@@ -65,11 +65,11 @@ const isCallText = (optionType: number): string => {
 export default function TradeExecute({ vault }: { vault: Vault }) {
   const lyra = useLyra();
   const { builtTrades, toggleTrade } = useVaultManagerContext()
-  const otusContracts = useOtusVaultContracts()
+  const otusContracts = useOtusContracts()
 
   const monitorTransaction = useTransactionNotifier()
   const otusVaultContract = otusContracts ? otusContracts[vault?.id] : null
-  console.log({ builtTrades })
+
   const [isExecutingTrade, setExecutingTrade] = useState(false)
 
   const costs = useMemo(() => computeCosts(builtTrades), [builtTrades])
@@ -163,7 +163,6 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
 const Trade = ({ lyra, toggleTrade, trade }: { lyra: Lyra, toggleTrade: (trade: LyraStrike) => void, trade: LyraStrike }) => {
   const { updateTradeSize } = useVaultManagerContext()
   const [size, setSize] = useState(fromBigNumber(trade.quote.size))
-  console.log({ trade, newSize: fromBigNumber(trade.quote.size) })
 
   const market = trade.market
 

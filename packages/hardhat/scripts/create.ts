@@ -216,6 +216,7 @@ const create = async () => {
 
     const trade = await otusVaultInstance.connect(deployer).trade([trades]);
     await trade.wait();
+    console.log({ trade });
 
     // const _checkDeltaByPositionId = await strategyInstance._checkDeltaByPositionId(ethMarketKey, [strikes[1]]);
     // get positions opened

@@ -13,7 +13,7 @@ import {
   CheckIcon,
   XCircleIcon,
 } from '@heroicons/react/20/solid'
-import { useOtusVaultContracts } from '../../../hooks/Contracts'
+import { useOtusContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
 import { formatUSD, fromBigNumber } from '../../../utils/formatters/numbers'
 import { CurrentExecute } from './Current/Execute'
@@ -125,7 +125,11 @@ export default function VaultManagement() {
         setOpen={setOpenHedgeStrategy}
         open={openHedgeStrategy}
       >
-        <HedgeStrategyForm hedgeType={data?.strategy.hedgeType || 0} />
+        <HedgeStrategyForm
+          strategyId={data?.strategy.id || null}
+          hedgeType={data?.strategy.hedgeType || 0}
+          dynamicHedge={data?.strategy.dynamicHedgeStrategy}
+        />
       </Modal>
     </VaultManagerContextProvider>
   )
@@ -139,7 +143,7 @@ const CurrentRoundProgress = ({
   refetch: any
 }) => {
   const { id, inProgress } = vault
-  const otusContracts = useOtusVaultContracts()
+  const otusContracts = useOtusContracts()
   const otusVaultContract = otusContracts ? otusContracts[id] : null
   const monitorTransaction = useTransactionNotifier()
 

@@ -106,9 +106,7 @@ contract MockOptionToken is Ownable, ERC721Enumerable {
     if (_positionId == 0) {
       require(trade.amount != 0 && isOpen, "cannot open trade of amount 0 or close position id 0");
       _positionId = nextId++;
-      console.log("trader", trader); // should be supervisor - manager address
       _mint(trader, _positionId);
-      console.log("trader2", trader); // should be supervisor - manager address
 
       position = positions[_positionId];
 
@@ -233,5 +231,4 @@ contract MockOptionToken is Ownable, ERC721Enumerable {
    * @dev Emitted when a position is updated.
    */
   event PositionUpdated(uint indexed positionId, OptionPosition position);
-
 }

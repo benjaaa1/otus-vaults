@@ -12,19 +12,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   const lyraMarket = getMarketDeploys('goerli-ovm', 'sETH');
   const lyraGlobal = await getGlobalDeploys('goerli-ovm');
-  console.log({marketKey: "0x7345544800000000000000000000000000000000000000000000000000000000" });
 
-  console.log({    
-    SynthetixAdapter: lyraGlobal.SynthetixAdapter.address,
-    OptionToken: lyraMarket.OptionToken.address,
-    OptionMarket: lyraMarket.OptionMarket.address,
-    LiquidityPool:  lyraMarket.LiquidityPool.address,
-    ShortCollateral: lyraMarket.ShortCollateral.address,
-    OptionMarketPricer: lyraMarket.OptionMarketPricer.address,
-    OptionGreekCache: lyraMarket.OptionGreekCache.address,
-    GWAVOracle: lyraMarket.GWAVOracle.address,
-    BlackScholes: lyraGlobal.BlackScholes.address
-  })
   await deploy("LyraBase", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,

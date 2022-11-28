@@ -55,7 +55,7 @@ export const useVaultManager = () => {
   }
 
   const updateTradeSize = (strike: LyraStrike) => {
-    console.log({ strike })
+
     const _updatedBuiltTrades = builtTrades?.map((existingTrade) => {
       if (
         existingTrade.id == strike.id &&
@@ -74,7 +74,6 @@ export const useVaultManager = () => {
   }
 
   const toggleToHedge = (hedge: VaultTrade) => {
-    console.log({ hedge })
 
     if (builtStrikeToHedge != null && builtStrikeToHedge.id == hedge.id) {
       dispatch({
@@ -95,7 +94,6 @@ export const useVaultManager = () => {
   }
 
   const toggleToClose = (close: VaultTrade) => {
-    console.log({ close })
 
     if (builtStrikeToClose != null && builtStrikeToClose.id == close.id) {
       dispatch({

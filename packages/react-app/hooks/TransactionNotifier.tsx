@@ -62,7 +62,7 @@ const useBlockExplorer = () => {
 export const useTransactionNotifier = () => {
   const { transactionNotifier } = useWeb3Context() // Connector.useContainer();
   const { blockExplorerInstance } = useBlockExplorer();
-  console.log({ transactionNotifier })
+
   return useCallback(
     ({
       txHash,

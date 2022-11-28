@@ -57,7 +57,6 @@ export const useUserPortfolio = () => {
     QUERY_KEYS.UserPortfolios.UserPortfolio(userId?.toLowerCase()),
     async () => {
       if (!userId) return null
-      console.log({ userId })
       const response = await request(
         otusEndpoint,
         gql`
@@ -85,7 +84,6 @@ export const useUserPortfolio = () => {
         `,
         { userId: userId.toLowerCase() }
       )
-      console.log({ response })
       return response.userPortfolios.length > 0
         ? response.userPortfolios[0]
         : null

@@ -27,11 +27,10 @@ export const useContracts = () => {
   const contractsConfig = useContractConfig()
   const { signer, network } = useWeb3Context()
   const contracts = useContractLoader(signer, contractsConfig, network?.chainId)
-  console.log({ contracts, contractsConfig })
   return contracts
 }
 
-export const useOtusVaultContracts = (): Record<string, Contract> => {
+export const useOtusContracts = (): Record<string, Contract> => {
   const contracts = useContracts()
   const { signer } = useWeb3Context()
   const { data } = useVaultProducts()
@@ -39,12 +38,14 @@ export const useOtusVaultContracts = (): Record<string, Contract> => {
 
   useEffect(() => {
     console.log({ contracts })
-    if (data?.vaults && contracts['OtusVault']) {
-      const contract = contracts['OtusVault']
-      const _vaultIds = data?.vaults?.reduce((accum, { id }) => {
-        return { ...accum, [id]: contract.attach(id) }
+    if (data?.vaults && contracts['OtusVault'] && contracts['Strategy']) {
+      const otusVaultContract = contracts['OtusVault']
+      const strategyContract = contracts['OtusVault']
+      const attachedContracts = data?.vaults?.reduce((accum, { id, strategy: { id: strategyId } }) => {
+        return { ...accum, [id]: otusVaultContract.attach(id), [strategyId]: strategyContract.attach(strategyId) }
       }, {})
-      setOtusContracts(_vaultIds)
+      console.log({ attachedContracts })
+      setOtusContracts(attachedContracts)
     }
   }, [data, contracts])
 
