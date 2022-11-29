@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useMyVault, Vault } from '../../../queries/myVaults/useMyVaults'
 import ManagerTabs from './UI/ManagerTabs'
@@ -19,11 +19,12 @@ import { formatUSD, fromBigNumber } from '../../../utils/formatters/numbers'
 import { CurrentExecute } from './Current/Execute'
 import Modal from '../../UI/Modal'
 import HedgeStrategyForm from './StrategyModals/HedgeStrategyForm'
+import VaultStrategyForm from './StrategyModals/VaultStrategyForm'
 
 export default function VaultManagement() {
   const { query } = useRouter()
 
-  const { data, isLoading, refetch } = useMyVault(query?.vault)
+  const { data, refetch } = useMyVault(query?.vault)
 
   const [tab, setTab] = useState(VaultManagerTabs.CURRENT.HREF)
 
@@ -111,7 +112,11 @@ export default function VaultManagement() {
         setOpen={setOpenVaultStrategy}
         open={openVaultStrategy}
       >
-        Vault
+        <VaultStrategyForm
+          refetch={refetch}
+          strategyId={data?.strategy.id || null}
+          vaultStrategy={data?.strategy.vaultStrategy}
+        />
       </Modal>
       <Modal
         title={'Strike Strategy'}
@@ -126,6 +131,7 @@ export default function VaultManagement() {
         open={openHedgeStrategy}
       >
         <HedgeStrategyForm
+          refetch={refetch}
           strategyId={data?.strategy.id || null}
           hedgeType={data?.strategy.hedgeType || 0}
           dynamicHedge={data?.strategy.dynamicHedgeStrategy}

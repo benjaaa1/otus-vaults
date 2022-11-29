@@ -24,7 +24,7 @@ export type VaultTrade = {
 }
 
 export type VaultStrategy = {
-  id: string
+  id?: string
   allowedMarkets: string[]
   collatBuffer: BigNumber
   collatPercent: BigNumber
@@ -32,6 +32,7 @@ export type VaultStrategy = {
   maxTimeToExpiry: number
   minTradeInterval: number
   gwavPeriod: number
+  hedgeReserve: number
 }
 
 export type DynamicHedgeStrategy = {
@@ -161,6 +162,7 @@ export const useMyVault = (vaultId: any) => {
                   minTradeInterval
                   gwavPeriod
                   allowedMarkets
+                  hedgeReserve
                 }
                 dynamicHedgeStrategy {
                   id

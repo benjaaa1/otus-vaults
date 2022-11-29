@@ -37,7 +37,7 @@ export type VaultParamsStruct = {
   asset: string
 }
 
-export type StrategyDetailStruct = {
+export type VaultStrategyStruct = {
   hedgeReserve: BigNumber
   collatBuffer: BigNumber
   collatPercent: BigNumber
@@ -80,7 +80,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
     asset: CURRENCIES[network?.chainId || 420].ETH, // quote asset
   })
 
-  const [vaultStrategy, setVaultStrategy] = useState<StrategyDetailStruct>({
+  const [vaultStrategy, setVaultStrategy] = useState<VaultStrategyStruct>({
     hedgeReserve: toBN('.15'), // limit up to 50%
     collatBuffer: toBN('1.2'),
     collatPercent: toBN('.35'),

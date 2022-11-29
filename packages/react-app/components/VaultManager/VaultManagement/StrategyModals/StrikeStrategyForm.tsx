@@ -12,19 +12,11 @@ import { DynamicHedgeStrategy } from '../../../../queries/myVaults/useMyVaults'
 import { useOtusContracts } from '../../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
 
-const types = [
-  {
-    label: 'No Hedge',
-    value: 0
-  },
-  {
-    label: 'User Hedge',
-    value: 1
-  },
-  {
-    label: 'Dynamic Hedge',
-    value: 2
-  }
+const tabs = [
+  { name: 'Buy Call', id: 0 },
+  { name: 'Buy Put', id: 1 },
+  { name: 'Sell Call', id: 3 },
+  { name: 'Sell Put', id: 4 }
 ]
 
 const dynamicHedgeInfoPlaceholder: DynamicHedgeStrategy = {
