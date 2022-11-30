@@ -20,6 +20,7 @@ import { CurrentExecute } from './Current/Execute'
 import Modal from '../../UI/Modal'
 import HedgeStrategyForm from './StrategyModals/HedgeStrategyForm'
 import VaultStrategyForm from './StrategyModals/VaultStrategyForm'
+import StrikeStrategyForm from './StrategyModals/StrikeStrategyForm'
 
 export default function VaultManagement() {
   const { query } = useRouter()
@@ -53,13 +54,18 @@ export default function VaultManagement() {
                 onClick={() => setOpenVaultStrategy(true)}
                 radius={'full'}
               />
-              <Button
-                label={'Strike Settings'}
-                variant={'secondary'}
-                size={'sm'}
-                onClick={() => setOpenStrikeStrategy(true)}
-                radius={'full'}
-              />
+              {
+                data?.strategy.id ?
+                  <Button
+                    label={'Strike Settings'}
+                    variant={'secondary'}
+                    size={'sm'}
+                    onClick={() => setOpenStrikeStrategy(true)}
+                    radius={'full'}
+                  /> :
+                  null
+              }
+
               <Button
                 label={'Hedge Settings'}
                 variant={'secondary'}
@@ -115,16 +121,21 @@ export default function VaultManagement() {
         <VaultStrategyForm
           refetch={refetch}
           strategyId={data?.strategy.id || null}
-          vaultStrategy={data?.strategy.vaultStrategy}
+          vaultStrategy={data?.strategy.vaultStrategy || null}
         />
       </Modal>
-      <Modal
-        title={'Strike Strategy'}
-        setOpen={setOpenStrikeStrategy}
-        open={openStrikeStrategy}
-      >
-        Strike
-      </Modal>
+      {
+        data?.strategy.id ?
+          <Modal
+            title={'Strike Strategy'}
+            setOpen={setOpenStrikeStrategy}
+            open={openStrikeStrategy}
+          >
+            <StrikeStrategyForm strategyId={data?.strategy.id} />
+          </Modal> :
+          <></>
+      }
+
       <Modal
         title={'Hedge Strategy'}
         setOpen={setOpenHedgeStrategy}

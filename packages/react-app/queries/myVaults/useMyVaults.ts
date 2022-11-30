@@ -230,6 +230,44 @@ export const useMyVault = (vaultId: any) => {
   )
 }
 
+export const useMyVaultStrikeStrategies = (strategyId: string) => {
+  const { network } = useWeb3Context()
+
+  const otusEndpoint = getOtusEndpoint(network) // getOtusEndpoint(network);
+
+  return useQuery<Vault | null>(
+    QUERY_KEYS.Vaults.ManageStrikeStrategies(
+      strategyId?.toLowerCase()
+    ),
+    async () => {
+      if (!strategyId) return null
+      const response = await request(
+        otusEndpoint,
+        gql`
+          query ($strategyId: String!) {
+            strikeStrategies(where:{ strategy: $strategyId }) {
+              id,
+              targetDelta, 
+              maxDeltaGap,
+              minVol,
+              maxVol,
+              maxVolVariance,
+              optionType
+            }
+          }
+        `,
+        { strategyId: strategyId?.toLowerCase() }
+      )
+
+      return response;
+
+    },
+    {
+      enabled: !!strategyId,
+    }
+  )
+}
+
 export type CurrentPosition = {
   id: number
   strikeId: number

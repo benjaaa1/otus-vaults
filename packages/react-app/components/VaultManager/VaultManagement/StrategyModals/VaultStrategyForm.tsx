@@ -57,7 +57,7 @@ const vaultStrategyInfoMax = {
   gwavPeriod: 60, // HOUR_SEC / 6,
 }
 
-export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }: { refetch: any, strategyId: string | null, vaultStrategy: VaultStrategyStruct }) {
+export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }: { refetch: any, strategyId: string | null, vaultStrategy: VaultStrategyStruct | null }) {
 
   const otusContracts = useOtusContracts()
   const monitorTransaction = useTransactionNotifier()

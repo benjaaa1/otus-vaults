@@ -10,6 +10,9 @@ export const QUERY_KEYS = {
       managerId: string | null | undefined,
       vaultId: string | null | undefined
     ) => ['vaults', managerId, vaultId],
+    ManageStrikeStrategies: (
+      strategyId: string
+    ) => ['strikeStrategies', strategyId]
   },
   UserPortfolios: {
     UserPortfolio: (userId: string | null | undefined) => [

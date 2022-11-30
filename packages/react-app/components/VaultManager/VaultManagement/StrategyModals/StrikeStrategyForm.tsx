@@ -8,15 +8,15 @@ import { fromBigNumber, toBN } from '../../../../utils/formatters/numbers'
 import { ZERO_BN } from '../../../../constants/bn'
 import { Button } from '../../../UI/Components/Button'
 import { BigNumber } from 'ethers'
-import { DynamicHedgeStrategy } from '../../../../queries/myVaults/useMyVaults'
+import { DynamicHedgeStrategy, useMyVaultStrikeStrategies } from '../../../../queries/myVaults/useMyVaults'
 import { useOtusContracts } from '../../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
 
 const tabs = [
-  { name: 'Buy Call', id: 0 },
-  { name: 'Buy Put', id: 1 },
-  { name: 'Sell Call', id: 3 },
-  { name: 'Sell Put', id: 4 }
+  { name: 'Buy Call', id: 0, href: 'buy-call' },
+  { name: 'Buy Put', id: 1, href: 'buy-put' },
+  { name: 'Sell Call', id: 3, href: 'sell-call' },
+  { name: 'Sell Put', id: 4, href: 'sell-put' }
 ]
 
 const dynamicHedgeInfoPlaceholder: DynamicHedgeStrategy = {
@@ -42,22 +42,24 @@ const dynamicHedgeInfoMax = {
   threshold: 1
 }
 
-export default function HedgeStrategyForm({ refetch, strategyId, hedgeType, dynamicHedge }: { refetch: any, strategyId: string | null, hedgeType: number, dynamicHedge?: DynamicHedgeStrategy }) {
+function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(' ')
+}
 
+export default function StrikeStrategyForm(
+  { strategyId }:
+    { strategyId: string }
+) {
+
+  const { data, refetch } = useMyVaultStrikeStrategies(strategyId);
   const otusContracts = useOtusContracts()
-  const monitorTransaction = useTransactionNotifier()
-  const strategyContract = otusContracts && strategyId ? otusContracts[strategyId] : null
+  const monitorTransaction = useTransactionNotifier();
 
-  const [_hedgeType, _setHedgeType] = useState(hedgeType)
-  const [dynamicHedgeInfo, setDynamicHedgeInfo] = useState<DynamicHedgeStrategy>(dynamicHedge || dynamicHedgeInfoPlaceholder)
+  const strategyContract = otusContracts && strategyId ? otusContracts[strategyId] : null
+  // const [dynamicHedgeInfo, setDynamicHedgeInfo] = useState<DynamicHedgeStrategy>(dynamicHedge || dynamicHedgeInfoPlaceholder)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleHedgeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    let value = event.target.value;
-    _setHedgeType(parseInt(value))
-  }
-
-  const handleStrategyUpdate = useCallback(async () => {
+  const handleStrikeStrategyUpdate = useCallback(async () => {
     if (strategyContract == null) {
       console.warn('Vault does not exist for deposit')
       return null
@@ -65,7 +67,7 @@ export default function HedgeStrategyForm({ refetch, strategyId, hedgeType, dyna
 
     setIsLoading(true)
     console.log({ strategyContract })
-    const tx = await strategyContract.setHedgeStrategyType(_hedgeType)
+    const tx = await strategyContract.setStrikeStrategyDetail()
 
     if (tx) {
       monitorTransaction({
@@ -79,125 +81,38 @@ export default function HedgeStrategyForm({ refetch, strategyId, hedgeType, dyna
       })
     }
 
-    if (_hedgeType == 2) { // dynamic type
-      const tx2 = await strategyContract.setHedgeStrategies(dynamicHedgeInfo)
-      if (tx2) {
-        monitorTransaction({
-          txHash: tx2.hash,
-          onTxConfirmed: () => {
-            setTimeout(async () => {
-              setIsLoading(false);
-              await refetch();
-            }, 5 * 1000)
-          },
-        })
-      }
-    }
+  }, [strategyContract, isLoading, monitorTransaction])
 
-  }, [strategyContract, _hedgeType, dynamicHedgeInfo, isLoading, monitorTransaction])
+  const [activeTab, setTab] = useState<string>('')
 
   return (
     <div className="pt-8">
       <div className="grid grid-cols-1 gap-y-6 gap-x-4">
 
-        <div className="col-span-1">
-          <label htmlFor={'hedgeType'} className={'text-xs text-zinc-200 font-normal pb-2'}>
-            Hedge Type
-          </label>
-          <select
-            id="hedgeType"
-            name="hedgeType"
-            className="block w-full text-xs border-zinc-700 bg-zinc-900 text-white rounded-sm focus:border-indigo-500 focus:ring-indigo-500"
-            defaultValue={hedgeType}
-            onChange={handleHedgeChange}
-          >
-            {types.map((type) => (
-              <option key={type.value} value={type.value}>{type.label}</option>
-            ))}
-          </select>
+        <div className="hidden sm:block">
+          <div className="border-b border-zinc-700">
+            <nav className="-mb-px flex" aria-label="Tabs">
+              {tabs.map((_tab) => (
+                <a
+                  key={_tab.name}
+                  onClick={() => setTab(_tab.href)}
+                  className={classNames(
+                    _tab.href == activeTab
+                      ? ' text-emerald-600'
+                      : ' text-zinc-500  hover:text-zinc-200',
+                    'w-1/2 cursor-pointer border-b border-zinc-700 py-4 px-1 text-center text-xxs font-semibold uppercase border-t border-r first:border-l last:border-l-none'
+                  )}
+                  aria-current={_tab.href == activeTab ? 'page' : undefined}
+                >
+                  {_tab.name}
+                </a>
+              ))}
+            </nav>
+          </div>
         </div>
 
-        {
-          _hedgeType == 2 && dynamicHedge != null ?
-            <div className="col-span-1">
-              <div className="sm:col-span-6">
-                <RangeSlider
-                  step={dynamicHedgeInfoStep.maxLeverageSize}
-                  min={dynamicHedgeInfoMin.maxLeverageSize}
-                  max={dynamicHedgeInfoMax.maxLeverageSize}
-                  id={'maxLeverageSize'}
-                  label={'Max Leverage Size'}
-                  value={fromBigNumber(dynamicHedgeInfo.maxLeverageSize)}
-                  onChange={(e) => {
-                    console.log(e.target.value)
-                    const maxLeverageSize = toBN(e.target.value)
-                    setDynamicHedgeInfo((params) => ({
-                      ...params,
-                      maxLeverageSize,
-                    }))
-                  }}
-                  radius={'xs'}
-                  variant={'default'}
-                />
-              </div>
-
-              <div className="sm:col-span-6">
-                <RangeSlider
-                  step={dynamicHedgeInfoStep.maxHedgeAttempts}
-                  min={dynamicHedgeInfoMin.maxHedgeAttempts}
-                  max={dynamicHedgeInfoMax.maxHedgeAttempts}
-                  id={'maxHedgeAttempts'}
-                  label={'Max Hedge Attempts'}
-                  value={fromBigNumber(dynamicHedgeInfo.maxHedgeAttempts)}
-                  onChange={(e) => {
-                    console.log(e.target.value)
-                    const maxHedgeAttempts = toBN(e.target.value)
-                    setDynamicHedgeInfo((params) => ({
-                      ...params,
-                      maxHedgeAttempts,
-                    }))
-                  }}
-                  radius={'xs'}
-                  variant={'default'}
-                />
-              </div>
-
-
-              <div className="sm:col-span-6">
-                <RangeSlider
-                  step={dynamicHedgeInfoStep.threshold}
-                  min={dynamicHedgeInfoMin.threshold}
-                  max={dynamicHedgeInfoMax.threshold}
-                  id={'threshold'}
-                  label={'Threshold'}
-                  value={fromBigNumber(dynamicHedgeInfo.threshold)}
-                  onChange={(e) => {
-                    console.log(e.target.value)
-                    const threshold = toBN(e.target.value)
-                    setDynamicHedgeInfo((params) => ({
-                      ...params,
-                      threshold,
-                    }))
-                  }}
-                  radius={'xs'}
-                  variant={'default'}
-                />
-              </div>
-            </div> :
-            null
-        }
-
         <div className="col-span-1">
-          <>
-            <Button
-              label={'Update Hedge Strategy'}
-              isLoading={false}
-              variant={'primary'}
-              radius={'xs'}
-              size={'full-sm'}
-              onClick={handleStrategyUpdate}
-            />
-          </>
+          {activeTab}
         </div>
 
       </div>
