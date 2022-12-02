@@ -182,7 +182,7 @@ export default function StrikeStrategyForm(
         <div className="col-span-1">
           <>
             <Button
-              label={'Update Vault Strategy'}
+              label={'Update Strike Strategies'}
               isLoading={false}
               variant={'primary'}
               radius={'xs'}

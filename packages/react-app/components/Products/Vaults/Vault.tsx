@@ -7,9 +7,31 @@ import {
   toBN,
 } from '../../../utils/formatters/numbers'
 import ETHBWIcon from '../../UI/Components/Icons/BW/ETHBWIcon'
+import BTCBWIcon from '../../UI/Components/Icons/BW/BTCBWIcon'
 import SUSDIcon from '../../UI/Components/Icons/Color/SUSD'
 import { Tag } from '../../UI/Components/Tag'
 import { BigNumber } from 'ethers'
+import { BYTES32_MARKET } from '../../../constants/markets'
+
+const BuildMarketTags = ({ allowedMarkets }: { allowedMarkets: string[] }) => {
+  return <>
+    {
+      allowedMarkets.includes(BYTES32_MARKET.ETH) ?
+        <div className="sm:absolute sm:ml-48 sm:mt-[-8px]">
+          <ETHBWIcon />
+        </div> :
+        null
+    }
+
+    {
+      allowedMarkets.includes(BYTES32_MARKET.BTC) ?
+        <div className="sm:absolute sm:ml-36 sm:mt-[-8px]">
+          <BTCBWIcon />
+        </div> :
+        null
+    }
+  </>
+}
 
 const Vault = ({ vault }: { vault: Vault }) => {
   const router = useRouter()
@@ -23,14 +45,14 @@ const Vault = ({ vault }: { vault: Vault }) => {
     <div
       onClick={(e) => handleVaultClick(e, `vault/${vault.id}`)}
       key={vault.id}
-      className="cursor-pointer rounded-sm border border-zinc-800 bg-gradient-to-b from-black to-zinc-900 shadow-black hover:shadow hover:shadow-emerald-200"
+      className="cursor-pointer rounded-sm border border-zinc-800 bg-gradient-to-b from-black to-zinc-900 shadow-black  hover:shadow-emerald-200 hover:shadow-lg"
     >
       <div key={vault.id} className="overflow-hidden border-b border-zinc-800">
         <div className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3">
             <div className="sm:col-span-2">
               <Tag
-                label={'Put Selling'}
+                label={vault.name}
                 textVariant={'uppercase'}
                 size={'sm'}
                 variant={'primary'}
@@ -43,16 +65,14 @@ const Vault = ({ vault }: { vault: Vault }) => {
               <Tag label={getHedgeLabel(vault.strategy.hedgeType)} size={'xs'} variant={'default'} />
             </div>
           </div>
-          <div className="sm:absolute sm:ml-48 sm:mt-[-8px]">
-            <ETHBWIcon />
-          </div>
+          <BuildMarketTags allowedMarkets={vault.strategy.vaultStrategy.allowedMarkets} />
         </div>
       </div>
 
       <div className="overflow-hidden border-b border-zinc-800">
         <div className="p-4 pt-8">
           <div className="truncate font-mono text-xs font-semibold uppercase text-white">
-            {vault.name}
+            {vault.description}
           </div>
           <div className="grid grid-cols-2">
             <div className="py-2">
@@ -65,11 +85,13 @@ const Vault = ({ vault }: { vault: Vault }) => {
             </div>
 
             <div className="py-2">
-              <div className="py-2 font-mono text-2xl font-normal text-white">
-                $1200
-              </div>
-              <div className="text-xxs font-light text-zinc-300">
-                Current Strike Price
+              <div className="overflow-x-auto">
+                <div className="py-2 font-mono text-2xl font-normal text-white">
+                  {vault.vaultTrades && vault.vaultTrades.length > 0 ? formatUSD(fromBigNumber(vault.vaultTrades[0].strikePrice)) : 'N/A'}
+                </div>
+                <div className="text-xxs font-light text-zinc-300">
+                  View all Current Strikes
+                </div>
               </div>
             </div>
           </div>
@@ -115,7 +137,7 @@ const Vault = ({ vault }: { vault: Vault }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 
