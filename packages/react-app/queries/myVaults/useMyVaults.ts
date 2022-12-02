@@ -76,6 +76,16 @@ type ManagerVault = {
   isSuccess: boolean
 }
 
+export type StrikeStrategy = {
+  id?: string
+  targetDelta: BigNumber
+  maxDeltaGap: BigNumber
+  minVol: BigNumber
+  maxVol: BigNumber
+  maxVolVariance: BigNumber
+  optionType: number
+}
+
 export const useMyVaults = () => {
   const { address: managerId, network } = useWeb3Context()
 
@@ -235,7 +245,7 @@ export const useMyVaultStrikeStrategies = (strategyId: string) => {
 
   const otusEndpoint = getOtusEndpoint(network) // getOtusEndpoint(network);
 
-  return useQuery<Vault | null>(
+  return useQuery<StrikeStrategy[]>(
     QUERY_KEYS.Vaults.ManageStrikeStrategies(
       strategyId?.toLowerCase()
     ),
@@ -258,7 +268,7 @@ export const useMyVaultStrikeStrategies = (strategyId: string) => {
         `,
         { strategyId: strategyId?.toLowerCase() }
       )
-
+      console.log({ response })
       return response;
 
     },

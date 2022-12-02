@@ -239,7 +239,7 @@ export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }
         <div className="col-span-1">
           <>
             <Button
-              label={'Update Hedge Strategy'}
+              label={'Update Vault Strategy'}
               isLoading={false}
               variant={'primary'}
               radius={'xs'}

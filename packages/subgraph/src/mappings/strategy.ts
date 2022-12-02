@@ -133,7 +133,6 @@ export function handleHedgeStrategyUpdate(event: HedgeStrategyUpdated): void {
   dynamicHedgeStrategy.strategy = strategy.id;
 
   dynamicHedgeStrategy.threshold = event.params.dynamicStrategy.threshold;
-  dynamicHedgeStrategy.period = event.params.dynamicStrategy.period;
   dynamicHedgeStrategy.maxHedgeAttempts = event.params.dynamicStrategy.maxHedgeAttempts;
   dynamicHedgeStrategy.maxLeverageSize = event.params.dynamicStrategy.maxLeverageSize;
 
