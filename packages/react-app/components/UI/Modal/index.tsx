@@ -3,7 +3,10 @@ import { Fragment, useState, Dispatch, ReactChild } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/24/outline'
 
-export default function Modal({ setOpen, open, title, children }: { setOpen: Dispatch<boolean>, open: boolean, title: string, children?: ReactChild | ReactChild[] | null }) {
+export default function Modal(
+  { setOpen, open, title, children }:
+    { setOpen: Dispatch<boolean>, open: boolean, title: string, children?: ReactChild | ReactChild[] | null }
+) {
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={setOpen}>
@@ -30,7 +33,7 @@ export default function Modal({ setOpen, open, title, children }: { setOpen: Dis
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-sm bg-zinc-900 border border-zinc-800 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-sm bg-zinc-900 border border-zinc-800 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <div>
                   <div className="mt-1 text-left sm:mt-1">
                     <Dialog.Title
