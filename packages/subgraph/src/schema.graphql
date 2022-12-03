@@ -23,19 +23,18 @@ type Vault @entity {
   totalYieldEarned: BigInt!
   previousExpiryAPR: BigInt!
   roundLockedAmount: BigInt!
-  userActions: [UserAction!]! @derivedFrom(field: "vault")
-  vaultTrades: [VaultTrade!]! @derivedFrom(field: "vault")
-  global: Global!
+  userActions: [UserAction!] @derivedFrom(field: "vault")
+  vaultTrades: [VaultTrade!] @derivedFrom(field: "vault")
 }
 
 type Strategy @entity {
   id: ID!
-  latestUpdate: BigInt!
+  latestUpdate: BigInt
   vault: Vault!
-  vaultStrategy: VaultStrategy! @derivedFrom(field: "strategy")
-  dynamicHedgeStrategy: DynamicHedgeStrategy! @derivedFrom(field: "strategy")
-  strikeStrategies: [StrikeStrategy!]! @derivedFrom(field: "strategy")
-  hedgeType: Int!
+  vaultStrategy: VaultStrategy @derivedFrom(field: "strategy")
+  dynamicHedgeStrategy: DynamicHedgeStrategy @derivedFrom(field: "strategy")
+  strikeStrategies: [StrikeStrategy!] @derivedFrom(field: "strategy")
+  hedgeType: Int
 }
 
 type VaultStrategy @entity {
@@ -54,10 +53,9 @@ type VaultStrategy @entity {
 type DynamicHedgeStrategy @entity {
   id: ID!
   strategy: Strategy!
-  threshold: BigInt!
-  maxHedgeAttempts: BigInt!
-  maxLeverageSize: BigInt!
-  period: BigInt!
+  threshold: BigInt
+  maxHedgeAttempts: BigInt
+  maxLeverageSize: BigInt
 }
 
 type StrikeStrategy @entity {

@@ -1,4 +1,4 @@
-import { log } from '@graphprotocol/graph-ts';
+import { BigInt, log } from '@graphprotocol/graph-ts';
 import { VaultCreated } from '../../generated/OtusController/OtusController';
 import { Global, Manager, Vault, Strategy as OtusStrategy } from '../../generated/schema';
 import { OtusVault, Strategy } from '../../generated/templates';
@@ -24,6 +24,8 @@ export function handleVaultCreated(event: VaultCreated): void {
   }
 
   strategy.vault = _vaultAddress;
+  // strategy.latestUpdate = event.block.timestamp;
+
   vault.strategy = _vaultStrategy.toHex();
   vault.manager = manager.id;
   vault.round = 0;
@@ -35,12 +37,17 @@ export function handleVaultCreated(event: VaultCreated): void {
   vault.description = _vaultInfo.description;
   vault.performanceFee = _vaultInfo.performanceFee;
   vault.managementFee = _vaultInfo.managementFee;
+  vault.isPublic = _vaultInfo.isPublic;
+  vault.inProgress = false;
+  vault.totalDeposit = ZERO;
+  vault.previousExpiryAPR = ZERO;
+  vault.roundLockedAmount = ZERO;
+  vault.totalYieldEarned = ZERO;
+
   vault.asset = _vaultParams.asset; // need lib with constants to map out
   vault.vaultCap = _vaultParams.cap;
-
   vault.strategy = _vaultStrategy.toHex();
-  vault.totalYieldEarned = ZERO;
-  // vault.vaultTrades = [];
+
   vault.createdAt = event.block.timestamp;
 
   manager.save();

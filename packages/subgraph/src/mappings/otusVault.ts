@@ -12,6 +12,7 @@ import {
   TradeActiveTradesStruct,
 } from '../../generated/templates/OtusVault/OtusVault';
 import { Global, Vault, VaultTrade, UserPortfolio, UserAction, Manager, ManagerAction } from '../../generated/schema';
+import { ZERO } from '../lib';
 
 enum TradeType {
   LongCall,
@@ -102,6 +103,9 @@ export function handleDeposit(event: Deposit): void {
   let userPortfolioEntity = UserPortfolio.load(depositor.toHex());
   if (!userPortfolioEntity) {
     userPortfolioEntity = new UserPortfolio(depositor.toHex());
+    userPortfolioEntity.account = depositor;
+    userPortfolioEntity.yieldEarned = ZERO;
+    userPortfolioEntity.balance = ZERO;
   }
   let previousBalance = userPortfolioEntity.balance;
   userPortfolioEntity.balance = previousBalance.plus(event.params.amount);
