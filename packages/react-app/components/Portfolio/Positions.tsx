@@ -5,6 +5,7 @@ import { formatUSD, fromBigNumber } from '../../utils/formatters/numbers'
 import { Cell } from '../UI/Components/Table/Cell'
 import { HeaderCell } from '../UI/Components/Table/HeaderCell'
 import Table from '../UI/Components/Table/Table'
+import has from 'lodash/has'
 
 type VaultUserPosition = {
   [key: string]: Position
@@ -31,6 +32,7 @@ export default function Positions() {
   const [positions, setPositions] = useState<Position[]>([]);
 
   const formatUserVaultActions = useCallback(() => {
+    console.log({ userACtions: data?.userActions })
     if (data?.userActions && data?.userActions.length > 0) {
       let _vaultPositions: VaultUserPosition = data?.userActions.reduce((accum: VaultUserPosition, action) => {
         let { vault: { id } } = action;

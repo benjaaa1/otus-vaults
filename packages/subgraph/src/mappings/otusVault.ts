@@ -103,7 +103,8 @@ export function handleDeposit(event: Deposit): void {
   if (!userPortfolioEntity) {
     userPortfolioEntity = new UserPortfolio(depositor.toHex());
   }
-  userPortfolioEntity.balance = event.params.amount;
+  let previousBalance = userPortfolioEntity.balance;
+  userPortfolioEntity.balance = previousBalance.plus(event.params.amount);
 
   let otusVaultEntity = Vault.load(otusVaultAddress.toHex());
   if (!otusVaultEntity) {
