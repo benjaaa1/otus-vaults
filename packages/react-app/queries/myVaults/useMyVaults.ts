@@ -83,7 +83,7 @@ export type StrikeStrategy = {
   minVol: BigNumber
   maxVol: BigNumber
   maxVolVariance: BigNumber
-  optionType: number
+  optionType: number | string
 }
 
 export const useMyVaults = () => {
@@ -269,7 +269,10 @@ export const useMyVaultStrikeStrategies = (strategyId: string) => {
         { strategyId: strategyId?.toLowerCase() }
       )
       console.log({ response })
-      return response;
+      return response.strikeStrategies.map((strategy: StrikeStrategy) => {
+        const { optionType } = strategy;
+        return { optionType: parseInt(optionType), ...strategy }
+      });
 
     },
     {

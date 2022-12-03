@@ -11,6 +11,8 @@ import { BigNumber } from 'ethers'
 import { DynamicHedgeStrategy, StrikeStrategy, useMyVaultStrikeStrategies } from '../../../../queries/myVaults/useMyVaults'
 import { useOtusContracts } from '../../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
+import keyBy from 'lodash/keyBy'
+import has from 'lodash/has'
 
 const tabs = [
   { name: 'Buy Call', id: 0, href: 'buy-call' },
@@ -81,13 +83,6 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-const isValidOptionType = (optionType: number) => {
-  if (optionType in [0, 1, 3, 4]) {
-    return true;
-  }
-  return false;
-}
-
 export default function StrikeStrategyForm(
   { strategyId }:
     { strategyId: string }
@@ -97,26 +92,9 @@ export default function StrikeStrategyForm(
   const otusContracts = useOtusContracts()
   const monitorTransaction = useTransactionNotifier();
   const strategyContract = otusContracts && strategyId ? otusContracts[strategyId] : null
-
-  const [strikeStrategyInfo, setStrikeStrategyInfo] = useState<StrikeStrategy>();
+  console.log({ strikeStrategies })
+  const [activeStrikeStrategies, setActiveStrikeStrategies] = useState<StrikeStrategy[]>(strikeStrategies != undefined ? strikeStrategies : strikeStrategyInfoPlaceholder);
   const [activeTab, setTab] = useState<number>(0)
-
-  useEffect(() => {
-    if (isValidOptionType(activeTab)) {
-      if (strikeStrategies && strikeStrategies.length > 0) {
-        let _strikeStrategy = strikeStrategies.filter(strikeStrategy => (activeTab === strikeStrategy.optionType));
-        if (_strikeStrategy.length > 0) {
-          setStrikeStrategyInfo(_strikeStrategy[0]);
-        } else {
-          let _strikeStrategy = strikeStrategyInfoPlaceholder.find(strikeStrategy => (activeTab === strikeStrategy.optionType));
-          setStrikeStrategyInfo(_strikeStrategy);
-        }
-      } else {
-        let _strikeStrategy = strikeStrategyInfoPlaceholder.find(strikeStrategy => (activeTab === strikeStrategy.optionType));
-        setStrikeStrategyInfo(_strikeStrategy);
-      }
-    }
-  }, [activeTab])
 
   const [isLoading, setIsLoading] = useState(false)
 
@@ -128,7 +106,7 @@ export default function StrikeStrategyForm(
 
     setIsLoading(true)
     console.log({ strategyContract })
-    const tx = await strategyContract.setStrikeStrategyDetail()
+    const tx = await strategyContract.setStrikeStrategyDetail(activeStrikeStrategies)
 
     if (tx) {
       monitorTransaction({
@@ -172,8 +150,8 @@ export default function StrikeStrategyForm(
 
         <div className="col-span-1">
           {
-            strikeStrategyInfo ?
-              <StrikeStrategy optionType={activeTab} strategy={strikeStrategyInfo} setStrategy={setStrikeStrategyInfo} />
+            has(keyBy(activeStrikeStrategies, 'optionType'), activeTab) ?
+              <StrikeStrategy _optionType={activeTab} strategy={keyBy(activeStrikeStrategies, 'optionType')[activeTab]} setActiveStrikeStrategies={setActiveStrikeStrategies} />
               :
               null
           }
@@ -198,11 +176,10 @@ export default function StrikeStrategyForm(
 }
 
 const StrikeStrategy = (
-  { optionType, strategy, setStrategy }:
-    { optionType: number, strategy: StrikeStrategy, setStrategy: Dispatch<StrikeStrategy> }
+  { _optionType, strategy, setActiveStrikeStrategies }:
+    { _optionType: number, strategy: StrikeStrategy, setActiveStrikeStrategies: Dispatch<StrikeStrategy[]> }
 ) => {
   return <>
-    <>{optionType}</>
     <div className="sm:col-span-6">
       <RangeSlider
         step={vaultStrategyInfoStep.targetDelta}
@@ -213,10 +190,15 @@ const StrikeStrategy = (
         value={fromBigNumber(strategy.targetDelta)}
         onChange={(e) => {
           const targetDelta = toBN(e.target.value)
-          setStrategy((params: StrikeStrategy) => ({
-            ...params,
-            targetDelta,
-          }))
+          setActiveStrikeStrategies((params) => {
+            return params.map((strikeStrategy: StrikeStrategy) => {
+              const { optionType } = strikeStrategy;
+              if (optionType == _optionType) {
+                return { ...strikeStrategy, targetDelta };
+              }
+              return strikeStrategy;
+            });
+          })
         }}
         radius={'xs'}
         variant={'default'}
@@ -232,10 +214,15 @@ const StrikeStrategy = (
         value={fromBigNumber(strategy.maxDeltaGap)}
         onChange={(e) => {
           const maxDeltaGap = toBN(e.target.value)
-          setStrategy((params: StrikeStrategy) => ({
-            ...params,
-            maxDeltaGap,
-          }))
+          setActiveStrikeStrategies((params) => {
+            return params.map((strikeStrategy: StrikeStrategy) => {
+              const { optionType } = strikeStrategy;
+              if (optionType == _optionType) {
+                return { ...strikeStrategy, maxDeltaGap };
+              }
+              return strikeStrategy;
+            });
+          })
         }}
         radius={'xs'}
         variant={'default'}
@@ -251,10 +238,15 @@ const StrikeStrategy = (
         value={fromBigNumber(strategy.minVol)}
         onChange={(e) => {
           const minVol = toBN(e.target.value)
-          setStrategy((params: StrikeStrategy) => ({
-            ...params,
-            minVol,
-          }))
+          setActiveStrikeStrategies((params) => {
+            return params.map((strikeStrategy: StrikeStrategy) => {
+              const { optionType } = strikeStrategy;
+              if (optionType == _optionType) {
+                return { ...strikeStrategy, minVol };
+              }
+              return strikeStrategy;
+            });
+          })
         }}
         radius={'xs'}
         variant={'default'}
@@ -270,10 +262,15 @@ const StrikeStrategy = (
         value={fromBigNumber(strategy.maxVol)}
         onChange={(e) => {
           const maxVol = toBN(e.target.value)
-          setStrategy((params: StrikeStrategy) => ({
-            ...params,
-            maxVol,
-          }))
+          setActiveStrikeStrategies((params) => {
+            return params.map((strikeStrategy: StrikeStrategy) => {
+              const { optionType } = strikeStrategy;
+              if (optionType == _optionType) {
+                return { ...strikeStrategy, maxVol };
+              }
+              return strikeStrategy;
+            });
+          })
         }}
         radius={'xs'}
         variant={'default'}
@@ -289,10 +286,15 @@ const StrikeStrategy = (
         value={fromBigNumber(strategy.maxVolVariance)}
         onChange={(e) => {
           const maxVolVariance = toBN(e.target.value)
-          setStrategy((params: StrikeStrategy) => ({
-            ...params,
-            maxVolVariance,
-          }))
+          setActiveStrikeStrategies((params) => {
+            return params.map((strikeStrategy: StrikeStrategy) => {
+              const { optionType } = strikeStrategy;
+              if (optionType == _optionType) {
+                return { ...strikeStrategy, maxVolVariance };
+              }
+              return strikeStrategy;
+            });
+          })
         }}
         radius={'xs'}
         variant={'default'}
