@@ -189,7 +189,8 @@ const StrikeStrategy = (
         label={'Target Delta'}
         value={fromBigNumber(strategy.targetDelta)}
         onChange={(e) => {
-          const targetDelta = toBN(e.target.value)
+          const targetDelta = toBN(e.target.value);
+          // @ts-ignore
           setActiveStrikeStrategies((params) => {
             return params.map((strikeStrategy: StrikeStrategy) => {
               const { optionType } = strikeStrategy;
@@ -213,7 +214,8 @@ const StrikeStrategy = (
         label={'Max Delta Gap'}
         value={fromBigNumber(strategy.maxDeltaGap)}
         onChange={(e) => {
-          const maxDeltaGap = toBN(e.target.value)
+          const maxDeltaGap = toBN(e.target.value);
+          // @ts-ignore
           setActiveStrikeStrategies((params) => {
             return params.map((strikeStrategy: StrikeStrategy) => {
               const { optionType } = strikeStrategy;
@@ -238,6 +240,7 @@ const StrikeStrategy = (
         value={fromBigNumber(strategy.minVol)}
         onChange={(e) => {
           const minVol = toBN(e.target.value)
+          // @ts-ignore
           setActiveStrikeStrategies((params) => {
             return params.map((strikeStrategy: StrikeStrategy) => {
               const { optionType } = strikeStrategy;
@@ -262,6 +265,7 @@ const StrikeStrategy = (
         value={fromBigNumber(strategy.maxVol)}
         onChange={(e) => {
           const maxVol = toBN(e.target.value)
+          // @ts-ignore
           setActiveStrikeStrategies((params) => {
             return params.map((strikeStrategy: StrikeStrategy) => {
               const { optionType } = strikeStrategy;
@@ -286,6 +290,7 @@ const StrikeStrategy = (
         value={fromBigNumber(strategy.maxVolVariance)}
         onChange={(e) => {
           const maxVolVariance = toBN(e.target.value)
+          // @ts-ignore
           setActiveStrikeStrategies((params) => {
             return params.map((strikeStrategy: StrikeStrategy) => {
               const { optionType } = strikeStrategy;
