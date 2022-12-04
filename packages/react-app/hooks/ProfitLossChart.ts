@@ -12,7 +12,6 @@ export const useProfitLossChart = (priceOfAsset: number) => {
       const _ticks = ticks(priceOfAsset);
       const _combo = _ticks.reduce((accum, tick) => {
         const profitAtTick = formatProfitAndLostAtTicks(tick, builtTrades);
-        console.log({ profitAtTick })
         return { ...accum, [tick]: { profitAtTick } }
       }, {})
       const _chartData = _ticks.map((tick, index) => {
@@ -23,7 +22,6 @@ export const useProfitLossChart = (priceOfAsset: number) => {
           combo_payoff: profitAtTick
         }
       })
-      console.log({ _chartData })
       setData(_chartData);
     }
   }, [builtTrades, priceOfAsset])
@@ -33,7 +31,6 @@ export const useProfitLossChart = (priceOfAsset: number) => {
       formattedChartData();
     }
   }, [builtTrades])
-  console.log({ data })
   return data;
 }
 
@@ -60,13 +57,12 @@ const formatProfitAndLostAtTicks = (tick: number, strikes) => {
     const totalSumOfFees = isBuy ? -totalPriceForOptions : totalPriceForOptions;
     const profitAtTick = calculateProfitAtTick(totalSumOfFees, strikePrice, tick, isCall, isBuy) // can be negative or positive dependent on option type
     accum = accum + profitAtTick;
-    console.log({ accum })
     return accum;
   }, 0);
 }
 
 const calculateProfitAtTick = (totalSumOfFees, _strikePrice, tick, isCall, isBuy) => {
-  const strikePrice = fromBigNumber(_strikePrice) // Math.round(parseFloat(fromBigNumber(_strikePrice)));
+  const strikePrice = fromBigNumber(_strikePrice);
   let profitAtTick;
 
   if (isBuy) {
@@ -101,8 +97,6 @@ const calculateProfitAtTick = (totalSumOfFees, _strikePrice, tick, isCall, isBuy
       }
     }
   }
-
-  console.log({ profitAtTick, totalSumOfFees, strikePrice, isCall, isBuy, tick })
 
   return profitAtTick;
 }

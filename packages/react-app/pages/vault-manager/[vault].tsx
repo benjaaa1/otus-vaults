@@ -5,7 +5,7 @@ import VaultManagement from '../../components/VaultManager/VaultManagement'
 
 const Strategy: NextPage = () => {
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full flex-col">
       <Head>
         <title>Manage your Decentralized Options Vault</title>
         <meta

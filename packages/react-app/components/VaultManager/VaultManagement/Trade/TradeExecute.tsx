@@ -193,7 +193,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
           {builtTrades != null && builtTrades?.length > 0 ? // check has single asset type
             <li key={'pnl'}>
               <div className="block">
-                <div className="px-4 py-2 sm:px-6">
+                <div className="px-4 py-6 sm:px-6">
                   <div className="grid grid-cols-1 items-center justify-between pt-2">
                     <p className="truncate font-sans text-xs font-semibold text-white">
                       Profit and Loss
