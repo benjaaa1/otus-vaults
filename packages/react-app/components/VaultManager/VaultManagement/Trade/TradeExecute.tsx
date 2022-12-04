@@ -71,7 +71,7 @@ const isCallText = (optionType: number): string => {
   return optionType == 0 || optionType == 3 ? 'Call' : 'Put'
 }
 
-const hasSingleAssetType = (builtTrades: any[]) => {
+const hasSingleAssetType = (builtTrades: any[]): [string, boolean] => {
 
   let ethCount = 0;
   let btcCount = 0;
@@ -140,10 +140,15 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
 
   const [assetTypeInfo, setAssetTypeInfo] = useState(['', false])
 
+  const [assetType, setAssetType] = useState('')
+  const [isSingleAsset, setSingleAsset] = useState(false)
+
   const checkAssetType = useCallback(() => {
     if (builtTrades && builtTrades.length > 0) {
-      const _assetInfo = hasSingleAssetType(builtTrades)
-      setAssetTypeInfo(_assetInfo)
+      const [_assetType, _isSingleAsset] = hasSingleAssetType(builtTrades)
+      setAssetType(_assetType);
+      setSingleAsset(_isSingleAsset)
+
     }
   }, [builtTrades]);
 
@@ -229,7 +234,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
             </li>
             : null}
 
-          {assetTypeInfo[1] ? // check has single asset type
+          {isSingleAsset ? // check has single asset type
             <li key={'pnl'}>
               <div className="block">
                 <div className="px-4 py-6 sm:px-6">
@@ -238,7 +243,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
                       Profit and Loss
                     </p>
                     <div className='col-span-1'>
-                      <PNLChart assetType={assetTypeInfo[0]} />
+                      <PNLChart assetType={assetType} />
                     </div>
                   </div>
                 </div>
