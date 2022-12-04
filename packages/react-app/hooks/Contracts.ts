@@ -10,18 +10,18 @@ import { Contract, ethers } from 'ethers'
 export const useContractConfig = () => {
   const [contractsConfig, setContractsConfig] = useState({})
   const vaultProducts = useVaultProducts()
+  const data = vaultProducts?.data;
 
   useEffect(() => {
-    const data = vaultProducts?.data;
-    if (data) {
-      const loadFunc = async () => {
-        const result = await loadAppContracts()
-        console.log({ result })
-        setContractsConfig(result)
-      }
-      void loadFunc()
+
+    const loadFunc = async () => {
+      const result = await loadAppContracts()
+      console.log({ result })
+      setContractsConfig(result)
     }
-  }, [vaultProducts])
+    void loadFunc()
+
+  }, [data])
 
   return contractsConfig
 }
