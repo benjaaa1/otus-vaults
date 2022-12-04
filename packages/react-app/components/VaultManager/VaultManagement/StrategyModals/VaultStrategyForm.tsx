@@ -18,7 +18,7 @@ import { VaultStrategyStruct } from '../../Create'
 const vaultStrategyInfoPlaceholder: VaultStrategyStruct = {
   hedgeReserve: toBN('.15'), // limit up to 50%
   collatBuffer: toBN('1.2'),
-  collatPercent: toBN('.35'),
+  collatPercent: toBN('.35'), // min collateral percent
   minTimeToExpiry: DAY_SEC, // 24 hours
   maxTimeToExpiry: WEEK_SEC * 4,
   minTradeInterval: HOUR_SEC / 6,

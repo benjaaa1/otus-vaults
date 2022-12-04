@@ -68,6 +68,8 @@ contract OtusController is Ownable {
     Vault.VaultParams vaultParams
   );
 
+  event OtusCloneFactoryUpdated(address indexed user, address otusCloneFactory);
+
   /************************************************
    *  CONSTRUCTOR & INITIALIZATION
    ***********************************************/
@@ -89,6 +91,7 @@ contract OtusController is Ownable {
   function setOtusCloneFactory(address _otusCloneFactory) public onlyOwner {
     require(_otusCloneFactory != address(0), "Must be a contract address");
     otusCloneFactory = _otusCloneFactory;
+    emit OtusCloneFactoryUpdated(msg.sender, _otusCloneFactory);
   }
 
   /**
@@ -188,11 +191,7 @@ contract OtusController is Ownable {
    * @param _market bytes32 of market "sETH" / "sBTC"
    * @dev call this after deploy lyra adapter contracts // refactor this method
    */
-  function setLyraAdapter(
-    address _lyraAdapter,
-    address _optionMarket,
-    bytes32 _market
-  ) public onlyOwner {
+  function setLyraAdapter(address _lyraAdapter, address _optionMarket, bytes32 _market) public onlyOwner {
     lyraAdapters[_market] = _lyraAdapter;
 
     optionMarkets[_market] = _optionMarket;

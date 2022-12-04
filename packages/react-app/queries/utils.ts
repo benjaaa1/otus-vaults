@@ -14,7 +14,7 @@ export const getFuturesEndpoint = (
   return network && network.chainId === 10
     ? FUTURES_ENDPOINT_MAINNET
     : network && network.chainId === 420
-      ? FUTURES_ENDPOINT_TESTNET
+      ? FUTURES_ENDPOINT_MAINNET
       : FUTURES_ENDPOINT_MAINNET
 }
 

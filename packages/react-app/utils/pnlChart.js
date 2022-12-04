@@ -21,8 +21,6 @@ const getTicks = () => {
   return ticks; 
 }
 
-const ticks = getTicks(); 
-
 const calculateFees = async (strike, isCall, isBuy, size) => {
   const quote = await strike.quote(isCall, isBuy, size);
   const { feeComponents: { optionPriceFee, spotPriceFee, varianceFee, vegaUtilFee }, pricePerOption } = quote; 
@@ -33,45 +31,15 @@ const calculateFees = async (strike, isCall, isBuy, size) => {
 }
 
 const sumOfCost = (fee) => {
-
-  const {
-    optionPriceFee, 
-    spotPriceFee, 
-    varianceFee, 
-    vegaUtilFee, 
-    pricePerOption,
-    totalPriceForOptions
-  } = fee; 
-
+  const { totalPriceForOptions } = fee; 
   const sum = totalPriceForOptions // optionPriceFee;
-
-    // .add(spotPriceFee)
-    // .add(varianceFee)
-    // .add(vegaUtilFee)
-    // .add(pricePerOption)
-
   return -sum; 
 }
 
 const sumOfMinReceived = (fee) => {
-  const {
-    optionPriceFee, 
-    spotPriceFee, 
-    varianceFee, 
-    vegaUtilFee, 
-    pricePerOption,
-    totalPriceForOptions
-  } = fee; 
-
+  const { totalPriceForOptions } = fee; 
   const sum = totalPriceForOptions;
-
-    // .sub(optionPriceFee)
-    // .sub(spotPriceFee)
-    // .sub(varianceFee)
-    // .sub(vegaUtilFee)
-
   return sum; 
-
 }
 
 const calculateProfitAtTick = (totalSumOfFees, _strikePrice, tick, isCall, isBuy) => {
@@ -140,26 +108,20 @@ const calculateProfitAtTick = (totalSumOfFees, _strikePrice, tick, isCall, isBuy
 // update
 // get sum of fees outside of calcualteCombo to avoid o(n)
 const calculateCombo = (tick, strikes) => {
-
   return strikes.reduce((accum, strike) => {
-
     const { isCall, isBuy, strikePrice } = strike; 
-
     const totalSumOfFees = isBuy ? sumOfCost(strike) : sumOfMinReceived(strike);
     const profitAtTick = calculateProfitAtTick(totalSumOfFees, strikePrice, tick, isCall, isBuy) // can be negative or positive dependent on option type
     accum = accum + profitAtTick; 
-
     return accum; 
-
   }, 0);
-
 }
 
 // before getting data 
 // get strike 
 // get fees 
 
-export const data = async (strikesSelected, _size) => {
+export const data1 = async (strikesSelected, _size) => {
 
   if(strikesSelected.length == 0) {
     return [
@@ -210,6 +172,8 @@ export const data = async (strikesSelected, _size) => {
     return values; 
   });
 
+  const ticks = getTicks(); 
+
   const combo = ticks.reduce((accum, tick) => {
     const profitAtTick = calculateCombo(tick, strikesWithFees);
     return { ...accum, [tick]: { profitAtTick } }
@@ -238,15 +202,10 @@ export const data = async (strikesSelected, _size) => {
 
 const calculateSum = (strikes) => {
   return strikes.reduce((accum, strike) => {
-
     const { isBuy } = strike; 
-
     const _totalSumOfFees = isBuy ? sumOfCost(strike) : sumOfMinReceived(strike);
-
     accum = accum + _totalSumOfFees; 
-
     return accum; 
-
   }, 0);
 
 }

@@ -176,7 +176,6 @@ export const useMyVault = (vaultId: any) => {
                 }
                 dynamicHedgeStrategy {
                   id
-                  period
                   maxHedgeAttempts
                   maxLeverageSize
                   threshold

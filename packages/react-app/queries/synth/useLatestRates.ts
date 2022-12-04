@@ -6,12 +6,13 @@ import QUERY_KEYS from '../../constants/queryKeys'
 
 export const useLatestRates = (asset: string) => {
   const { network } = useWeb3Context()
-
+  console.log({ asset })
   const futuresEndpoint = getFuturesEndpoint(network) // getOtusEndpoint(network);
-  return useQuery<number | null>(
+  console.log({ futuresEndpoint })
+  return useQuery<number | number>(
     QUERY_KEYS.Synthetix.Rates(asset),
     async () => {
-      if (!asset) return null
+      if (!asset) return 0
 
       const responses = await request(
         futuresEndpoint,
@@ -23,11 +24,12 @@ export const useLatestRates = (asset: string) => {
             }
           }
         `,
-        { asset: asset }
+        { asset: asset.toUpperCase() }
       )
+      console.log({ responses })
       return responses.latestRates.length > 0
         ? parseFloat(responses.latestRates[0].rate)
-        : null
+        : 0
     },
     {
       enabled: !!asset,

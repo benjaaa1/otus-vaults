@@ -41,7 +41,7 @@ const generateExplorerFunctions = (baseUrl: string) => {
 };
 
 const useBlockExplorer = () => {
-  const { network } = useWeb3Context() // Connector.useContainer();
+  const { network } = useWeb3Context()
 
   const [blockExplorerInstance, setBlockExplorerInstance] = useState<BlockExplorerInstance | null>(
     null

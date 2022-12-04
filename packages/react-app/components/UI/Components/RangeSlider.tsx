@@ -42,12 +42,16 @@ export const RangeSlider = ({
 }: InputProps) => {
   return (
     <>
-      <label
-        htmlFor="medium-range"
-        className="mb-2 block text-xs font-normal text-zinc-200"
-      >
-        {label}: {value}
-      </label>
+      {
+        label ?
+          <label
+            htmlFor="medium-range"
+            className="mb-2 block text-xs font-normal text-zinc-200"
+          >
+            {label}: {value}
+          </label> :
+          null
+      }
       <input
         data-tooltip-target="tooltip-default"
         min={min}

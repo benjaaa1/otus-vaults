@@ -2,82 +2,67 @@ import { fromBigNumber } from '../../../../utils/formatters/numbers'
 import {
   StrikeStrategy,
 } from '../../../../queries/vaults/useVaultProducts'
+import Table from '../../../UI/Components/Table/Table'
+import { HeaderCell } from '../../../UI/Components/Table/HeaderCell'
+import { Cell } from '../../../UI/Components/Table/Cell'
 
 export const StrikeStrategyInfo = ({ strikeStrategies }: { strikeStrategies: StrikeStrategy[] }) => {
 
-  return <>
-    {
-      strikeStrategies.map(strikeStrategy => {
-        const { targetDelta, maxDeltaGap, minVol, maxVol, maxVolVariance, optionType } = strikeStrategy;
-        return <div className="grid grid-cols-7">
-          <div>
-            <div className="p-4">
-              <div className="text-xxs font-normal uppercase text-zinc-300">
-                Option Type
-              </div>
-              <div className="py-2 font-mono text-xl font-normal text-white">
-                {optionType}
-              </div>
-            </div>
-          </div>
+  return <div className="mt-6">
+    <Table
+      variant="primary"
+      headers={
+        <tr>
+          {['Option Type', 'Target Delta', 'Max Delta Gap', 'Min Vol', 'Max Vol', 'Max Vol Variance'].map(
+            (column, i) => {
+              return <HeaderCell key={i} variant="default" label={column} />
+            }
+          )}
+        </tr>
+      }
+    >
+      {
+        strikeStrategies.map((strikeStrategy, index) => {
+          const { targetDelta, maxDeltaGap, minVol, maxVol, maxVolVariance, optionType } = strikeStrategy;
 
-          <div>
-            <div className="p-4">
-              <div className="text-xxs font-normal uppercase text-zinc-300">
-                Target Delta
-              </div>
-              <div className="py-2 font-mono text-xl font-normal text-white">
-                {fromBigNumber(targetDelta)}
-              </div>
-            </div>
-          </div>
+          return (
+            <tr key={index}>
+              <Cell
+                variant="default"
+                label={optionType.toString()}
+                isButton={false}
+              />
+              <Cell
+                variant="default"
+                label={fromBigNumber(targetDelta)}
+                isButton={false}
+              />
+              <Cell
+                variant="default"
+                label={fromBigNumber(maxDeltaGap)}
+                isButton={false}
+              />
+              <Cell
+                variant="default"
+                label={fromBigNumber(minVol)}
+                isButton={false}
+              />
+              <Cell
+                variant="default"
+                label={fromBigNumber(maxVol)}
+                isButton={false}
+              />
+              <Cell
+                variant="default"
+                label={fromBigNumber(maxVolVariance)}
+                isButton={false}
+              />
+            </tr>
+          )
 
-          <div>
-            <div className="p-4">
-              <div className="text-xxs font-normal uppercase text-zinc-300">
-                Max Delta Gap
-              </div>
-              <div className="py-2 font-mono text-xl font-normal text-white">
-                {fromBigNumber(maxDeltaGap)}
-              </div>
-            </div>
-          </div>
+        })
+      }
+    </Table>
 
-          <div>
-            <div className="p-4">
-              <div className="text-xxs font-normal uppercase text-zinc-300">
-                Min Vol
-              </div>
-              <div className="py-2 font-mono text-xl font-normal text-white">
-                {fromBigNumber(minVol)}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div className="p-4">
-              <div className="text-xxs font-normal uppercase text-zinc-300">
-                Max Vol
-              </div>
-              <div className="py-2 font-mono text-xl font-normal text-white">
-                {fromBigNumber(maxVol)}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div className="p-4">
-              <div className="text-xxs font-normal uppercase text-zinc-300">
-                Max Vol Variance
-              </div>
-              <div className="py-2 font-mono text-xl font-normal text-white">
-                {fromBigNumber(maxVolVariance)}
-              </div>
-            </div>
-          </div>
-
-        </div>
-      })
-    }
-  </>
+  </div>
 }

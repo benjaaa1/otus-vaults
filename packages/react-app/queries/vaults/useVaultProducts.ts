@@ -73,7 +73,7 @@ export const useVaultProducts = () => {
 
   const otusEndpoint = getOtusEndpoint(network);
   if (!otusEndpoint) return;
-  return useQuery<AllAvailableVaults | null>(
+  return useQuery<AllAvailableVaults>(
     QUERY_KEYS.Vaults.AllVaults(),
     async () => {
       try {
@@ -178,7 +178,6 @@ export const useVaultProduct = (vaultId: any) => {
                 }
                 dynamicHedgeStrategy {
                   id
-                  period
                   maxHedgeAttempts
                   maxLeverageSize
                   threshold
