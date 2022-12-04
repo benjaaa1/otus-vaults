@@ -406,6 +406,7 @@ const getHedgeType = (hedgeType: number) => {
     case 2:
       return 'Dynamic'
     default:
+      return 'None'
       break
   }
 }

@@ -229,7 +229,7 @@ export const useMyVault = (vaultId: any) => {
           ],
           response.vaults[0]
         ) : null;
-
+      console.log({ vaults })
       return vaults;
 
     },

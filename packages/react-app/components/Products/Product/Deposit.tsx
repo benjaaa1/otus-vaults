@@ -6,7 +6,6 @@ import { useWeb3Context } from '../../../context'
 import { useBalance } from '../../../hooks/Balances'
 import { useContracts, useOtusContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
-import { lyra } from '../../../queries/lyra/useLyra'
 import { Vault } from '../../../queries/vaults/useVaultProducts'
 import {
   formatNumber,
