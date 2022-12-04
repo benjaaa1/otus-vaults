@@ -1,7 +1,7 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
 import Lyra from '@lyrafinance/lyra-js'
 import { parseUnits } from 'ethers/lib/utils'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ZERO_BN } from '../../../../constants/bn'
 import { getMarketInBytes } from '../../../../constants/markets'
 import { useVaultManagerContext } from '../../../../context'
@@ -83,14 +83,14 @@ const hasSingleAssetType = (builtTrades: any[]) => {
   })
 
   if (ethCount > 0 && btcCount == 0) {
-    return true;
+    return ['ETH', true];
   }
 
   if (btcCount > 0 && ethCount == 0) {
-    return true;
+    return ['BTC', true];
   }
 
-  return false;
+  return ['', false];
 
 }
 
@@ -105,6 +105,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
   const [isExecutingTrade, setExecutingTrade] = useState(false)
 
   const costs = useMemo(() => computeCosts(builtTrades), [builtTrades])
+
   const formattedBuiltTrades: StrikeTrade[] = useMemo(
     () => formatTrades(builtTrades || []),
     [builtTrades]
@@ -136,6 +137,21 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
       })
     }
   }, [otusVaultContract, vault, monitorTransaction, formattedBuiltTrades])
+
+  const [assetTypeInfo, setAssetTypeInfo] = useState(['', false])
+
+  const checkAssetType = useCallback(() => {
+    if (builtTrades && builtTrades.length > 0) {
+      const _assetInfo = hasSingleAssetType(builtTrades)
+      setAssetTypeInfo(_assetInfo)
+    }
+  }, [builtTrades]);
+
+  useEffect(() => {
+    if (builtTrades && builtTrades.length > 0) {
+      checkAssetType();
+    }
+  }, [builtTrades])
 
   return builtTrades && builtTrades.length > 0 ? (
     <>
@@ -213,7 +229,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
             </li>
             : null}
 
-          {hasSingleAssetType(builtTrades) ? // check has single asset type
+          {assetTypeInfo[1] ? // check has single asset type
             <li key={'pnl'}>
               <div className="block">
                 <div className="px-4 py-6 sm:px-6">
@@ -222,7 +238,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
                       Profit and Loss
                     </p>
                     <div className='col-span-1'>
-                      <PNLChart />
+                      <PNLChart assetType={assetTypeInfo[0]} />
                     </div>
                   </div>
                 </div>

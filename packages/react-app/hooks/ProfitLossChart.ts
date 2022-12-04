@@ -2,14 +2,14 @@ import { useVaultManagerContext } from '../context'
 import { useCallback, useEffect, useState } from 'react'
 import { fromBigNumber } from '../utils/formatters/numbers'
 
-export const useProfitLossChart = (priceOfAsset: number) => {
+export const useProfitLossChart = (asset: string, priceOfAsset: number) => {
 
   const { builtTrades } = useVaultManagerContext();
   const [data, setData] = useState([]);
 
   const formattedChartData = useCallback(() => {
     if (builtTrades && builtTrades?.length > 0) {
-      const _ticks = ticks(priceOfAsset);
+      const _ticks = ticks(asset, priceOfAsset);
       const _combo = _ticks.reduce((accum, tick) => {
         const profitAtTick = formatProfitAndLostAtTicks(tick, builtTrades);
         return { ...accum, [tick]: { profitAtTick } }
@@ -24,28 +24,35 @@ export const useProfitLossChart = (priceOfAsset: number) => {
       })
       setData(_chartData);
     }
-  }, [builtTrades, priceOfAsset])
+  }, [builtTrades, priceOfAsset, asset])
 
   useEffect(() => {
     if (builtTrades && builtTrades?.length > 0) {
       formattedChartData();
     }
   }, [builtTrades])
+
+  console.log({ data })
+
   return data;
 }
 
-const ticks = (price: number) => {
+const ticks = (asset: string, price: number) => {
   const ticks = [];
 
-  let lowerBound = price / 1.5;
-  let upperBound = price * 1.5;
+  let multiple = asset == 'ETH' ? 1.5 : 1.1;
+  let tickSize = asset == 'ETH' ? 1 : 10;
+
+  let lowerBound = price / multiple;
+  let upperBound = price * multiple;
 
   let currentTick = lowerBound;
 
   while (currentTick < upperBound) {
-    currentTick = currentTick + 1;
+    currentTick = currentTick + tickSize;
     ticks.push(currentTick);
   };
+  console.log({ ticks })
 
   return ticks;
 }

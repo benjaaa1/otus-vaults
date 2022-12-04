@@ -14,11 +14,11 @@ import { useProfitLossChart } from "../../../../hooks/ProfitLossChart";
 import { useLatestRates } from "../../../../queries/synth/useLatestRates";
 import { formatUSD, fromBigNumber } from "../../../../utils/formatters/numbers";
 
-export const PNLChart = () => {
+export const PNLChart = ({ assetType }: { assetType: string }) => {
 
-  const { data: currentPrice } = useLatestRates('eth');
+  const { data: currentPrice } = useLatestRates(assetType);
 
-  const data = useProfitLossChart(currentPrice || 0);
+  const data = useProfitLossChart(assetType, currentPrice || 0);
 
   return (
     <LineChart
