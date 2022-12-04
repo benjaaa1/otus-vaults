@@ -269,7 +269,7 @@ export const useMyVaultStrikeStrategies = (strategyId: string) => {
       console.log({ response })
       return response.strikeStrategies.map((strategy: StrikeStrategy) => {
         const { optionType } = strategy;
-        return { optionType: parseInt(optionType), ...strategy }
+        return { ...strategy, optionType: typeof (optionType) == 'string' ? parseInt(optionType) : optionType }
       });
 
     },
