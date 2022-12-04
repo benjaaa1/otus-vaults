@@ -1,16 +1,27 @@
 import { useVaultManagerContext } from '../context'
 import { useCallback, useEffect, useState } from 'react'
 import { fromBigNumber } from '../utils/formatters/numbers'
+import { BigNumber } from 'ethers'
+
+type Ticks = {
+  [key: number]: { profitAtTick: number }
+}
+
+type PnlChartPoint = {
+  name: number
+  asset_price: number
+  combo_payoff: number
+}
 
 export const useProfitLossChart = (asset: string, priceOfAsset: number) => {
 
   const { builtTrades } = useVaultManagerContext();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<PnlChartPoint[] | []>([]);
 
   const formattedChartData = useCallback(() => {
     if (builtTrades && builtTrades?.length > 0) {
       const _ticks = ticks(asset, priceOfAsset);
-      const _combo = _ticks.reduce((accum, tick) => {
+      const _combo: Ticks = _ticks.reduce((accum, tick) => {
         const profitAtTick = formatProfitAndLostAtTicks(tick, builtTrades);
         return { ...accum, [tick]: { profitAtTick } }
       }, {})
@@ -58,8 +69,8 @@ const ticks = (asset: string, price: number) => {
   return ticks;
 }
 
-const formatProfitAndLostAtTicks = (tick: number, strikes) => {
-  return strikes.reduce((accum, strike) => {
+const formatProfitAndLostAtTicks = (tick: number, strikes: any[]) => {
+  return strikes.reduce((accum: number, strike: any) => {
     const { strikePrice, quote: { size, isCall, isBuy, pricePerOption } } = strike;
     const totalPriceForOptions = fromBigNumber(pricePerOption) * fromBigNumber(size);
     const totalSumOfFees = isBuy ? -totalPriceForOptions : totalPriceForOptions;
@@ -69,9 +80,9 @@ const formatProfitAndLostAtTicks = (tick: number, strikes) => {
   }, 0);
 }
 
-const calculateProfitAtTick = (totalSumOfFees, _strikePrice, tick, isCall, isBuy) => {
+const calculateProfitAtTick = (totalSumOfFees: number, _strikePrice: BigNumber, tick: number, isCall: boolean, isBuy: boolean): number => {
   const strikePrice = fromBigNumber(_strikePrice);
-  let profitAtTick;
+  let profitAtTick = 0;
 
   if (isBuy) {
     if (isCall) {
