@@ -4,7 +4,6 @@ import { getOtusEndpoint } from '../utils'
 import { useWeb3Context } from '../../context'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { BigNumber, BigNumberish } from 'ethers'
-import { lyra } from '../lyra/useLyra';
 import { AccountPortfolioBalance, PositionPnl } from '@lyrafinance/lyra-js'
 import { fromBigNumber } from '../../utils/formatters/numbers'
 import { ZERO_BN } from '../../constants/bn'
