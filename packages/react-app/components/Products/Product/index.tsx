@@ -22,8 +22,8 @@ export default function Product() {
   const { network } = useWeb3Context()
   const router = useRouter()
   const { query } = router
-  const { data: vault, isLoading } = useVaultProduct(query?.vault)
-  console.log({ vault })
+  const { data: vault } = useVaultProduct(query?.vault)
+
   const [tab, setTab] = useState<string>(UserActionTabs.DEPOSIT.HREF)
   const [openVaultStrategy, setOpenVaultStrategy] = useState(false)
   const [openStrikeStrategy, setOpenStrikeStrategy] = useState(false)

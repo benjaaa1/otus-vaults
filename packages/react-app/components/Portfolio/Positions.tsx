@@ -32,7 +32,6 @@ export default function Positions() {
   const [positions, setPositions] = useState<Position[]>([]);
 
   const formatUserVaultActions = useCallback(() => {
-    console.log({ userACtions: data?.userActions })
     if (data?.userActions && data?.userActions.length > 0) {
       let _vaultPositions: VaultUserPosition = data?.userActions.reduce((accum: VaultUserPosition, action) => {
         let { vault: { id } } = action;
@@ -71,8 +70,6 @@ export default function Positions() {
   useEffect(() => {
     formatUserVaultActions();
   }, [data])
-
-  console.log({ positions })
 
   return (
     <div className="relative pt-8 pb-8 font-sans">

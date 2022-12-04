@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
 import { loadAppContracts } from '../helpers/loadAppContracts'
-import externalContracts from '../contracts/external_contracts'
-import deployedContracts from '../contracts/hardhat_contracts.json'
 import { useContractLoader } from 'eth-hooks'
 import { useWeb3Context } from '../context'
 import { useVaultProducts } from '../queries/vaults/useVaultProducts'
-import { Contract, ethers } from 'ethers'
+import { Contract } from 'ethers'
 
 export const useContractConfig = () => {
   const [contractsConfig, setContractsConfig] = useState({})

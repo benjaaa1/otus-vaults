@@ -32,7 +32,7 @@ export default function Current({
   hedgeType: number
   activeVaultTrades: VaultTrade[]
 }) {
-  console.log({ activeVaultTrades })
+
   const { toggleToHedge, toggleToClose } = useVaultManagerContext()
 
   // positions in vaults

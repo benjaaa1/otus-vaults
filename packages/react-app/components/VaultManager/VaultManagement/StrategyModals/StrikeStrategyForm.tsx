@@ -92,7 +92,7 @@ export default function StrikeStrategyForm(
   const otusContracts = useOtusContracts()
   const monitorTransaction = useTransactionNotifier();
   const strategyContract = otusContracts && strategyId ? otusContracts[strategyId] : null
-  console.log({ strikeStrategies })
+
   const [activeStrikeStrategies, setActiveStrikeStrategies] = useState<StrikeStrategy[]>(strikeStrategies != undefined ? strikeStrategies : strikeStrategyInfoPlaceholder);
   const [activeTab, setTab] = useState<number>(0)
 
@@ -105,7 +105,7 @@ export default function StrikeStrategyForm(
     }
 
     setIsLoading(true)
-    console.log({ strategyContract })
+
     const tx = await strategyContract.setStrikeStrategyDetail(activeStrikeStrategies)
 
     if (tx) {

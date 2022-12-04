@@ -72,7 +72,7 @@ export default function HedgeStrategyForm({ refetch, strategyId, hedgeType, dyna
     }
 
     setIsLoading(true)
-    console.log({ strategyContract })
+
     const tx = await strategyContract.setHedgeStrategyType(_hedgeType)
 
     if (tx) {
@@ -137,7 +137,6 @@ export default function HedgeStrategyForm({ refetch, strategyId, hedgeType, dyna
                   label={'Max Leverage Size'}
                   value={fromBigNumber(dynamicHedgeInfo.maxLeverageSize)}
                   onChange={(e) => {
-                    console.log(e.target.value)
                     const maxLeverageSize = toBN(e.target.value)
                     setDynamicHedgeInfo((params) => ({
                       ...params,
@@ -158,7 +157,6 @@ export default function HedgeStrategyForm({ refetch, strategyId, hedgeType, dyna
                   label={'Max Hedge Attempts'}
                   value={fromBigNumber(dynamicHedgeInfo.maxHedgeAttempts)}
                   onChange={(e) => {
-                    console.log(e.target.value)
                     const maxHedgeAttempts = toBN(e.target.value)
                     setDynamicHedgeInfo((params) => ({
                       ...params,
@@ -180,7 +178,6 @@ export default function HedgeStrategyForm({ refetch, strategyId, hedgeType, dyna
                   label={'Threshold'}
                   value={fromBigNumber(dynamicHedgeInfo.threshold)}
                   onChange={(e) => {
-                    console.log(e.target.value)
                     const threshold = toBN(e.target.value)
                     setDynamicHedgeInfo((params) => ({
                       ...params,
