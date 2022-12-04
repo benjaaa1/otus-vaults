@@ -33,6 +33,7 @@ export const PNLChart = ({ assetType }: { assetType: string }) => {
     >
       <XAxis hide={true} dataKey="asset_price" />
       <YAxis hide={true} label="profit" />
+      {/* @ts-ignore */}
       <Tooltip content={<CustomTooltip currentPrice={currentPrice} />} />
       {/**
        * x is liquidation spots
