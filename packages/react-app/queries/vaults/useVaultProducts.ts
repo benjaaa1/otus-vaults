@@ -76,10 +76,10 @@ export const useVaultProducts = () => {
   return useQuery<AllAvailableVaults>(
     QUERY_KEYS.Vaults.AllVaults(),
     async () => {
-      try {
-        const response = await request(
-          otusEndpoint,
-          gql`
+
+      const response = await request(
+        otusEndpoint,
+        gql`
             query AllAvailableVaults {
               vaults {
                 id
@@ -112,13 +112,10 @@ export const useVaultProducts = () => {
               }
             }
           `,
-          {}
-        )
-        return response ? response : null
-      } catch (e) {
-        console.log(e)
-        return null
-      }
+        {}
+      )
+      return response ? response : null
+
     },
     {
       enabled: true,

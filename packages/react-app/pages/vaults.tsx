@@ -10,10 +10,8 @@ import { Spinner } from '../components/UI/Components/Spinner'
 // import Vaults from '../components/Products/Vaults/Vaults'
 
 const Vaults: NextPage = () => {
-  const { data, isLoading } = useVaultProducts()
-
-  const vaults = data?.vaults || []
-  console.log({ vaults })
+  const vaultProducts = useVaultProducts()
+  const vaults = vaultProducts?.data?.vaults || [];
   return (
     <div>
       <Head>
@@ -24,7 +22,7 @@ const Vaults: NextPage = () => {
 
       <div className="mx-auto max-w-4xl py-14">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
-          {isLoading ? (
+          {vaultProducts?.isLoading ? (
             <div className="col-span-3 mx-auto">
               <Spinner />
             </div>

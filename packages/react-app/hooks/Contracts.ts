@@ -33,7 +33,8 @@ export const useContracts = () => {
 export const useOtusContracts = (): Record<string, Contract> => {
   const contracts = useContracts()
   const { signer } = useWeb3Context()
-  const { data } = useVaultProducts()
+  const vaultProducts = useVaultProducts()
+  const data = vaultProducts?.data;
   const [otusContracts, setOtusContracts] = useState({})
 
   useEffect(() => {
