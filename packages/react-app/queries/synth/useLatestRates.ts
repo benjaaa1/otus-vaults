@@ -33,7 +33,7 @@ export const useLatestRates = (asset: string) => {
     },
     {
       enabled: !!asset,
-      refetchInterval: 6000,
+      refetchInterval: 60000,
     }
   )
 }

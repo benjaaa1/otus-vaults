@@ -24,14 +24,14 @@ export type VaultTrade = {
 
 export type VaultStrategy = {
   id?: string
-  allowedMarkets: string[]
+  allowedMarkets?: string[]
   collatBuffer: BigNumber
   collatPercent: BigNumber
   minTimeToExpiry: number
   maxTimeToExpiry: number
   minTradeInterval: number
   gwavPeriod: number
-  hedgeReserve: number
+  hedgeReserve: BigNumber
 }
 
 export type DynamicHedgeStrategy = {

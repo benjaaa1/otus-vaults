@@ -26,8 +26,9 @@ export const PNLChart = ({ assetType }: { assetType: string }) => {
       height={220}
       data={data}
       margin={{
-        top: 20,
-        right: 20,
+        top: 2,
+        left: 0,
+        right: 0,
         bottom: 0
       }}
     >
@@ -77,9 +78,16 @@ const CustomTooltip = ({ currentPrice, active, payload, label }: { currentPrice:
           </p>
         </div>
         <div>
-          <p className="font-mono text-xs font-normal leading-5 text-white">
-            {formatUSD(payload[0].value)}
-          </p>
+          {
+            payload[0].value > 0 ?
+              <p className="font-mono text-xs font-bold leading-5 text-emerald-700">
+                {formatUSD(payload[0].value)}
+              </p> :
+              <p className="font-mono text-xs font-bold leading-5 text-pink-900">
+                {formatUSD(payload[0].value)}
+              </p>
+          }
+
         </div>
       </div>
 

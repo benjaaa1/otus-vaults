@@ -8,14 +8,14 @@ import { fromBigNumber, toBN } from '../../../../utils/formatters/numbers'
 import { ZERO_BN } from '../../../../constants/bn'
 import { Button } from '../../../UI/Components/Button'
 import { BigNumber } from 'ethers'
-import { DynamicHedgeStrategy } from '../../../../queries/myVaults/useMyVaults'
+import { DynamicHedgeStrategy, VaultStrategy } from '../../../../queries/myVaults/useMyVaults'
 import { useOtusContracts } from '../../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
 import { DAY_SEC, HOUR_SEC, WEEK_SEC } from '../../../../constants/period'
 import { BYTES32_MARKET } from '../../../../constants/markets'
 import { VaultStrategyStruct } from '../../Create'
 
-const vaultStrategyInfoPlaceholder: VaultStrategyStruct = {
+const vaultStrategyInfoPlaceholder: VaultStrategy = {
   hedgeReserve: toBN('.15'), // limit up to 50%
   collatBuffer: toBN('1.2'),
   collatPercent: toBN('.35'), // min collateral percent
@@ -57,15 +57,15 @@ const vaultStrategyInfoMax = {
   gwavPeriod: 60, // HOUR_SEC / 6,
 }
 
-export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }: { refetch: any, strategyId: string | null, vaultStrategy: VaultStrategyStruct | null }) {
+export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }: { refetch: any, strategyId: string | null, vaultStrategy: VaultStrategy | null }) {
 
   const otusContracts = useOtusContracts()
   const monitorTransaction = useTransactionNotifier()
   const strategyContract = otusContracts && strategyId ? otusContracts[strategyId] : null
 
-  const [vaultStrategyInfo, setVaultStrategyInfo] = useState<VaultStrategyStruct>(vaultStrategy || vaultStrategyInfoPlaceholder)
+  const [vaultStrategyInfo, setVaultStrategyInfo] = useState<VaultStrategy>(vaultStrategy || vaultStrategyInfoPlaceholder)
   const [isLoading, setIsLoading] = useState(false)
-  console.log({ vaultStrategyInfo })
+
   const handleVaultStrategyUpdate = useCallback(async () => {
     if (strategyContract == null) {
       console.warn('Vault does not exist for deposit')
@@ -73,7 +73,6 @@ export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }
     }
 
     setIsLoading(true)
-    console.log({ strategyContract })
     const tx = await strategyContract.setStrategy(vaultStrategyInfo)
 
     if (tx) {
@@ -105,7 +104,7 @@ export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }
               value={fromBigNumber(vaultStrategyInfo.collatBuffer)}
               onChange={(e) => {
                 const collatBuffer = toBN(e.target.value)
-                setVaultStrategyInfo((params: VaultStrategyStruct) => ({
+                setVaultStrategyInfo((params: VaultStrategy) => ({
                   ...params,
                   collatBuffer,
                 }))
@@ -125,7 +124,7 @@ export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }
               value={fromBigNumber(vaultStrategyInfo.collatPercent)}
               onChange={(e) => {
                 const collatPercent = toBN(e.target.value)
-                setVaultStrategyInfo((params: VaultStrategyStruct) => ({
+                setVaultStrategyInfo((params: VaultStrategy) => ({
                   ...params,
                   collatPercent,
                 }))
@@ -145,7 +144,7 @@ export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }
               value={fromBigNumber(vaultStrategyInfo.hedgeReserve)}
               onChange={(e) => {
                 const hedgeReserve = toBN(e.target.value)
-                setVaultStrategyInfo((params: VaultStrategyStruct) => ({
+                setVaultStrategyInfo((params: VaultStrategy) => ({
                   ...params,
                   hedgeReserve,
                 }))
@@ -165,7 +164,7 @@ export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }
               value={vaultStrategyInfo.minTimeToExpiry}
               onChange={(e) => {
                 const minTimeToExpiry = parseInt(e.target.value)
-                setVaultStrategyInfo((params: VaultStrategyStruct) => ({
+                setVaultStrategyInfo((params: VaultStrategy) => ({
                   ...params,
                   minTimeToExpiry,
                 }))
@@ -185,7 +184,7 @@ export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }
               value={vaultStrategyInfo.maxTimeToExpiry}
               onChange={(e) => {
                 const maxTimeToExpiry = parseInt(e.target.value)
-                setVaultStrategyInfo((params: VaultStrategyStruct) => ({
+                setVaultStrategyInfo((params: VaultStrategy) => ({
                   ...params,
                   maxTimeToExpiry,
                 }))
@@ -205,7 +204,7 @@ export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }
               value={vaultStrategyInfo.minTradeInterval}
               onChange={(e) => {
                 const minTradeInterval = parseInt(e.target.value)
-                setVaultStrategyInfo((params: VaultStrategyStruct) => ({
+                setVaultStrategyInfo((params: VaultStrategy) => ({
                   ...params,
                   minTradeInterval,
                 }))
@@ -225,7 +224,7 @@ export default function VaultStrategyForm({ refetch, strategyId, vaultStrategy }
               value={vaultStrategyInfo.gwavPeriod}
               onChange={(e) => {
                 const gwavPeriod = parseInt(e.target.value)
-                setVaultStrategyInfo((params: VaultStrategyStruct) => ({
+                setVaultStrategyInfo((params: VaultStrategy) => ({
                   ...params,
                   gwavPeriod,
                 }))

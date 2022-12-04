@@ -27,10 +27,11 @@ export const useProfitLossChart = (asset: string, priceOfAsset: number) => {
   }, [builtTrades, priceOfAsset, asset])
 
   useEffect(() => {
+    console.log({ builtTrades })
     if (builtTrades && builtTrades?.length > 0) {
       formattedChartData();
     }
-  }, [builtTrades])
+  }, [builtTrades, priceOfAsset, asset])
 
   console.log({ data })
 
