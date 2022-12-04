@@ -33,7 +33,7 @@ export const PNLChart = () => {
     >
       <XAxis hide={true} dataKey="asset_price" />
       <YAxis hide={true} label="profit" />
-      <Tooltip content={<CustomTooltip />} />
+      <Tooltip content={<CustomTooltip currentPrice={currentPrice} />} />
       {/**
        * x is liquidation spots
        */}
@@ -53,13 +53,13 @@ export const PNLChart = () => {
   );
 }
 
-const CustomTooltip = ({ active, payload, label }: { active: boolean, payload: any, label: number }) => {
+const CustomTooltip = ({ currentPrice, active, payload, label }: { currentPrice: number, active: boolean, payload: any, label: number }) => {
   if (active && payload && payload.length) {
     return <div className="grid grid-cols-2">
       <div className="col-span-2 grid-cols-1">
         <div>
           <p className="truncate font-sans text-xs font-medium text-white">
-            Asset Price
+            Asset Price At
           </p>
         </div>
         <div>
@@ -72,12 +72,25 @@ const CustomTooltip = ({ active, payload, label }: { active: boolean, payload: a
       <div className="col-span-2 grid-cols-1">
         <div>
           <p className="truncate font-sans text-xs font-medium text-white">
-            Profit
+            Profit/Loss
           </p>
         </div>
         <div>
           <p className="font-mono text-xs font-normal leading-5 text-white">
             {formatUSD(payload[0].value)}
+          </p>
+        </div>
+      </div>
+
+      <div className="col-span-2 grid-cols-1">
+        <div>
+          <p className="truncate font-sans text-xs font-medium text-white">
+            Current Price
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-xs font-normal leading-5 text-white">
+            {formatUSD(currentPrice)}
           </p>
         </div>
       </div>

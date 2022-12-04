@@ -71,6 +71,29 @@ const isCallText = (optionType: number): string => {
   return optionType == 0 || optionType == 3 ? 'Call' : 'Put'
 }
 
+const hasSingleAssetType = (builtTrades: any[]) => {
+
+  let ethCount = 0;
+  let btcCount = 0;
+
+  builtTrades.forEach(trade => {
+    const { market } = trade;
+    if (market == 'ETH') ethCount++;
+    if (market == 'BTC') btcCount++;
+  })
+
+  if (ethCount > 0 && btcCount == 0) {
+    return true;
+  }
+
+  if (btcCount > 0 && ethCount == 0) {
+    return true;
+  }
+
+  return false;
+
+}
+
 export default function TradeExecute({ vault }: { vault: Vault }) {
   const lyra = useLyra();
   const { builtTrades, toggleTrade } = useVaultManagerContext()
@@ -190,7 +213,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
             </li>
             : null}
 
-          {builtTrades != null && builtTrades?.length > 0 ? // check has single asset type
+          {hasSingleAssetType(builtTrades) ? // check has single asset type
             <li key={'pnl'}>
               <div className="block">
                 <div className="px-4 py-6 sm:px-6">
