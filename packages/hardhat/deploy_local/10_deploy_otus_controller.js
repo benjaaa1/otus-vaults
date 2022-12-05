@@ -1,4 +1,3 @@
-// deploy/00_deploy_your_contract.js
 const { ethers } = require("hardhat");
 
 module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
@@ -11,7 +10,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     from: deployer,
     args: [ 
       futuresMarketManager.address,
-      deployer // keeper 
+      deployer
     ],
     log: true,
   });

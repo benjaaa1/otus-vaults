@@ -1,4 +1,3 @@
-// deploy/00_deploy_your_contract.js
 const { getGlobalDeploys } = require("@lyrafinance/protocol")
 
 module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
@@ -10,10 +9,9 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const blackScholes = lyraGlobal.BlackScholes.address;
 
   await deploy("Strategy", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ 
-      quoteAsset, // quote asset
+      quoteAsset,
     ],
     log: true,
     libraries: {

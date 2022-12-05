@@ -172,9 +172,8 @@ contract OtusVault is BaseVault {
    * @notice clears hedge tracking at end of round
    */
   function _clearHedgeTracking() internal {
-    // withdraw all margin from futures market
     for (uint i = 0; i < positionIdsHedged.length; i++) {
-      uint positionIdHedged = positionIdsHedged[i]; // [12, 123, 454, 11, 112]
+      uint positionIdHedged = positionIdsHedged[i];
       delete hedgeAttemptsByStrikeId[positionIdHedged];
       delete activeHedgeByStrikeId[positionIdHedged];
     }
@@ -188,7 +187,7 @@ contract OtusVault is BaseVault {
   function startNextRound() external onlyOwner {
     //can't start next round before outstanding expired positions are settled.
     require(!vaultState.roundInProgress, "round opened");
-    require(block.timestamp > vaultState.nextRoundReadyTimestamp, "CD");
+    require(block.timestamp > vaultState.nextRoundReadyTimestamp, "Delay between rounds not elapsed");
     require(address(strategy) != address(0), "Strategy not set");
     // allow for multiple boardId selection and mostly check expiry is within strategy range
     // IStrategy(strategy).setBoard(boardId);
@@ -273,11 +272,7 @@ contract OtusVault is BaseVault {
    * @param positionId lyra position id
    * @param closeAmount total amount to reduce
    */
-  function reducePosition(
-    bytes32 market,
-    uint positionId,
-    uint closeAmount
-  ) external onlyKeeper {
+  function reducePosition(bytes32 market, uint positionId, uint closeAmount) external onlyKeeper {
     IStrategy(strategy).reducePosition(market, positionId, closeAmount);
 
     emit PositionReduced(positionId, closeAmount);
@@ -302,11 +297,7 @@ contract OtusVault is BaseVault {
   /**
    * @notice delta hedge based on strategy settings
    */
-  function dynamicDeltaHedge(
-    bytes32 market,
-    int deltaToHedge,
-    uint positionId
-  ) external onlyKeeper {
+  function dynamicDeltaHedge(bytes32 market, int deltaToHedge, uint positionId) external onlyKeeper {
     require(vaultState.roundInProgress, "Round closed");
 
     uint deltaHedgeAttempts = hedgeAttemptsByPositionId[positionId];

@@ -1,12 +1,12 @@
-import { lyraConstants, TestSystem, getMarketDeploys } from '@lyrafinance/protocol';
+import { lyraConstants, TestSystem, getMarketDeploys, getGlobalDeploys } from '@lyrafinance/protocol';
 import { toBN, ZERO_ADDRESS } from '@lyrafinance/protocol/dist/scripts/util/web3utils';
 import { DEFAULT_PRICING_PARAMS } from '@lyrafinance/protocol/dist/test/utils/defaultParams';
 import { TestSystemContractsType } from '@lyrafinance/protocol/dist/test/utils/deployTestSystem';
 import { PricingParametersStruct } from '@lyrafinance/protocol/dist/typechain-types/OptionMarketViewer';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
-import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
+import markets from '../../../constants/synthetix/markets.json';
 
 import {
   LyraBase,
@@ -15,12 +15,15 @@ import {
   MockFuturesMarketManager,
   OtusCloneFactory,
   OtusController,
-  OtusVault
+  OtusVault,
+  OtusVault__factory,
+  Strategy__factory
 } from '../../../typechain-types';
 import { Strategy } from '../../../typechain-types/Strategy';
 
-import { LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
+import { LyraGlobal, LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
 import { Vault } from '../../../typechain-types/OtusVault';
+import { defaultStrategyDetail, vaultInfo } from '../utils/init';
 
 
 const spotPrice = toBN('3000');
@@ -42,8 +45,9 @@ describe('Create vault test', async () => {
 
   let lyraTestSystem: TestSystemContractsType;
   let lyraMarket: LyraMarket;
+  let lyraGlobal: LyraGlobal;
 
-  // primary contracts
+  // synthetix futures contracts
   let futuresMarketsManager: MockFuturesMarketManager;
   let futuresMarket: MockFuturesMarket;
 
@@ -52,19 +56,15 @@ describe('Create vault test', async () => {
   let otusCloneFactory: OtusCloneFactory;
   let vault: OtusVault;
   let strategy: Strategy;
+
   // cloned contracts owned by manager
   let managersVault: OtusVault;
   let managersStrategy: Strategy;
 
   // roles
-  let otusMultiSig: SignerWithAddress;
-
   let deployer: SignerWithAddress;
-  let manager: SignerWithAddress; // this is the supervisor
-
-  let randomUser1: SignerWithAddress;
-  let randomUser2: SignerWithAddress;
-  let randomUser3: SignerWithAddress;
+  let otusMultiSig: SignerWithAddress;
+  let manager: SignerWithAddress;
   let keeper: SignerWithAddress;
 
   before('assign roles', async () => {
@@ -72,10 +72,7 @@ describe('Create vault test', async () => {
     deployer = addresses[0];
     manager = addresses[1];
     otusMultiSig = addresses[2];
-    randomUser1 = addresses[3];
-    randomUser2 = addresses[4];
-    randomUser3 = addresses[5];
-    keeper = addresses[6];
+    keeper = addresses[3];
   });
 
   before('deploy lyra, synthetix and other', async () => {
@@ -96,27 +93,32 @@ describe('Create vault test', async () => {
     const MockERC20Factory = await ethers.getContractFactory('MockERC20');
     susd = (await MockERC20Factory.connect(deployer).deploy('sUSD', 'sUSD', toBN('100000000'))) as MockERC20;
 
+    const MockFuturesMarketFactory = await ethers.getContractFactory('MockFuturesMarket');
+    futuresMarket = (await MockFuturesMarketFactory.connect(deployer).deploy()) as MockFuturesMarket;
+
     const MockFuturesMarketManagerFactory = await ethers.getContractFactory('MockFuturesMarketManager');
     futuresMarketsManager = (await MockFuturesMarketManagerFactory.connect(
       deployer,
     ).deploy()) as MockFuturesMarketManager;
 
+    // add market to futures market manager (synthetix)
     await futuresMarketsManager
       .connect(deployer)
       .addMarket(
-        '0x7345544800000000000000000000000000000000000000000000000000000000',
-        '0x0D10c032ad006C98C33A95e59ab3BA2b0849bD59',
+        markets.ETH,
+        futuresMarket.address,
       );
+
+    lyraGlobal = getGlobalDeploys('local');
+    lyraMarket = getMarketDeploys('local', 'sETH');
 
     const LyraBaseETHFactory = await ethers.getContractFactory('LyraBase', {
       libraries: { BlackScholes: lyraTestSystem.blackScholes.address },
     });
 
-    const lyraMarket = getMarketDeploys('kovan-ovm', 'sETH');
-
     lyraBaseETH = (await LyraBaseETHFactory.connect(deployer).deploy(
-      '0x7345544800000000000000000000000000000000000000000000000000000000',
-      '0xa64a15E39e717663bB6885a536FA9741DEe08daC', // synthetix adapter
+      markets.ETH,
+      lyraGlobal.SynthetixAdapter.address,
       lyraMarket.OptionToken.address,
       lyraMarket.OptionMarket.address,
       lyraMarket.LiquidityPool.address,
@@ -132,8 +134,7 @@ describe('Create vault test', async () => {
     const OtusController = await ethers.getContractFactory('OtusController');
 
     otusController = (await OtusController.connect(otusMultiSig).deploy(
-      lyraTestSystem.lyraRegistry.address,
-      futuresMarketsManager.address, // futuresmarketmanager
+      futuresMarketsManager.address,
       keeper.address,
     )) as OtusController;
 
@@ -141,7 +142,6 @@ describe('Create vault test', async () => {
     vault = (await OtusVaultFactory.connect(otusMultiSig).deploy(86400 * 7)) as OtusVault;
 
     const StrategyBaseFactory = await ethers.getContractFactory('Strategy');
-    console.log({ susd: susd.address });
     strategy = (await StrategyBaseFactory.connect(otusMultiSig).deploy(susd.address)) as Strategy;
 
     const OtusCloneFactory = await ethers.getContractFactory('OtusCloneFactory');
@@ -151,27 +151,21 @@ describe('Create vault test', async () => {
       otusController.address,
     )) as OtusCloneFactory;
 
-    // set settings on otuscontroller => clonefactory / futuresmarkest / lyrabase
     await otusController.connect(otusMultiSig).setOtusCloneFactory(otusCloneFactory.address);
 
-    // dont need to set futures market anymore
     await otusController
       .connect(otusMultiSig)
       .setFuturesMarkets(
-        '0x0D10c032ad006C98C33A95e59ab3BA2b0849bD59',
-        '0x7345544800000000000000000000000000000000000000000000000000000000',
+        futuresMarket.address,
+        markets.ETH,
       );
-
-    const lyraMarket = getMarketDeploys('kovan-ovm', 'sETH');
-
-    await otusController.connect(otusMultiSig).setOptionMarketDetails(lyraMarket.OptionMarket.address);
 
     await otusController
       .connect(otusMultiSig)
       .setLyraAdapter(
         lyraBaseETH.address,
         lyraMarket.OptionMarket.address,
-        '0x7345544800000000000000000000000000000000000000000000000000000000',
+        markets.ETH,
       );
 
   });
@@ -184,20 +178,18 @@ describe('Create vault test', async () => {
     };
 
     await otusController.connect(manager).createOptionsVault(vaultInfo, vaultParams, defaultStrategyDetail);
-
     const vaultCloneAddress = await otusController.vaults(manager.address, 0);
     managersVault = (await ethers.getContractAt(OtusVault__factory.abi, vaultCloneAddress)) as OtusVault;
-
     expect(managersVault.address).to.not.be.eq(ZERO_ADDRESS);
 
     const strategyCloneAddress = await otusController.connect(manager)._getStrategies([managersVault.address]);
     managersStrategy = (await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress[0])) as Strategy;
-
     expect(managersStrategy.address).to.not.be.eq(ZERO_ADDRESS);
 
   });
 
   describe('check strategy setup', async () => {
+
     it('it should set the strategy correctly on the vault', async () => {
       const strategy = await managersVault.connect(manager).strategy();
       expect(strategy).to.be.eq(managersStrategy.address);
@@ -209,23 +201,4 @@ describe('Create vault test', async () => {
 
   });
 
-  describe('setStrategy', async () => {
-    it('setting strategy should correctly update strategy variables', async () => {
-      const owner = await managersStrategy.owner();
-
-      await managersStrategy.connect(manager).setStrategy(defaultStrategyDetail);
-
-      const newStrategy = await managersStrategy.connect(manager).currentStrategy();
-      expect(newStrategy.minTimeToExpiry).to.be.eq(defaultStrategyDetail.minTimeToExpiry);
-      expect(newStrategy.maxTimeToExpiry).to.be.eq(defaultStrategyDetail.maxTimeToExpiry);
-      expect(newStrategy.minTradeInterval).to.be.eq(defaultStrategyDetail.minTradeInterval);
-    });
-
-    it('should revert if setStrategy is not called by owner', async () => {
-      await expect(strategy.connect(randomUser).setStrategy(defaultStrategyDetail)).to.be.revertedWith(
-        'Ownable: caller is not the owner',
-      );
-    });
-
-  });
 });

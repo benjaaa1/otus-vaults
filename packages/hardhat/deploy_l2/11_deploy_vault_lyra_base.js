@@ -1,12 +1,7 @@
-// deploy/00_deploy_your_contract.js
-const { ethers } = require("hardhat");
 const { getMarketDeploys, getGlobalDeploys } = require("@lyrafinance/protocol")
+const markets = require("../constants/synthetix/markets.json");
 
-const localChainId = "31337";
-const kovanOptimism = "69"; 
-const mainnetOptimism = "10";
-
-module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
+module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
@@ -14,11 +9,10 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const lyraGlobal = await getGlobalDeploys('goerli-ovm');
 
   await deploy("LyraBase", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ 
-      "0x7345544800000000000000000000000000000000000000000000000000000000",
-      lyraGlobal.SynthetixAdapter.address, // synthetix adapter
+      markets.ETH,
+      lyraGlobal.SynthetixAdapter.address,
       lyraMarket.OptionToken.address,
       lyraMarket.OptionMarket.address,
       lyraMarket.LiquidityPool.address,
@@ -29,7 +23,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     ],
     log: true,
     libraries: {
-      BlackScholes: '0xaB3390FBA66C75d125be94BBcc5b63088585146F'
+      BlackScholes: lyraGlobal.BlackScholes.address
     }
   });
 

@@ -1,12 +1,6 @@
-// deploy/00_deploy_your_contract.js
-const { ethers } = require("hardhat");
-const { getMarketDeploys, getGlobalDeploys } = require("@lyrafinance/protocol")
+const { getGlobalDeploys } = require("@lyrafinance/protocol")
 
-const localChainId = "31337";
-const kovanOptimism = "69"; 
-const mainnetOptimism = "10";
-
-module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
+module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
@@ -15,10 +9,9 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const blackScholes = lyraGlobal.BlackScholes.address;
 
   await deploy("Strategy", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ 
-      quoteAsset, // quote asset
+      quoteAsset,
     ],
     log: true,
     libraries: {

@@ -158,7 +158,7 @@ contract OtusController is Ownable {
 
   /**
    * @notice Set futures markets
-   * @param _baseAsset address of base
+   * @param _baseAsset address of futures market contract
    * @param _synth asset name in bytes32
    */
   function setFuturesMarkets(address _baseAsset, bytes32 _synth) external {
@@ -193,13 +193,9 @@ contract OtusController is Ownable {
    */
   function setLyraAdapter(address _lyraAdapter, address _optionMarket, bytes32 _market) public onlyOwner {
     lyraAdapters[_market] = _lyraAdapter;
-
     optionMarkets[_market] = _optionMarket;
-
     lyraOptionMarkets.push(_optionMarket);
-
     lyraAdapterValues.push(_lyraAdapter);
-
     lyraAdapterKeys.push(_market);
   }
 

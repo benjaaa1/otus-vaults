@@ -1,11 +1,6 @@
-// deploy/00_deploy_your_contract.js
 const { ethers } = require("hardhat");
 
-const localChainId = "31337";
-const kovanOptimism = "69"; 
-const mainnetOptimism = "10";
-
-module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
+module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 

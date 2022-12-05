@@ -8,16 +8,16 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
-import { 
-  OtusCloneFactory, 
-  Supervisor, 
-  OtusVault, 
-  Strategy, 
+import {
+  OtusCloneFactory,
+  Supervisor,
+  OtusVault,
+  Strategy,
   MockFuturesMarket,
   MockOptionToken,
-  MockERC20, 
-  Supervisor__factory, 
-  OtusVault__factory, 
+  MockERC20,
+  Supervisor__factory,
+  OtusVault__factory,
   Strategy__factory
 } from '../../../typechain-types';
 
@@ -56,21 +56,21 @@ describe('Strategy integration test', async () => {
   let optionToken: MockOptionToken;
 
   // primary contracts
-  let futuresMarket: MockFuturesMarket; 
+  let futuresMarket: MockFuturesMarket;
   let otusCloneFactory: OtusCloneFactory;
-  let supervisor: Supervisor; 
+  let supervisor: Supervisor;
   let vault: OtusVault;
   let strategy: Strategy;
   // cloned contracts owned by manager
-  let managersSupervisor: Supervisor; 
-  let managersVault: OtusVault; 
-  let managersStrategy: Strategy; 
+  let managersSupervisor: Supervisor;
+  let managersVault: OtusVault;
+  let managersStrategy: Strategy;
 
   // roles
   let deployer: SignerWithAddress;
   let manager: SignerWithAddress; // this is the supervisor
-  let treasury: SignerWithAddress; 
-  let otusMultiSig: SignerWithAddress; 
+  let treasury: SignerWithAddress;
+  let otusMultiSig: SignerWithAddress;
   let randomUser: SignerWithAddress;
   let randomUser2: SignerWithAddress;
   let keeper: SignerWithAddress;
@@ -88,7 +88,7 @@ describe('Strategy integration test', async () => {
 
   before('assign roles', async () => {
     const addresses = await ethers.getSigners();
-    deployer = addresses[0]; 
+    deployer = addresses[0];
     manager = addresses[1]; // supervisor; 
     treasury = addresses[2];
     otusMultiSig = addresses[3];
@@ -189,9 +189,9 @@ describe('Strategy integration test', async () => {
   });
 
   before('initialize supervisor with a manager', async () => {
-    await otusCloneFactory.connect(manager)._cloneSupervisor(); 
+    await otusCloneFactory.connect(manager)._cloneSupervisor();
     const supervisorCloneAddress = await otusCloneFactory.supervisors(manager.address);
-    managersSupervisor = await ethers.getContractAt(Supervisor__factory.abi, supervisorCloneAddress) as Supervisor; 
+    managersSupervisor = await ethers.getContractAt(Supervisor__factory.abi, supervisorCloneAddress) as Supervisor;
     expect(managersSupervisor.address).to.not.be.eq(ZERO_ADDRESS);
   });
 
@@ -201,21 +201,21 @@ describe('Strategy integration test', async () => {
 
     await otusCloneFactory.connect(manager)._cloneVault(
       'OtusVault Share', 'Otus VS', true, 0, {
-        decimals,
-        cap, 
-        asset: susd.address
-      }
-    ); 
+      decimals,
+      cap,
+      asset: susd.address
+    }
+    );
 
     const vaultCloneAddress = await otusCloneFactory.vaults(managersSupervisor.address);
-    managersVault = await ethers.getContractAt(OtusVault__factory.abi, vaultCloneAddress) as OtusVault; 
+    managersVault = await ethers.getContractAt(OtusVault__factory.abi, vaultCloneAddress) as OtusVault;
     expect(managersVault.address).to.not.be.eq(ZERO_ADDRESS);
   });
 
   before('initialize strategy for vault with a supervisor', async () => {
-    await otusCloneFactory.connect(manager)._cloneStrategy(susd.address, seth.address); 
+    await otusCloneFactory.connect(manager)._cloneStrategy(susd.address, seth.address);
     const strategyCloneAddress = await otusCloneFactory.connect(manager)._getStrategy();
-    managersStrategy = await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress) as Strategy; 
+    managersStrategy = await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress) as Strategy;
     expect(managersStrategy.address).to.not.be.eq(ZERO_ADDRESS);
   });
 
@@ -226,7 +226,7 @@ describe('Strategy integration test', async () => {
   describe('check strategy setup', async () => {
 
     it('it should set the strategy correctly on the vault', async () => {
-      const strategy = await managersVault.connect(manager).strategy(); 
+      const strategy = await managersVault.connect(manager).strategy();
       expect(strategy).to.be.eq(managersStrategy.address);
     })
 
@@ -249,7 +249,7 @@ describe('Strategy integration test', async () => {
       const owner = await managersStrategy.owner();
 
       await managersStrategy.connect(manager).setStrategy(
-        defaultStrategyDetail, 
+        defaultStrategyDetail,
         defaultHedgeDetail,
         4 // Short Call Quote
       );
@@ -275,10 +275,10 @@ describe('Strategy integration test', async () => {
 
     it('should revert if setStrategy is not called by owner', async () => {
       await expect(strategy.connect(randomUser).setStrategy(
-          defaultStrategyDetail, 
-          defaultHedgeDetail,
-          4
-        )).to.be.revertedWith(
+        defaultStrategyDetail,
+        defaultHedgeDetail,
+        4
+      )).to.be.revertedWith(
         'Ownable: caller is not the owner',
       );
     });
@@ -567,7 +567,7 @@ describe('Strategy integration test', async () => {
     it('hedge position and option position should be closed within loss limit percentage', async () => {
 
     });
-        
+
   });
 });
 
