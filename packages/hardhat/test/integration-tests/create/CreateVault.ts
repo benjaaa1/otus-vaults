@@ -9,132 +9,81 @@ import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 
 import {
-LyraBase,
-MockERC20,
-MockFuturesMarket,
-MockFuturesMarketManager,
-OtusCloneFactory,
-OtusController,
-OtusVault,
-OtusVault**factory,
-Strategy**factory,
+  LyraBase,
+  MockERC20,
+  MockFuturesMarket,
+  MockFuturesMarketManager,
+  OtusCloneFactory,
+  OtusController,
+  OtusVault
 } from '../../../typechain-types';
-import { Strategy, StrategyBase } from '../../../typechain-types/Strategy';
+import { Strategy } from '../../../typechain-types/Strategy';
 
 import { LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
 import { Vault } from '../../../typechain-types/OtusVault';
 
-const defaultStrategyDetail: StrategyBase.StrategyDetailStruct = {
-hedgeReserve: toBN('.5'),
-collatBuffer: toBN('1.2'),
-collatPercent: toBN('.35'),
-minTimeToExpiry: lyraConstants.DAY_SEC,
-maxTimeToExpiry: lyraConstants.WEEK_SEC \* 4,
-minTradeInterval: 600,
-gwavPeriod: 600,
-allowedMarkets: ['0x7345544800000000000000000000000000000000000000000000000000000000'],
-};
-
-const defaultStrikeStrategyDetailCall: StrategyBase.StrikeStrategyDetailStruct = {
-targetDelta: toBN('0.4'),
-maxDeltaGap: toBN('0.5'), // accept delta from 0.1~0.3
-minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
-maxVol: toBN('1.3'), // max vol to sell.
-maxVolVariance: toBN('0.1'),
-optionType: 3,
-};
-
-const defaultStrikeStrategyDetail: StrategyBase.StrikeStrategyDetailStruct = {
-targetDelta: toBN('0.2').mul(-1),
-maxDeltaGap: toBN('0.1'), // accept delta from 0.1~0.3
-minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
-maxVol: toBN('1.3'), // max vol to sell.
-maxVolVariance: toBN('0.1'),
-optionType: 4,
-};
-
-const defaultStaticDeltaHedgeDetail: StrategyBase.StaticDeltaHedgeStrategyStruct = {
-deltaToHedge: toBN('.5'), // 50% of delta
-maxLeverageSize: toBN('2'), // 2x
-};
-
-const defaultDynamicDeltaHedgeDetail: StrategyBase.DynamicDeltaHedgeStrategyStruct = {
-deltaToHedge: toBN('1'), // 100%
-maxHedgeAttempts: toBN('5'),
-maxLeverageSize: toBN('2'), // 150% ~ 1.5x 200% 2x
-period: lyraConstants.DAY_SEC, // every period to hedge check
-};
-
-const vaultInfo: Vault.VaultInformationStruct = {
-name: 'New Vault',
-tokenName: 'OtusVault Share',
-tokenSymbol: 'Otus VS',
-description: 'Sell ETH Puts',
-isPublic: true,
-performanceFee: toBN('0'),
-managementFee: toBN('0'),
-};
 
 const spotPrice = toBN('3000');
 
 const boardId = toBN('0');
 
 const boardParameter = {
-expiresIn: lyraConstants.DAY_SEC \* 7,
-baseIV: '0.8',
-strikePrices: ['2500', '2600', '2700', '2800', '2900', '3000', '3100'],
-skews: ['1.3', '1.2', '1.1', '1', '1.1', '1.3', '1.3'],
+  expiresIn: lyraConstants.DAY_SEC * 7,
+  baseIV: '0.8',
+  strikePrices: ['2500', '2600', '2700', '2800', '2900', '3000', '3100'],
+  skews: ['1.3', '1.2', '1.1', '1', '1.1', '1.3', '1.3'],
 };
 
 const initialPoolDeposit = toBN('1500000'); // 1.5m
 
 describe('Create vault test', async () => {
-// mocked tokens
-let susd: MockERC20;
-let seth: MockERC20;
+  // mocked tokens
+  let susd: MockERC20;
 
-let lyraTestSystem: TestSystemContractsType;
-let lyraMarket: LyraMarket;
+  let lyraTestSystem: TestSystemContractsType;
+  let lyraMarket: LyraMarket;
 
-// primary contracts
-let futuresMarketsManager: MockFuturesMarketManager;
-let futuresMarket: MockFuturesMarket;
+  // primary contracts
+  let futuresMarketsManager: MockFuturesMarketManager;
+  let futuresMarket: MockFuturesMarket;
 
-let lyraBaseETH: LyraBase;
-let otusController: OtusController;
-let otusCloneFactory: OtusCloneFactory;
-let vault: OtusVault;
-let strategy: Strategy;
-// cloned contracts owned by manager
-let managersVault: OtusVault;
-let managersStrategy: Strategy;
+  let lyraBaseETH: LyraBase;
+  let otusController: OtusController;
+  let otusCloneFactory: OtusCloneFactory;
+  let vault: OtusVault;
+  let strategy: Strategy;
+  // cloned contracts owned by manager
+  let managersVault: OtusVault;
+  let managersStrategy: Strategy;
 
-// roles
-let otusMultiSig: SignerWithAddress;
+  // roles
+  let otusMultiSig: SignerWithAddress;
 
-let deployer: SignerWithAddress;
-let manager: SignerWithAddress; // this is the supervisor
+  let deployer: SignerWithAddress;
+  let manager: SignerWithAddress; // this is the supervisor
 
-let randomUser: SignerWithAddress;
-let randomUser2: SignerWithAddress;
-let keeper: SignerWithAddress;
+  let randomUser1: SignerWithAddress;
+  let randomUser2: SignerWithAddress;
+  let randomUser3: SignerWithAddress;
+  let keeper: SignerWithAddress;
 
-before('assign roles', async () => {
-const addresses = await ethers.getSigners();
-deployer = addresses[0];
-manager = addresses[1]; // supervisor
-otusMultiSig = addresses[3];
-randomUser = addresses[4];
-randomUser2 = addresses[5];
-keeper = addresses[6];
-});
+  before('assign roles', async () => {
+    const addresses = await ethers.getSigners();
+    deployer = addresses[0];
+    manager = addresses[1];
+    otusMultiSig = addresses[2];
+    randomUser1 = addresses[3];
+    randomUser2 = addresses[4];
+    randomUser3 = addresses[5];
+    keeper = addresses[6];
+  });
 
-before('deploy lyra, synthetix and other', async () => {
-const pricingParams: PricingParametersStruct = {
-...DEFAULT_PRICING_PARAMS,
-standardSize: toBN('10'),
-spotPriceFeeCoefficient: toBN('0.001'),
-};
+  before('deploy lyra, synthetix and other', async () => {
+    const pricingParams: PricingParametersStruct = {
+      ...DEFAULT_PRICING_PARAMS,
+      standardSize: toBN('10'),
+      spotPriceFeeCoefficient: toBN('0.001'),
+    };
 
     lyraTestSystem = await TestSystem.deploy(deployer, false, false, { pricingParams });
 
@@ -177,10 +126,10 @@ spotPriceFeeCoefficient: toBN('0.001'),
       lyraMarket.GWAVOracle.address,
     )) as LyraBase;
 
-});
+  });
 
-before('deploy vault, strategy, and clone factory contracts', async () => {
-const OtusController = await ethers.getContractFactory('OtusController');
+  before('deploy vault, strategy, and clone factory contracts', async () => {
+    const OtusController = await ethers.getContractFactory('OtusController');
 
     otusController = (await OtusController.connect(otusMultiSig).deploy(
       lyraTestSystem.lyraRegistry.address,
@@ -225,14 +174,14 @@ const OtusController = await ethers.getContractFactory('OtusController');
         '0x7345544800000000000000000000000000000000000000000000000000000000',
       );
 
-});
+  });
 
-before('initialize vault and strategy', async () => {
-const vaultParams: Vault.VaultParamsStruct = {
-decimals: 18,
-cap: toBN('5000000'),
-asset: susd.address,
-};
+  before('initialize vault and strategy', async () => {
+    const vaultParams: Vault.VaultParamsStruct = {
+      decimals: 18,
+      cap: toBN('5000000'),
+      asset: susd.address,
+    };
 
     await otusController.connect(manager).createOptionsVault(vaultInfo, vaultParams, defaultStrategyDetail);
 
@@ -246,23 +195,23 @@ asset: susd.address,
 
     expect(managersStrategy.address).to.not.be.eq(ZERO_ADDRESS);
 
-});
+  });
 
-describe('check strategy setup', async () => {
-it('it should set the strategy correctly on the vault', async () => {
-const strategy = await managersVault.connect(manager).strategy();
-expect(strategy).to.be.eq(managersStrategy.address);
-});
+  describe('check strategy setup', async () => {
+    it('it should set the strategy correctly on the vault', async () => {
+      const strategy = await managersVault.connect(manager).strategy();
+      expect(strategy).to.be.eq(managersStrategy.address);
+    });
 
     it('deploys with correct vault', async () => {
       expect(await managersStrategy.vault()).to.be.eq(managersVault.address);
     });
 
-});
+  });
 
-describe('setStrategy', async () => {
-it('setting strategy should correctly update strategy variables', async () => {
-const owner = await managersStrategy.owner();
+  describe('setStrategy', async () => {
+    it('setting strategy should correctly update strategy variables', async () => {
+      const owner = await managersStrategy.owner();
 
       await managersStrategy.connect(manager).setStrategy(defaultStrategyDetail);
 
@@ -278,5 +227,5 @@ const owner = await managersStrategy.owner();
       );
     });
 
-});
+  });
 });

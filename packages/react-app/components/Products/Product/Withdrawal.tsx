@@ -69,7 +69,37 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
     if (network?.chainId && signer != null) {
       setCanTransact(true)
     }
-  }, [signer, network])
+  }, [signer, network]);
+
+  const handleRequestWithdrawal = useCallback(async () => {
+    if (otusVaultContract == null || vault == null || address == null) {
+      console.warn('Vault does not exist for deposit')
+      return null
+    }
+
+    if (requestAmount == 0) {
+      console.warn('Must be non zero amount')
+      return null
+    }
+
+    setIsWithdrawLoading(true)
+
+    const tx = await otusVaultContract.withdrawInstantly(parseUnits(immediateAmount.toString()), { gasLimit: 500000 })
+    if (tx) {
+      monitorTransaction({
+        txHash: tx.hash,
+        onTxConfirmed: () => {
+          setTimeout(async () => {
+            setIsWithdrawLoading(false)
+            setImmediateAmount(0)
+            const { amount } = await otusVaultContract.depositReceipts(address)
+            setImmediateWithdrawalAmount(amount)
+          }, 5 * 1000)
+        },
+      })
+    }
+
+  }, [otusVaultContract, vault, address, requestAmount, monitorTransaction])
 
   const handleImmediateWithdrawal = useCallback(async () => {
     if (otusVaultContract == null || vault == null || address == null) {
@@ -102,10 +132,6 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
 
   return (
     <div className="p-8  divide-y divide-zinc-500">
-
-
-      {/* request withdrawal  */}
-
       {
         canTransact ?
 
@@ -158,7 +184,7 @@ export default function Withdraw({ vault }: { vault: Vault | undefined }) {
                 variant={'action'}
                 radius={'xs'}
                 size={'full-sm'}
-                onClick={() => console.log('request withdraw')}
+                onClick={handleRequestWithdrawal}
               />
             </div>
 
