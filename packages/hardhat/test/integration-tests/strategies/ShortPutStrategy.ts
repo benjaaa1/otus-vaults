@@ -1,51 +1,38 @@
-import { lyraConstants, TestSystem, getMarketDeploys, getGlobalDeploys } from '@lyrafinance/protocol';
+import { lyraConstants, lyraEvm, TestSystem, getMarketDeploys, getGlobalDeploys } from '@lyrafinance/protocol';
 import { toBN, ZERO_ADDRESS } from '@lyrafinance/protocol/dist/scripts/util/web3utils';
 import { DEFAULT_PRICING_PARAMS } from '@lyrafinance/protocol/dist/test/utils/defaultParams';
 import { TestSystemContractsType } from '@lyrafinance/protocol/dist/test/utils/deployTestSystem';
 import { PricingParametersStruct } from '@lyrafinance/protocol/dist/typechain-types/OptionMarketViewer';
+import { OptionMarket } from '@lyrafinance/protocol/dist/typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
+import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
+import {
+  OtusCloneFactory,
+  OtusVault,
+  Strategy,
+  MockFuturesMarket,
+  MockERC20,
+  OtusVault__factory,
+  Strategy__factory,
+  MockFuturesMarketManager,
+  LyraBase,
+  OtusController,
+  StrategyBase
+} from '../../../typechain-types';
+import { Vault } from '../../../typechain-types/OtusVault';
+import { boardParameter, defaultStrategyDetail, defaultStrikeStrategyDetail, defaultStrikeStrategyDetailCall, initialPoolDeposit, spotPrice, vaultInfo } from '../utils/init';
 import markets from '../../../constants/synthetix/markets.json';
 
-import {
-  LyraBase,
-  MockERC20,
-  MockFuturesMarket,
-  MockFuturesMarketManager,
-  OtusCloneFactory,
-  OtusController,
-  OtusVault,
-  OtusVault__factory,
-  Strategy__factory
-} from '../../../typechain-types';
-import { Strategy } from '../../../typechain-types/Strategy';
-
-import { LyraGlobal, LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
-import { Vault } from '../../../typechain-types/OtusVault';
-import { defaultDynamicDeltaHedgeDetail, defaultStrategyDetail, defaultStrikeStrategyDetailCall, vaultInfo } from '../utils/init';
-
-
-const spotPrice = toBN('3000');
-
-const boardId = toBN('0');
-
-const boardParameter = {
-  expiresIn: lyraConstants.DAY_SEC * 7,
-  baseIV: '0.8',
-  strikePrices: ['2500', '2600', '2700', '2800', '2900', '3000', '3100'],
-  skews: ['1.3', '1.2', '1.1', '1', '1.1', '1.3', '1.3'],
-};
-
-const initialPoolDeposit = toBN('1500000'); // 1.5m
-
-describe('Create vault test', async () => {
+describe('Strategy integration test', async () => {
   // mocked tokens
   let susd: MockERC20;
+  let seth: MockERC20;
+  let otus: MockERC20;
 
   let lyraTestSystem: TestSystemContractsType;
-  let lyraMarket: LyraMarket;
-  let lyraGlobal: LyraGlobal;
+  let boardId = toBN('0');
 
   // synthetix futures contracts
   let futuresMarketsManager: MockFuturesMarketManager;
@@ -67,12 +54,19 @@ describe('Create vault test', async () => {
   let manager: SignerWithAddress;
   let keeper: SignerWithAddress;
 
+  // users
+  let randomUser1: SignerWithAddress;
+  let randomUser2: SignerWithAddress;
+
   before('assign roles', async () => {
     const addresses = await ethers.getSigners();
     deployer = addresses[0];
     manager = addresses[1];
     otusMultiSig = addresses[2];
     keeper = addresses[3];
+
+    randomUser1 = addresses[4];
+    randomUser2 = addresses[5];
   });
 
   before('deploy lyra, synthetix and other', async () => {
@@ -90,8 +84,8 @@ describe('Create vault test', async () => {
       initialPoolDeposit: initialPoolDeposit,
     });
 
-    const MockERC20Factory = await ethers.getContractFactory('MockERC20');
-    susd = (await MockERC20Factory.connect(deployer).deploy('sUSD', 'sUSD', toBN('100000000'))) as MockERC20;
+    // const MockERC20Factory = await ethers.getContractFactory('MockERC20');
+    susd = lyraTestSystem.snx.quoteAsset as MockERC20;
 
     const MockFuturesMarketFactory = await ethers.getContractFactory('MockFuturesMarket');
     futuresMarket = (await MockFuturesMarketFactory.connect(deployer).deploy()) as MockFuturesMarket;
@@ -109,24 +103,29 @@ describe('Create vault test', async () => {
         futuresMarket.address,
       );
 
-    lyraGlobal = getGlobalDeploys('local');
-    lyraMarket = getMarketDeploys('local', 'sETH');
-
     const LyraBaseETHFactory = await ethers.getContractFactory('LyraBase', {
       libraries: { BlackScholes: lyraTestSystem.blackScholes.address },
     });
 
     lyraBaseETH = (await LyraBaseETHFactory.connect(deployer).deploy(
       markets.ETH,
-      lyraGlobal.SynthetixAdapter.address,
-      lyraMarket.OptionToken.address,
-      lyraMarket.OptionMarket.address,
-      lyraMarket.LiquidityPool.address,
-      lyraMarket.ShortCollateral.address,
-      lyraMarket.OptionMarketPricer.address,
-      lyraMarket.OptionGreekCache.address,
-      lyraMarket.GWAVOracle.address,
+      lyraTestSystem.synthetixAdapter.address,
+      lyraTestSystem.optionToken.address,
+      lyraTestSystem.optionMarket.address,
+      lyraTestSystem.liquidityPool.address,
+      lyraTestSystem.shortCollateral.address,
+      lyraTestSystem.optionMarketPricer.address,
+      lyraTestSystem.optionGreekCache.address,
+      lyraTestSystem.GWAVOracle.address,
     )) as LyraBase;
+
+    const boards = await lyraTestSystem.optionMarket.getLiveBoards();
+
+    boardId = boards[0];
+
+    await lyraTestSystem.optionGreekCache.updateBoardCachedGreeks(boardId);
+
+    await lyraEvm.fastForward(600);
 
   });
 
@@ -164,7 +163,7 @@ describe('Create vault test', async () => {
       .connect(otusMultiSig)
       .setLyraAdapter(
         lyraBaseETH.address,
-        lyraMarket.OptionMarket.address,
+        lyraTestSystem.optionMarket.address,
         markets.ETH,
       );
 
@@ -186,67 +185,109 @@ describe('Create vault test', async () => {
     managersStrategy = (await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress[0])) as Strategy;
     expect(managersStrategy.address).to.not.be.eq(ZERO_ADDRESS);
 
+    await managersStrategy.connect(manager).setStrikeStrategyDetail([defaultStrikeStrategyDetail, defaultStrikeStrategyDetailCall]);
+    const _optionType = defaultStrikeStrategyDetailCall.optionType;
+    const strikeStrategyForOptionType = await managersStrategy.currentStrikeStrategies(_optionType);
+    await expect(strikeStrategyForOptionType.targetDelta).to.eq(defaultStrikeStrategyDetailCall.targetDelta);
   });
 
-  describe('check strategy setup', async () => {
+  describe('start the first round', async () => {
 
-    it('it should set the strategy correctly on the vault', async () => {
-      const strategy = await managersVault.connect(manager).strategy();
-      expect(strategy).to.be.eq(managersStrategy.address);
+    let strikes: BigNumber[] = [];
+
+    before('create fake susd for users', async () => {
+      await susd.mint(randomUser1.address, toBN('100000'));
+      await susd.mint(randomUser2.address, toBN('100000'));
     });
 
-    it('deploys with correct vault', async () => {
-      expect(await managersStrategy.vault()).to.be.eq(managersVault.address);
+    before('set strikes array', async () => {
+      strikes = await lyraTestSystem.optionMarket.getBoardStrikes(boardId);
     });
 
-  });
+    it('users should be able to deposit to vault', async () => {
+      await susd.connect(randomUser1).approve(managersVault.address, lyraConstants.MAX_UINT);
+      await managersVault.connect(randomUser1).deposit(toBN('100000'));
 
-  describe('update vault strategy', async () => {
+      await susd.connect(randomUser2).approve(managersVault.address, lyraConstants.MAX_UINT);
+      await managersVault.connect(randomUser2).deposit(toBN('100000'));
 
-    it('should set the vault strategy while vault is closed', async () => {
-      await managersStrategy.connect(manager).setStrategy({ ...defaultStrategyDetail, collatPercent: toBN('.80') });
-      expect((await managersStrategy.currentStrategy()).collatPercent).to.be.eq(toBN('.80'));
+      const state = await managersVault.vaultState();
+      expect(state.totalPending.eq(toBN('200000'))).to.be.true;
     })
 
-    it('should revert when trying to set vault strategy while vault is open', async () => {
+    it('manager can start round 1', async () => {
       await managersVault.connect(manager).startNextRound();
-      await expect(
-        managersStrategy.connect(manager).setStrategy({ ...defaultStrategyDetail, collatPercent: toBN('.70') })).to.be.revertedWith(
-          'round opened',
-        );
+    });
+
+    it('will not trade when delta is out of range"', async () => {
+
+      const strikeStrategy: StrategyBase.StrikeTradeStruct = {
+        market: markets.ETH,
+        optionType: defaultStrikeStrategyDetail.optionType,
+        strikeId: strikes[1],
+        size: toBN('7'),
+        positionId: toBN('0'),
+        strikePrice: toBN('0'),
+      };
+
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TradeDeltaOutOfRange');
+    });
+
+    it('should revert when min premium < premium calculated with min vol', async () => {
+
+      const strikeStrategy: StrategyBase.StrikeTradeStruct = {
+        market: markets.ETH,
+        optionType: defaultStrikeStrategyDetail.optionType,
+        strikeId: strikes[3],
+        size: toBN('7'),
+        positionId: toBN('0'),
+        strikePrice: toBN('0'),
+      };
+
+      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
+    });
+
+    it('should successfully trade multiple short put options', async () => {
+      const strikeStrategy1st: StrategyBase.StrikeTradeStruct = {
+        market: markets.ETH,
+        optionType: defaultStrikeStrategyDetail.optionType,
+        strikeId: strikes[2],
+        size: toBN('7'),
+        positionId: toBN('0'),
+        strikePrice: toBN('0'),
+      };
+
+      const strikeStrategy2nd: StrategyBase.StrikeTradeStruct = {
+        market: markets.ETH,
+        optionType: defaultStrikeStrategyDetail.optionType,
+        strikeId: strikes[4],
+        size: toBN('7'),
+        positionId: toBN('0'),
+        strikePrice: toBN('0'),
+      };
+
+      await managersVault.connect(manager).trade([strikeStrategy1st, strikeStrategy2nd]);
+      const activeStrikeTrades1 = await managersStrategy.activeStrikeTrades(0);
+
+      const activeStrikeTrades2 = await managersStrategy.activeStrikeTrades(1);
+
+      expect(activeStrikeTrades1.positionId).to.be.eq(1);
+      expect(activeStrikeTrades2.positionId).to.be.eq(2);
+
+    });
+
+    it('should trade additional higher strike when spot price up', async () => {
+
     })
 
-  })
+    it('should revert closed when positions open', async () => {
 
-  describe('set strike strategy', async () => {
-
-    it('should set the strike strategies while vault is closed', async () => {
-      await managersVault.connect(manager).closeRound();
-
-      await managersStrategy.connect(manager).setStrikeStrategyDetail([defaultStrikeStrategyDetailCall]);
-      // option type
-      const _optionType = defaultStrikeStrategyDetailCall.optionType;
-      const strikeStrategyForOptionType = await managersStrategy.currentStrikeStrategies(_optionType);
-      await expect(strikeStrategyForOptionType.targetDelta).to.eq(defaultStrikeStrategyDetailCall.targetDelta);
     })
 
-  })
+    it('should be able to close round after options are settled', async () => {
 
-  describe('set hedge type', async () => {
-    it('should not set the hedge type when not valid', async () => {
-      await expect(
-        managersStrategy.connect(manager).setHedgeStrategyType(3)).to.be.revertedWith(
-          'reverted with panic code 0x21 (Tried to convert a value into an enum, but the value was too big or negative)'
-        );
     })
 
-    it('should not set the hedge type when valid', async () => {
-      await managersStrategy.connect(manager).setHedgeStrategyType(2);
-      await managersStrategy.connect(manager).setHedgeStrategies(defaultDynamicDeltaHedgeDetail);
-      const dynamicHedgeStrategy = await managersStrategy.dynamicHedgeStrategy();
-      expect(dynamicHedgeStrategy.threshold).to.be.eq(defaultDynamicDeltaHedgeDetail.threshold);
-    })
-
-  })
+  });
 
 });

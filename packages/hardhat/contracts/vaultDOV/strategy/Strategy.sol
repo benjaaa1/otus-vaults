@@ -173,18 +173,10 @@ contract Strategy is StrategyBase {
    * @return premium
    * @return capitalUsed
    */
-  function doTrade(StrikeTrade memory _strike)
-    external
-    onlyVault
-    returns (
-      uint positionId,
-      uint premium,
-      uint capitalUsed,
-      uint expiry
-    )
-  {
+  function doTrade(
+    StrikeTrade memory _strike
+  ) external onlyVault returns (uint positionId, uint premium, uint capitalUsed, uint expiry) {
     address lyraBase = lyraBases[_strike.market];
-    // require(lyraBase.code.length > 0, "should be contract");
 
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_strike.optionType];
 
@@ -379,11 +371,7 @@ contract Strategy is StrategyBase {
    * @param positionId lyra position id
    * @param closeAmount amount closing
    */
-  function reducePosition(
-    bytes32 market,
-    uint positionId,
-    uint closeAmount
-  ) external onlyVault {
+  function reducePosition(bytes32 market, uint positionId, uint closeAmount) external onlyVault {
     address lyraBase = lyraBases[market];
     ILyraBase.OptionPosition memory position = ILyraBase(lyraBase).getPositions(_toDynamic(positionId))[0];
     ILyraBase.Strike memory strike = ILyraBase(lyraBase).getStrikes(_toDynamic(position.strikeId))[0];
@@ -488,11 +476,7 @@ contract Strategy is StrategyBase {
    * @param hedgeAttempts attempts
    * @dev refactor this to move away from futuresadapter
    */
-  function _dynamicDeltaHedge(
-    bytes32 market,
-    int deltaToHedge,
-    uint hedgeAttempts
-  ) external onlyVault {
+  function _dynamicDeltaHedge(bytes32 market, int deltaToHedge, uint hedgeAttempts) external onlyVault {
     require(hedgeType == HEDGETYPE.DYNAMIC_DELTA_HEDGE, "Not allowed");
 
     require(dynamicHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);

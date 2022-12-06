@@ -329,9 +329,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     _burn(address(this), withdrawalShares);
 
     require(withdrawAmount > 0, "!withdrawAmount");
-    console.log("withdrawAmount");
-    console.log(withdrawAmount);
-    console.log(balanceOf(address(this)));
+
     _transferAsset(msg.sender, withdrawAmount);
   }
 

@@ -5,18 +5,41 @@ import { ToastContainer } from 'react-toastify'
 import { QueryClientProvider, QueryClient } from 'react-query'
 
 import 'react-toastify/dist/ReactToastify.css'
-import React, { FC } from 'react'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import Layout from '../components/UI/Layout'
 import { Network } from '../constants/networks'
 
-const InnerApp: FC<AppProps> = ({ Component, pageProps }) => {
-  const { network, provider } = useWeb3Context()
+const WhitelistComponent = () => {
+  return <div className='min-full-height'>
 
-  return (
+  </div>
+}
+
+const InnerApp: FC<AppProps> = ({ Component, pageProps }) => {
+  const { network, provider, address } = useWeb3Context()
+  console.log({ network, provider, address })
+
+  // load whitelisted addresses 
+  // query subgraph for whitelisted address
+  const [isWhitelisted, setIsWhitelisted] = useState(true);
+
+  // const checkWhitelist = useCallback(() => {
+
+  // }, [address]);
+
+  // useEffect(() => {
+
+  // }, [address])
+
+  return isWhitelisted ?
     <Layout>
       <Component {...pageProps} />
+    </Layout > :
+    <Layout>
+      <WhitelistComponent />
     </Layout>
-  )
+
+
 }
 
 const MyApp: FC<AppProps> = (props) => {

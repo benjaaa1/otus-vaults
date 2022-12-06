@@ -222,11 +222,8 @@ contract OtusVault is BaseVault {
   /**
    * @notice Start the trade for the next/new round depending on strategy
    * @param _strikes selected strikes to trade
-   * @return positionIds lyra position ids
    */
-  function trade(StrategyBase.StrikeTrade[] memory _strikes) external onlyOwner returns (uint[] memory positionIds) {
-    // round should be opened
-    console.log("test");
+  function trade(StrategyBase.StrikeTrade[] memory _strikes) external onlyOwner {
     require(vaultState.roundInProgress, "round not opened");
 
     uint allCapitalUsed;
@@ -235,18 +232,15 @@ contract OtusVault is BaseVault {
     uint capitalUsed;
     uint len = _strikes.length;
     uint expiry;
-    uint strikePrice;
-    positionIds = new uint[](len);
 
     ActiveTrade[] memory activeTrades = new ActiveTrade[](len);
 
     for (uint i = 0; i < len; i++) {
       StrategyBase.StrikeTrade memory _trade = _strikes[i];
-
       (positionId, premium, capitalUsed, expiry) = IStrategy(strategy).doTrade(_trade);
       allCapitalUsed += capitalUsed;
-      positionIds[i] = positionId;
       require(premium > 0, "no premium?");
+
       ActiveTrade memory activeTrade = ActiveTrade(
         _trade.market,
         _trade.optionType,

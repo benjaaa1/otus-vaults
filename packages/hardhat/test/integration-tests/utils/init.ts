@@ -25,8 +25,8 @@ export const defaultStrikeStrategyDetailCall: StrategyBase.StrikeStrategyDetailS
 };
 
 export const defaultStrikeStrategyDetail: StrategyBase.StrikeStrategyDetailStruct = {
-  targetDelta: toBN('0.2').mul(-1),
-  maxDeltaGap: toBN('0.1'), // accept delta from 0.1~0.3
+  targetDelta: toBN('0.4').mul(-1),
+  maxDeltaGap: toBN('0.5'), // accept delta from 0.1~0.3
   minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
   maxVol: toBN('1.3'), // max vol to sell.
   maxVolVariance: toBN('0.1'),
@@ -48,3 +48,14 @@ export const vaultInfo: Vault.VaultInformationStruct = {
   performanceFee: toBN('0'),
   managementFee: toBN('0'),
 };
+
+export const spotPrice = toBN('3000');
+
+export const boardParameter = {
+  expiresIn: lyraConstants.DAY_SEC * 7,
+  baseIV: '0.8',
+  strikePrices: ['2500', '2600', '2700', '2800', '2900', '3000', '3100'],
+  skews: ['1.3', '1.2', '1.1', '1', '1.1', '1.3', '1.3'],
+};
+
+export const initialPoolDeposit = toBN('1500000'); // 1.5m

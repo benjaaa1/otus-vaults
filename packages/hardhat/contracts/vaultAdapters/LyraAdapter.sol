@@ -146,6 +146,9 @@ contract LyraAdapter is OwnableUpgradeable {
   function openPosition(bytes32 market, TradeInputParameters memory params) internal returns (TradeResult memory) {
     address optionMarket = lyraOptionMarkets[market];
     IOptionMarket.TradeInputParameters memory convertedParams = _convertParams(params);
+    console.log("attempt to open position");
+    console.log(optionMarket);
+
     IOptionMarket.Result memory result = IOptionMarket(optionMarket).openPosition(convertedParams);
 
     return TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});
@@ -169,10 +172,10 @@ contract LyraAdapter is OwnableUpgradeable {
    * @param params params to close trade on lyra
    * @return result of trade
    */
-  function forceClosePosition(bytes32 market, TradeInputParameters memory params)
-    internal
-    returns (TradeResult memory)
-  {
+  function forceClosePosition(
+    bytes32 market,
+    TradeInputParameters memory params
+  ) internal returns (TradeResult memory) {
     address optionMarket = lyraOptionMarkets[market];
 
     IOptionMarket.Result memory result = IOptionMarket(optionMarket).forceClosePosition(_convertParams(params));
@@ -186,11 +189,9 @@ contract LyraAdapter is OwnableUpgradeable {
   // Misc //
   //////////
 
-  function _convertParams(TradeInputParameters memory _params)
-    internal
-    pure
-    returns (IOptionMarket.TradeInputParameters memory)
-  {
+  function _convertParams(
+    TradeInputParameters memory _params
+  ) internal pure returns (IOptionMarket.TradeInputParameters memory) {
     return
       IOptionMarket.TradeInputParameters({
         strikeId: _params.strikeId,

@@ -23,19 +23,7 @@ import { Strategy } from '../../../typechain-types/Strategy';
 
 import { LyraGlobal, LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
 import { Vault } from '../../../typechain-types/OtusVault';
-import { defaultStrategyDetail, vaultInfo } from '../utils/init';
-
-
-const spotPrice = toBN('3000');
-
-const boardId = toBN('0');
-
-const boardParameter = {
-  expiresIn: lyraConstants.DAY_SEC * 7,
-  baseIV: '0.8',
-  strikePrices: ['2500', '2600', '2700', '2800', '2900', '3000', '3100'],
-  skews: ['1.3', '1.2', '1.1', '1', '1.1', '1.3', '1.3'],
-};
+import { boardParameter, defaultStrategyDetail, spotPrice, vaultInfo } from '../utils/init';
 
 const initialPoolDeposit = toBN('1500000'); // 1.5m
 
@@ -204,23 +192,23 @@ describe('Vault User transaction integration test ', async () => {
 
     before('users should be able to deposit to vault', async () => {
       await susd.connect(randomUser1).approve(managersVault.address, lyraConstants.MAX_UINT);
-      await managersVault.connect(randomUser1).deposit(toBN('50000'));
+      await managersVault.connect(randomUser1).deposit(toBN('100000'));
 
       await susd.connect(randomUser2).approve(managersVault.address, lyraConstants.MAX_UINT);
-      await managersVault.connect(randomUser2).deposit(toBN('70000'));
+      await managersVault.connect(randomUser2).deposit(toBN('100000'));
 
       const state = await managersVault.vaultState();
-      expect(state.totalPending.eq(toBN('120000'))).to.be.true;
+      expect(state.totalPending.eq(toBN('200000'))).to.be.true;
     })
 
     it('user can withdraw instantly', async () => {
-      await managersVault.connect(randomUser1).withdrawInstantly(toBN('50000'));
+      await managersVault.connect(randomUser1).withdrawInstantly(toBN('100000'));
       const stateAfter1 = await managersVault.vaultState();
-      expect(stateAfter1.totalPending.eq(toBN('70000'))).to.be.true;
+      expect(stateAfter1.totalPending.eq(toBN('100000'))).to.be.true;
 
-      await managersVault.connect(randomUser2).withdrawInstantly(toBN('50000'));
+      await managersVault.connect(randomUser2).withdrawInstantly(toBN('100000'));
       const stateAfter2 = await managersVault.vaultState();
-      expect(stateAfter2.totalPending.eq(toBN('20000'))).to.be.true;
+      expect(stateAfter2.totalPending.eq(toBN('0'))).to.be.true;
     })
 
     it('users do not have shares yet', async () => {
@@ -239,13 +227,13 @@ describe('Vault User transaction integration test ', async () => {
 
     before('users should be able to deposit to vault', async () => {
       await susd.connect(randomUser1).approve(managersVault.address, lyraConstants.MAX_UINT);
-      await managersVault.connect(randomUser1).deposit(toBN('50000'));
+      await managersVault.connect(randomUser1).deposit(toBN('100000'));
 
       await susd.connect(randomUser2).approve(managersVault.address, lyraConstants.MAX_UINT);
-      await managersVault.connect(randomUser2).deposit(toBN('70000'));
+      await managersVault.connect(randomUser2).deposit(toBN('100000'));
 
       const state = await managersVault.vaultState();
-      expect(state.totalPending.eq(toBN('140000'))).to.be.true;
+      expect(state.totalPending.eq(toBN('200000'))).to.be.true;
     })
 
     before('start round', async () => {
@@ -257,35 +245,28 @@ describe('Vault User transaction integration test ', async () => {
 
     it('users do have shares in vault', async () => {
       const [, heldByVault] = await managersVault.connect(randomUser2).shareBalances(randomUser2.address);
-      expect(heldByVault.eq(toBN('90000'))).to.be.true;
+      expect(heldByVault.eq(toBN('100000'))).to.be.true;
     });
 
     it('user can request withdrawal during round', async () => {
       const randomUser2BalanceBefore = await susd.balanceOf(randomUser2.address);
-      console.log({ randomUser2BalanceBefore })
 
-      await managersVault.connect(randomUser2).initiateWithdraw(toBN('90000'));
+      await managersVault.connect(randomUser2).initiateWithdraw(toBN('100000'));
       const state = await managersVault.vaultState();
-      expect(state.queuedWithdrawShares.eq(toBN('90000'))).to.be.true;
+      expect(state.queuedWithdrawShares.eq(toBN('100000'))).to.be.true;
     });
 
     it('users can complete withdrawal during next round', async () => {
       await managersVault.connect(manager).closeRound();
       await lyraEvm.fastForward(60000);
       await managersVault.connect(manager).startNextRound();
-      const state1 = await managersVault.vaultState();
-      console.log({ state1 })
-      const managersBalance = await susd.balanceOf(managersVault.address);
-      console.log({ managersBalance })
-
-      const randomUser2Balance = await susd.balanceOf(randomUser2.address);
-      console.log({ randomUser2Balance })
-
       await managersVault.connect(randomUser2).completeWithdraw();
       const state = await managersVault.vaultState();
       expect(state.queuedWithdrawShares.eq(toBN('0'))).to.be.true;
-      expect(state.lockedAmount.eq(toBN('50000'))).to.be.true;
+      expect(state.lockedAmount.eq(toBN('100000'))).to.be.true;
     })
+
+    // error when over cap
 
   })
 

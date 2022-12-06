@@ -22,7 +22,7 @@ export const PNLChart = ({ assetType }: { assetType: string }) => {
 
   return (
     <LineChart
-      width={310}
+      width={290}
       height={220}
       data={data}
       margin={{
