@@ -113,10 +113,6 @@ export const useVaultManager = () => {
     } as VaultManagerAction)
   }
 
-  // const selectHedge = (position: VaultTrade) => {}
-
-  // const selectClose = (position: VaultTrade) => {}
-
   return {
     vaultInfo,
     vaultParams,
@@ -130,5 +126,5 @@ export const useVaultManager = () => {
     updateTradeSize,
     toggleToHedge,
     toggleToClose,
-  }
+  } as VaultManagerProviderState
 }
