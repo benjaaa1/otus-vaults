@@ -18,7 +18,7 @@ export const defaultStrategyDetail: StrategyBase.StrategyDetailStruct = {
 export const defaultStrikeStrategyDetailCall: StrategyBase.StrikeStrategyDetailStruct = {
   targetDelta: toBN('0.4'),
   maxDeltaGap: toBN('0.5'), // accept delta from 0.1~0.3
-  minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
+  minVol: toBN('0.78'), // min vol to sell. (also used to calculate min premium for call selling vault)
   maxVol: toBN('1.3'), // max vol to sell.
   maxVolVariance: toBN('0.1'),
   optionType: 3,
@@ -49,12 +49,12 @@ export const vaultInfo: Vault.VaultInformationStruct = {
   managementFee: toBN('0'),
 };
 
-export const spotPrice = toBN('3000');
+export const spotPrice = toBN('1200');
 
 export const boardParameter = {
   expiresIn: lyraConstants.DAY_SEC * 7,
   baseIV: '0.8',
-  strikePrices: ['2500', '2600', '2700', '2800', '2900', '3000', '3100'],
+  strikePrices: ['1000', '1050', '1100', '1150', '1200', '1250', '1300'],
   skews: ['1.3', '1.2', '1.1', '1', '1.1', '1.3', '1.3'],
 };
 

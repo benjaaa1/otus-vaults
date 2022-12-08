@@ -25,7 +25,7 @@ import { Vault } from '../../../typechain-types/OtusVault';
 import { boardParameter, defaultStrategyDetail, defaultStrikeStrategyDetail, defaultStrikeStrategyDetailCall, initialPoolDeposit, spotPrice, vaultInfo } from '../utils/init';
 import markets from '../../../constants/synthetix/markets.json';
 
-describe('Strategy integration test', async () => {
+describe('Strategy short call user hedge test', async () => {
   // mocked tokens
   let susd: MockERC20;
   let seth: MockERC20;
@@ -293,19 +293,6 @@ describe('Strategy integration test', async () => {
 
     });
 
-    // it('reduce full position if unsafe position + delta is in range', async () => {
-    //   // 13% crash
-    //   await TestSystem.marketActions.mockPrice(lyraTestSystem, toBN('1600'), 'sETH');
-    //   const positionId = await managersStrategy.strikeToPositionId(strikes[2]); // 1100 strike
-    //   const preReduceBal = await susd.balanceOf(managersStrategy.address);
-
-    //   const fullCloseAmount = await managersStrategy.getAllowedCloseAmount(markets.ETH, position, strikes[2], expiry.sub(10)); //account for time passing
-    //   expect(fullCloseAmount).to.be.gt(0);
-    //   await managersVault.connect(randomUser).reducePosition(positionId, fullCloseAmount);
-    //   const postReduceBal = await susd.balanceOf(managersStrategy.address);
-    //   expect(postReduceBal).to.be.lt(preReduceBal);
-    // });
-
     it('should revert closed when positions open', async () => {
 
       await lyraEvm.fastForward(boardParameter.expiresIn);
@@ -330,98 +317,88 @@ describe('Strategy integration test', async () => {
 
     })
 
-    // it('should trade when delta and vol are within range', async () => {
-    //   const strikeObj = await strikeIdToDetail(lyraTestSystem.optionMarket, strikes[2]);
-    //   const [collateralToAdd] = await managersStrategy.connect(manager).getRequiredCollateral(strikeObj);
-
-    //   const vaultStateBefore = await managersVault.connect(manager).vaultState();
-    //   const strategySUSDBalance = await susd.balanceOf(managersStrategy.address);
-    //   console.log({ vaultStateBefore, strategySUSDBalance })
-
-    //   // 3400 is a good strike
-    //   await managersVault.connect(manager).trade(strikeObj.id);
-
-    //   const strategyBalance = await seth.balanceOf(managersStrategy.address);
-    //   const vaultStateAfter = await managersVault.connect(manager).vaultState();
-    //   console.log({ strategyBalance, vaultStateAfter });
-
-    //   const strategySUDCBalanceAfter = await susd.balanceOf(managersStrategy.address);
-    //   console.log({ strategySUDCBalanceAfter, strategySUSDBalance })
-
-    //   // strategy shouldn't hold any seth
-    //   expect(strategyBalance.isZero()).to.be.true;
-    //   // check state.lockAmount left is updated
-    //   expect(vaultStateBefore.lockedAmountLeft.sub(vaultStateAfter.lockedAmountLeft).eq(collateralToAdd)).to.be.true;
-    //   // check that we receive sUSD
-    //   expect(strategySUDCBalanceAfter.sub(strategySUSDBalance).gt(0)).to.be.true;
-
-    //   // active strike is updated
-    //   const storedStrikeId = await managersStrategy.activeStrikeIds(0);
-    //   expect(storedStrikeId.eq(strikeObj.id)).to.be.true;
-
-    //   // check that position size is correct
-    //   const positionId = await managersStrategy.strikeToPositionId(storedStrikeId);
-    //   const [position] = await lyraTestSystem.optionToken.getOptionPositions([positionId]);
-
-    //   expect(position.amount.eq(defaultStrategyDetail.size)).to.be.true;
-    //   expect(position.collateral.eq(collateralToAdd)).to.be.true;
-    // });
-
-    // it('should revert when user try to trigger another trade during cooldown', async () => {
-    //   await expect(managersVault.connect(manager).trade(strikes[2])).to.be.revertedWith('min time interval not passed');
-    // });
-
-    // it('should be able to trade a higher strike if spot price goes up', async () => {
-    //   await TestSystem.marketActions.mockPrice(lyraTestSystem, toBN('3200'), 'sETH');
-
-    //   // triger with new strike (3550)
-    //   await managersVault.connect(manager).trade(strikes[4]);
-
-    //   // check that active strikes are updated
-    //   const storedStrikeId = await managersStrategy.activeStrikeIds(1);
-    //   expect(storedStrikeId.eq(strikes[4])).to.be.true;
-    //   const positionId = await managersStrategy.strikeToPositionId(storedStrikeId);
-    //   const [position] = await lyraTestSystem.optionToken.getOptionPositions([positionId]);
-
-    //   expect(position.amount.eq(defaultStrategyDetail.size)).to.be.true;
-    // });
-
-    // it('should revert when trying to trade the old strike', async () => {
-    //   await lyraEvm.fastForward(600);
-    //   await expect(managersVault.connect(manager).trade(strikes[3])).to.be.revertedWith('invalid strike');
-    // });
-
-    // const additionalDepositAmount = toBN('25000');
-    // it('can add more deposit during the round', async () => {
-    //   await managersVault.connect(randomUser).deposit(additionalDepositAmount);
-    //   const state = await managersVault.vaultState();
-    //   expect(state.totalPending.eq(additionalDepositAmount)).to.be.true;
-    //   const receipt = await managersVault.depositReceipts(randomUser.address);
-    //   expect(receipt.amount.eq(additionalDepositAmount)).to.be.true;
-    // });
-
-    // it('fastforward to the expiry', async () => {
-    //   await lyraEvm.fastForward(boardParameter.expiresIn);
-    // });
-
-    // it('should revert when closeRound is called before options are settled', async () => {
-    //   await expect(managersVault.closeRound()).to.be.revertedWith('cannot clear active position');
-    // });
-
-    // it('should be able to close closeRound after settlement', async () => {
-    //   await lyraTestSystem.optionMarket.settleExpiredBoard(boardId);
-
-    //   // settle all positions, from 1 to highest position
-    //   const totalPositions = (await lyraTestSystem.optionToken.nextId()).sub(1).toNumber();
-    //   const idsToSettle = Array.from({ length: totalPositions }, (_, i) => i + 1); // create array of [1... totalPositions]
-    //   await lyraTestSystem.shortCollateral.settleOptions(idsToSettle);
-    //   await managersVault.closeRound();
-
-    //   // initiate withdraw for later test
-    //   await managersVault.connect(randomUser2).initiateWithdraw(toBN('50'));
-    // });
-
   });
+
+  describe('start round 2 with user hedge', async () => {
+    let strikes: BigNumber[] = [];
+
+    let position: any;
+    let strikePrice: BigNumber;
+    let positionId: BigNumber;
+    let expiry: BigNumber;
+    let snapshot: number;
+    let strategySUSDBalanceBefore: BigNumber;
+
+    before('set strikes array', async () => {
+      strikes = await lyraTestSystem.optionMarket.getBoardStrikes(boardId);
+    });
+
+    before('prepare before new round start', async () => {
+      // set price back to initial spot price
+      await TestSystem.marketActions.mockPrice(lyraTestSystem, spotPrice, 'sETH');
+    });
+
+    before('create new board', async () => {
+      await TestSystem.marketActions.createBoard(lyraTestSystem, boardParameter);
+      const boards = await lyraTestSystem.optionMarket.getLiveBoards();
+      boardId = boards[0];
+    });
+
+    it('update the hedge type', async () => {
+      await managersStrategy.connect(manager).setHedgeStrategyType(1);
+      const hedgeType = await managersStrategy.hedgeType();
+      console.log({ hedgeType })
+      expect(hedgeType).to.be.eq(1);
+    })
+
+    it('start the next round', async () => {
+      await lyraEvm.fastForward(lyraConstants.DAY_SEC);
+      await managersVault.connect(manager).startNextRound();
+    });
+
+    // beforeEach(async () => {
+
+    //   snapshot = await lyraEvm.takeSnapshot();
+
+    //   strategySUSDBalanceBefore = await susd.balanceOf(managersStrategy.address);
+
+    //   const strikeStrategy1st: StrategyBase.StrikeTradeStruct = {
+    //     market: markets.ETH,
+    //     optionType: defaultStrikeStrategyDetailCall.optionType,
+    //     strikeId: strikes[2],
+    //     size: toBN('7'),
+    //     positionId: toBN('0'),
+    //     strikePrice: toBN('0'),
+    //   };
+
+    //   await managersVault.connect(manager).trade([strikeStrategy1st]);
+    //   const activeStrikeTrades1 = await managersStrategy.activeStrikeTrades(0);
+    //   console.log({ activeStrikeTrades1 })
+    //   expect(activeStrikeTrades1.positionId).to.be.eq(1);
+
+    //   // await managersVault.connect(manager).trade(strikes[2]);
+
+    //   // [strikePrice, expiry] = await lyraTestSystem.optionMarket.getStrikeAndExpiry(strikes[2]);
+    //   // positionId = await managersStrategy.strikeToPositionId(strikes[2]);
+    //   // position = (await lyraTestSystem.optionToken.getOptionPositions([positionId]))[0];
+    // });
+
+    // afterEach(async () => {
+    //   await lyraEvm.restoreSnapshot(snapshot);
+    // });
+
+    it('should recieve premium', async () => {
+      const strategySUDCBalanceAfter = await susd.balanceOf(managersStrategy.address);
+      console.log({ strategySUSDBalanceBefore, strategySUDCBalanceAfter })
+      expect(strategySUDCBalanceAfter.sub(strategySUSDBalanceBefore).gt(0)).to.be.true;
+    });
+
+    it('should open a hedge position when option is out of delta threshold', async () => {
+      const sizeCalculated = toBN('1');
+      await managersVault.connect(manager).userHedge(markets.ETH, sizeCalculated);
+    });
+
+  })
 
   // describe('start round 2', async () => {
   //   let strikes: BigNumber[] = [];

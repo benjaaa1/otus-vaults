@@ -219,15 +219,6 @@ contract StrategyBase is LyraAdapter {
     int delta = _isCall(currentStrikeStrategy.optionType) ? callDelta : callDelta - SignedDecimalMath.UNIT;
     uint deltaGap = _abs(currentStrikeStrategy.targetDelta - delta);
 
-    console.log("currentStrikeStrategy.targetDelta");
-    console.log(uint(currentStrikeStrategy.targetDelta));
-
-    console.log("delta");
-    console.log(uint(delta));
-
-    console.log("deltaGap");
-    console.log(deltaGap);
-
     return
       vol >= currentStrikeStrategy.minVol &&
       vol <= currentStrikeStrategy.maxVol &&

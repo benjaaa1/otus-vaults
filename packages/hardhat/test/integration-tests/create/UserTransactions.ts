@@ -260,10 +260,13 @@ describe('Vault User transaction integration test ', async () => {
       await managersVault.connect(manager).closeRound();
       await lyraEvm.fastForward(60000);
       await managersVault.connect(manager).startNextRound();
+      const state1 = await managersVault.vaultState();
+      console.log({ queuedWithdrawShares: state1.queuedWithdrawShares })
+
       await managersVault.connect(randomUser2).completeWithdraw();
-      const state = await managersVault.vaultState();
-      expect(state.queuedWithdrawShares.eq(toBN('0'))).to.be.true;
-      expect(state.lockedAmount.eq(toBN('100000'))).to.be.true;
+      const state2 = await managersVault.vaultState();
+      expect(state2.queuedWithdrawShares.eq(toBN('0'))).to.be.true;
+      expect(state2.lockedAmount.eq(toBN('100000'))).to.be.true;
     })
 
     // error when over cap

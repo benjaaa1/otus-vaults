@@ -1,9 +1,6 @@
 //SPDX-License-Identifier:ISC
 pragma solidity 0.8.9;
 
-// Hardhat
-import "hardhat/console.sol";
-
 // Libraries
 import {BlackScholes} from "@lyrafinance/protocol/contracts/libraries/BlackScholes.sol";
 import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
@@ -146,9 +143,6 @@ contract LyraAdapter is OwnableUpgradeable {
   function openPosition(bytes32 market, TradeInputParameters memory params) internal returns (TradeResult memory) {
     address optionMarket = lyraOptionMarkets[market];
     IOptionMarket.TradeInputParameters memory convertedParams = _convertParams(params);
-    console.log("attempt to open position");
-    console.log(optionMarket);
-
     IOptionMarket.Result memory result = IOptionMarket(optionMarket).openPosition(convertedParams);
 
     return TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});

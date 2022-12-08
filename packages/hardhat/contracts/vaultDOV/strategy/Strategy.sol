@@ -2,6 +2,8 @@
 pragma solidity >=0.8.4;
 pragma experimental ABIEncoderV2;
 
+import "hardhat/console.sol";
+
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -228,8 +230,10 @@ contract Strategy is StrategyBase {
     }
 
     uint quoteBal = quoteAsset.balanceOf(address(this));
-
+    console.log("quoteBal");
+    console.log(quoteBal);
     require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
+    console.log("transferred");
 
     _clearAllActiveStrikes();
   }
@@ -460,7 +464,7 @@ contract Strategy is StrategyBase {
    * @param hedgeFunds funds to transfer
    * @dev refactor this to move away from futuresadapter
    */
-  function transferToFuturesMarket(bytes32 market, int hedgeFunds) public {
+  function _transferToFuturesMarket(bytes32 market, int hedgeFunds) internal {
     address futuresMarket = futuresMarketsByKey[market];
     IFuturesMarket(futuresMarket).transferMargin(hedgeFunds);
   }
@@ -512,6 +516,9 @@ contract Strategy is StrategyBase {
   function _userHedge(bytes32 market, int size) external onlyVault {
     require(hedgeType == HEDGETYPE.USER_HEDGE, "Not allowed");
     address futuresMarket = futuresMarketsByKey[market];
+    // check if there is enough roundhedgefunds left over
+
+    // _transferToFuturesMarket(market, int(roundHedgeFunds));
 
     (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
     require(marginRemaining > 0, "Remaining margin is 0");

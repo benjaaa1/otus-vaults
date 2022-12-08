@@ -329,7 +329,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     _burn(address(this), withdrawalShares);
 
     require(withdrawAmount > 0, "!withdrawAmount");
-
+    console.log("withdrawAmount");
+    console.log(withdrawAmount);
     _transferAsset(msg.sender, withdrawAmount);
   }
 
@@ -485,6 +486,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    */
   function _transferAsset(address recipient, uint amount) internal {
     address asset = vaultParams.asset;
+    uint balance = IERC20(asset).balanceOf(address(this));
+    console.log(balance);
     IERC20(asset).safeTransfer(recipient, amount);
   }
 
