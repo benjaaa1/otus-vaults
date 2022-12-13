@@ -193,6 +193,10 @@ contract Strategy is StrategyBase {
 
     if (_isLong(currentStrikeStrategy.optionType)) {
       uint maxPremium = _getPremiumLimit(lyraBase, strike, false, _strike);
+
+      // check if over limit of trade funds with hedge
+      _trasferFromVault(maxPremium);
+
       (positionId, premium) = _buyStrike(_strike.market, strike, _strike.size, _strike.optionType, maxPremium);
       capitalUsed = maxPremium;
     } else {
@@ -202,6 +206,10 @@ contract Strategy is StrategyBase {
         _strike.size,
         _strike.optionType
       );
+
+      // check if over limit of trade funds with hedge
+      _trasferFromVault(collateralToAdd);
+
       uint minExpectedPremium = _getPremiumLimit(lyraBase, strike, true, _strike);
       (positionId, premium) = _sellStrike(
         _strike.market,
@@ -216,6 +224,10 @@ contract Strategy is StrategyBase {
 
     _strike.positionId = positionId;
     _addActiveStrike(_strike, positionId, _strike.optionType);
+  }
+
+  function _trasferFromVault(uint amount) internal onlyVault {
+    require(quoteAsset.transferFrom(address(vault), address(this), amount), "collateral transfer from vault failed");
   }
 
   /**
@@ -465,6 +477,7 @@ contract Strategy is StrategyBase {
    * @dev refactor this to move away from futuresadapter
    */
   function _transferToFuturesMarket(bytes32 market, int hedgeFunds) internal {
+    // transfer from vault to strategy
     address futuresMarket = futuresMarketsByKey[market];
     IFuturesMarket(futuresMarket).transferMargin(hedgeFunds);
   }
@@ -515,10 +528,15 @@ contract Strategy is StrategyBase {
    */
   function _userHedge(bytes32 market, int size) external onlyVault {
     require(hedgeType == HEDGETYPE.USER_HEDGE, "Not allowed");
+    address lyraBase = lyraBases[market];
     address futuresMarket = futuresMarketsByKey[market];
     // check if there is enough roundhedgefunds left over
 
-    // _transferToFuturesMarket(market, int(roundHedgeFunds));
+    uint spotPrice = ILyraBase(lyraBase).getSpotPriceForMarket();
+    uint fundsRequiredSUSD = _abs(size).multiplyDecimal(spotPrice);
+
+    _trasferFromVault(fundsRequiredSUSD);
+    _transferToFuturesMarket(market, int(fundsRequiredSUSD));
 
     (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
     require(marginRemaining > 0, "Remaining margin is 0");

@@ -356,36 +356,32 @@ describe('Strategy short call user hedge test', async () => {
       await managersVault.connect(manager).startNextRound();
     });
 
-    // beforeEach(async () => {
+    it('should be able to make a trade', async () => {
 
-    //   snapshot = await lyraEvm.takeSnapshot();
+      snapshot = await lyraEvm.takeSnapshot();
 
-    //   strategySUSDBalanceBefore = await susd.balanceOf(managersStrategy.address);
+      strategySUSDBalanceBefore = await susd.balanceOf(managersStrategy.address);
 
-    //   const strikeStrategy1st: StrategyBase.StrikeTradeStruct = {
-    //     market: markets.ETH,
-    //     optionType: defaultStrikeStrategyDetailCall.optionType,
-    //     strikeId: strikes[2],
-    //     size: toBN('7'),
-    //     positionId: toBN('0'),
-    //     strikePrice: toBN('0'),
-    //   };
+      const strikeStrategy1st: StrategyBase.StrikeTradeStruct = {
+        market: markets.ETH,
+        optionType: defaultStrikeStrategyDetailCall.optionType,
+        strikeId: strikes[2],
+        size: toBN('7'),
+        positionId: toBN('0'),
+        strikePrice: toBN('0'),
+      };
 
-    //   await managersVault.connect(manager).trade([strikeStrategy1st]);
-    //   const activeStrikeTrades1 = await managersStrategy.activeStrikeTrades(0);
-    //   console.log({ activeStrikeTrades1 })
-    //   expect(activeStrikeTrades1.positionId).to.be.eq(1);
+      await managersVault.connect(manager).trade([strikeStrategy1st]);
+      const activeStrikeTrades1 = await managersStrategy.activeStrikeTrades(0);
+      console.log({ activeStrikeTrades1 })
+      expect(activeStrikeTrades1.positionId).to.be.eq(1);
+    })
 
-    //   // await managersVault.connect(manager).trade(strikes[2]);
+    // await managersVault.connect(manager).trade(strikes[2]);
 
-    //   // [strikePrice, expiry] = await lyraTestSystem.optionMarket.getStrikeAndExpiry(strikes[2]);
-    //   // positionId = await managersStrategy.strikeToPositionId(strikes[2]);
-    //   // position = (await lyraTestSystem.optionToken.getOptionPositions([positionId]))[0];
-    // });
-
-    // afterEach(async () => {
-    //   await lyraEvm.restoreSnapshot(snapshot);
-    // });
+    // [strikePrice, expiry] = await lyraTestSystem.optionMarket.getStrikeAndExpiry(strikes[2]);
+    // positionId = await managersStrategy.strikeToPositionId(strikes[2]);
+    // position = (await lyraTestSystem.optionToken.getOptionPositions([positionId]))[0];
 
     it('should recieve premium', async () => {
       const strategySUDCBalanceAfter = await susd.balanceOf(managersStrategy.address);
