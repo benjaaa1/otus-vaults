@@ -347,11 +347,7 @@ contract LyraBase {
       );
   }
 
-  function getMinCollateralForStrike(
-    OptionType optionType,
-    uint strikeId,
-    uint amount
-  ) internal view returns (uint) {
+  function getMinCollateralForStrike(OptionType optionType, uint strikeId, uint amount) internal view returns (uint) {
     if (_isLong(optionType)) return 0;
 
     uint strikePrice;
@@ -376,6 +372,10 @@ contract LyraBase {
     (OptionMarket.Strike memory strike, OptionMarket.OptionBoard memory board) = optionMarket.getStrikeAndBoard(
       strikeId
     );
+    console.log("board.expiry");
+    console.log(board.expiry);
+    console.log("block.timestamp");
+    console.log(block.timestamp);
     bsInput = BlackScholes.BlackScholesInputs({
       timeToExpirySec: board.expiry - block.timestamp,
       volatilityDecimal: board.iv.multiplyDecimal(strike.skew),

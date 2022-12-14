@@ -53,7 +53,7 @@ const ethMarketKey = '0x73455448000000000000000000000000000000000000000000000000
 const buildTrades = async (strikes, deployer, strategyInstance) => {
   // const strike = strikes[0];
   // console.log({ strikeData: strike.__strikeData, board: strike.__board })
-  // const test = await strategyInstance.connect(deployer).isValidStrike(19, 4);
+  // const test = await strategyInstance.connect(deployer)._isValidStrike(19, 4);
   // console.log({ test });
 
   // const validStrikes = await Promise.all(strikes.map(async strike => {
@@ -68,7 +68,7 @@ const buildTrades = async (strikes, deployer, strategyInstance) => {
   //   }
   //   console.log({ id, skew, iv, strikePrice })
 
-  //   const rates = await strategyInstance.connect(deployer).isValidStrikeById(id, 4);
+  //   const rates = await strategyInstance.connect(deployer)._isValidStrike(id, 4);
   //   console.log({ rates })
 
   //   const currentStrikeStrategy = await strategyInstance.currentStrikeStrategies(4);

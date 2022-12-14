@@ -155,6 +155,8 @@ contract StrategyBase is LyraAdapter {
     if (!_isActiveStrike(strike.strikeId, optionType)) {
       positionIdByStrikeOption[keccak256(abi.encode(strike.strikeId, optionType))] = tradedPositionId;
       activeStrikeByPositionId[tradedPositionId] = strike;
+      console.log("_addActiveStrike");
+      console.log(tradedPositionId);
       activeStrikeTrades.push(strike);
     }
   }
@@ -206,7 +208,7 @@ contract StrategyBase is LyraAdapter {
    * @dev verify if the strike is valid for the strategy
    * @return isValid true if vol is withint [minVol, maxVol] and delta is within targetDelta +- maxDeltaGap
    */
-  function isValidStrike(
+  function _isValidStrike(
     address lyraBase,
     ILyraBase.Strike memory strike,
     uint optionType

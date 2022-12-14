@@ -327,11 +327,6 @@ describe('Strategy short call user hedge test', async () => {
     let positionId: BigNumber;
     let expiry: BigNumber;
     let snapshot: number;
-    let strategySUSDBalanceBefore: BigNumber;
-
-    before('set strikes array', async () => {
-      strikes = await lyraTestSystem.optionMarket.getBoardStrikes(boardId);
-    });
 
     before('prepare before new round start', async () => {
       // set price back to initial spot price
@@ -341,7 +336,13 @@ describe('Strategy short call user hedge test', async () => {
     before('create new board', async () => {
       await TestSystem.marketActions.createBoard(lyraTestSystem, boardParameter);
       const boards = await lyraTestSystem.optionMarket.getLiveBoards();
+      console.log({ boards })
+
       boardId = boards[0];
+    });
+
+    before('set strikes array', async () => {
+      strikes = await lyraTestSystem.optionMarket.getBoardStrikes(boardId);
     });
 
     it('update the hedge type', async () => {
@@ -353,6 +354,7 @@ describe('Strategy short call user hedge test', async () => {
 
     it('start the next round', async () => {
       await lyraEvm.fastForward(lyraConstants.DAY_SEC);
+
       await managersVault.connect(manager).startNextRound();
     });
 
@@ -360,8 +362,8 @@ describe('Strategy short call user hedge test', async () => {
 
       snapshot = await lyraEvm.takeSnapshot();
 
-      strategySUSDBalanceBefore = await susd.balanceOf(managersStrategy.address);
-
+      let vaultSUSDBalanceBefore = await susd.balanceOf(managersVault.address);
+      console.log({ vaultSUSDBalanceBefore })
       const strikeStrategy1st: StrategyBase.StrikeTradeStruct = {
         market: markets.ETH,
         optionType: defaultStrikeStrategyDetailCall.optionType,
@@ -374,6 +376,7 @@ describe('Strategy short call user hedge test', async () => {
       await managersVault.connect(manager).trade([strikeStrategy1st]);
       const activeStrikeTrades1 = await managersStrategy.activeStrikeTrades(0);
       console.log({ activeStrikeTrades1 })
+      // position id's are not cleared cuurrently -bug 
       expect(activeStrikeTrades1.positionId).to.be.eq(1);
     })
 
@@ -383,15 +386,16 @@ describe('Strategy short call user hedge test', async () => {
     // positionId = await managersStrategy.strikeToPositionId(strikes[2]);
     // position = (await lyraTestSystem.optionToken.getOptionPositions([positionId]))[0];
 
-    it('should recieve premium', async () => {
-      const strategySUDCBalanceAfter = await susd.balanceOf(managersStrategy.address);
-      console.log({ strategySUSDBalanceBefore, strategySUDCBalanceAfter })
-      expect(strategySUDCBalanceAfter.sub(strategySUSDBalanceBefore).gt(0)).to.be.true;
-    });
+    // it('should recieve premium', async () => {
+    //   const strategySUDCBalanceAfter = await susd.balanceOf(managersStrategy.address);
+    //   console.log({ strategySUSDBalanceBefore, strategySUDCBalanceAfter })
+    //   expect(strategySUDCBalanceAfter.sub(strategySUSDBalanceBefore).gt(0)).to.be.true;
+    // });
 
     it('should open a hedge position when option is out of delta threshold', async () => {
-      const sizeCalculated = toBN('1');
-      await managersVault.connect(manager).userHedge(markets.ETH, sizeCalculated);
+      const _checkNetDelta = await managersStrategy._checkNetDelta(markets.ETH);
+      console.log({ _checkNetDelta })
+      await managersVault.connect(manager).userHedge(markets.ETH, _checkNetDelta);
     });
 
   })

@@ -159,10 +159,6 @@ contract Strategy is StrategyBase {
     emit StrikeStrategyUpdated(vault, _currentStrikeStrategies);
   }
 
-  function getVaultStrategy() public view returns (StrategyDetail memory _strategyDetail) {
-    return currentStrategy;
-  }
-
   ///////////////////
   // VAULT ACTIONS //
   ///////////////////
@@ -187,9 +183,9 @@ contract Strategy is StrategyBase {
     // check if valid market for trade here cuz it's part of strategy
     ILyraBase.Strike memory strike = ILyraBase(lyraBase).getStrikes(_toDynamic(_strike.strikeId))[0];
 
-    require(isValidStrike(lyraBase, strike, _strike.optionType), "invalid strike");
+    require(_isValidStrike(lyraBase, strike, _strike.optionType), "invalid strike");
 
-    expiry = strike.expiry;
+    require(_isValidExpiry(strike.expiry), "not valid expiry");
 
     if (_isLong(currentStrikeStrategy.optionType)) {
       uint maxPremium = _getPremiumLimit(lyraBase, strike, false, _strike);
@@ -535,6 +531,12 @@ contract Strategy is StrategyBase {
     uint spotPrice = ILyraBase(lyraBase).getSpotPriceForMarket();
     uint fundsRequiredSUSD = _abs(size).multiplyDecimal(spotPrice);
 
+    console.log("spotPrice");
+    console.log(spotPrice);
+
+    console.log("fundsRequiredSUSD");
+    console.log(fundsRequiredSUSD);
+
     _trasferFromVault(fundsRequiredSUSD);
     _transferToFuturesMarket(market, int(fundsRequiredSUSD));
 
@@ -587,9 +589,12 @@ contract Strategy is StrategyBase {
 
     uint[] memory positionIds = new uint[](_len);
     StrikeTrade memory strike;
+    console.log("positionId len");
+    console.log(_len);
 
     for (uint i = 0; i < _len; i++) {
       strike = activeStrikeTrades[i];
+
       positionIds[i] = strike.positionId;
     }
 

@@ -217,9 +217,6 @@ contract OtusVault is BaseVault {
 
     ActiveTrade[] memory activeTrades = new ActiveTrade[](len);
 
-    // uint quoteBal = collateralAsset.balanceOf(address(this));
-    // require(collateralAsset.transfer(address(strategy), quoteBal), "collateral transfer to strategy failed");
-
     for (uint i = 0; i < len; i++) {
       StrategyBase.StrikeTrade memory _trade = _strikes[i];
       (positionId, premium, capitalUsed, expiry) = IStrategy(strategy).doTrade(_trade);
