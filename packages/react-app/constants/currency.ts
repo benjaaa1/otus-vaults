@@ -79,7 +79,7 @@ export const CURRENCY_BY_ADDRESS: CurrencyAddress = {
   420: {
     '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8': 'sETH',
   },
-  1337: {
+  31337: {
     '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8': 'sETH',
   },
 }
@@ -91,7 +91,7 @@ export const CURRENCIES: Currency = {
   420: {
     'ETH': '0x42688EcDA9Dd35cbB44C90Ad53734EE0f30d0E57' // susd
   },
-  1337: {
+  31337: {
     'ETH': '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
   }
 }

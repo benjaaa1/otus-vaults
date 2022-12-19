@@ -3,13 +3,13 @@ const INFURA_ID = process.env.INFURA_ID;
 export enum OptimismChainId {
   OptimismMainnet = 10,
   OptimismGoerli = 420,
-  Local = 1337, // Optimism
+  Local = 31337, // Optimism
 }
 
 export enum EthereumChainId {
   Mainnet = 1,
   Kovan = 42,
-  Local = 1337,
+  Local = 31337,
 }
 
 export type ChainId = EthereumChainId | OptimismChainId
