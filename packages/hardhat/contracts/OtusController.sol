@@ -1,7 +1,6 @@
 //SPDX-License-Identifier:ISC
 pragma solidity 0.8.9;
 
-// Hardhat
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -30,31 +29,33 @@ import {Vault} from "./libraries/Vault.sol";
  * @dev - Stores created vaults and strategies with owners
  */
 contract OtusController is Ownable {
-  IFuturesMarketManager public immutable futuresMarketManager;
+  ///////////////
+  // Variables //
+  ///////////////
+
+  // markets supported by otus
+  bytes32[] public markets;
+
+  // otus deploys a lyrabase contract for each market (bytes32 is name of market)
+  mapping(bytes32 => address) public lyraBases;
+
+  // key is market name maps to futures markets synthetix contracts
+  mapping(bytes32 => address) public futuresMarketsByKey;
+
+  // set at deploy to include all available lyra option markets in chain
+  mapping(bytes32 => address) public lyraOptionMarkets;
+
+  // address of keeper
   address public keeper;
 
+  // factory
   address public otusCloneFactory;
 
-  mapping(bytes32 => address) optionMarkets;
-  mapping(bytes32 => address) lyraAdapters;
-  bytes32[] public lyraAdapterKeys;
-  address[] public lyraAdapterValues;
-  address[] public lyraOptionMarkets;
-
-  mapping(address => address[]) public marketAddress;
-  mapping(address => address) public futuresMarketByAsset;
-  address[] public futuresMarkets;
-
+  // mapping of manager to vaults
   mapping(address => address[]) public vaults;
 
+  // mapping of vault to its strategy
   mapping(address => address) public strategies;
-
-  mapping(address => address) public vaultBridge;
-
-  mapping(address => bool) public vaultsStatus;
-  address[] public vaultsList;
-
-  uint internal nextVaultId = 1;
 
   /************************************************
    *  EVENTS
@@ -76,12 +77,33 @@ contract OtusController is Ownable {
 
   /**
    * @notice Assign lyra registry and snx market managers
-   * @param _futuresMarketManager Synthetix futures market manager address
    * @param _keeper keeper address
+   * @param _markets bytes32 of market names (eth btc)
+   * @param _lyraBases address of lyrabase (eth btc)
+   * @param _optionMarkets addresses of lyra option market contracts
+   * @param _futuresMarkets futures markets synthetix
    */
-  constructor(address _futuresMarketManager, address _keeper) Ownable() {
-    futuresMarketManager = IFuturesMarketManager(_futuresMarketManager);
+  constructor(
+    address _keeper,
+    bytes32[] memory _markets,
+    address[] memory _lyraBases,
+    address[] memory _optionMarkets,
+    address[] memory _futuresMarkets
+  ) Ownable() {
     keeper = _keeper;
+    markets = _markets;
+    uint len = _markets.length;
+    for (uint i = 0; i < len; i++) {
+      bytes32 key = _markets[i];
+
+      address lyraBase = _lyraBases[i];
+      address optionMarkets = _optionMarkets[i];
+      address futuresMarket = _futuresMarkets[i];
+
+      lyraBases[key] = lyraBase;
+      futuresMarketsByKey[key] = futuresMarket;
+      lyraOptionMarkets[key] = optionMarkets;
+    }
   }
 
   /**
@@ -132,18 +154,7 @@ contract OtusController is Ownable {
     );
 
     // initialize strategy
-    IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(
-      lyraAdapterKeys,
-      lyraAdapterValues,
-      lyraOptionMarkets,
-      futuresMarkets,
-      msg.sender,
-      vault,
-      strategy,
-      currentStrategy
-    );
-
-    _addVault(vault);
+    IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(msg.sender, vault, strategy, currentStrategy);
 
     emit VaultCreated(msg.sender, vault, strategy, _vaultInfo, _vaultParams);
   }
@@ -154,49 +165,6 @@ contract OtusController is Ownable {
    */
   function setKeeper(address _keeper) external onlyOwner {
     keeper = _keeper;
-  }
-
-  /**
-   * @notice Set futures markets
-   * @param _baseAsset address of futures market contract
-   * @param _synth asset name in bytes32
-   */
-  function setFuturesMarkets(address _baseAsset, bytes32 _synth) external {
-    address futuresMarket = futuresMarketManager.marketForKey(_synth);
-    futuresMarketByAsset[_baseAsset] = futuresMarket;
-    futuresMarkets.push(futuresMarket);
-  }
-
-  /**
-   * @notice Get futures market by synth name
-   * @param _synth asset name in bytes32
-   * @return futuresMarket
-   */
-  function getFuturesMarket(bytes32 _synth) public view returns (address futuresMarket) {
-    futuresMarket = futuresMarketManager.marketForKey(_synth);
-  }
-
-  /**
-   * @notice Get futures market by base address
-   * @param _baseAsset address of base
-   * @return futuresMarket
-   */
-  function getFuturesMarketByBaseAsset(address _baseAsset) public view returns (address futuresMarket) {
-    futuresMarket = futuresMarketByAsset[_baseAsset];
-  }
-
-  /**
-   * @notice Set lyra adapter addresses by market bytes32
-   * @param _lyraAdapter address of lyradapter for market
-   * @param _market bytes32 of market "sETH" / "sBTC"
-   * @dev call this after deploy lyra adapter contracts // refactor this method
-   */
-  function setLyraAdapter(address _lyraAdapter, address _optionMarket, bytes32 _market) public onlyOwner {
-    lyraAdapters[_market] = _lyraAdapter;
-    optionMarkets[_market] = _optionMarket;
-    lyraOptionMarkets.push(_optionMarket);
-    lyraAdapterValues.push(_lyraAdapter);
-    lyraAdapterKeys.push(_market);
   }
 
   /**
@@ -223,27 +191,29 @@ contract OtusController is Ownable {
     }
   }
 
-  function _addVault(address _otusVault) public {
-    vaultsList.push(_otusVault);
-    vaultsStatus[_otusVault] = true;
-  }
-
-  function _setVaultStatus(address _otusVault, bool status) public {
-    vaultsStatus[_otusVault] = status;
-  }
-
-  function getActiveVaults() public view returns (address[] memory) {
-    uint len = vaultsList.length;
-    address[] memory activeVaults = new address[](len);
+  // get set values (option markets lyra base futures markets used by strategies)
+  function _getMarketContracts()
+    public
+    view
+    returns (
+      bytes32[] memory _markets,
+      address[] memory _lyraBases,
+      address[] memory _futuresMarkets,
+      address[] memory _lyraOptionMarkets
+    )
+  {
+    uint len = markets.length;
+    _lyraBases = new address[](len);
+    _futuresMarkets = new address[](len);
+    _lyraOptionMarkets = new address[](len);
 
     for (uint i = 0; i < len; i++) {
-      address _vault = vaultsList[i];
-      bool active = vaultsStatus[_vault];
-      if (active) {
-        activeVaults[i] = _vault;
-      }
-    }
+      bytes32 market = markets[i];
 
-    return activeVaults;
+      _lyraBases[i] = lyraBases[market];
+      _futuresMarkets[i] = futuresMarketsByKey[market];
+      _lyraOptionMarkets[i] = lyraOptionMarkets[market];
+    }
+    _markets = markets;
   }
 }

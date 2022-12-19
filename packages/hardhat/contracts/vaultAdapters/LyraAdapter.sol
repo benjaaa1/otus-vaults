@@ -104,29 +104,16 @@ contract LyraAdapter is OwnableUpgradeable {
   // Variables //
   ///////////////
 
+  // set at deploy to include all available lyra option markets in chain
   mapping(bytes32 => address) public lyraOptionMarkets;
 
   constructor() {}
 
   /**
-   * @notice Assigns optionmarket to key
-   * @param lyraAdapterKeys market keys
-   * @param optionMarkets OptionMarket Address
+   * @notice initialize ownership
+   * @param _owner _owner
    */
-  function lyraInitialize(
-    address _owner,
-    bytes32[] memory lyraAdapterKeys,
-    address[] memory optionMarkets
-  ) internal initializer {
-    uint len = lyraAdapterKeys.length;
-
-    for (uint i = 0; i < len; i++) {
-      bytes32 key = lyraAdapterKeys[i];
-      address optionMarket = optionMarkets[i];
-
-      lyraOptionMarkets[key] = optionMarket;
-    }
-
+  function lyraInitialize(address _owner) internal initializer {
     __Ownable_init();
     transferOwnership(_owner);
   }

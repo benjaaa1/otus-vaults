@@ -1,9 +1,6 @@
 //SPDX-License-Identifier:ISC
 pragma solidity 0.8.9;
 
-// Hardhat
-import "hardhat/console.sol";
-
 // Libraries
 import {BlackScholes} from "@lyrafinance/protocol/contracts/libraries/BlackScholes.sol";
 import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
@@ -372,10 +369,6 @@ contract LyraBase {
     (OptionMarket.Strike memory strike, OptionMarket.OptionBoard memory board) = optionMarket.getStrikeAndBoard(
       strikeId
     );
-    console.log("board.expiry");
-    console.log(board.expiry);
-    console.log("block.timestamp");
-    console.log(block.timestamp);
     bsInput = BlackScholes.BlackScholesInputs({
       timeToExpirySec: board.expiry - block.timestamp,
       volatilityDecimal: board.iv.multiplyDecimal(strike.skew),

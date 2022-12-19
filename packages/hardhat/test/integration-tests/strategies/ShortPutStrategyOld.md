@@ -9,122 +9,122 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 import {
-  OtusController,
-  OtusCloneFactory,
-  OtusVault,
-  Strategy,
-  StrategyBase,
-  MockOptionToken,
-  MockERC20,
-  OtusVault__factory,
-  Strategy__factory,
-  MockFuturesMarketManager,
-  Keeper,
+OtusController,
+OtusCloneFactory,
+OtusVault,
+Strategy,
+StrategyBase,
+MockOptionToken,
+MockERC20,
+OtusVault**factory,
+Strategy**factory,
+MockFuturesMarketManager,
+Keeper,
 } from '../../../typechain-types';
 import { LyraMarket } from '@lyrafinance/protocol/dist/test/utils/package/parseFiles';
 
 const defaultStrategyDetail: StrategyBase.StrategyDetailStruct = {
-  hedgeReserve: toBN('1.5'),
-  collatBuffer: toBN('1.2'),
-  collatPercent: toBN('.35'),
-  minTimeToExpiry: lyraConstants.DAY_SEC,
-  maxTimeToExpiry: lyraConstants.WEEK_SEC * 4,
-  minTradeInterval: 600,
-  gwavPeriod: 600,
-  allowedMarkets: ['0x7345544800000000000000000000000000000000000000000000000000000000'],
+hedgeReserve: toBN('1.5'),
+collatBuffer: toBN('1.2'),
+collatPercent: toBN('.35'),
+minTimeToExpiry: lyraConstants.DAY_SEC,
+maxTimeToExpiry: lyraConstants.WEEK_SEC \* 4,
+minTradeInterval: 600,
+gwavPeriod: 600,
+allowedMarkets: ['0x7345544800000000000000000000000000000000000000000000000000000000'],
 };
 
 const defaultStrikeStrategyDetailCall: StrategyBase.StrikeStrategyDetailStruct = {
-  targetDelta: toBN('0.4'),
-  maxDeltaGap: toBN('0.5'), // accept delta from 0.1~0.3
-  minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
-  maxVol: toBN('1.3'), // max vol to sell.
-  maxVolVariance: toBN('0.1'),
-  optionType: 3,
+targetDelta: toBN('0.4'),
+maxDeltaGap: toBN('0.5'), // accept delta from 0.1~0.3
+minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
+maxVol: toBN('1.3'), // max vol to sell.
+maxVolVariance: toBN('0.1'),
+optionType: 3,
 };
 
 const defaultStrikeStrategyDetail: StrategyBase.StrikeStrategyDetailStruct = {
-  targetDelta: toBN('0.2').mul(-1),
-  maxDeltaGap: toBN('0.1'), // accept delta from 0.1~0.3
-  minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
-  maxVol: toBN('1.3'), // max vol to sell.
-  maxVolVariance: toBN('0.1'),
-  optionType: 4,
+targetDelta: toBN('0.2').mul(-1),
+maxDeltaGap: toBN('0.1'), // accept delta from 0.1~0.3
+minVol: toBN('0.8'), // min vol to sell. (also used to calculate min premium for call selling vault)
+maxVol: toBN('1.3'), // max vol to sell.
+maxVolVariance: toBN('0.1'),
+optionType: 4,
 };
 
 const defaultStaticDeltaHedgeDetail: StrategyBase.StaticDeltaHedgeStrategyStruct = {
-  deltaToHedge: toBN('.5'), // 50% of delta
-  maxLeverageSize: toBN('2'), // 2x
+deltaToHedge: toBN('.5'), // 50% of delta
+maxLeverageSize: toBN('2'), // 2x
 };
 
 const defaultDynamicDeltaHedgeDetail: StrategyBase.DynamicDeltaHedgeStrategyStruct = {
-  deltaToHedge: toBN('1'), // 100%
-  maxHedgeAttempts: toBN('5'),
-  maxLeverageSize: toBN('2'), // 150% ~ 1.5x 200% 2x
-  period: lyraConstants.DAY_SEC, // every period to hedge check
+deltaToHedge: toBN('1'), // 100%
+maxHedgeAttempts: toBN('5'),
+maxLeverageSize: toBN('2'), // 150% ~ 1.5x 200% 2x
+period: lyraConstants.DAY_SEC, // every period to hedge check
 };
 
 describe('Strategy integration test', async () => {
-  // mocked tokens
-  let susd: MockERC20;
-  let seth: MockERC20;
+// mocked tokens
+let susd: MockERC20;
+let seth: MockERC20;
 
-  let lyraTestSystem: TestSystemContractsType;
-  let lyraMarket: LyraMarket;
+let lyraTestSystem: TestSystemContractsType;
+let lyraMarket: LyraMarket;
 
-  // mocked contract for testing
-  let futureMarketManager: MockFuturesMarketManager;
-  let optionToken: MockOptionToken;
+// mocked contract for testing
+let futureMarketManager: MockFuturesMarketManager;
+let optionToken: MockOptionToken;
 
-  // primary contracts
-  let otusController: OtusController;
-  let otusCloneFactory: OtusCloneFactory;
-  let vault: OtusVault;
-  let strategy: Strategy;
-  // cloned contracts owned by manager
-  let managersVault: OtusVault;
-  let managersStrategy: Strategy;
-  let keeper: Keeper;
+// primary contracts
+let otusController: OtusController;
+let otusCloneFactory: OtusCloneFactory;
+let vault: OtusVault;
+let strategy: Strategy;
+// cloned contracts owned by manager
+let managersVault: OtusVault;
+let managersStrategy: Strategy;
+let keeper: Keeper;
 
-  // roles
-  let otusMultiSig: SignerWithAddress;
+// roles
+let otusMultiSig: SignerWithAddress;
 
-  let deployer: SignerWithAddress;
-  let manager: SignerWithAddress; // this is the supervisor
+let deployer: SignerWithAddress;
+let manager: SignerWithAddress; // this is the supervisor
 
-  let randomUser: SignerWithAddress;
-  let randomUser2: SignerWithAddress;
-  let randomUser3: SignerWithAddress;
+let randomUser: SignerWithAddress;
+let randomUser2: SignerWithAddress;
+let randomUser3: SignerWithAddress;
 
-  // testing parameters
-  const spotPrice = toBN('1300');
-  let boardId = BigNumber.from(0);
-  const boardParameter = {
-    expiresIn: lyraConstants.DAY_SEC * 7,
-    baseIV: '0.8',
-    strikePrices: ['2500', '2600', '2700', '2800', '2900', '3000', '3100'],
-    skews: ['1.3', '1.2', '1.1', '1', '1.1', '1.3', '1.3'],
-  };
+// testing parameters
+const spotPrice = toBN('1300');
+let boardId = BigNumber.from(0);
+const boardParameter = {
+expiresIn: lyraConstants.DAY_SEC \* 7,
+baseIV: '0.8',
+strikePrices: ['2500', '2600', '2700', '2800', '2900', '3000', '3100'],
+skews: ['1.3', '1.2', '1.1', '1', '1.1', '1.3', '1.3'],
+};
 
-  const initialPoolDeposit = toBN('1500000'); // 1.5m
+const initialPoolDeposit = toBN('1500000'); // 1.5m
 
-  before('assign roles', async () => {
-    const addresses = await ethers.getSigners();
-    deployer = addresses[0];
-    manager = addresses[1]; // supervisor
-    otusMultiSig = addresses[3];
-    randomUser = addresses[4];
-    randomUser2 = addresses[5];
-    randomUser3 = addresses[6];
-  });
+before('assign roles', async () => {
+const addresses = await ethers.getSigners();
+deployer = addresses[0];
+manager = addresses[1]; // supervisor
+otusMultiSig = addresses[3];
+randomUser = addresses[4];
+randomUser2 = addresses[5];
+randomUser3 = addresses[6];
+});
 
-  before('deploy lyra core', async () => {
-    const pricingParams: PricingParametersStruct = {
-      ...DEFAULT_PRICING_PARAMS,
-      standardSize: toBN('50'),
-      spotPriceFeeCoefficient: toBN('0.001'),
-      vegaFeeCoefficient: toBN('60'),
-    };
+before('deploy lyra core', async () => {
+const pricingParams: PricingParametersStruct = {
+...DEFAULT_PRICING_PARAMS,
+standardSize: toBN('50'),
+spotPriceFeeCoefficient: toBN('0.001'),
+vegaFeeCoefficient: toBN('60'),
+};
 
     lyraTestSystem = await TestSystem.deploy(deployer, false, false, { pricingParams });
     await TestSystem.seed(deployer, lyraTestSystem, {
@@ -148,43 +148,44 @@ describe('Strategy integration test', async () => {
 
     // fast forward do vol gwap can work
     await lyraEvm.fastForward(600);
-  });
 
-  before('deploy Mock Futures Market Manager', async () => {
-    const MockFuturesMarketManagerFactory = await ethers.getContractFactory('MockFuturesMarketManager');
-    futureMarketManager = (await MockFuturesMarketManagerFactory.connect(
-      deployer,
-    ).deploy()) as MockFuturesMarketManager;
-    await futureMarketManager
-      .connect(deployer)
-      .addMarket(
-        '0x7345544800000000000000000000000000000000000000000000000000000000',
-        '0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D',
-      );
-  });
+});
 
-  before('deploy Mock Option - Token', async () => {
-    const MockOptionTokenFactory = await ethers.getContractFactory('MockOptionToken');
-    optionToken = (await MockOptionTokenFactory.connect(deployer).deploy(
-      'Lyra Option Token',
-      'LYRAOT',
-    )) as MockOptionToken;
-    await optionToken
-      .connect(deployer)
-      .init(
-        lyraTestSystem.optionMarket.address,
-        lyraTestSystem.optionGreekCache.address,
-        susd.address,
-        lyraTestSystem.synthetixAdapter.address,
-      );
-  });
+before('deploy Mock Futures Market Manager', async () => {
+const MockFuturesMarketManagerFactory = await ethers.getContractFactory('MockFuturesMarketManager');
+futureMarketManager = (await MockFuturesMarketManagerFactory.connect(
+deployer,
+).deploy()) as MockFuturesMarketManager;
+await futureMarketManager
+.connect(deployer)
+.addMarket(
+'0x7345544800000000000000000000000000000000000000000000000000000000',
+'0x13414675E6E4e74Ef62eAa9AC81926A3C1C7794D',
+);
+});
 
-  before('deploy vault, strategy, and clone factory contracts', async () => {
-    const OtusController = await ethers.getContractFactory('OtusController');
-    otusController = (await OtusController.connect(otusMultiSig).deploy(
-      lyraTestSystem.lyraRegistry.address,
-      futureMarketManager.address, // futuresmarketmanager
-    )) as OtusController;
+before('deploy Mock Option - Token', async () => {
+const MockOptionTokenFactory = await ethers.getContractFactory('MockOptionToken');
+optionToken = (await MockOptionTokenFactory.connect(deployer).deploy(
+'Lyra Option Token',
+'LYRAOT',
+)) as MockOptionToken;
+await optionToken
+.connect(deployer)
+.init(
+lyraTestSystem.optionMarket.address,
+lyraTestSystem.optionGreekCache.address,
+susd.address,
+lyraTestSystem.synthetixAdapter.address,
+);
+});
+
+before('deploy vault, strategy, and clone factory contracts', async () => {
+const OtusController = await ethers.getContractFactory('OtusController');
+otusController = (await OtusController.connect(otusMultiSig).deploy(
+lyraTestSystem.lyraRegistry.address,
+futureMarketManager.address, // futuresmarketmanager
+)) as OtusController;
 
     const Keeper = await ethers.getContractFactory('Keeper');
     keeper = (await Keeper.connect(otusMultiSig).deploy(otusController.address)) as Keeper;
@@ -214,34 +215,35 @@ describe('Strategy integration test', async () => {
 
     await otusController
       .connect(otusMultiSig)
-      .setFuturesMarkets(seth.address, '0x7345544800000000000000000000000000000000000000000000000000000000');
-  });
+      .setFuturesMarkets('0x7345544800000000000000000000000000000000000000000000000000000000');
 
-  before('set lyra market - eth', async () => {
-    lyraMarket = await getMarketDeploys('local', 'sETH');
-    await lyraTestSystem.lyraRegistry.addMarket({
-      liquidityPool: lyraMarket.LiquidityPool.address,
-      liquidityToken: lyraMarket.LiquidityToken.address,
-      greekCache: lyraMarket.OptionGreekCache.address,
-      optionMarket: lyraMarket.OptionMarket.address,
-      optionMarketPricer: lyraMarket.OptionMarketPricer.address,
-      optionToken: lyraMarket.OptionToken.address,
-      poolHedger: lyraMarket.PoolHedger.address,
-      shortCollateral: lyraMarket.ShortCollateral.address,
-      gwavOracle: lyraMarket.GWAVOracle.address,
-      quoteAsset: susd.address,
-      baseAsset: lyraMarket.BaseAsset.address,
-    });
-  });
+});
 
-  before('setup option market details', async () => {
-    await otusController.connect(deployer).setOptionMarketDetails(lyraMarket.OptionMarket.address);
-    const addresses = await otusController.getOptionMarketDetails(lyraMarket.OptionMarket.address);
-  });
+before('set lyra market - eth', async () => {
+lyraMarket = await getMarketDeploys('local', 'sETH');
+await lyraTestSystem.lyraRegistry.addMarket({
+liquidityPool: lyraMarket.LiquidityPool.address,
+liquidityToken: lyraMarket.LiquidityToken.address,
+greekCache: lyraMarket.OptionGreekCache.address,
+optionMarket: lyraMarket.OptionMarket.address,
+optionMarketPricer: lyraMarket.OptionMarketPricer.address,
+optionToken: lyraMarket.OptionToken.address,
+poolHedger: lyraMarket.PoolHedger.address,
+shortCollateral: lyraMarket.ShortCollateral.address,
+gwavOracle: lyraMarket.GWAVOracle.address,
+quoteAsset: susd.address,
+baseAsset: lyraMarket.BaseAsset.address,
+});
+});
 
-  before('initialize vault and strategy', async () => {
-    const cap = ethers.utils.parseEther('5000000'); // 5m USD as cap
-    const decimals = 18;
+before('setup option market details', async () => {
+await otusController.connect(deployer).setOptionMarketDetails(lyraMarket.OptionMarket.address);
+const addresses = await otusController.getOptionMarketDetails(lyraMarket.OptionMarket.address);
+});
+
+before('initialize vault and strategy', async () => {
+const cap = ethers.utils.parseEther('5000000'); // 5m USD as cap
+const decimals = 18;
 
     await otusController.connect(manager).createOptionsVault(
       lyraMarket.OptionMarket.address,
@@ -269,13 +271,14 @@ describe('Strategy integration test', async () => {
     managersStrategy = (await ethers.getContractAt(Strategy__factory.abi, strategyCloneAddress[0])) as Strategy;
     expect(managersStrategy.address).to.not.be.eq(ZERO_ADDRESS);
     expect(await managersVault.strategy()).to.be.eq(managersStrategy.address);
-  });
 
-  describe('check strategy setup', async () => {
-    it('it should set the strategy correctly on the vault', async () => {
-      const strategy = await managersVault.connect(manager).strategy();
-      expect(strategy).to.be.eq(managersStrategy.address);
-    });
+});
+
+describe('check strategy setup', async () => {
+it('it should set the strategy correctly on the vault', async () => {
+const strategy = await managersVault.connect(manager).strategy();
+expect(strategy).to.be.eq(managersStrategy.address);
+});
 
     it('deploys with correct vault', async () => {
       expect(await managersStrategy.vault()).to.be.eq(managersVault.address);
@@ -284,11 +287,12 @@ describe('Strategy integration test', async () => {
     it('deploys with correct gwavOracle', async () => {
       expect(await managersStrategy.gwavOracle()).to.be.eq(lyraTestSystem.GWAVOracle.address);
     });
-  });
 
-  describe('setStrategy', async () => {
-    it('setting strategy should correctly update strategy variables', async () => {
-      const owner = await managersStrategy.owner();
+});
+
+describe('setStrategy', async () => {
+it('setting strategy should correctly update strategy variables', async () => {
+const owner = await managersStrategy.owner();
 
       await managersStrategy.connect(manager).setStrategy(defaultStrategyDetail);
 
@@ -303,10 +307,11 @@ describe('Strategy integration test', async () => {
         'Ownable: caller is not the owner',
       );
     });
-  });
 
-  describe('start the first round', async () => {
-    let strikes: BigNumber[] = [];
+});
+
+describe('start the first round', async () => {
+let strikes: BigNumber[] = [];
 
     before('create fake susd for users', async () => {
       await susd.mint(randomUser.address, toBN('100000'));
@@ -500,16 +505,17 @@ describe('Strategy integration test', async () => {
       // initiate withdraw for later test
       await managersVault.connect(randomUser2).initiateWithdraw(toBN('50'));
     });
-  });
 
-  describe('start round 2', async () => {
-    let strikes: BigNumber[] = [];
-    let position: any;
-    let strikePrice: BigNumber;
-    let positionId: BigNumber;
-    let expiry: BigNumber;
-    let snapshot: number;
-    let strategySUSDBalanceBefore: BigNumber;
+});
+
+describe('start round 2', async () => {
+let strikes: BigNumber[] = [];
+let position: any;
+let strikePrice: BigNumber;
+let positionId: BigNumber;
+let expiry: BigNumber;
+let snapshot: number;
+let strategySUSDBalanceBefore: BigNumber;
 
     before('prepare before new round start', async () => {
       // set price back to initial spot price
@@ -656,16 +662,17 @@ describe('Strategy integration test', async () => {
 
       expect(positionBefore.amount.sub(positionAfter.amount)).to.be.gt(0);
     });
-  });
+
+});
 });
 
 async function strikeIdToDetail(optionMarket: OptionMarket, strikeId: BigNumber) {
-  const [strike, board] = await optionMarket.getStrikeAndBoard(strikeId);
-  return {
-    id: strike.id,
-    expiry: board.expiry,
-    strikePrice: strike.strikePrice,
-    skew: strike.skew,
-    boardIv: board.iv,
-  };
+const [strike, board] = await optionMarket.getStrikeAndBoard(strikeId);
+return {
+id: strike.id,
+expiry: board.expiry,
+strikePrice: strike.strikePrice,
+skew: strike.skew,
+boardIv: board.iv,
+};
 }

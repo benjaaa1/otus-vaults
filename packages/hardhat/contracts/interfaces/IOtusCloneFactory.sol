@@ -22,10 +22,6 @@ interface IOtusCloneFactory {
    * @notice Clones strategy contract if supervisor has a vault created
    */
   function _initializeClonedStrategy(
-    bytes32[] memory lyraAdapterKeys,
-    address[] memory lyraAdapterValues,
-    address[] memory lyraOptionMarkets,
-    address[] memory futuresMarkets,
     address _owner,
     address _vault,
     address _strategy,

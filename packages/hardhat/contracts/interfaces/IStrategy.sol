@@ -29,13 +29,5 @@ interface IStrategy {
 
   function _transferToFuturesMarket(bytes32 market, int hedgeFunds) external;
 
-  function initialize(
-    bytes32[] memory lyraAdapterKeys,
-    address[] memory lyraAdapterValues,
-    address[] memory lyraOptionMarkets,
-    address[] memory futuresMarkets,
-    address _owner,
-    address _vault,
-    StrategyBase.StrategyDetail memory _currentStrategy
-  ) external;
+  function initialize(address _owner, address _vault, StrategyBase.StrategyDetail memory _currentStrategy) external;
 }

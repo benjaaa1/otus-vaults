@@ -6,28 +6,27 @@ import "hardhat/console.sol";
 
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import {SignedDecimalMath} from "@lyrafinance/protocol/contracts/synthetix/SignedDecimalMath.sol";
-import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
+import "../../interfaces/ILyraBase.sol";
+import "../../interfaces/IFuturesMarket.sol";
 
 // Libraries
 import "../../synthetix/SignedSafeDecimalMath.sol";
 import "../../synthetix/SafeDecimalMath.sol";
 import "../../synthetix/SignedSafeMath.sol";
-
-// interfaces
-import "../../interfaces/ILyraBase.sol";
-import "../../interfaces/IFuturesMarket.sol";
+import {SignedDecimalMath} from "@lyrafinance/protocol/contracts/synthetix/SignedDecimalMath.sol";
+import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
+import {Vault} from "../../libraries/Vault.sol";
 
 // Vault
-import {Vault} from "../../libraries/Vault.sol";
 import {OtusVault} from "../OtusVault.sol";
+
+// Inherited
 import {StrategyBase} from "./StrategyBase.sol";
 
 /**
  * @title Strategy
  * @author Lyra
- * @dev Executes strategy for vault based on settings - supports multiple forms of hedges
+ * @dev Executes strategy for vault based on settings with hedge support
  */
 contract Strategy is StrategyBase {
   using SafeMath for uint;
@@ -35,7 +34,10 @@ contract Strategy is StrategyBase {
   using SignedSafeMath for int;
   using SignedSafeDecimalMath for int;
 
+  // address of vault it's strategizing for
   address public vault;
+
+  // instance of vault it's strategizing for
   OtusVault public otusVault;
 
   /************************************************
@@ -70,7 +72,7 @@ contract Strategy is StrategyBase {
   /**
    * @notice
    */
-  constructor(address _quoteAsset) StrategyBase(_quoteAsset) {}
+  constructor(address _quoteAsset, address _otusController) StrategyBase(_quoteAsset, _otusController) {}
 
   /**
    * @notice Initializer strategy
@@ -78,24 +80,8 @@ contract Strategy is StrategyBase {
    * @param _vault vault that owns strategy
    * @param _currentStrategy vault strategy settings
    */
-  function initialize(
-    bytes32[] memory lyraAdapterKeys,
-    address[] memory lyraAdapterValues,
-    address[] memory lyraOptionMarkets,
-    address[] memory futuresMarkets,
-    address _owner,
-    address _vault,
-    StrategyDetail memory _currentStrategy
-  ) external {
-    baseInitialize(
-      lyraAdapterKeys,
-      lyraAdapterValues,
-      lyraOptionMarkets,
-      futuresMarkets,
-      _owner,
-      _vault,
-      _currentStrategy
-    );
+  function initialize(address _owner, address _vault, StrategyDetail memory _currentStrategy) external {
+    baseInitialize(_owner, _vault, _currentStrategy);
     vault = _vault;
 
     emit StrategyUpdated(_vault, _currentStrategy);
@@ -113,6 +99,10 @@ contract Strategy is StrategyBase {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
     require(!roundInProgress, "round opened");
     currentStrategy = _currentStrategy;
+
+    // after strategy is set need to update allowed markets :
+    _setAllowedMarkets(currentStrategy.allowedMarkets);
+
     emit StrategyUpdated(vault, currentStrategy);
   }
 
@@ -174,6 +164,8 @@ contract Strategy is StrategyBase {
   function doTrade(
     StrikeTrade memory _strike
   ) external onlyVault returns (uint positionId, uint premium, uint capitalUsed, uint expiry) {
+    // check if market is allowed
+    require(allowedMarkets[_strike.market], "Market now allowed");
     address lyraBase = lyraBases[_strike.market];
 
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_strike.optionType];
@@ -219,9 +211,14 @@ contract Strategy is StrategyBase {
     }
 
     _strike.positionId = positionId;
+
     _addActiveStrike(_strike, positionId, _strike.optionType);
   }
 
+  /**
+   * @notice transfer from vault
+   * @param amount quote amount to transfer
+   */
   function _trasferFromVault(uint amount) internal onlyVault {
     require(quoteAsset.transferFrom(address(vault), address(this), amount), "collateral transfer from vault failed");
   }
@@ -232,16 +229,14 @@ contract Strategy is StrategyBase {
    */
   function returnFundsAndClearStrikes() external onlyVault {
     // need to return the synthetix ones too
-    for (uint i = 0; i < lyraAdapterKeys.length; i++) {
-      bytes32 market = lyraAdapterKeys[i];
+    for (uint i = 0; i < markets.length; i++) {
+      bytes32 market = markets[i];
       _closeHedgeEndOfRound(market);
     }
 
     uint quoteBal = quoteAsset.balanceOf(address(this));
-    console.log("quoteBal");
-    console.log(quoteBal);
+
     require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
-    console.log("transferred");
 
     _clearAllActiveStrikes();
   }
@@ -356,7 +351,6 @@ contract Strategy is StrategyBase {
   ) internal returns (uint, uint) {
     OptionType optionType = OptionType(_optionType);
     // perform trade to long
-    // needs to be delegated - not delegated move openPosition to strategybase or another adapter along with other state changers
     TradeResult memory result = openPosition(
       market,
       TradeInputParameters({
@@ -491,7 +485,6 @@ contract Strategy is StrategyBase {
    */
   function _dynamicDeltaHedge(bytes32 market, int deltaToHedge, uint hedgeAttempts) external onlyVault {
     require(hedgeType == HEDGETYPE.DYNAMIC_DELTA_HEDGE, "Not allowed");
-
     require(dynamicHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
 
     address futuresMarket = futuresMarketsByKey[market];
@@ -530,12 +523,6 @@ contract Strategy is StrategyBase {
 
     uint spotPrice = ILyraBase(lyraBase).getSpotPriceForMarket();
     uint fundsRequiredSUSD = _abs(size).multiplyDecimal(spotPrice);
-
-    console.log("spotPrice");
-    console.log(spotPrice);
-
-    console.log("fundsRequiredSUSD");
-    console.log(fundsRequiredSUSD);
 
     _trasferFromVault(fundsRequiredSUSD);
     _transferToFuturesMarket(market, int(fundsRequiredSUSD));
@@ -589,8 +576,6 @@ contract Strategy is StrategyBase {
 
     uint[] memory positionIds = new uint[](_len);
     StrikeTrade memory strike;
-    console.log("positionId len");
-    console.log(_len);
 
     for (uint i = 0; i < _len; i++) {
       strike = activeStrikeTrades[i];
@@ -617,7 +602,7 @@ contract Strategy is StrategyBase {
   }
 
   /**
-   * @dev checks delta for strikeid
+   * @dev checks delta for position - used by keeper and user to hedge (shown on ui)
    */
   function _checkDeltaByPositionId(bytes32 market, uint positionId) external view returns (int delta) {
     address lyraBase = lyraBases[market];

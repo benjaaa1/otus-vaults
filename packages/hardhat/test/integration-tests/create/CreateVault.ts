@@ -25,7 +25,6 @@ import { LyraGlobal, LyraMarket } from '@lyrafinance/protocol/dist/test/utils/pa
 import { Vault } from '../../../typechain-types/OtusVault';
 import { defaultDynamicDeltaHedgeDetail, defaultStrategyDetail, defaultStrikeStrategyDetailCall, vaultInfo } from '../utils/init';
 
-
 const spotPrice = toBN('3000');
 
 const boardId = toBN('0');
@@ -134,15 +133,21 @@ describe('Create vault test', async () => {
     const OtusController = await ethers.getContractFactory('OtusController');
 
     otusController = (await OtusController.connect(otusMultiSig).deploy(
-      futuresMarketsManager.address,
       keeper.address,
+      [markets.ETH],
+      [lyraBaseETH.address],
+      [lyraTestSystem.optionMarket.address],
+      [futuresMarket.address]
     )) as OtusController;
 
     const OtusVaultFactory = await ethers.getContractFactory('OtusVault');
     vault = (await OtusVaultFactory.connect(otusMultiSig).deploy(86400 * 7)) as OtusVault;
 
     const StrategyBaseFactory = await ethers.getContractFactory('Strategy');
-    strategy = (await StrategyBaseFactory.connect(otusMultiSig).deploy(susd.address)) as Strategy;
+    strategy = (await StrategyBaseFactory.connect(otusMultiSig).deploy(
+      susd.address,
+      otusController.address
+    )) as Strategy;
 
     const OtusCloneFactory = await ethers.getContractFactory('OtusCloneFactory');
     otusCloneFactory = (await OtusCloneFactory.connect(otusMultiSig).deploy(
@@ -152,21 +157,6 @@ describe('Create vault test', async () => {
     )) as OtusCloneFactory;
 
     await otusController.connect(otusMultiSig).setOtusCloneFactory(otusCloneFactory.address);
-
-    await otusController
-      .connect(otusMultiSig)
-      .setFuturesMarkets(
-        futuresMarket.address,
-        markets.ETH,
-      );
-
-    await otusController
-      .connect(otusMultiSig)
-      .setLyraAdapter(
-        lyraBaseETH.address,
-        lyraMarket.OptionMarket.address,
-        markets.ETH,
-      );
 
   });
 

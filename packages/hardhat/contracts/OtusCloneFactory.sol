@@ -3,27 +3,14 @@ pragma solidity >=0.8.4;
 
 import "hardhat/console.sol";
 
+// libraries
+import {Vault} from "./libraries/Vault.sol";
+
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {StrategyBase} from "./vaultDOV/strategy/StrategyBase.sol";
 import {IStrategy} from "./interfaces/IStrategy.sol";
-
-// libraries
-import {Vault} from "./libraries/Vault.sol";
-
-interface ISupervisor {
-  function initialize() external;
-}
-
-interface IOtusVault {
-  function initialize(
-    address _owner,
-    Vault.VaultInformation memory _vaultInfo,
-    Vault.VaultParams memory _vaultParams,
-    address _strategy,
-    address _keeper
-  ) external;
-}
+import {IOtusVault} from "./interfaces/IOtusVault.sol";
 
 /**
  * @title OtusCloneFactory
@@ -32,10 +19,12 @@ interface IOtusVault {
  */
 contract OtusCloneFactory {
   /// @notice Stores the Otus vault contract implementation address
+
   address public immutable otusVault;
   /// @notice Stores the Strategy contract implementation address
-  address public immutable strategy;
 
+  address public immutable strategy;
+  // address of controller
   address public immutable otusController;
 
   /************************************************
@@ -108,31 +97,15 @@ contract OtusCloneFactory {
    * @param _currentStrategy strategy settings
    */
   function _initializeClonedStrategy(
-    bytes32[] memory lyraAdapterKeys,
-    address[] memory lyraAdapterValues,
-    address[] memory lyraOptionMarkets,
-    address[] memory futuresMarkets,
     address _owner,
     address _vault,
     address _strategy,
     StrategyBase.StrategyDetail memory _currentStrategy
   ) public {
     require(msg.sender == otusController, "Not allowed to create");
-    require(lyraAdapterKeys.length > 0, "Failed to add key to lyra base");
-    require(lyraAdapterValues.length > 0, "Failed to add value lyra base");
-    require(lyraOptionMarkets.length > 0, "Failed to add optionmarket lyra base");
-    require(futuresMarkets.length > 0, "Failed to add futures market");
 
     require(_vault != address(0), "_vault must be non zero address");
 
-    IStrategy(_strategy).initialize(
-      lyraAdapterKeys,
-      lyraAdapterValues,
-      lyraOptionMarkets,
-      futuresMarkets,
-      _owner,
-      _vault,
-      _currentStrategy
-    );
+    IStrategy(_strategy).initialize(_owner, _vault, _currentStrategy);
   }
 }

@@ -88,9 +88,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
     maxTimeToExpiry: WEEK_SEC * 4,
     minTradeInterval: HOUR_SEC / 6,
     gwavPeriod: HOUR_SEC / 6,
-    allowedMarkets: [
-      BYTES32_MARKET.ETH,
-    ],
+    allowedMarkets: [],
   })
 
   const handleCreateVault = useCallback(async () => {

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-import "hardhat/console.sol";
-
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -329,8 +327,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     _burn(address(this), withdrawalShares);
 
     require(withdrawAmount > 0, "!withdrawAmount");
-    console.log("withdrawAmount");
-    console.log(withdrawAmount);
+
     _transferAsset(msg.sender, withdrawAmount);
   }
 
@@ -486,8 +483,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    */
   function _transferAsset(address recipient, uint amount) internal {
     address asset = vaultParams.asset;
-    uint balance = IERC20(asset).balanceOf(address(this));
-    console.log(balance);
     IERC20(asset).safeTransfer(recipient, amount);
   }
 

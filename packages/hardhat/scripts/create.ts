@@ -50,35 +50,7 @@ const deployer = new ethers.Wallet(pkLocalDeployer, provider); // can use pkLoca
 
 const ethMarketKey = '0x7345544800000000000000000000000000000000000000000000000000000000';
 
-const buildTrades = async (strikes, deployer, strategyInstance) => {
-  // const strike = strikes[0];
-  // console.log({ strikeData: strike.__strikeData, board: strike.__board })
-  // const test = await strategyInstance.connect(deployer)._isValidStrike(19, 4);
-  // console.log({ test });
-
-  // const validStrikes = await Promise.all(strikes.map(async strike => {
-  //   const { id, skew, iv, strikePrice, __board } = strike;
-  //   const { expiryTimestamp } = __board;
-  //   const formattedStrike = {
-  //     id: parseUnits(id.toString(), 18),
-  //     expiry: parseUnits(expiryTimestamp.toString(), 18),
-  //     strikePrice: strikePrice,
-  //     skew: skew,
-  //     boardIv: iv
-  //   }
-  //   console.log({ id, skew, iv, strikePrice })
-
-  //   const rates = await strategyInstance.connect(deployer)._isValidStrike(id, 4);
-  //   console.log({ rates })
-
-  //   const currentStrikeStrategy = await strategyInstance.currentStrikeStrategies(4);
-  //   console.log({currentStrikeStrategy});
-
-  //   // const isValid = await strategyInstance.isValidStrike(formattedStrike, 4);
-  //   // console.log({ isValid });
-  //   return formattedStrike;
-  // }));
-  // console.log('here')
+const buildTrades = async (strikes) => {
   return {
     market: ethMarketKey,
     optionType: 4,
@@ -141,14 +113,16 @@ const create = async () => {
     const createVault = await otusController
       .connect(deployer)
       .createOptionsVault(vaultInfo, vaultParams, defaultStrategyDetail);
-    const createVaultReceipt = await createVault.wait();
-    // get vault information back
+
+    await createVault.wait();
 
     const { userVaults, userStrategies } = await otusController.connect(deployer).getUserManagerDetails();
+
     const userVaultInformation = userVaults.map((vault: string, index: number) => {
       const strategy = userStrategies[index];
       return { vault, strategy };
     });
+
     const len = userVaultInformation.length;
 
     const _vault = userVaultInformation[len - 1].vault;
@@ -157,7 +131,6 @@ const create = async () => {
     const strategyInstance = strategy.attach(_strategy);
 
     // approve and deposit susd
-    console.log({ _vault })
     await drip(susd, otusVaultInstance, _vault);
 
     // // set strike options strategies
@@ -174,8 +147,7 @@ const create = async () => {
     const _dynamicStrategy = {
       threshold: toBN('.80'),
       maxLeverageSize: toBN('2'),
-      maxHedgeAttempts: toBN('4'),
-      period: lyraConstants.HOUR_SEC,
+      maxHedgeAttempts: toBN('4')
     };
 
     const strikeHedgeDetailSet = await strategyInstance
@@ -199,24 +171,11 @@ const create = async () => {
       }),
     );
 
-    // console.log({ strikeDetails });
-
     // // select strikes StrategyBase.StrikeTrade[] and trade
-    const trades = await buildTrades(strikeDetails, deployer, strategyInstance);
-    // console.log({ trades });
-
-    const lyraBaseAddress = await strategyInstance.lyraBases(ethMarketKey);
-
-    const lyraOptionMarket = await strategyInstance.lyraOptionMarkets(ethMarketKey);
-
-    const strike = await lyraBase.getStrikes([strikes[2]]);
-    console.log({ strike });
-
-    const spotPrice = await lyraBase.getExchangeParams();
+    const trades = await buildTrades(strikeDetails);
 
     const trade = await otusVaultInstance.connect(deployer).trade([trades]);
     await trade.wait();
-    console.log({ trade });
 
     // const _checkDeltaByPositionId = await strategyInstance._checkDeltaByPositionId(ethMarketKey, [strikes[1]]);
     // get positions opened
@@ -247,18 +206,16 @@ const drip = async (susd, otusVaultInstance, _vault) => {
 
   const susdContract = await ethers.getContractAt(ERC20ABI, susd.address);
   const mint = await susdContract.mint(deployer.address, toBN('5000'));
-  const mintReceipt = await mint.wait();
+  await mint.wait();
 
   for (let i = 0; i < 4; i++) {
     let wallet = ethers.Wallet.createRandom();
-    console.log({ wallet: wallet._signingKey(), address: wallet.address });
     wallet = wallet.connect(provider);
     signers.push(wallet);
   }
 
   await Promise.all(
     signers.map(async (signer, i) => {
-      // const accountNonce = '0x' + ()).toString(16);
       const nonce = await provider.getTransactionCount(deployer.address);
       const sendETH = await deployer.sendTransaction({ nonce: nonce + i, to: signer.address, value: toBN('.005') });
       await sendETH.wait();
@@ -267,37 +224,18 @@ const drip = async (susd, otusVaultInstance, _vault) => {
 
   await Promise.all(
     signers.map(async signer => {
-      // send ETH to the new wallet so it can perform a tx
       const mint = await susdContract.mint(signer.address, toBN('5000'));
       await mint.wait();
 
       const balance = await susdContract.balanceOf(signer.address);
-      // console.log({ balance });
       const approve = await susdContract.connect(signer).approve(_vault, balance);
       await approve.wait();
 
       const allowanceStatus = await susdContract.allowance(signer.address, _vault);
-      // console.log({ allowanceStatus });
+
       if (!allowanceStatus.isZero()) {
         const deposit = await otusVaultInstance.connect(signer).deposit(allowanceStatus);
-        // console.log({ deposit });
-
         await deposit.wait();
-
-        // const shareBalance = await otusVaultInstance.shareBalances(signer.address);
-        // console.log({ shareBalance });
-
-        // const accountVaultBalance = await otusVaultInstance.accountVaultBalance(signer.address);
-        // console.log({ accountVaultBalance });
-
-        // const round0Balance = await otusVaultInstance.balanceOf(signer.address);
-        // console.log({ round0Balance });
-
-        // const balanceAfterDeposit = await susdContract.balanceOf(signer.address);
-        // console.log({ balanceAfterDeposit });
-
-        // const depositReceipt = await otusVaultInstance.depositReceipts(signer.address);
-        // console.log({ depositReceipt });
       }
     }),
   );

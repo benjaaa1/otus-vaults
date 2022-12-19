@@ -68,6 +68,7 @@ describe('Vault User transaction integration test ', async () => {
 
     randomUser1 = addresses[4];
     randomUser2 = addresses[5];
+
   });
 
   before('deploy lyra, synthetix and other', async () => {
@@ -129,15 +130,21 @@ describe('Vault User transaction integration test ', async () => {
     const OtusController = await ethers.getContractFactory('OtusController');
 
     otusController = (await OtusController.connect(otusMultiSig).deploy(
-      futuresMarketsManager.address,
       keeper.address,
+      [markets.ETH],
+      [lyraBaseETH.address],
+      [lyraTestSystem.optionMarket.address],
+      [futuresMarket.address]
     )) as OtusController;
 
     const OtusVaultFactory = await ethers.getContractFactory('OtusVault');
     vault = (await OtusVaultFactory.connect(otusMultiSig).deploy(86400 * 7)) as OtusVault;
 
     const StrategyBaseFactory = await ethers.getContractFactory('Strategy');
-    strategy = (await StrategyBaseFactory.connect(otusMultiSig).deploy(susd.address)) as Strategy;
+    strategy = (await StrategyBaseFactory.connect(otusMultiSig).deploy(
+      susd.address,
+      otusController.address
+    )) as Strategy;
 
     const OtusCloneFactory = await ethers.getContractFactory('OtusCloneFactory');
     otusCloneFactory = (await OtusCloneFactory.connect(otusMultiSig).deploy(
@@ -147,21 +154,6 @@ describe('Vault User transaction integration test ', async () => {
     )) as OtusCloneFactory;
 
     await otusController.connect(otusMultiSig).setOtusCloneFactory(otusCloneFactory.address);
-
-    await otusController
-      .connect(otusMultiSig)
-      .setFuturesMarkets(
-        futuresMarket.address,
-        markets.ETH,
-      );
-
-    await otusController
-      .connect(otusMultiSig)
-      .setLyraAdapter(
-        lyraBaseETH.address,
-        lyraMarket.OptionMarket.address,
-        markets.ETH,
-      );
 
   });
 
@@ -272,6 +264,5 @@ describe('Vault User transaction integration test ', async () => {
     // error when over cap
 
   })
-
 
 });

@@ -13,6 +13,7 @@ import {IOptionMarket} from "@lyrafinance/protocol/contracts/interfaces/IOptionM
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../interfaces/ILyraBase.sol";
 import "../../interfaces/IFuturesMarket.sol";
+import "../../interfaces/IOtusController.sol";
 
 // Inherited
 import {LyraAdapter} from "../../vaultAdapters/LyraAdapter.sol";
@@ -25,39 +26,14 @@ import {LyraAdapter} from "../../vaultAdapters/LyraAdapter.sol";
 contract StrategyBase is LyraAdapter {
   using SafeDecimalMath for uint;
 
-  ///////////////
-  // Variables //
-  ///////////////
-
-  IERC20 internal immutable quoteAsset;
-
-  StrikeTrade[] public activeStrikeTrades; // need
-  mapping(uint => StrikeTrade) public activeStrikeByPositionId; // need
-  mapping(bytes32 => uint) public positionIdByStrikeOption;
-
-  // Round vault settings
-  StrategyDetail public currentStrategy;
-  // dynamic hedge strategy
-  DynamicDeltaHedgeStrategy public dynamicHedgeStrategy;
-
-  // option type => strike strategy
-  mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
-
-  HEDGETYPE public hedgeType;
-
-  bytes32[] public lyraAdapterKeys;
-  mapping(bytes32 => address) public lyraBases;
-  mapping(bytes32 => address) public futuresMarketsByKey;
-  // hedge type selected
   enum HEDGETYPE {
     NO_HEDGE,
     USER_HEDGE,
     DYNAMIC_DELTA_HEDGE
   }
 
-  // strategies can be updated by different strategizers
   struct StrategyDetail {
-    uint hedgeReserve; // (this is subtracted first the collatpercent and buffer)
+    uint hedgeReserve;
     uint collatBuffer;
     uint collatPercent;
     uint minTimeToExpiry;
@@ -91,8 +67,48 @@ contract StrategyBase is LyraAdapter {
     uint maxLeverageSize;
   }
 
-  constructor(address _quoteAsset) LyraAdapter() {
+  ///////////////
+  // Variables //
+  ///////////////
+
+  // otus controller
+  IOtusController internal immutable otusController;
+
+  // susd is used for quoteasset
+  IERC20 internal immutable quoteAsset;
+
+  // strike position management
+  // keeps track of current strikes traded for round
+  StrikeTrade[] public activeStrikeTrades;
+  // mapping of strike to position id
+  mapping(uint => StrikeTrade) public activeStrikeByPositionId;
+  // position
+  mapping(bytes32 => uint) public positionIdByStrikeOption;
+  // strategy management
+  // vault strategy settings - can be updated when round is closed
+  StrategyDetail public currentStrategy;
+  // strike strategy settings by option type
+  mapping(uint => StrikeStrategyDetail) public currentStrikeStrategies;
+  // dynamic hedge settings - can be updated when round is closed
+  DynamicDeltaHedgeStrategy public dynamicHedgeStrategy;
+  // hedge type strategy for vault (none, user, dynamic)
+  HEDGETYPE public hedgeType;
+
+  // set on init copied from outscontroller
+  bytes32[] public markets;
+
+  // set on init copied from outscontroller
+  mapping(bytes32 => address) public lyraBases;
+
+  // set on init copied from outscontroller
+  mapping(bytes32 => address) public futuresMarketsByKey;
+
+  // store allowed markets can be updated
+  mapping(bytes32 => bool) public allowedMarkets;
+
+  constructor(address _quoteAsset, address _otusController) LyraAdapter() {
     quoteAsset = IERC20(_quoteAsset);
+    otusController = IOtusController(_otusController);
   }
 
   /**
@@ -101,47 +117,59 @@ contract StrategyBase is LyraAdapter {
    * @param _vault _vault address
    * @param _currentStrategy strategy settings
    */
-  function baseInitialize(
-    bytes32[] memory _lyraAdapterKeys,
-    address[] memory lyraBaseValues,
-    address[] memory optionMarkets,
-    address[] memory futuresMarkets,
-    address _owner,
-    address _vault,
-    StrategyDetail memory _currentStrategy
-  ) internal {
-    uint len = _lyraAdapterKeys.length;
-    lyraAdapterKeys = new bytes32[](len);
+  function baseInitialize(address _owner, address _vault, StrategyDetail memory _currentStrategy) internal {
+    (
+      bytes32[] memory _markets,
+      address[] memory _lyraBases,
+      address[] memory _futuresMarkets,
+      address[] memory _lyraOptionMarkets
+    ) = otusController._getMarketContracts();
+
+    markets = _markets;
+    // set initial market contracts
+    uint len = _markets.length;
 
     for (uint i = 0; i < len; i++) {
-      bytes32 key = _lyraAdapterKeys[i];
-      address lyraBase = lyraBaseValues[i];
-      address futuresMarket = futuresMarkets[i];
-      lyraAdapterKeys[i] = key;
+      bytes32 key = _markets[i];
+      address lyraBase = _lyraBases[i];
+      address futuresMarket = _futuresMarkets[i];
+      address optionMarket = _lyraOptionMarkets[i];
+
       lyraBases[key] = lyraBase;
       futuresMarketsByKey[key] = futuresMarket;
+      lyraOptionMarkets[key] = optionMarket;
     }
 
+    // store initial vault strategy
     currentStrategy = _currentStrategy;
+    // initial markets allowed by manager by name (eth btc...)
+    _setAllowedMarkets(currentStrategy.allowedMarkets);
 
-    bytes32[] memory allowedMarkets = currentStrategy.allowedMarkets;
-    uint marketsLength = allowedMarkets.length;
-    address optionMarket;
-    address futuresMarket;
+    quoteAsset.approve(_vault, type(uint).max);
 
-    for (uint i = 0; i < marketsLength; i++) {
-      bytes32 key = allowedMarkets[i];
-      address lyraAdapter = lyraBases[key];
-      optionMarket = optionMarkets[i];
-      futuresMarket = futuresMarkets[i];
+    lyraInitialize(_owner);
+  }
+
+  //////////////////////////////
+  // Set Additional Strategy //
+  //////////////////////////////
+  /**
+   * @dev On init and strategy update / update markets allowed
+   */
+  function _setAllowedMarkets(bytes32[] memory managerAllowedMarkets) internal {
+    uint len = managerAllowedMarkets.length;
+
+    for (uint i = 0; i < len; i++) {
+      bytes32 key = managerAllowedMarkets[i];
+      allowedMarkets[key] = true;
+      // allowedOptionMarket[key] = true;
+
+      address optionMarket = lyraOptionMarkets[key];
+      address futuresMarket = futuresMarketsByKey[key];
 
       quoteAsset.approve(address(optionMarket), type(uint).max);
       quoteAsset.approve(address(futuresMarket), type(uint).max);
     }
-
-    quoteAsset.approve(_vault, type(uint).max);
-
-    lyraInitialize(_owner, lyraAdapterKeys, optionMarkets);
   }
 
   //////////////////////////////
@@ -155,8 +183,6 @@ contract StrategyBase is LyraAdapter {
     if (!_isActiveStrike(strike.strikeId, optionType)) {
       positionIdByStrikeOption[keccak256(abi.encode(strike.strikeId, optionType))] = tradedPositionId;
       activeStrikeByPositionId[tradedPositionId] = strike;
-      console.log("_addActiveStrike");
-      console.log(tradedPositionId);
       activeStrikeTrades.push(strike);
     }
   }
@@ -185,6 +211,7 @@ contract StrategyBase is LyraAdapter {
       }
 
       delete activeStrikeTrades;
+      uint afterlen = activeStrikeTrades.length;
     }
   }
 
