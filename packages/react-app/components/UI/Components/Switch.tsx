@@ -10,7 +10,6 @@ export const Switch = ({
   value: boolean
   onChange: any
 }) => {
-  const [enabled, setEnabled] = useState(false)
 
   return (
     <SwitchHeadlessUI.Group>
@@ -21,14 +20,12 @@ export const Switch = ({
         <SwitchHeadlessUI
           checked={value}
           onChange={onChange}
-          className={`${
-            enabled ? 'bg-emerald-600' : 'bg-zinc-200'
-          } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
+          className={`${value ? 'bg-emerald-600' : 'bg-zinc-200'
+            } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
         >
           <span
-            className={`${
-              enabled ? 'translate-x-6' : 'translate-x-1'
-            } inline-block h-4 w-4 transform rounded-full bg-zinc-500 transition-transform`}
+            className={`${value ? 'translate-x-6' : 'translate-x-1'
+              } inline-block h-4 w-4 transform rounded-full bg-zinc-500 transition-transform`}
           />
         </SwitchHeadlessUI>
       </div>

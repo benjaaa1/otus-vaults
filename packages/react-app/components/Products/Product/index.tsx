@@ -270,7 +270,7 @@ export default function Product() {
         setOpen={setOpenHedgeStrategy}
         open={openHedgeStrategy}
       >
-        <HedgeStrategyInfo hedgeType={vault?.strategy.hedgeType} strategy={vault?.strategy.dynamicHedgeStrategy} />
+        <HedgeStrategyInfo hedgeType={vault?.strategy.hedgeType || 0} strategy={vault?.strategy.dynamicHedgeStrategy} />
       </Modal>
     </>
   )
