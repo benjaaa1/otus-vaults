@@ -8,7 +8,7 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export const SelectFilterNetwork = ({ selectedNetwork, setSelectedNetwork }) => {
+export const SelectFilterNetwork = ({ selectedNetwork, setSelectedNetwork }: { selectedNetwork: any, setSelectedNetwork: any }) => {
   return <Listbox value={selectedNetwork} onChange={setSelectedNetwork}>
     {({ open }) => (
       <>

@@ -65,7 +65,7 @@ export default function Deposit({ vault }: { vault: Vault | undefined }) {
     if (
       (network?.chainId == 420 ||
         network?.chainId == 10 ||
-        network?.chainId == 31337) &&
+        network?.chainId == 1337) &&
       signer != null
     ) {
       setCanTransact(true)

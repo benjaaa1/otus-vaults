@@ -10,13 +10,13 @@ interface Props {
 
 export default function Layout({ children }: Props) {
   const { network } = useWeb3Context()
-
+  console.log({ network })
   return (
     <div className="bg-zinc-900 font-sans">
       {
-        network?.chainId == 10 || network?.chainId == 31337 || network?.chainId == 420 ?
+        network?.chainId == 10 || network?.chainId == 1337 || network?.chainId == 420 ?
           null :
-          < NetworkSwitch />
+          <NetworkSwitch />
       }
 
       <Navbar />

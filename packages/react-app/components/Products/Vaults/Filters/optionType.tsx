@@ -8,7 +8,7 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export const SelectFilterOptionType = ({ selectedOptionTypes, setSelectedOptionTypes }) => {
+export const SelectFilterOptionType = ({ selectedOptionTypes, setSelectedOptionTypes }: { selectedOptionTypes: any, setSelectedOptionTypes: any }) => {
   return <Listbox value={selectedOptionTypes} onChange={setSelectedOptionTypes}>
     {({ open }) => (
       <>

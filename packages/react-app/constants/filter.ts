@@ -1,7 +1,7 @@
 import { BYTES32_MARKET } from "./markets";
 
 export const MARKET_FILTER: Record<number, Record<string, string>[]> = {
-  31337: [
+  1337: [
     {
       name: 'ETH',
       id: BYTES32_MARKET.ETH

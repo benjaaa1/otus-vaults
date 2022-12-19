@@ -7,7 +7,7 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export const SelectFilterMarket = ({ selectedMarket, setSelectedMarket }) => {
+export const SelectFilterMarket = ({ selectedMarket, setSelectedMarket }: { selectedMarket: any, setSelectedMarket: any }) => {
   return <Listbox value={selectedMarket} onChange={setSelectedMarket}>
     {({ open }) => (
       <>

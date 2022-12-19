@@ -3,7 +3,7 @@ const INFURA_ID = process.env.INFURA_ID;
 export enum OptimismChainId {
   OptimismMainnet = 10,
   OptimismGoerli = 420,
-  Local = 31337, // Optimism
+  Local = 1337, // Optimism
 }
 
 export enum EthereumChainId {

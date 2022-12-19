@@ -1,7 +1,7 @@
 export type MarketType = 'ETH' | 'sETH' | 'sBTC' | 'sSOL' | 'sLINK'
 
 export const AVAILABLE_MARKETS_CHAIN: Record<number, Record<string, string>[]> = {
-  31337: [
+  1337: [
     {
       name: 'ETH',
       id: '0x7345544800000000000000000000000000000000000000000000000000000000'
