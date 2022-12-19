@@ -23,7 +23,7 @@ export default function Product() {
   const router = useRouter()
   const { query } = router
   const { data: vault } = useVaultProduct(query?.vault)
-
+  console.log('product', { vault })
   const [tab, setTab] = useState<string>(UserActionTabs.DEPOSIT.HREF)
   const [openVaultStrategy, setOpenVaultStrategy] = useState(false)
   const [openStrikeStrategy, setOpenStrikeStrategy] = useState(false)
@@ -270,7 +270,7 @@ export default function Product() {
         setOpen={setOpenHedgeStrategy}
         open={openHedgeStrategy}
       >
-        {vault?.strategy.dynamicHedgeStrategy ? <HedgeStrategyInfo hedgeType={vault?.strategy.hedgeType} strategy={vault?.strategy.dynamicHedgeStrategy} /> : 'N/A'}
+        <HedgeStrategyInfo hedgeType={vault?.strategy.hedgeType} strategy={vault?.strategy.dynamicHedgeStrategy} />
       </Modal>
     </>
   )
