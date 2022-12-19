@@ -1,7 +1,7 @@
 import { fromBigNumber } from '../../../../utils/formatters/numbers'
 import { DynamicHedgeStrategy } from '../../../../queries/myVaults/useMyVaults';
 
-export const HedgeStrategyInfo = ({ hedgeType, strategy }: { hedgeType: number, strategy: DynamicHedgeStrategy }) => {
+export const HedgeStrategyInfo = ({ hedgeType, strategy }: { hedgeType: number, strategy?: DynamicHedgeStrategy }) => {
   console.log({ hedgeType, strategy })
   if (hedgeType == 1 || hedgeType == null) {
     return <div className='text-md text-white p-4'>
@@ -9,8 +9,13 @@ export const HedgeStrategyInfo = ({ hedgeType, strategy }: { hedgeType: number, 
     </div>
   }
 
-  const { threshold, maxLeverageSize, maxHedgeAttempts } = strategy;
+  if (!strategy) {
+    return <div className='text-md text-white p-4'>
+      No hedging strategy set.
+    </div>
+  }
 
+  const { threshold, maxLeverageSize, maxHedgeAttempts } = strategy;
 
   return (
     <div className="grid grid-cols-3">
