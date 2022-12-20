@@ -65,8 +65,8 @@ export default function Product() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-12 gap-8 pt-8 pb-4">
-            <div className="col-span-7 grid grid-cols-1 rounded-sm border border-zinc-700 bg-gradient-to-b from-black to-zinc-900 p-9">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-8 pt-8 pb-4">
+            <div className="col-span-1 sm:col-span-7 grid grid-cols-1 rounded-sm border border-zinc-700 bg-gradient-to-b from-black to-zinc-900 p-9">
               <div className="py-2">
                 <div className="text-xxs font-bold uppercase text-zinc-300">
                   Strategy Description
@@ -217,7 +217,7 @@ export default function Product() {
                 </div>
               </div>
             </div>
-            <div className="col-span-5">
+            <div className="col-span-1 sm:col-span-5">
               <div className="rounded-sm border border-zinc-700 bg-zinc-800 shadow shadow-black">
                 <Transact setTab={setTab} active={tab} />
                 {tab == UserActionTabs.DEPOSIT.HREF ? (

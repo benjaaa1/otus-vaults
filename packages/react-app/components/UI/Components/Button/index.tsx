@@ -61,7 +61,7 @@ export const getButtonSize = (size: ButtonSize): string => {
     case 'xs':
       return 'text-xs font-normal px-4 py-2'
     case 'sm':
-      return 'text-xs font-normal px-8 py-2'
+      return 'text-xs font-normal px-8 py-2 w-full'
     case 'md':
       return 'text-md font-normal px-12 py-3'
     case 'full-sm':

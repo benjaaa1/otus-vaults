@@ -3,7 +3,7 @@ import React from 'react'
 
 export default function NetworkSwitch() {
   return (
-    <div className="fixed z-50 inset-x-0 bottom-0 pb-2 sm:pb-5">
+    <div className="fixed z-50 inset-x-0 bottom-0 pb-2 sm:pb-5 hidden sm:block">
       <div className="mx-auto max-w-6xl px-2 sm:px-6 lg:px-8">
         <div className="rounded-sm border-zinc-700 bg-zinc-800 p-2 shadow-lg sm:p-3">
           <div className="flex flex-wrap items-center justify-between">

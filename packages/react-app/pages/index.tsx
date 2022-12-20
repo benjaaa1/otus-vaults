@@ -10,15 +10,15 @@ import Stats from '../components/Portfolio/Stats'
 
 const Home: NextPage = () => {
   return (
-    <div className="flex h-screen flex-col">
+    <div className="">
       <Head>
         <title>Otus Finance: Decentralized Options Vaults</title>
         <meta name="description" content="Decentralized Options Vaults" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="grid grid-cols-12 gap-8">
-        <div className="col-span-7">
+      <div className="grid sm:grid-cols-12 grid-cols-1 gap-8">
+        <div className="sm:col-span-7 col-span-1">
           <div className="grid grid-cols-1">
             <div>
               <Stats />
@@ -32,12 +32,12 @@ const Home: NextPage = () => {
             </div>
           </div>
         </div>
-        <div className="col-span-5 ">
-          <div className="grid grid-cols-1">
+        <div className="sm:col-span-5 col-span-1">
+          <div className="grid grid-cols-1 sm:order-1">
             <div>
               <Positions />
             </div>
-            <div className="shadow shadow-black">
+            <div className="order-first sm:order-2 shadow shadow-black">
               <Products />
             </div>
           </div>

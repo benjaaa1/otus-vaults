@@ -96,7 +96,7 @@ export const Navbar = () => {
                 </Disclosure.Button>
               </Link>
             </div>
-            <div className="border-gray border-t pt-4 pb-3">
+            <div className=" border-t border-zinc-700 pt-4 pb-3">
               <div className="flex items-center px-5">
                 <Web3Button />
               </div>

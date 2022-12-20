@@ -12,7 +12,7 @@ export default function Layout({ children }: Props) {
   const { network } = useWeb3Context()
   console.log({ network })
   return (
-    <div className="bg-zinc-900 font-sans">
+    <div className="bg-zinc-900 font-sans flex flex-col h-screen">
       {
         network?.chainId == 10 || network?.chainId == 31337 || network?.chainId == 420 ?
           null :
@@ -20,10 +20,12 @@ export default function Layout({ children }: Props) {
       }
 
       <Navbar />
-      <main className="mx-auto max-w-6xl bg-zinc-900 px-4 sm:px-6 lg:px-8">
+      <main className="sm:mx-auto max-w-6xl bg-zinc-900 px-2 sm:px-4 md:px-6 lg:px-8">
         {children}
       </main>
+
       <FooterNav />
+
     </div>
   )
 }
