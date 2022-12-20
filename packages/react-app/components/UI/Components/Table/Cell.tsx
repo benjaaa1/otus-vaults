@@ -33,7 +33,7 @@ export const getCellVariant = (variant: CellVariant): string => {
 export const getMobileVariant = (variant: CellDeviceVariant): string => {
   switch (variant) {
     case 'large':
-      return 'hidden sm:block'
+      return 'hidden sm:table-cell'
     case 'default':
       return ''
       break;

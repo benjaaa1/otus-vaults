@@ -24,7 +24,7 @@ export const getHeaderCellVariant = (variant: HeaderCellVariant): string => {
 export const getHeaderDeviceCellVariant = (variant: HeaderDeviceCellVariant): string => {
   switch (variant) {
     case 'large':
-      return 'hidden sm:block'
+      return 'hidden sm:table-cell'
     case 'default':
       return ''
   }
