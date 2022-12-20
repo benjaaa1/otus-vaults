@@ -7,6 +7,7 @@ import { BigNumber, BigNumberish } from 'ethers'
 import { AccountPortfolioBalance, PositionPnl } from '@lyrafinance/lyra-js'
 import { fromBigNumber } from '../../utils/formatters/numbers'
 import { ZERO_BN } from '../../constants/bn'
+import { useLyra } from '../lyra/useLyra'
 
 export type VaultTrade = {
   id: string
@@ -128,6 +129,8 @@ export const useMyVaults = () => {
 }
 
 export const useMyVault = (vaultId: any) => {
+  const lyra = useLyra();
+
   const { address: managerId, network } = useWeb3Context()
 
   const otusEndpoint = getOtusEndpoint(network) // getOtusEndpoint(network);
@@ -197,37 +200,42 @@ export const useMyVault = (vaultId: any) => {
         { vaultId: vaultId?.toLowerCase() }
       )
 
-      // const account = lyra.account(vaultId);
-      // const portfolio: AccountPortfolioBalance = await account.portfolioBalance();
-      // const positions: CurrentPosition[] = portfolio.positions.map((position) => {
-      //   const { isOpen, id, strikeId, size } = position;
-      //   const _breakEven = fromBigNumber(position.breakEven());
-      //   const { unrealizedPnlPercentage, settlementPnl }: PositionPnl = position.pnl();
-      //   return {
-      //     id,
-      //     strikeId,
-      //     size,
-      //     breakEven: _breakEven,
-      //     settlementPnl,
-      //     isActive: isOpen,
-      //   }
-      // });
+      let positions: CurrentPosition[];
+
+      if (network && (network.chainId === 420 || network.chainId === 10)) {
+        const account = lyra.account(vaultId);
+        const portfolio: AccountPortfolioBalance = await account.portfolioBalance();
+        positions = portfolio.positions.map((position) => {
+          const { isOpen, id, strikeId, size } = position;
+          const _breakEven = fromBigNumber(position.breakEven());
+          const { unrealizedPnlPercentage, settlementPnl }: PositionPnl = position.pnl();
+          return {
+            id,
+            strikeId,
+            size,
+            breakEven: _breakEven,
+            profitPercentage: .9,
+            settlementPnl,
+            isActive: isOpen,
+          }
+        });
+      } else {
+        // local testing
+        positions = [
+          {
+            id: 2,
+            strikeId: 1,
+            breakEven: 10,
+            profitPercentage: .9,
+            size: ZERO_BN,
+            settlementPnl: ZERO_BN,
+            isActive: true
+          }
+        ]
+      }
 
       const vaults = response.vaults.length > 0 ?
-        prepareMyVault(
-          [
-            {
-              id: 3,
-              strikeId: 1,
-              breakEven: 10,
-              profitPercentage: .9,
-              size: ZERO_BN,
-              settlementPnl: ZERO_BN,
-              isActive: true
-            }
-          ],
-          response.vaults[0]
-        ) : null;
+        prepareMyVault(positions, response.vaults[0]) : null;
       console.log({ vaults })
       return vaults;
 
@@ -305,6 +313,8 @@ const prepareMyVault = (positions: CurrentPosition[], vault: Vault): Vault => {
 
   const vaultTradesDetail = vaultTrades.map(vaultTrade => {
     const { positionId } = vaultTrade;
+    console.log({ positionId, positionsById })
+
     const position = positionId != null ? positionsById[parseInt(positionId)] : {
       id: 0,
       strikeId: 0,
@@ -314,7 +324,9 @@ const prepareMyVault = (positions: CurrentPosition[], vault: Vault): Vault => {
       profitPercentage: 0,
       isActive: false
     };
+    console.log({ position })
     return { ...vaultTrade, position }
-  })
+  });
+  console.log({ vaultTradesDetail })
   return { ...vault, vaultTrades: vaultTradesDetail }
 }

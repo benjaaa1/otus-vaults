@@ -2,28 +2,44 @@ import { useVaultManagerContext } from '../../../../context'
 import { VaultTrade, CurrentPosition } from '../../../../queries/myVaults/useMyVaults'
 import { formatUSD, fromBigNumber } from '../../../../utils/formatters/numbers'
 import { Cell } from '../../../UI/Components/Table/Cell'
-import { HeaderCell } from '../../../UI/Components/Table/HeaderCell'
+import { HeaderCell, HeaderDeviceCellVariant } from '../../../UI/Components/Table/HeaderCell'
 import Table from '../../../UI/Components/Table/Table'
 
-const vaultInfo = {
-  hedgeType: 0,
+type CurrentPositionHeader = {
+  name: string
+  deviceVariant: HeaderDeviceCellVariant
 }
 
-const vaultStrategy = {}
-
-const hedgeStrategies = {}
-
-const strikeStrategies = {}
-
-const currentPositions = [
+const CurrentPositionHeaders: CurrentPositionHeader[] = [
   {
-    asset: 'sETH',
-    strikeId: 180,
-    positionId: 18,
-    expiry: 'September 30, 11:00am',
-    pandl: '$221.10',
+    name: 'Asset',
+    deviceVariant: 'default',
   },
-]
+  {
+    name: 'Type',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Strike Price',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Size',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Premium',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Close',
+    deviceVariant: 'default',
+  },
+  {
+    name: 'Hedge',
+    deviceVariant: 'default',
+  },
+];
 
 export default function Current({
   hedgeType,
@@ -32,26 +48,16 @@ export default function Current({
   hedgeType: number
   activeVaultTrades: VaultTrade[]
 }) {
-
+  console.log({ activeVaultTrades })
   const { toggleToHedge, toggleToClose } = useVaultManagerContext()
-
-  // positions in vaults
 
   return (
     <Table
       variant="primary"
       headers={
         <tr>
-          {[
-            'Asset',
-            'Type',
-            'Strike Price',
-            'Size',
-            'Premium',
-            'Close',
-            'Hedge',
-          ].map((column, i) => {
-            return <HeaderCell key={i} variant="primary" label={column} />
+          {CurrentPositionHeaders.map((column, i) => {
+            return <HeaderCell key={i} variant="primary" deviceVariant={column.deviceVariant} label={column.name} />
           })}
         </tr>
       }
@@ -60,21 +66,25 @@ export default function Current({
         <tr key={activeTrade.positionId}>
           <Cell variant="primary" label={'ETH'} isButton={false} />
           <Cell
+            deviceVariant='large'
             variant="primary"
             label={activeTrade.optionType}
             isButton={false}
           />
           <Cell
+            deviceVariant='large'
             variant="primary"
             label={formatUSD(fromBigNumber(activeTrade.strikePrice))}
             isButton={false}
           />
           <Cell
+            deviceVariant='large'
             variant="primary"
             label={fromBigNumber(activeTrade.position.size)}
             isButton={false}
           />
           <Cell
+            deviceVariant='large'
             variant="primary"
             label={formatUSD(fromBigNumber(activeTrade.premiumEarned))}
             isButton={false}

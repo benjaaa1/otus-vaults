@@ -20,7 +20,7 @@ export default function SelectOptionType({
   setCall: Dispatch<any>
 }) {
   return (
-    <div className="grid grid-cols-1 gap-1 md:grid-cols-2">
+    <div className="grid gap-1 grid-cols-2">
       <span className="isolate inline-flex shadow-sm border-top">
         <div
           onClick={() => setLong(true)}

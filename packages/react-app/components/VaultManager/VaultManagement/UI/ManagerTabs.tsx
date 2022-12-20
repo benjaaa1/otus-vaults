@@ -22,6 +22,13 @@ export default function ManagerTabs({ setTab, active }: { setTab: Dispatch<strin
           name="tabs"
           className="border-gray focus:border-gray block w-full rounded-md focus:ring-zinc-900"
           defaultValue={tabs.find((tab) => tab.href == active)?.name}
+          onChange={(e) => {
+            if (e.target.value == 'Trade') {
+              setTab(VaultManagerTabs.TRADE.HREF)
+            } else {
+              setTab(VaultManagerTabs.CURRENT.HREF)
+            }
+          }}
         >
           {tabs.map((tab) => (
             <option key={tab.name}>{tab.name}</option>

@@ -6,9 +6,14 @@ export type CellVariant =
   | 'default' // bg gray border-gray
   | 'primary' // bg dark gradient no border
 
+export type CellDeviceVariant =
+  | 'large'
+  | 'default'
+
 export type CellProps = {
   label: string | number
   isButton?: boolean
+  deviceVariant?: CellDeviceVariant
   variant: CellVariant
   onClick?: any
   isSelected?: boolean
@@ -25,7 +30,18 @@ export const getCellVariant = (variant: CellVariant): string => {
   }
 }
 
+export const getMobileVariant = (variant: CellDeviceVariant): string => {
+  switch (variant) {
+    case 'large':
+      return 'hidden sm:block'
+    case 'default':
+      return ''
+      break;
+  }
+}
+
 export const Cell = ({
+  deviceVariant = 'default',
   variant,
   label,
   isButton = false,
@@ -34,9 +50,10 @@ export const Cell = ({
   buttonSize,
 }: CellProps) => {
   const cellVariant = getCellVariant(variant)
+  const cellMobileVariant = getMobileVariant(deviceVariant);
 
   return (
-    <td className={cellVariant}>
+    <td className={`${cellVariant} ${cellMobileVariant}`}>
       {isButton ? (
         <Button
           label={label}

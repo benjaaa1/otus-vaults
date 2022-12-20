@@ -7,8 +7,32 @@ import {
   formatUSD,
 } from '../../../../utils/formatters/numbers'
 import { Cell } from '../../../UI/Components/Table/Cell'
-import { HeaderCell } from '../../../UI/Components/Table/HeaderCell'
+import { HeaderCell, HeaderDeviceCellVariant } from '../../../UI/Components/Table/HeaderCell'
 import Table from '../../../UI/Components/Table/Table'
+
+type StrikeHeader = {
+  name: string
+  deviceVariant: HeaderDeviceCellVariant
+}
+
+const StrikesHeaders: StrikeHeader[] = [
+  {
+    name: 'Strike',
+    deviceVariant: 'default',
+  },
+  {
+    name: 'Break Even',
+    deviceVariant: 'default',
+  },
+  {
+    name: 'Implied Volatility',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Price',
+    deviceVariant: 'default',
+  }
+]
 
 export default function SelectStrikes({
   selectedStrikes,
@@ -38,9 +62,9 @@ export default function SelectStrikes({
       variant="primary"
       headers={
         <tr>
-          {['Strike', 'Break Even', 'Implied Volatility', 'Price'].map(
+          {StrikesHeaders.map(
             (column, i) => {
-              return <HeaderCell key={i} variant="primary" label={column} />
+              return <HeaderCell key={i} deviceVariant={column.deviceVariant} variant="primary" label={column.name} />
             }
           )}
         </tr>
@@ -59,6 +83,7 @@ export default function SelectStrikes({
             isButton={false}
           />
           <Cell
+            deviceVariant='large'
             variant="primary"
             label={formatPercentage(fromBigNumber(strike.quote.iv), true)}
             isButton={false}

@@ -4,8 +4,36 @@ import { useWeb3Context } from '../../../context'
 import { formatUSD, fromBigNumber } from '../../../utils/formatters/numbers'
 import { getBlockExplorerUrl } from '../../../utils/getBlockExplorer'
 import { Cell } from '../../UI/Components/Table/Cell'
-import { HeaderCell } from '../../UI/Components/Table/HeaderCell'
+import { HeaderCell, HeaderDeviceCellVariant } from '../../UI/Components/Table/HeaderCell'
 import Table from '../../UI/Components/Table/Table'
+
+type TradeTransactiontHeader = {
+  name: string
+  deviceVariant: HeaderDeviceCellVariant
+}
+
+const TradeTransactionHeaders: TradeTransactiontHeader[] = [
+  {
+    name: 'View Transaction',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Expiry',
+    deviceVariant: 'default',
+  },
+  {
+    name: 'Strike',
+    deviceVariant: 'default',
+  },
+  {
+    name: 'Option Type',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Size',
+    deviceVariant: 'default',
+  }
+];
 
 export default function TradeTransactions({ vaultTrades }: { vaultTrades: VaultTrade[] }) {
   const { network } = useWeb3Context()
@@ -22,9 +50,9 @@ export default function TradeTransactions({ vaultTrades }: { vaultTrades: VaultT
           variant="default"
           headers={
             <tr>
-              {['View Transaction', 'Expiry', 'Strike', 'Option Type', 'Size'].map(
+              {TradeTransactionHeaders.map(
                 (column, i) => {
-                  return <HeaderCell key={i} variant="default" label={column} />
+                  return <HeaderCell key={i} variant="default" label={column.name} deviceVariant={column.deviceVariant} />
                 }
               )}
             </tr>
@@ -34,6 +62,7 @@ export default function TradeTransactions({ vaultTrades }: { vaultTrades: VaultT
             return (
               <tr key={trade.id}>
                 <Cell
+                  deviceVariant="large"
                   variant="default"
                   label={'View TX'}
                   isButton={true}
@@ -55,6 +84,7 @@ export default function TradeTransactions({ vaultTrades }: { vaultTrades: VaultT
                   isButton={false}
                 />
                 <Cell
+                  deviceVariant="large"
                   variant="default"
                   label={trade.optionType}
                   isButton={false}

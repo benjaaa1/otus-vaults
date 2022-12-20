@@ -242,7 +242,7 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
                     <p className="truncate font-sans text-xs font-semibold text-white">
                       Profit and Loss
                     </p>
-                    <div className='col-span-1'>
+                    <div className='col-span-1 content-center'>
                       <PNLChart assetType={assetType} />
                     </div>
                   </div>

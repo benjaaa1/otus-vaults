@@ -76,8 +76,8 @@ export default function VaultManagement() {
             </div>
           </div>
 
-          <div className="grid grid-cols-12 gap-8 py-8">
-            <div className="col-span-8 grid grid-cols-1 rounded-sm border border-zinc-700 bg-gradient-to-b from-black to-zinc-900">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-8 py-8">
+            <div className="col-span-1 sm:col-span-8 grid grid-cols-1 rounded-sm border border-zinc-700 bg-gradient-to-b from-black to-zinc-900">
               <div className="rounded-sm  bg-transparent shadow shadow-black">
                 <ManagerTabs setTab={setTab} active={tab} />
                 {tab === VaultManagerTabs.TRADE.HREF ? (
@@ -90,7 +90,7 @@ export default function VaultManagement() {
                         <CurrentDetails vault={data} />
                       </>
                     ) : null}
-                    {data?.id != null && data?.vaultTrades.length > 0 ? (
+                    {data?.id != null ? (
                       <Current
                         hedgeType={data?.strategy.hedgeType}
                         activeVaultTrades={data?.vaultTrades}
@@ -101,7 +101,7 @@ export default function VaultManagement() {
               </div>
             </div>
 
-            <div className="col-span-4">
+            <div className="col-span-1 sm:col-span-4">
               {data != null ? (
                 tab === VaultManagerTabs.TRADE.HREF ? (
                   <TradeExecute vault={data} />
@@ -350,7 +350,7 @@ const CurrentDetails = ({ vault }: { vault: Vault }) => {
     strategy: { hedgeType },
   } = vault
   return (
-    <div className="grid sm:grid-cols-5 gap-2 border-b border-zinc-700 px-6 py-3 items-center">
+    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 border-b border-zinc-700 px-6 py-3 items-center">
       <div>
         <div className="py-2">
           <div className="text-xxs font-normal text-zinc-300">Round</div>

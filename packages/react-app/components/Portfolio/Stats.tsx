@@ -19,7 +19,7 @@ export default function Stats() {
         </div>
       </div>
       <div className="mt-6 border border-zinc-700 bg-gradient-to-b from-black to-zinc-900 p-9">
-        <dl className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <dl className="grid grid-cols-2 gap-5 sm:grid-cols-3">
           <Stat
             stat={
               balance ? formatUSD(fromBigNumber(balance), { maxDps: 0 }) : null

@@ -8,8 +8,36 @@ import { formatDate } from '../../utils/formatters/dates'
 import { formatUSD, fromBigNumber } from '../../utils/formatters/numbers'
 import { getBlockExplorerUrl } from '../../utils/getBlockExplorer'
 import { Cell } from '../UI/Components/Table/Cell'
-import { HeaderCell } from '../UI/Components/Table/HeaderCell'
+import { HeaderCell, HeaderDeviceCellVariant } from '../UI/Components/Table/HeaderCell'
 import Table from '../UI/Components/Table/Table'
+
+type TransactiontHeader = {
+  name: string
+  deviceVariant: HeaderDeviceCellVariant
+}
+
+const TransactionHeaders: TransactiontHeader[] = [
+  {
+    name: 'View Transaction',
+    deviceVariant: 'default',
+  },
+  {
+    name: 'Timestamp',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Type',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Amount',
+    deviceVariant: 'default',
+  },
+  {
+    name: 'Vault',
+    deviceVariant: 'default',
+  }
+];
 
 export default function Transactions() {
   const { network } = useWeb3Context()
@@ -35,9 +63,9 @@ export default function Transactions() {
           variant="default"
           headers={
             <tr>
-              {['View Transaction', 'Timestamp', 'Type', 'Amount', 'Vault'].map(
+              {TransactionHeaders.map(
                 (column, i) => {
-                  return <HeaderCell key={i} variant="default" label={column} />
+                  return <HeaderCell key={i} variant="default" label={column.name} deviceVariant={column.deviceVariant} />
                 }
               )}
             </tr>
@@ -58,11 +86,13 @@ export default function Transactions() {
                   }}
                 />
                 <Cell
+                  deviceVariant='large'
                   variant="default"
                   label={action.timestamp ? formatDate(action.timestamp) : ''}
                   isButton={false}
                 />
                 <Cell
+                  deviceVariant='large'
                   variant="default"
                   label={action.isDeposit ? 'Deposit' : 'Withdraw'}
                   isButton={false}

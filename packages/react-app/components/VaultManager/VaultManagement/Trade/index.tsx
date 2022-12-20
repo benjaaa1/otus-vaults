@@ -54,42 +54,45 @@ export default function Trade() {
   }, [selectedOptionType, selectedExpiry])
 
   return (
-    <div>
+    <div className='w-full'>
       <div className="py-2">
-        {isLoading ? (
-          <Spinner />
-        ) : (
-          <>
-            <div className="grid grid-cols-1 gap-4 sm:m-4 md:grid-cols-5">
-              <div className="rounded-lg p-2">
-                <SelectMarket
-                  markets={data}
-                  selectedMarket={selectedMarket}
-                  setSelectedMarket={setSelectedMarket}
-                />
-              </div>
-              <div className="rounded-lg p-2 sm:col-span-2">
-                <SelectOptionType
-                  isLong={isLong}
-                  isCall={isCall}
-                  setLong={setLong}
-                  setCall={setCall}
-                />
-              </div>
-              <div className="rounded-lg p-2 sm:col-span-2">
-                <SelectExpiry
-                  boards={selectedMarket ? selectedMarket?.liveBoards : []}
-                  selectedExpiry={selectedExpiry}
-                  setSelectedExpiry={setSelectedExpiry}
-                />
-              </div>
+
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:m-4 md:grid-cols-5">
+            <div className="rounded-lg p-2">
+              <SelectMarket
+                markets={data}
+                selectedMarket={selectedMarket}
+                setSelectedMarket={setSelectedMarket}
+              />
             </div>
-            <SelectStrikes
-              selectedStrikes={strikes}
-              selectedOptionType={selectedOptionType}
-            />
-          </>
-        )}
+            <div className="rounded-lg p-2 sm:col-span-2">
+              <SelectOptionType
+                isLong={isLong}
+                isCall={isCall}
+                setLong={setLong}
+                setCall={setCall}
+              />
+            </div>
+            <div className="rounded-lg p-2 sm:col-span-2">
+              <SelectExpiry
+                boards={selectedMarket ? selectedMarket?.liveBoards : []}
+                selectedExpiry={selectedExpiry}
+                setSelectedExpiry={setSelectedExpiry}
+              />
+            </div>
+          </div>
+          {
+            isLoading ?
+              <Spinner /> :
+              <SelectStrikes
+                selectedStrikes={strikes}
+                selectedOptionType={selectedOptionType}
+              />
+          }
+
+        </>
+
       </div>
     </div>
   )

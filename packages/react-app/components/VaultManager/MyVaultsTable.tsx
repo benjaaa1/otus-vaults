@@ -5,8 +5,40 @@ import { useWeb3Context } from '../../context'
 import { useMyVaults, Vault } from '../../queries/myVaults/useMyVaults'
 import { formatDate } from '../../utils/formatters/dates'
 import { Cell } from '../UI/Components/Table/Cell'
-import { HeaderCell } from '../UI/Components/Table/HeaderCell'
+import { HeaderCell, HeaderDeviceCellVariant } from '../UI/Components/Table/HeaderCell'
 import Table from '../UI/Components/Table/Table'
+
+type VaultManagementHeader = {
+  name: string
+  deviceVariant: HeaderDeviceCellVariant
+}
+
+const VaultManagementHeaders: VaultManagementHeader[] = [
+  {
+    name: 'Active',
+    deviceVariant: 'default',
+  },
+  {
+    name: 'Timestamp',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Name',
+    deviceVariant: 'default',
+  },
+  {
+    name: 'Asset',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Is Public',
+    deviceVariant: 'large',
+  },
+  {
+    name: 'Manage',
+    deviceVariant: 'default',
+  }
+];
 
 export default function MyVaultsTable() {
   const { network } = useWeb3Context()
@@ -33,15 +65,8 @@ export default function MyVaultsTable() {
           variant="default"
           headers={
             <tr>
-              {[
-                'Active',
-                'Timestamp',
-                'Name',
-                'Asset',
-                'Is Public',
-                'Manage',
-              ].map((column, i) => {
-                return <HeaderCell key={i} variant="default" label={column} />
+              {VaultManagementHeaders.map((column, i) => {
+                return <HeaderCell key={i} variant="default" label={column.name} deviceVariant={column.deviceVariant} />
               })}
             </tr>
           }
@@ -51,12 +76,14 @@ export default function MyVaultsTable() {
               <tr key={vault.id}>
                 <Cell variant="default" label={vault.isActive ? 'Yes' : 'No'} />
                 <Cell
+                  deviceVariant='large'
                   variant="default"
                   label={vault.createdAt ? formatDate(vault.createdAt) : ''}
                 />
 
                 <Cell variant="default" label={vault.name} isButton={false} />
                 <Cell
+                  deviceVariant='large'
                   variant="default"
                   label={
                     CURRENCY_BY_ADDRESS[network?.chainId || 10][vault.id] ||
@@ -64,8 +91,7 @@ export default function MyVaultsTable() {
                   }
                   isButton={false}
                 />
-                <Cell variant="default" label={vault.isPublic ? 'Yes' : 'No'} />
-
+                <Cell deviceVariant='large' variant="default" label={vault.isPublic ? 'Yes' : 'No'} />
                 <Cell
                   variant="default"
                   label={'View'}

@@ -117,7 +117,7 @@ const create = async () => {
     await createVault.wait();
 
     const { userVaults, userStrategies } = await otusController.connect(deployer).getUserManagerDetails();
-
+    console.log({ userVaults, userStrategies })
     const userVaultInformation = userVaults.map((vault: string, index: number) => {
       const strategy = userStrategies[index];
       return { vault, strategy };

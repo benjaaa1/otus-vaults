@@ -20,7 +20,7 @@ export default function Layout({ children }: Props) {
       }
 
       <Navbar />
-      <main className="sm:mx-auto max-w-6xl bg-zinc-900 px-2 sm:px-4 md:px-6 lg:px-8">
+      <main className="sm:mx-auto max-w-5xl bg-zinc-900 px-2 sm:px-4 md:px-6 lg:px-8">
         {children}
       </main>
 
