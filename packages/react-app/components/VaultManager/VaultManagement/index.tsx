@@ -38,7 +38,7 @@ export default function VaultManagement() {
       <div className="min-h-full">
         <main className="py-8">
           {/* Page header */}
-          <div className="mx-auto max-w-3xl text-white md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-6xl">
+          <div className=" text-white md:flex md:items-center md:justify-between md:space-x-5">
             <div className="flex items-center space-x-5">
               <div>
                 <h1 className="text-3xl font-bold uppercase text-zinc-200">
@@ -85,10 +85,13 @@ export default function VaultManagement() {
                 ) : (
                   <>
                     {data?.id != null ? (
-                      <>
-                        <CurrentRoundProgress vault={data} refetch={refetch} />
-                        <CurrentDetails vault={data} />
-                      </>
+                      <div className='w-full'>
+                        <>
+                          <CurrentRoundProgress vault={data} refetch={refetch} />
+                          <CurrentDetails vault={data} />
+                        </>
+
+                      </div>
                     ) : null}
                     {data?.id != null ? (
                       <Current
@@ -227,7 +230,7 @@ const CurrentRoundProgress = ({
     <nav aria-label="Progress" className="p-4 py-6 pb-2">
       <ol
         role="list"
-        className="divide-y divide-zinc-800 rounded-md border border-zinc-800 md:flex md:divide-y-0"
+        className="divide-y divide-zinc-800 col-span-5 rounded-md border border-zinc-800 md:flex md:divide-y-0"
       >
         <li
           onClick={handleStartRound}

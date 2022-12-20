@@ -89,7 +89,7 @@ export default function CloseExecute() {
                   </p>
                   <div className="ml-2 flex flex-shrink-0">
                     <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                      {builtStrikeToClose
+                      {builtStrikeToClose && builtStrikeToClose.position
                         ? fromBigNumber(builtStrikeToClose.position.size)
                         : null}
                     </p>
@@ -101,7 +101,7 @@ export default function CloseExecute() {
                   </p>
                   <div className="ml-2 flex flex-shrink-0">
                     <p className="inline-flex font-mono text-xs font-normal leading-5 text-white">
-                      {builtStrikeToClose
+                      {builtStrikeToClose && builtStrikeToClose.position
                         ? formatUSD(fromBigNumber(builtStrikeToClose.position.settlementPnl))
                         : null}
                     </p>

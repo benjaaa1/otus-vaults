@@ -20,7 +20,7 @@ export default function SelectOptionType({
   setCall: Dispatch<any>
 }) {
   return (
-    <div className="grid gap-1 grid-cols-2">
+    <div className="grid gap-2 grid-cols-2">
       <span className="isolate inline-flex shadow-sm border-top">
         <div
           onClick={() => setLong(true)}
@@ -36,7 +36,7 @@ export default function SelectOptionType({
         </div>
       </span>
 
-      <span className="isolate inline-flex">
+      <span className="ml-1 isolate inline-flex">
         <div
           onClick={() => setCall(true)}
           className={`${activeClasses(isCall)} rounded-l-full`}

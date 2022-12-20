@@ -55,14 +55,11 @@ export default function SelectExpiry({
                     {({ selected, active }) => (
                       <>
                         <div className="flex items-center">
-                          <span
-                            className="inline-block h-2 w-2 flex-shrink-0 rounded-full"
-                            aria-hidden="true"
-                          />
+
                           <span
                             className={classNames(
                               selected ? 'font-semibold' : 'font-normal',
-                              'ml-3 block truncate'
+                              'block truncate'
                             )}
                           >
                             {board.name}

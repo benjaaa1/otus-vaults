@@ -58,7 +58,7 @@ export default function Trade() {
       <div className="py-2">
 
         <>
-          <div className="grid grid-cols-1 gap-4 sm:m-4 md:grid-cols-5">
+          <div className="grid grid-cols-1 gap-1 sm:m-4 md:grid-cols-5">
             <div className="rounded-lg p-2">
               <SelectMarket
                 markets={data}

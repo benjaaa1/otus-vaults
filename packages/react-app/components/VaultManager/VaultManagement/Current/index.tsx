@@ -1,3 +1,4 @@
+import { ZERO_BN } from '../../../../constants/bn'
 import { useVaultManagerContext } from '../../../../context'
 import { VaultTrade, CurrentPosition } from '../../../../queries/myVaults/useMyVaults'
 import { formatUSD, fromBigNumber } from '../../../../utils/formatters/numbers'
@@ -80,7 +81,7 @@ export default function Current({
           <Cell
             deviceVariant='large'
             variant="primary"
-            label={fromBigNumber(activeTrade.position.size)}
+            label={activeTrade.position != null ? fromBigNumber(activeTrade.position.size) : 'N/A'}
             isButton={false}
           />
           <Cell

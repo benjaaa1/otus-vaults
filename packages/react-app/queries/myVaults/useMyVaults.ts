@@ -302,7 +302,7 @@ type PositionId = {
 }
 
 const prepareMyVault = (positions: CurrentPosition[], vault: Vault): Vault => {
-
+  console.log({ vault, vaultTrades: vault.vaultTrades })
   const { vaultTrades } = vault;
 
   const positionsById: PositionId = positions.reduce((accum, position) => {
