@@ -41,7 +41,7 @@ const social = [
   },
   {
     name: 'Discord',
-    href: 'https://discord.gg/TTDKPbc25f',
+    href: 'https://discord.gg/Z5VKakW3RW',
     icon: (props: any) => (
       <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
         <path d="M9.555 9.23c-.74 0-1.324.624-1.324 1.385S8.827 12 9.555 12c.739 0 1.323-.624 1.323-1.385.013-.761-.584-1.385-1.323-1.385Zm4.737 0c-.74 0-1.324.624-1.324 1.385S13.564 12 14.292 12c.74 0 1.324-.624 1.324-1.385s-.584-1.385-1.324-1.385Z" />
