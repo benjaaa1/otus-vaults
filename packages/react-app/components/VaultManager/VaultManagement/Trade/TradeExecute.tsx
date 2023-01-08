@@ -21,6 +21,7 @@ import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
 import { RangeSlider } from '../../../UI/Components/RangeSlider'
 import { PNLChart } from './PNLChart'
+import { DebounceInput } from 'react-debounce-input';
 
 const computeCosts = (trades: LyraStrike[] | null | undefined) => {
   return trades?.reduce(
@@ -300,8 +301,9 @@ const Trade = ({ lyra, toggleTrade, trade }: { lyra: Lyra, toggleTrade: (trade: 
                 Size
               </label>
               <div className="mt-1">
-                <input
-                  value={size}
+                <DebounceInput
+                  minLength={1}
+                  debounceTimeout={300}
                   onChange={async (e) => {
                     if (e.target.value == '') return
                     setSize(parseInt(e.target.value))

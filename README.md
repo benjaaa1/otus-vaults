@@ -35,8 +35,50 @@ subgraph - yarn deploy-local
 react-app - yarn run dev
 ```
 
-> Goerlie Optimism 
+> Goerlie Optimism
 
-> Lyra Test 
+> Lyra Test
 
-> Kwenta Test 
+> Kwenta Test
+
+# Otus Builder
+
+> Saving a strategy on chain
+
+- asset
+- strikeId
+- optionType
+- size
+- twitter handle
+- address
+
+contract OtusBuilder {
+
+uint internal immutable limit;
+
+uint
+
+struct Trade {
+bytes32 asset;
+uint strikeId;
+uint size;
+OptionType optionType;
+}
+
+mapping(address => Trade[]) public userTrades;
+
+constructor(address )
+
+functoin saveBuilderStrategy(Trade[] memory \_trades) external {
+require()
+
+}
+
+}
+
+> Saving a strategy off chain
+
+- asset
+- strieId
+- optionType
+- size

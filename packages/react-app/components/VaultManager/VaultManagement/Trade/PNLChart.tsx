@@ -8,7 +8,8 @@ import {
   Tooltip,
   Legend,
   ReferenceLine,
-  ReferenceDot
+  ReferenceDot,
+  ResponsiveContainer
 } from "recharts";
 import { useProfitLossChart } from "../../../../hooks/ProfitLossChart";
 import { useLatestRates } from "../../../../queries/synth/useLatestRates";
@@ -21,37 +22,37 @@ export const PNLChart = ({ assetType }: { assetType: string }) => {
   const data = useProfitLossChart(assetType, currentPrice || 0);
 
   return (
-    <LineChart
-      width={250}
-      height={220}
-      data={data}
-      margin={{
-        top: 2,
-        left: 0,
-        right: 0,
-        bottom: 0
-      }}
-    >
-      <XAxis hide={true} dataKey="asset_price" />
-      <YAxis hide={true} label="profit" />
-      {/* @ts-ignore */}
-      <Tooltip content={<CustomTooltip currentPrice={currentPrice} />} />
-      {/**
+    <ResponsiveContainer width={'99%'} height={180}>
+      <LineChart
+        data={data}
+        margin={{
+          top: 2,
+          left: 0,
+          right: 0,
+          bottom: 0
+        }}
+      >
+        <XAxis hide={true} dataKey="asset_price" />
+        <YAxis hide={true} label="profit" />
+        {/* @ts-ignore */}
+        <Tooltip content={<CustomTooltip currentPrice={currentPrice} />} />
+        {/**
        * x is liquidation spots
        */}
-      {/* <ReferenceLine x={2750} stroke="red" />
+        {/* <ReferenceLine x={2750} stroke="red" />
       <ReferenceLine x={3050} stroke="red" /> */}
 
 
-      {/* <ReferenceLine label="test" x={1200} stroke={'#fff'} alwaysShow={true} /> */}
-      <ReferenceLine y={0} stroke={'#e4e4e7'} strokeWidth={.25} />
+        {/* <ReferenceLine label="test" x={1200} stroke={'#fff'} alwaysShow={true} /> */}
+        <ReferenceLine y={0} stroke={'#e4e4e7'} strokeWidth={.25} />
 
-      {/* <ReferenceDot key={'1'} x={-2} y={2} /> */}
+        {/* <ReferenceDot key={'1'} x={-2} y={2} /> */}
 
-      <Line type="monotone" dataKey="combo_payoff" stroke={'#047857'} dot={false} />
+        <Line type="monotone" dataKey="combo_payoff" stroke={'#047857'} dot={false} />
 
-      {/* <Line type="monotone" dataKey="asset_price" stroke="#8884d8" /> */}
-    </LineChart>
+        {/* <Line type="monotone" dataKey="asset_price" stroke="#8884d8" /> */}
+      </LineChart>
+    </ResponsiveContainer>
   );
 }
 
