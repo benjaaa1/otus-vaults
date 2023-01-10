@@ -29,8 +29,8 @@ yarn registry
 yarn createStrategy
 
 services - yarn compose
-subgraph - yarn create-local
-subgraph - yarn deploy-local
+subgraph - yarn create:local
+subgraph - yarn deploy:local
 
 react-app - yarn run dev
 ```

@@ -56,7 +56,7 @@ const Vaults: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="mx-auto sm:max-w-4xl py-6">
+      <div className="mx-auto sm:max-w-5xl py-6">
         <div className="mx-auto max-w-2xl py-14">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             <div className="p-1 ">

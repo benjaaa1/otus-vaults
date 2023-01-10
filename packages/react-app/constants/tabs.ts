@@ -1,4 +1,8 @@
 export const VaultManagerTabs = {
+  BUILD: {
+    TITLE: 'Build',
+    HREF: 'build',
+  },
   TRADE: {
     TITLE: 'Trade',
     HREF: 'trade',

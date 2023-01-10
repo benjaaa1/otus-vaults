@@ -2,6 +2,8 @@ import { ZERO_BN } from '../../../../constants/bn'
 import { useVaultManagerContext } from '../../../../context'
 import { VaultTrade, CurrentPosition } from '../../../../queries/myVaults/useMyVaults'
 import { formatUSD, fromBigNumber } from '../../../../utils/formatters/numbers'
+import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
+import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
 import { Cell } from '../../../UI/Components/Table/Cell'
 import { HeaderCell, HeaderDeviceCellVariant } from '../../../UI/Components/Table/HeaderCell'
 import Table from '../../../UI/Components/Table/Table'
@@ -65,7 +67,13 @@ export default function Current({
     >
       {activeVaultTrades.map((activeTrade) => (
         <tr key={activeTrade.positionId}>
-          <Cell variant="primary" label={'ETH'} isButton={false} />
+          <Cell
+            variant="primary"
+            label={
+              activeTrade.market === 'ETH' ? <ETHIcon /> : <BTCIcon />
+            }
+            isButton={false}
+          />
           <Cell
             deviceVariant='large'
             variant="primary"

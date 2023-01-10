@@ -11,6 +11,7 @@ import { useLyra } from '../lyra/useLyra'
 
 export type VaultTrade = {
   id: string
+  market?: string
   txhash: string
   strikeId: string
   positionId: string

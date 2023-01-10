@@ -21,6 +21,7 @@ import Modal from '../../UI/Modal'
 import HedgeStrategyForm from './StrategyModals/HedgeStrategyForm'
 import VaultStrategyForm from './StrategyModals/VaultStrategyForm'
 import StrikeStrategyForm from './StrategyModals/StrikeStrategyForm'
+import { Builder } from './Builder'
 
 export default function VaultManagement() {
   const { query } = useRouter()
@@ -35,8 +36,8 @@ export default function VaultManagement() {
 
   return (
     <VaultManagerContextProvider>
-      <div className="min-h-full">
-        <main className="py-8">
+      <div className="min-h-[70vh]">
+        <main className="py-8 mx-auto max-w-5xl">
           {/* Page header */}
           <div className=" text-white md:flex md:items-center md:justify-between md:space-x-5">
             <div className="flex items-center space-x-5">
@@ -77,34 +78,37 @@ export default function VaultManagement() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-8 py-8">
+
             <div className="col-span-1 sm:col-span-8 grid grid-cols-1 rounded-sm border border-zinc-700 bg-gradient-to-b from-black to-zinc-900">
               <div className="rounded-sm  bg-transparent shadow shadow-black">
                 <ManagerTabs setTab={setTab} active={tab} />
-                {tab === VaultManagerTabs.TRADE.HREF ? (
-                  <Trade />
-                ) : (
-                  <>
-                    {data?.id != null ? (
-                      <div className='w-full'>
-                        <>
-                          <CurrentRoundProgress vault={data} refetch={refetch} />
-                          <CurrentDetails vault={data} />
-                        </>
 
-                      </div>
-                    ) : null}
-                    {data?.id != null ? (
-                      <Current
-                        hedgeType={data?.strategy.hedgeType}
-                        activeVaultTrades={data?.vaultTrades}
-                      />
-                    ) : null}
-                  </>
-                )}
+                {
+                  tab === VaultManagerTabs.BUILD.HREF && <Builder />
+                }
+
+                {
+                  tab === VaultManagerTabs.TRADE.HREF && <Trade />
+                }
+
+                {
+                  tab === VaultManagerTabs.CURRENT.HREF && data?.id &&
+                  <div>
+
+                    <CurrentRoundProgress vault={data} refetch={refetch} />
+                    <CurrentDetails vault={data} />
+                    <Current
+                      hedgeType={data?.strategy.hedgeType}
+                      activeVaultTrades={data?.vaultTrades}
+                    />
+
+                  </div>
+                }
               </div>
             </div>
 
             <div className="col-span-1 sm:col-span-4">
+
               {data != null ? (
                 tab === VaultManagerTabs.TRADE.HREF ? (
                   <TradeExecute vault={data} />
@@ -113,7 +117,9 @@ export default function VaultManagement() {
                 )
               ) : null}
             </div>
+
           </div>
+
         </main>
       </div>
       <Modal
@@ -235,7 +241,7 @@ const CurrentRoundProgress = ({
         <li
           onClick={handleStartRound}
           key={1}
-          className={`${startPointer} relative md:flex md:flex-1`}
+          className={`${startPointer} relative md:flex md:flex-1 grow`}
         >
           <a
             className="flex items-center px-6 py-4 text-sm font-medium"
@@ -247,7 +253,7 @@ const CurrentRoundProgress = ({
                 aria-hidden="true"
               />
             </span>
-            <span className={`ml-4 text-sm font-light ${startRoundStyle}`}>
+            <span className={`ml-4 text-sm font-normal ${startRoundStyle}`}>
               Start Round
             </span>
           </a>
@@ -275,7 +281,7 @@ const CurrentRoundProgress = ({
         </li>
         <li key={0} className={`relative md:flex md:flex-1`}>
           <a className="group flex w-full items-center">
-            <span className="flex items-center px-6 py-4 text-sm font-light">
+            <span className="flex items-center px-6 py-4 text-sm font-normal">
               <span
                 className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full`}
               >
@@ -291,7 +297,7 @@ const CurrentRoundProgress = ({
                   />
                 )}
               </span>
-              <span className={`ml-4 text-sm font-light ${inProgressStyle}`}>
+              <span className={`ml-4 text-sm font-normal ${inProgressStyle}`}>
                 In Progress
               </span>
             </span>
@@ -334,7 +340,7 @@ const CurrentRoundProgress = ({
                 aria-hidden="true"
               />
             </span>
-            <span className={`ml-4 text-sm font-light ${inProgressStyle}`}>
+            <span className={`ml-4 text-sm font-normal ${inProgressStyle}`}>
               Close Round
             </span>
           </a>
@@ -357,7 +363,7 @@ const CurrentDetails = ({ vault }: { vault: Vault }) => {
       <div>
         <div className="py-2">
           <div className="text-xxs font-normal text-zinc-300">Round</div>
-          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
+          <div className="py-2 font-mono text-lg font-normal text-zinc-200">
             {round}
           </div>
         </div>
@@ -365,8 +371,8 @@ const CurrentDetails = ({ vault }: { vault: Vault }) => {
       <div>
         <div className="py-2">
           <div className="text-xxs font-normal text-zinc-300">Public Vault</div>
-          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
-            {isPublic ? 'True' : 'False'}
+          <div className="py-2 font-mono text-lg font-normal text-zinc-200">
+            {isPublic ? 'Yes' : 'No'}
           </div>
         </div>
       </div>
@@ -375,7 +381,7 @@ const CurrentDetails = ({ vault }: { vault: Vault }) => {
           <div className="text-xxs font-normal text-zinc-300">
             Total Deposits
           </div>
-          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
+          <div className="py-2 font-mono text-lg font-normal text-zinc-200">
             {`${formatUSD(fromBigNumber(totalDeposit))}`}
           </div>
         </div>
@@ -383,7 +389,7 @@ const CurrentDetails = ({ vault }: { vault: Vault }) => {
       <div>
         <div className="py-2">
           <div className="text-xxs font-normal text-zinc-300">Vault Cap</div>
-          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
+          <div className="py-2 font-mono text-lg font-normal text-zinc-200">
             {`${formatUSD(fromBigNumber(vaultCap))}`}
           </div>
         </div>
@@ -391,7 +397,7 @@ const CurrentDetails = ({ vault }: { vault: Vault }) => {
       <div>
         <div className="py-2">
           <div className="text-xxs font-normal text-zinc-300">Hedge Type</div>
-          <div className="py-2 font-mono text-xl font-normal text-zinc-200">
+          <div className="py-2 font-mono text-lg font-normal text-zinc-200">
             {getHedgeType(hedgeType)}
           </div>
         </div>

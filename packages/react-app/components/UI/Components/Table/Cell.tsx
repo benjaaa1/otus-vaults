@@ -1,3 +1,4 @@
+import { ReactElement } from 'react'
 import { Button } from '../Button'
 
 export type CellButtonSize = 'fixed-xs' | 'fixed-xxs'
@@ -11,7 +12,7 @@ export type CellDeviceVariant =
   | 'default'
 
 export type CellProps = {
-  label: string | number
+  label: string | number | ReactElement
   isButton?: boolean
   deviceVariant?: CellDeviceVariant
   variant: CellVariant
@@ -26,7 +27,7 @@ export const getCellVariant = (variant: CellVariant): string => {
       return 'text-xxs whitespace-nowrap px-4 py-3 font-medium text-zinc-200'
       break
     case 'primary':
-      return 'text-xxs whitespace-nowrap px-6 py-3 font-medium text-zinc-500'
+      return 'text-xxs whitespace-nowrap px-6 py-3 font-medium text-zinc-200'
   }
 }
 

@@ -5,7 +5,7 @@ export const Spinner = () => {
     <div className="text-center">
       <div role="status">
         <svg
-          className="mr-2 inline h-6 w-6 animate-spin fill-zinc-700 text-zinc-200 dark:text-zinc-600"
+          className="mr-2 inline h-6 w-6 animate-spin fill-emerald-700 text-zinc-200 dark:text-zinc-600"
           viewBox="0 0 100 101"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"

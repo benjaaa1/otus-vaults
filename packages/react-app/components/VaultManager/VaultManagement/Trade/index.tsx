@@ -54,9 +54,8 @@ export default function Trade() {
   }, [selectedOptionType, selectedExpiry])
 
   return (
-    <div className='w-full'>
+    <div>
       <div className="py-2">
-
         <>
           <div className="grid grid-cols-1 gap-1 sm:m-4 md:grid-cols-5">
             <div className="rounded-lg p-2">

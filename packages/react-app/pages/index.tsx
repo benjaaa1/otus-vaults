@@ -17,32 +17,35 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="grid sm:grid-cols-12 grid-cols-1 gap-8">
-        <div className="sm:col-span-7 col-span-1">
-          <div className="grid grid-cols-1">
-            <div>
-              <Stats />
-            </div>
-            <div>
-              <Transactions />
-            </div>
+      <div className='mx-auto max-w-5xl'>
+        <div className="grid sm:grid-cols-12 grid-cols-1 gap-8">
+          <div className="sm:col-span-7 col-span-1">
+            <div className="grid grid-cols-1">
+              <div>
+                <Stats />
+              </div>
+              <div>
+                <Transactions />
+              </div>
 
-            <div>
-              <MyVaultsTable />
+              <div>
+                <MyVaultsTable />
+              </div>
             </div>
           </div>
-        </div>
-        <div className="sm:col-span-5 col-span-1">
-          <div className="grid grid-cols-1 sm:order-1">
-            <div>
-              <Positions />
-            </div>
-            <div className="order-first sm:order-2 shadow shadow-black">
-              <Products />
+          <div className="sm:col-span-5 col-span-1">
+            <div className="grid grid-cols-1 sm:order-1">
+              <div>
+                <Positions />
+              </div>
+              <div className="order-first sm:order-2 shadow shadow-black">
+                <Products />
+              </div>
             </div>
           </div>
         </div>
       </div>
+
     </div>
   )
 }

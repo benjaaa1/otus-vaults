@@ -55,7 +55,8 @@ export default function Product() {
   return (
     <>
       <div className="h-full">
-        <main className="py-8">
+        <main className='py-8 mx-auto max-w-5xl'>
+
           <div className="mx-auto max-w-3xl text-white md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-6xl">
             <div className="flex items-center space-x-5">
               <div>
