@@ -14,7 +14,9 @@ type BlockExplorerInstance = {
   blockLink: (blockNumber: string) => string;
 };
 
-const NotificationSuccess = () => { }
+const NotificationSuccess = () => {
+  return <div>Success</div>
+}
 
 const NotificationPending = () => { }
 
@@ -91,7 +93,7 @@ export const useTransactionNotifier = () => {
           ({ transactionHash }: TransactionStatusData) => {
             toast.update(transactionHash, {
               ...toastProps,
-              render: NotificationSuccess,
+              render: <NotificationSuccess />,
               autoClose: 10000,
             })
             if (onTxConfirmed != null) {

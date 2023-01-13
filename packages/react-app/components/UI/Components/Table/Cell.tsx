@@ -12,13 +12,14 @@ export type CellDeviceVariant =
   | 'default'
 
 export type CellProps = {
-  label: string | number | ReactElement
+  label: string | number
   isButton?: boolean
   deviceVariant?: CellDeviceVariant
   variant: CellVariant
   onClick?: any
   isSelected?: boolean
   isIcon?: boolean
+  icon?: ReactElement
   buttonSize?: CellButtonSize
 }
 
@@ -49,6 +50,7 @@ export const Cell = ({
   isButton = false,
   isSelected = false,
   isIcon = false,
+  icon,
   onClick,
   buttonSize,
 }: CellProps) => {
@@ -57,7 +59,7 @@ export const Cell = ({
 
   if (isIcon) {
     return <td className={`${cellVariant} ${cellMobileVariant}`}>
-      {label}
+      {icon}
     </td>
   }
 

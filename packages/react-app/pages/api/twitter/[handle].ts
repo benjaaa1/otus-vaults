@@ -6,9 +6,6 @@ const twitter: NextApiHandler = async (req, res) => {
   console.log({ req })
   const { handle } = req.query;
 
-  console.log(process.env.TWITTER_BEARER_TOKEN);
-  const TWITTER_BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAAP7FlAEAAAAAhgdZG4OOCg7RrNKTOBAxcpREJRI%3D7ZZjKN4cqwKypZVVGsv0ktDJ5Lpq58erMUIAExQ9iuSEoGaSVa";
-
   const _twitterData = await
     fetch(
       `https://api.twitter.com/2/users/by/username/${handle}?user.fields=profile_image_url`, {
