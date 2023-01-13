@@ -1,3 +1,5 @@
+import { Vault } from "./vault"
+
 export type Manager = {
   id: string
   twitter: string
