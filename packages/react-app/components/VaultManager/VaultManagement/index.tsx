@@ -55,7 +55,7 @@ export default function VaultManagement() {
                     <div>
                       <Avatar className='cursor-pointer' twitterHandle={twitterData.data.username} src={twitterData.data.profile_image_url} round={true} size={'60px'} />
                     </div> :
-                    'Test'
+                    null
                 }
 
               </Link>

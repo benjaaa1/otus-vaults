@@ -108,7 +108,6 @@ export const useWeb3 = () => {
       // https://docs.ethers.io/v5/concepts/best-practices/#best-practices--network-changes
       const handleChainChanged = (_hexChainId: string) => {
         if (typeof window !== 'undefined') {
-          console.log('switched to chain...', _hexChainId)
           toast.info('Web3 Network Changed')
           window.location.reload()
         } else {

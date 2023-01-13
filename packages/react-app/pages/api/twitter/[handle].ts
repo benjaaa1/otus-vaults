@@ -15,7 +15,7 @@ const twitter: NextApiHandler = async (req, res) => {
     });
 
   const twitterProfile: TwitterData = await _twitterData.json();
-  console.log({ _twitterData, twitterProfile })
+
   if (twitterProfile) {
     res.status(200).json(twitterProfile);
   } else {

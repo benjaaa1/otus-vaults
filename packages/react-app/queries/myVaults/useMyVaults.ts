@@ -56,18 +56,14 @@ export const useMyVaults = () => {
 }
 
 export const useTwitter = (twitter: string | undefined) => {
-  console.log({ twitter })
   return useQuery<TwitterData | null>(
     QUERY_KEYS.Leaderboard.Twitter(
       twitter || ''
     ),
     async () => {
       if (!twitter) return null
-      console.log('what')
-      const _twitterProfile = await fetch(`http://localhost:3000/api/twitter/${twitter}`);
-      console.log({ _twitterProfile })
+      const _twitterProfile = await fetch(`/api/twitter/${twitter}`);
       const _twitterJson = await _twitterProfile.json();
-      console.log({ _twitterJson })
       return _twitterJson;
     }
   )
@@ -87,9 +83,9 @@ export const useMyVault = (vaultId: any) => {
     ),
     async () => {
       if (!managerId) return null
-      console.log('get my vault')
+
       const response = await getMyVault(otusEndpoint, vaultId)
-      console.log('get my vault', response)
+
 
       let positions: CurrentPosition[];
 
@@ -127,7 +123,7 @@ export const useMyVault = (vaultId: any) => {
 
       const vaults = response.vaults.length > 0 ?
         prepareMyVault(positions, response.vaults[0]) : null;
-      console.log({ vaults })
+
       return vaults;
 
     },
@@ -165,7 +161,7 @@ export const useMyVaultStrikeStrategies = (strategyId: string) => {
         `,
         { strategyId: strategyId?.toLowerCase() }
       )
-      console.log({ response })
+
       return response.strikeStrategies.map((strategy: StrikeStrategy) => {
         const { optionType } = strategy;
         return { ...strategy, optionType: typeof (optionType) == 'string' ? parseInt(optionType) : optionType }
@@ -193,7 +189,7 @@ type PositionId = {
 }
 
 const prepareMyVault = (positions: CurrentPosition[], vault: Vault): Vault => {
-  console.log({ vault, vaultTrades: vault.vaultTrades })
+
   const { vaultTrades } = vault;
 
   const positionsById: PositionId = positions.reduce((accum, position) => {
@@ -204,7 +200,6 @@ const prepareMyVault = (positions: CurrentPosition[], vault: Vault): Vault => {
 
   const vaultTradesDetail = vaultTrades.map(vaultTrade => {
     const { positionId } = vaultTrade;
-    console.log({ positionId, positionsById })
 
     const position = positionId != null ? positionsById[parseInt(positionId)] : {
       id: 0,
@@ -215,9 +210,9 @@ const prepareMyVault = (positions: CurrentPosition[], vault: Vault): Vault => {
       profitPercentage: 0,
       isActive: false
     };
-    console.log({ position })
+
     return { ...vaultTrade, position }
   });
-  console.log({ vaultTradesDetail })
+
   return { ...vault, vaultTrades: vaultTradesDetail }
 }

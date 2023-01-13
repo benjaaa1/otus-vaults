@@ -14,7 +14,6 @@ export const useContractConfig = () => {
 
     const loadFunc = async () => {
       const result = await loadAppContracts()
-      console.log({ result })
       setContractsConfig(result)
     }
     void loadFunc()
@@ -39,14 +38,12 @@ export const useOtusContracts = (): Record<string, Contract> => {
   const [otusContracts, setOtusContracts] = useState({})
 
   useEffect(() => {
-    console.log({ contracts })
     if (data?.vaults && contracts['OtusVault'] && contracts['Strategy']) {
       const otusVaultContract = contracts['OtusVault']
       const strategyContract = contracts['Strategy']
       const attachedContracts = data?.vaults?.reduce((accum, { id, strategy: { id: strategyId } }) => {
         return { ...accum, [id]: otusVaultContract.attach(id), [strategyId]: strategyContract.attach(strategyId) }
       }, {})
-      console.log({ attachedContracts })
       setOtusContracts(attachedContracts)
     }
   }, [data, contracts])

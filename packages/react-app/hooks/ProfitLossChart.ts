@@ -38,13 +38,10 @@ export const useProfitLossChart = (asset: string, priceOfAsset: number) => {
   }, [builtTrades, priceOfAsset, asset])
 
   useEffect(() => {
-    console.log({ builtTrades })
     if (builtTrades && builtTrades?.length > 0) {
       formattedChartData();
     }
   }, [builtTrades, priceOfAsset, asset])
-
-  console.log({ data })
 
   return data;
 }
@@ -64,7 +61,6 @@ const ticks = (asset: string, price: number) => {
     currentTick = currentTick + tickSize;
     ticks.push(currentTick);
   };
-  console.log({ ticks })
 
   return ticks;
 }

@@ -196,7 +196,7 @@ export default function Product() {
                               <div>
                                 <Avatar size="40" className='cursor-pointer' twitterHandle={twitterData.data.username} src={twitterData.data.profile_image_url} round={true} />
                               </div> :
-                              'Test'
+                              null
                           }
 
                         </Link>

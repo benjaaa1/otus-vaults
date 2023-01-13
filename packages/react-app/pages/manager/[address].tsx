@@ -1,17 +1,23 @@
-import type { GetServerSideProps, NextPage } from 'next'
+import type { NextPage } from 'next'
 import Head from 'next/head'
 import React from 'react'
 import Avatar from 'react-avatar';
 import ErrorPage from "next/error";
 import { TwitterData } from '../api/utils/twitter';
+import { useTwitter } from '../../queries/myVaults/useMyVaults';
+import { useManager } from '../../queries/manager/useManagers';
+import { useRouter } from 'next/router';
 
-const Manager: NextPage<{ twitter: TwitterData }> = (props) => {
+const Manager: NextPage = () => {
 
-  if (!props.twitter.data) {
-    return <ErrorPage statusCode={404} />;
-  }
+  const router = useRouter()
 
-  const { username, id, name, profile_image_url } = props.twitter.data;
+  const { query } = router;
+
+  const { data: manager } = useManager(query?.address)
+
+  const { data: twitterData } = useTwitter(manager?.twitter)
+
 
   return (
     <div className="flex flex-col">
@@ -28,7 +34,14 @@ const Manager: NextPage<{ twitter: TwitterData }> = (props) => {
         <div className=" text-white md:flex md:items-center md:justify-between md:space-x-5">
           <div className="flex items-center space-x-5">
             <div>
-              <Avatar twitterHandle={username} src={profile_image_url} round={true} size={'60px'} />
+              {
+                twitterData?.data.id && twitterData.data.profile_image_url ?
+                  <div>
+                    <Avatar className='cursor-pointer' twitterHandle={twitterData.data.username} src={twitterData.data.profile_image_url} round={true} size={'60px'} />
+                  </div> :
+                  'Test'
+              }
+
             </div>
             <div>
               <h1 className="text-3xl font-bold uppercase text-zinc-200">
@@ -44,26 +57,6 @@ const Manager: NextPage<{ twitter: TwitterData }> = (props) => {
     </div>
   )
 }
-
-export const getServerSideProps: GetServerSideProps = async ({
-  params,
-  res
-}) => {
-  try {
-
-    const twitterHandle = 'otusfinance';
-
-    const twitter = await fetch(`http://localhost:3000/api/twitter/${twitterHandle}`);
-    console.log({ twitter })
-
-    return { props: { twitter: await twitter.json() } }
-  } catch {
-    res.statusCode = 404;
-    return {
-      props: {}
-    };
-  }
-};
 
 export default Manager;
 
