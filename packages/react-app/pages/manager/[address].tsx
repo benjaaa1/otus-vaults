@@ -39,13 +39,12 @@ const Manager: NextPage = () => {
                   <div>
                     <Avatar className='cursor-pointer' twitterHandle={twitterData.data.username} src={twitterData.data.profile_image_url} round={true} size={'60px'} />
                   </div> :
-                  'Test'
+                  null
               }
-
             </div>
             <div>
               <h1 className="text-3xl font-bold uppercase text-zinc-200">
-                {name || <span>---</span>}
+                {twitterData?.data.username || <span>---</span>}
               </h1>
             </div>
           </div>

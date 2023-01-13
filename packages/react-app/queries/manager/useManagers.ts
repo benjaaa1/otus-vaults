@@ -5,34 +5,33 @@ import { useWeb3Context } from "../../context"
 import { Manager } from "../../utils/types/manager"
 import { getOtusEndpoint } from "../utils"
 
-export const useManager = (managerId: any) => {
-
+export const useManager = (id: any) => {
   const { network } = useWeb3Context()
 
   const otusEndpoint = getOtusEndpoint(network)
+  console.log('managerId', id, otusEndpoint)
 
   return useQuery<Manager>(
-    QUERY_KEYS.Vaults.ManagerVaults(managerId?.toLowerCase()),
+    QUERY_KEYS.Vaults.ManagerVaults(id?.toLowerCase()),
     async () => {
-      if (!managerId) return null
+      if (!id) return null
       const response = await request(
         otusEndpoint,
         gql`
-          query ($managerId: String!) {
-            manager(where: { id: $managerId }) {
+          query ($id: String!) {
+            managers(where: { id: $id }) {
               id
               twitter
-              vaults
-              managerActions
             }
           }
         `,
-        { managerId: managerId.toLowerCase() }
+        { id: id.toLowerCase() }
       )
+      console.log({ response })
       return response ? response : null
     },
     {
-      enabled: !!managerId,
+      enabled: !!id,
     }
   )
 
