@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { ContractsMap } from '../utils/types'
+import { ContractsMap } from '../utils/types/contract'
 import {
   FUTURES_ENDPOINT_MAINNET,
   FUTURES_ENDPOINT_TESTNET,
