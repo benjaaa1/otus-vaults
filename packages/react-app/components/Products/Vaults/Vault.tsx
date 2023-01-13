@@ -65,7 +65,7 @@ const Vault = ({ vault }: { vault: Vault }) => {
               <Tag label={getHedgeLabel(vault.strategy.hedgeType)} size={'xs'} variant={'default'} />
             </div>
           </div>
-          <BuildMarketTags allowedMarkets={vault.strategy.vaultStrategy.allowedMarkets} />
+          {vault.strategy.vaultStrategy.allowedMarkets && <BuildMarketTags allowedMarkets={vault.strategy.vaultStrategy.allowedMarkets} />}
         </div>
       </div>
 
