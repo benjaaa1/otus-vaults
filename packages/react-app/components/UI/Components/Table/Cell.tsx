@@ -18,6 +18,7 @@ export type CellProps = {
   variant: CellVariant
   onClick?: any
   isSelected?: boolean
+  isIcon?: boolean
   buttonSize?: CellButtonSize
 }
 
@@ -47,15 +48,22 @@ export const Cell = ({
   label,
   isButton = false,
   isSelected = false,
+  isIcon = false,
   onClick,
   buttonSize,
 }: CellProps) => {
   const cellVariant = getCellVariant(variant)
   const cellMobileVariant = getMobileVariant(deviceVariant);
 
+  if (isIcon) {
+    return <td className={`${cellVariant} ${cellMobileVariant}`}>
+      {label}
+    </td>
+  }
+
   return (
     <td className={`${cellVariant} ${cellMobileVariant}`}>
-      {isButton ? (
+      {isButton && !isIcon ? (
         <Button
           label={label}
           onClick={onClick}

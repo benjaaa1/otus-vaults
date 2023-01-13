@@ -67,10 +67,12 @@ export default function Current({
       {activeVaultTrades.map((activeTrade) => (
         <tr key={activeTrade.positionId}>
           <Cell
+            label={activeTrade.market === 'ETH' ? 'ETH' : 'BTC'}
             variant="primary"
-            label={
+            icon={
               activeTrade.market === 'ETH' ? <ETHIcon /> : <BTCIcon />
             }
+            isIcon={true}
             isButton={false}
           />
           <Cell
