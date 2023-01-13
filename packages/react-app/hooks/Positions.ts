@@ -1,8 +1,8 @@
 import { BigNumber } from 'ethers'
 import { useEffect, useState } from 'react'
-import { VaultTrade } from '../queries/myVaults/useMyVaults'
 import { ZERO_BN } from '../constants/bn'
 import { useWeb3Context } from '../context'
+import { VaultTrade } from '../utils/types/vault'
 import { useContracts } from './Contracts'
 
 export const usePositionDelta = (

@@ -8,12 +8,12 @@ import { fromBigNumber, toBN } from '../../../../utils/formatters/numbers'
 import { ZERO_BN } from '../../../../constants/bn'
 import { Button } from '../../../UI/Components/Button'
 import { BigNumber } from 'ethers'
-import { DynamicHedgeStrategy, VaultStrategy } from '../../../../queries/myVaults/useMyVaults'
 import { useOtusContracts } from '../../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
 import { DAY_SEC, HOUR_SEC, WEEK_SEC } from '../../../../constants/period'
 import { BYTES32_MARKET } from '../../../../constants/markets'
 import { VaultStrategyStruct } from '../../Create'
+import { VaultStrategy } from '../../../../utils/types/vault'
 
 const vaultStrategyInfoPlaceholder: VaultStrategy = {
   hedgeReserve: toBN('.15'), // limit up to 50%

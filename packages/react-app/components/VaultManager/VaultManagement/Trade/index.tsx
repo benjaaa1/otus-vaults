@@ -1,7 +1,4 @@
 import {
-  LyraBoard,
-  LyraMarket,
-  LyraStrike,
   useLyraMarket,
 } from '../../../../queries/lyra/useLyra'
 import SelectStrikes from './SelectStrikes'
@@ -10,6 +7,7 @@ import SelectOptionType from './SelectOptionType'
 import SelectMarket from './SelectMarket'
 import { useEffect, useState } from 'react'
 import { Spinner } from '../../../UI/Components/Spinner'
+import { LyraBoard, LyraMarket, LyraStrike } from '../../../../utils/types/lyra'
 
 const calculateOptionType = (isLong: boolean, isCall: boolean) => {
   if (isLong && isCall) {

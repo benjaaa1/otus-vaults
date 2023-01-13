@@ -73,7 +73,7 @@ const defaultStrategyDetail = {
 };
 
 const vaultInfo = {
-  name: 'New Vault 2',
+  name: 'New Vault Test 2',
   tokenName: 'OtusVault Share',
   tokenSymbol: 'Otus VS',
   description: 'Sell ETH Puts',
@@ -95,6 +95,7 @@ const create = async () => {
   try {
     // use getSigners to get random ones and test more and faster on kovan by getting drip auto and snx too
     const otusController = await ethers.getContract('OtusController');
+    console.log({ otusController: otusController.address })
     const otusVault = await ethers.getContract('OtusVault');
     const strategy = await ethers.getContract('Strategy');
     const lyraBase = await ethers.getContract('LyraBase');
@@ -112,7 +113,7 @@ const create = async () => {
 
     const createVault = await otusController
       .connect(deployer)
-      .createOptionsVault(vaultInfo, vaultParams, defaultStrategyDetail);
+      .createOptionsVault('otusfinance', vaultInfo, vaultParams, defaultStrategyDetail);
 
     await createVault.wait();
 

@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router'
 import React from 'react'
-import { Vault } from '../../../queries/vaults/useVaultProducts'
 import {
   formatUSD,
   fromBigNumber,
@@ -12,6 +11,7 @@ import SUSDIcon from '../../UI/Components/Icons/Color/SUSD'
 import { Tag } from '../../UI/Components/Tag'
 import { BigNumber } from 'ethers'
 import { BYTES32_MARKET } from '../../../constants/markets'
+import { Vault } from '../../../utils/types/vault'
 
 const BuildMarketTags = ({ allowedMarkets }: { allowedMarkets: string[] }) => {
   return <>

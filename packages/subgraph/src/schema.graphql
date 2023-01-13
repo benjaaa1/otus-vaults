@@ -105,6 +105,7 @@ type UserAction @entity {
 
 type Manager @entity {
   id: ID!
+  twitter: String!
   vaults: [Vault!]! @derivedFrom(field: "manager")
   managerActions: [ManagerAction!]! @derivedFrom(field: "manager")
 }

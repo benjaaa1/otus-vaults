@@ -6,12 +6,12 @@ import { useWeb3Context } from '../../../context'
 import { useBalance } from '../../../hooks/Balances'
 import { useContracts, useOtusContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
-import { Vault } from '../../../queries/vaults/useVaultProducts'
 import {
   formatNumber,
   formatUSD,
   fromBigNumber,
 } from '../../../utils/formatters/numbers'
+import { Vault } from '../../../utils/types/vault'
 import { Button } from '../../UI/Components/Button'
 import { Input } from '../../UI/Components/Input/Input'
 

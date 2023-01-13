@@ -1,8 +1,8 @@
-import { VaultTrade } from '../../../queries/myVaults/useMyVaults'
 import { useWeb3Context } from '../../../context'
 
 import { formatUSD, fromBigNumber } from '../../../utils/formatters/numbers'
 import { getBlockExplorerUrl } from '../../../utils/getBlockExplorer'
+import { VaultTrade } from '../../../utils/types/vault'
 import { Cell } from '../../UI/Components/Table/Cell'
 import { HeaderCell, HeaderDeviceCellVariant } from '../../UI/Components/Table/HeaderCell'
 import Table from '../../UI/Components/Table/Table'

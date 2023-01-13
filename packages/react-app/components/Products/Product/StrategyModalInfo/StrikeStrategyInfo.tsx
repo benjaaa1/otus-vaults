@@ -1,10 +1,8 @@
 import { fromBigNumber } from '../../../../utils/formatters/numbers'
-import {
-  StrikeStrategy,
-} from '../../../../queries/vaults/useVaultProducts'
 import Table from '../../../UI/Components/Table/Table'
 import { HeaderCell } from '../../../UI/Components/Table/HeaderCell'
 import { Cell } from '../../../UI/Components/Table/Cell'
+import { StrikeStrategy } from '../../../../utils/types/vault'
 
 export const StrikeStrategyInfo = ({ strikeStrategies }: { strikeStrategies: StrikeStrategy[] }) => {
 

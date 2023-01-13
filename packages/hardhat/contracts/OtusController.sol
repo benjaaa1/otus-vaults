@@ -63,6 +63,7 @@ contract OtusController is Ownable {
 
   event VaultCreated(
     address indexed user,
+    string twitterHandle,
     address indexed vault,
     address strategy,
     Vault.VaultInformation vaultInfo,
@@ -123,6 +124,7 @@ contract OtusController is Ownable {
    * @param currentStrategy vault strategy settings
    */
   function createOptionsVault(
+    string calldata twitterHandle,
     Vault.VaultInformation memory _vaultInfo,
     Vault.VaultParams memory _vaultParams,
     StrategyBase.StrategyDetail memory currentStrategy
@@ -156,7 +158,7 @@ contract OtusController is Ownable {
     // initialize strategy
     IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(msg.sender, vault, strategy, currentStrategy);
 
-    emit VaultCreated(msg.sender, vault, strategy, _vaultInfo, _vaultParams);
+    emit VaultCreated(msg.sender, twitterHandle, vault, strategy, _vaultInfo, _vaultParams);
   }
 
   /**

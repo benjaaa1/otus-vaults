@@ -17,13 +17,18 @@ import TradeTransactions from './TradeTransactions'
 import { HedgeStrategyInfo } from './StrategyModalInfo/HedgeStrategyInfo'
 import { StrikeStrategyInfo } from './StrategyModalInfo/StrikeStrategyInfo'
 import { VaultStrategyInfo } from './StrategyModalInfo/VaultStrategyInfo'
+import Link from 'next/link'
+import Avatar from 'react-avatar'
+import { useTwitter } from '../../../queries/myVaults/useMyVaults'
 
 export default function Product() {
   const { network } = useWeb3Context()
   const router = useRouter()
   const { query } = router
   const { data: vault } = useVaultProduct(query?.vault)
-  console.log('product', { vault })
+
+  const { data: twitterData } = useTwitter(vault?.manager.twitter)
+
   const [tab, setTab] = useState<string>(UserActionTabs.DEPOSIT.HREF)
   const [openVaultStrategy, setOpenVaultStrategy] = useState(false)
   const [openStrikeStrategy, setOpenStrikeStrategy] = useState(false)
@@ -184,7 +189,17 @@ export default function Product() {
                         Managed By
                       </div>
                       <div className="py-2 font-mono text-xl font-normal text-white">
+                        <Link href={`/manager/${vault?.manager.id}`}>
 
+                          {
+                            twitterData?.data.id && twitterData.data.profile_image_url ?
+                              <div>
+                                <Avatar size="40" className='cursor-pointer' twitterHandle={twitterData.data.username} src={twitterData.data.profile_image_url} round={true} />
+                              </div> :
+                              'Test'
+                          }
+
+                        </Link>
                       </div>
                     </div>
 

@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
-import { UserAction, useUserPortfolio } from '../../queries/portfolio/useUserPortfolio'
+import { useUserPortfolio } from '../../queries/portfolio/useUserPortfolio'
 import { formatUSD, fromBigNumber } from '../../utils/formatters/numbers'
 import { Cell } from '../UI/Components/Table/Cell'
 import { HeaderCell } from '../UI/Components/Table/HeaderCell'

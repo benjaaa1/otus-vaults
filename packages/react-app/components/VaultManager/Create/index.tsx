@@ -20,6 +20,7 @@ import { BYTES32_MARKET } from '../../../constants/markets'
 import { CURRENCIES } from '../../../constants/currency'
 import StrategyForm from './CreateForm/StrategyForm'
 import InformationForm from './CreateForm/InformationForm'
+import { Input } from '../../UI/Components/Input/Input'
 
 export type VaultInformationStruct = {
   name: string
@@ -62,7 +63,9 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
     router.push(`vault-manager/${href}`)
   }
 
-  const [isCreating, setIsCreating] = useState(false)
+  const [isCreating, setIsCreating] = useState(false);
+
+  const [twitterHandle, setTwitterHandle] = useState<string>('');
 
   const [vaultInfo, setVaultInfo] = useState<VaultInformationStruct>({
     name: '',
@@ -101,6 +104,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
     setIsCreating(true)
 
     const tx = await otusControllerContract.createOptionsVault(
+      twitterHandle,
       vaultInfo,
       vaultParams,
       vaultStrategy,
@@ -128,6 +132,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
     address,
     signer,
     monitorTransaction,
+    twitterHandle,
     vaultInfo,
     vaultParams,
     vaultStrategy,
@@ -150,12 +155,31 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
 
             {
               step === 1 ? // information 2 is strategy
-                <InformationForm
-                  vaultParams={vaultParams}
-                  setVaultParams={setVaultParams}
-                  vaultInfo={vaultInfo}
-                  setVaultInfo={setVaultInfo}
-                /> :
+                <div className="pt-6">
+                  <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div className="sm:col-span-6">
+                      <Input
+                        showLabel={true}
+                        label={'Twitter Handle'}
+                        type="text"
+                        id="twitter-handle"
+                        onChange={(e) => {
+                          setTwitterHandle(e.target.value);
+                        }}
+                        value={twitterHandle}
+                        radius={'xs'}
+                        variant={'default'}
+                      />
+                    </div>
+                  </div>
+                  <InformationForm
+                    vaultParams={vaultParams}
+                    setVaultParams={setVaultParams}
+                    vaultInfo={vaultInfo}
+                    setVaultInfo={setVaultInfo}
+                  />
+                </div>
+                :
                 <StrategyForm
                   vaultStrategy={vaultStrategy}
                   setVaultStrategy={setVaultStrategy}

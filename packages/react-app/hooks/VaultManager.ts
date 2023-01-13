@@ -9,8 +9,8 @@ import {
 } from '../reducers'
 
 import { toast } from 'react-toastify'
-import { LyraStrike } from '../queries/lyra/useLyra'
-import { VaultTrade } from '../queries/myVaults/useMyVaults'
+import { VaultTrade } from '../utils/types/vault'
+import { LyraStrike } from '../utils/types/lyra'
 
 export const useVaultManager = () => {
   const [state, dispatch] = useReducer(

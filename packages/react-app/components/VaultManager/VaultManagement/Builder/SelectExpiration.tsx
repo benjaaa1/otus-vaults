@@ -1,7 +1,7 @@
 import React, { Dispatch, Fragment } from 'react'
 import { Listbox, Transition } from "@headlessui/react"
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/20/solid'
-import { LyraBoard, LyraMarket } from '../../../../queries/lyra/useLyra'
+import { LyraBoard, LyraMarket } from '../../../../utils/types/lyra'
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')

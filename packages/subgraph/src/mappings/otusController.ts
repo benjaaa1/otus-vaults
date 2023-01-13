@@ -9,8 +9,9 @@ export function handleVaultCreated(event: VaultCreated): void {
   OtusVault.create(event.params.vault);
   Strategy.create(event.params.strategy);
 
-  let _vaultManager = event.params.user;
+  let _vaultManager = event.params.user.toHex();
   let _vaultAddress = event.params.vault.toHex();
+  let _twitterHandle = event.params.twitterHandle;
   let _vaultStrategy = event.params.strategy;
   let _vaultInfo = event.params.vaultInfo;
   let _vaultParams = event.params.vaultParams;
@@ -18,16 +19,17 @@ export function handleVaultCreated(event: VaultCreated): void {
   let vault = new Vault(_vaultAddress);
   let strategy = new OtusStrategy(_vaultStrategy.toHex());
 
-  let manager = Manager.load(_vaultManager.toHex());
+  let manager = Manager.load(_vaultManager);
   if (!manager) {
-    manager = new Manager(_vaultManager.toHex());
+    manager = new Manager(_vaultManager);
+    manager.twitter = _twitterHandle;
   }
 
   strategy.vault = _vaultAddress;
   // strategy.latestUpdate = event.block.timestamp;
 
   vault.strategy = _vaultStrategy.toHex();
-  vault.manager = manager.id;
+  vault.manager = manager.id || 'N/A';
   vault.round = 0;
   vault.isActive = false;
 

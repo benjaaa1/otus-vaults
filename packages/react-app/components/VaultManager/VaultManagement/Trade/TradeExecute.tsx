@@ -7,21 +7,21 @@ import { getMarketInBytes } from '../../../../constants/markets'
 import { useVaultManagerContext } from '../../../../context'
 import { useOtusContracts } from '../../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
-import { getStrikeQuote, LyraStrike, useLyra } from '../../../../queries/lyra/useLyra'
-import { Vault } from '../../../../queries/myVaults/useMyVaults'
+import { getStrikeQuote, useLyra } from '../../../../queries/lyra/useLyra'
 import {
   formatPercentage,
   formatUSD,
   fromBigNumber,
   toBN,
 } from '../../../../utils/formatters/numbers'
-import { StrikeTrade } from '../../../../utils/types'
 import { Button } from '../../../UI/Components/Button'
 import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
 import { RangeSlider } from '../../../UI/Components/RangeSlider'
 import { PNLChart } from './PNLChart'
 import { DebounceInput } from 'react-debounce-input';
+import { Vault } from '../../../../utils/types/vault'
+import { LyraStrike, StrikeTrade } from '../../../../utils/types/lyra'
 
 const computeCosts = (trades: LyraStrike[] | null | undefined) => {
   return trades?.reduce(
@@ -163,8 +163,8 @@ export default function TradeExecute({ vault }: { vault: Vault }) {
     <>
       <div className="overflow-hidden border border-zinc-800 bg-transparent sm:rounded-sm">
         <ul role="list" className="divide-y divide-zinc-700">
-          {builtTrades?.map((trade: LyraStrike) => (
-            <Trade lyra={lyra} toggleTrade={toggleTrade} trade={trade} />
+          {builtTrades?.map((trade: LyraStrike, index: number) => (
+            <Trade key={index} lyra={lyra} toggleTrade={toggleTrade} trade={trade} />
           ))}
 
           {/** max cost & min received  */}

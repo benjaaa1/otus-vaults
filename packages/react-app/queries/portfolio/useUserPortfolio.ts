@@ -3,50 +3,7 @@ import request, { gql } from 'graphql-request'
 import { getOtusEndpoint } from '../utils'
 import { useWeb3Context } from '../../context'
 import QUERY_KEYS from '../../constants/queryKeys'
-import { BigNumber, BigNumberish } from 'ethers'
-import { formatUnits } from 'ethers/lib/utils'
-import {
-  commifyAndPadDecimals,
-  fromBigNumber,
-} from '../../utils/formatters/numbers'
-
-type Vault = {
-  id: string
-}
-
-export type UserAction = {
-  id: string
-  txhash: string
-  timestamp: string | any
-  amount: BigNumber
-  isDeposit: boolean
-  vault: Vault
-}
-
-type UserPortfolio = {
-  id: string
-  account: string
-  balance: BigNumber
-  yieldEarned: BigNumber
-  userActions: UserAction[]
-}
-
-export type RawUserAction = {
-  id: string
-  txhash: string
-  timestamp: BigNumber
-  amount: BigNumber
-  isDeposit: boolean
-  vault?: any
-}
-
-type RawUserPortfolio = {
-  id: string
-  account: string
-  balance: BigNumberish
-  yieldEarned: BigNumberish
-  userActions: any[]
-}
+import { UserPortfolio } from '../../utils/types/portofolio'
 
 export const useUserPortfolio = () => {
   const { address: userId, network } = useWeb3Context()

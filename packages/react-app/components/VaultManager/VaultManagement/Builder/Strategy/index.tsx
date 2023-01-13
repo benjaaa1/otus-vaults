@@ -4,8 +4,7 @@ import BTCIcon from "../../../../UI/Components/Icons/Color/BTC"
 
 import { OptionType, PriceAt, Strategy, StrategyDirection, StrategyTag, StrategyType } from "../../../../../utils/builder/types"
 import { motion } from "framer-motion"
-import { LyraBoard, LyraMarket } from "../../../../../queries/lyra/useLyra"
-// import { useBuilderContext } from "../../../context/BuilderContext"
+import { LyraBoard, LyraMarket } from "../../../../../utils/types/lyra"
 
 export const strategies: Strategy[] = [
   {

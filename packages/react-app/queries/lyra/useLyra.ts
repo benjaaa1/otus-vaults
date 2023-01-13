@@ -5,35 +5,8 @@ import { BigNumber, ethers } from 'ethers'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { MONTHS } from '../../constants/dates'
 import { ONE_BN } from '../../constants/bn'
-import { MarketType } from '../../constants/markets'
 import { useWeb3Context } from '../../context'
-
-export type LyraStrike = {
-  market: string
-  selectedOptionType: number | 0
-  quote: Quote
-} & Strike
-
-export type LyraStrikeMapping = {
-  [key: number]: LyraStrike[]
-}
-
-export type LyraBoard = {
-  id: number
-  name: string
-  expiryTimestamp: number
-  baseIv: BigNumber
-  strikes: Strike[]
-  strikesByOptionTypes?: LyraStrikeMapping
-  marketName: string
-}
-
-export type LyraMarket = {
-  address: string
-  name: string
-  isPaused: boolean
-  liveBoards: LyraBoard[]
-}
+import { LyraBoard, LyraMarket, LyraStrike } from '../../utils/types/lyra'
 
 export const useLyra = () => {
   const { network } = useWeb3Context()

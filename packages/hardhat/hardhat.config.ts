@@ -42,10 +42,11 @@ module.exports = {
     },
     optimism: {
       url: 'https://mainnet.optimism.io',
+      ovm: true,
       accounts: {
         mnemonic: mnemonic(),
       },
-      deploy: ['deploy_l2'],
+      deploy: ['deploy_l2_optimism'],
       companionNetworks: {
         l1: 'mainnet',
       },
@@ -56,7 +57,24 @@ module.exports = {
       timeout: 60000,
       chainId: 420,
       accounts: [process.env.PRIVATE_KEY],
-      deploy: ['deploy_l2']
+      deploy: ['deploy_l2_optimism']
+    },
+    arbitrum: {
+      url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_ID}`,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+      deploy: ['deploy_l2_arbitrum'],
+      companionNetworks: {
+        l1: 'mainnet',
+      },
+    },
+    goerliArbitrum: {
+      url: `https://arbitrum-goerli.infura.io/v3/${process.env.INFURA_ID}`,
+      timeout: 60000,
+      chainId: 420,
+      accounts: [process.env.PRIVATE_KEY],
+      deploy: ['deploy_l2_arbitrum']
     },
   },
   solidity: {

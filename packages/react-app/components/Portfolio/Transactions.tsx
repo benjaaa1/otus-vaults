@@ -1,12 +1,12 @@
 import { useRouter } from 'next/router'
 import { useWeb3Context } from '../../context'
 import {
-  UserAction,
   useUserPortfolio,
 } from '../../queries/portfolio/useUserPortfolio'
 import { formatDate } from '../../utils/formatters/dates'
 import { formatUSD, fromBigNumber } from '../../utils/formatters/numbers'
 import { getBlockExplorerUrl } from '../../utils/getBlockExplorer'
+import { UserAction } from '../../utils/types/portofolio'
 import { Cell } from '../UI/Components/Table/Cell'
 import { HeaderCell, HeaderDeviceCellVariant } from '../UI/Components/Table/HeaderCell'
 import Table from '../UI/Components/Table/Table'

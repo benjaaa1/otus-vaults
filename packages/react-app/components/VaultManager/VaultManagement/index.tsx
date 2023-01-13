@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { useMyVault, Vault } from '../../../queries/myVaults/useMyVaults'
+import { useMyVault, useTwitter } from '../../../queries/myVaults/useMyVaults'
 import ManagerTabs from './UI/ManagerTabs'
 import Trade from './Trade'
 import Current from './Current'
@@ -22,11 +22,18 @@ import HedgeStrategyForm from './StrategyModals/HedgeStrategyForm'
 import VaultStrategyForm from './StrategyModals/VaultStrategyForm'
 import StrikeStrategyForm from './StrategyModals/StrikeStrategyForm'
 import { Builder } from './Builder'
+import Avatar from 'react-avatar';
+import Link from 'next/link'
+import { Vault } from '../../../utils/types/vault'
 
+// export default function VaultManagement({ twitterHandle, twitterProfileImage }: { twitterHandle: string, twitterProfileImage: string }) {
 export default function VaultManagement() {
+
   const { query } = useRouter()
 
   const { data, refetch } = useMyVault(query?.vault)
+
+  const { data: twitterData } = useTwitter(data?.manager.twitter)
 
   const [tab, setTab] = useState(VaultManagerTabs.CURRENT.HREF)
 
@@ -41,6 +48,17 @@ export default function VaultManagement() {
           {/* Page header */}
           <div className=" text-white md:flex md:items-center md:justify-between md:space-x-5">
             <div className="flex items-center space-x-5">
+              <Link className='cursor-pointer' href={`/manager/${data?.manager.id}`}>
+
+                {
+                  twitterData?.data.id && twitterData.data.profile_image_url ?
+                    <div>
+                      <Avatar className='cursor-pointer' twitterHandle={twitterData.data.username} src={twitterData.data.profile_image_url} round={true} size={'60px'} />
+                    </div> :
+                    'Test'
+                }
+
+              </Link>
               <div>
                 <h1 className="text-3xl font-bold uppercase text-zinc-200">
                   {data?.name || <span>---</span>}
@@ -121,7 +139,7 @@ export default function VaultManagement() {
           </div>
 
         </main>
-      </div>
+      </div >
       <Modal
         title={'Vault Strategy'}
         setOpen={setOpenVaultStrategy}
@@ -157,7 +175,7 @@ export default function VaultManagement() {
           dynamicHedge={data?.strategy.dynamicHedgeStrategy}
         />
       </Modal>
-    </VaultManagerContextProvider>
+    </VaultManagerContextProvider >
   )
 }
 
@@ -349,6 +367,8 @@ const CurrentRoundProgress = ({
     </nav>
   )
 }
+
+
 
 const CurrentDetails = ({ vault }: { vault: Vault }) => {
   const {

@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish } from 'ethers'
+import { BigNumber } from 'ethers'
 import { useUserPortfolio } from '../../queries/portfolio/useUserPortfolio'
 import { formatUSD, fromBigNumber } from '../../utils/formatters/numbers'
 

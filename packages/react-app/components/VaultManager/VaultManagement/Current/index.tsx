@@ -1,7 +1,6 @@
-import { ZERO_BN } from '../../../../constants/bn'
 import { useVaultManagerContext } from '../../../../context'
-import { VaultTrade, CurrentPosition } from '../../../../queries/myVaults/useMyVaults'
 import { formatUSD, fromBigNumber } from '../../../../utils/formatters/numbers'
+import { VaultTrade } from '../../../../utils/types/vault'
 import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
 import { Cell } from '../../../UI/Components/Table/Cell'
@@ -51,7 +50,7 @@ export default function Current({
   hedgeType: number
   activeVaultTrades: VaultTrade[]
 }) {
-  console.log({ activeVaultTrades })
+
   const { toggleToHedge, toggleToClose } = useVaultManagerContext()
 
   return (

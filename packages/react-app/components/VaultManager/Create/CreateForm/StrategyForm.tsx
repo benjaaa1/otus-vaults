@@ -144,7 +144,7 @@ const SelectAllowedMarkets = ({ vaultStrategy, setVaultStrategy }: { vaultStrate
 export default function StrategyForm({ vaultStrategy, setVaultStrategy }: { vaultStrategy: VaultStrategyStruct, setVaultStrategy: Dispatch<any> }) {
 
   return (
-    <div className="pt-8">
+    <div className="pt-6">
       <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
         <div className="sm:col-span-6">
           <SelectAllowedMarkets vaultStrategy={vaultStrategy} setVaultStrategy={setVaultStrategy} />

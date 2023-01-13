@@ -1,8 +1,8 @@
 import React, { Dispatch } from 'react'
+import { LyraBoard, LyraMarket } from '../../../../utils/types/lyra'
 import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
-import { LyraBoard, LyraMarket } from '../../../../queries/lyra/useLyra'
-import { Spinner } from '../../../UI/Components/Spinner'
+
 
 export const LyraMarketOptions = (
   {
@@ -15,7 +15,7 @@ export const LyraMarketOptions = (
     setSelectedMarket: Dispatch<any>
   }
 ) => {
-  console.log({ markets })
+
   return <div className='grid grid-cols-2'>
     {
       markets

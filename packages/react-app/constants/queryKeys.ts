@@ -1,4 +1,7 @@
 export const QUERY_KEYS = {
+  Leaderboard: {
+    Twitter: (handle: string) => ['twitter', handle]
+  },
   Vaults: {
     AllVaults: () => ['vaults'],
     Vault: (vaultId: string) => ['vaults', vaultId],

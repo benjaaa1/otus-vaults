@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
-import { LyraBoard, LyraMarket, useLyraMarket } from "../../../../queries/lyra/useLyra"
+import { useLyraMarket } from "../../../../queries/lyra/useLyra"
 import { Strategy, StrategyDirection } from "../../../../utils/builder/types"
+import { LyraBoard, LyraMarket } from "../../../../utils/types/lyra"
 import { Spinner } from "../../../UI/Components/Spinner"
 import { SelectDirectionType } from "./SelectDirectionType"
 import { SelectBuilderExpiration } from "./SelectExpiration"

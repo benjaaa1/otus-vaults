@@ -1,10 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '../UI/Components/Button'
 import AllIcons from '../UI/Components/Icons/Color/ALL'
-import BTCIcon from '../UI/Components/Icons/Color/BTC'
-import ETHIcon from '../UI/Components/Icons/Color/ETH'
-import LyraIcon from '../UI/Components/Icons/Color/LYRA'
-import SNXLogoIcon from '../UI/Components/Icons/Color/SNX'
+
 import Create from '../VaultManager/Create'
 
 const Products = () => {

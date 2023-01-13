@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useVaultManagerContext } from '../../../../context/VaultManagerContext'
-import { LyraStrike } from '../../../../queries/lyra/useLyra'
 import {
   fromBigNumber,
   formatPercentage,
   formatUSD,
 } from '../../../../utils/formatters/numbers'
+import { LyraStrike } from '../../../../utils/types/lyra'
 import { Cell } from '../../../UI/Components/Table/Cell'
 import { HeaderCell, HeaderDeviceCellVariant } from '../../../UI/Components/Table/HeaderCell'
 import Table from '../../../UI/Components/Table/Table'

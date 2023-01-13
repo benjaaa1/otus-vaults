@@ -1,8 +1,6 @@
 import { fromBigNumber } from '../../../../utils/formatters/numbers'
 import { HOUR_SEC } from '../../../../constants/period'
-import {
-  VaultStrategy,
-} from '../../../../queries/vaults/useVaultProducts'
+import { VaultStrategy } from '../../../../utils/types/vault'
 
 export const VaultStrategyInfo = ({ strategy }: { strategy: VaultStrategy }) => {
   const { collatPercent, collatBuffer, minTimeToExpiry, maxTimeToExpiry, minTradeInterval } = strategy

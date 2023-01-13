@@ -8,9 +8,9 @@ import { fromBigNumber, toBN } from '../../../../utils/formatters/numbers'
 import { ZERO_BN } from '../../../../constants/bn'
 import { Button } from '../../../UI/Components/Button'
 import { BigNumber } from 'ethers'
-import { DynamicHedgeStrategy } from '../../../../queries/myVaults/useMyVaults'
 import { useOtusContracts } from '../../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
+import { DynamicHedgeStrategy } from '../../../../utils/types/vault'
 
 const types = [
   {

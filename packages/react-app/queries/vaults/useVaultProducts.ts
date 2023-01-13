@@ -3,70 +3,7 @@ import request, { gql } from 'graphql-request'
 import { getOtusEndpoint } from '../utils'
 import { useWeb3Context } from '../../context'
 import QUERY_KEYS from '../../constants/queryKeys'
-import { BigNumber } from 'ethers'
-import { VaultTrade } from '../myVaults/useMyVaults'
-
-export type VaultStrategy = {
-  id: string
-  allowedMarkets: string[]
-  collatBuffer: BigNumber
-  collatPercent: BigNumber
-  minTimeToExpiry: number
-  maxTimeToExpiry: number
-  minTradeInterval: number
-  gwavPeriod: number
-}
-
-type DynamicHedgeStrategy = {
-  id: string
-  period: number
-  maxHedgeAttempts: BigNumber
-  maxLeverageSize: BigNumber
-  threshold: BigNumber
-}
-
-export type StrikeStrategy = {
-  id: string
-  targetDelta: BigNumber
-  maxDeltaGap: BigNumber
-  minVol: BigNumber
-  maxVol: BigNumber
-  maxVolVariance: BigNumber
-  optionType: BigNumber
-}
-
-type Strategy = {
-  id: string
-  latestUpdate: number
-  hedgeType: number
-  vaultStrategy: VaultStrategy
-  dynamicHedgeStrategy: DynamicHedgeStrategy
-  strikeStrategies: StrikeStrategy[]
-}
-
-export type Vault = {
-  id: string
-  manager: string
-  round: number
-  isActive: boolean
-  isPublic: boolean
-  inProgress: boolean
-  strategy: Strategy
-  vaultTrades: VaultTrade[]
-  name: string
-  description: string
-  totalDeposit: BigNumber
-  performanceFee: BigNumber
-  managementFee: BigNumber
-  asset: string
-  vaultCap: BigNumber
-}
-
-type AllAvailableVaults = {
-  vaults?: Vault[]
-  isLoading: boolean
-  isSuccess: boolean
-}
+import { AllAvailableVaults, Vault } from '../../utils/types/vault'
 
 export const useVaultProducts = () => {
   const { network } = useWeb3Context()
@@ -139,7 +76,10 @@ export const useVaultProduct = (vaultId: any) => {
           query ($vaultId: String!) {
             vaults(where: { id: $vaultId }) {
               id
-              manager
+              manager {
+                id
+                twitter
+              }
               round
               isActive
               isPublic

@@ -5,13 +5,13 @@ import { MAX_BN, ZERO_BN } from '../../../constants/bn'
 import { useWeb3Context } from '../../../context'
 import { useContracts, useOtusContracts } from '../../../hooks/Contracts'
 import { useTransactionNotifier } from '../../../hooks/TransactionNotifier'
-import { Vault } from '../../../queries/vaults/useVaultProducts'
 import {
   formatNumber,
   formatUSD,
   fromBigNumber,
   toBN,
 } from '../../../utils/formatters/numbers'
+import { Vault } from '../../../utils/types/vault'
 import { Button } from '../../UI/Components/Button'
 import { Input } from '../../UI/Components/Input/Input'
 

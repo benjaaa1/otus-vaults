@@ -8,84 +8,10 @@ import { AccountPortfolioBalance, PositionPnl } from '@lyrafinance/lyra-js'
 import { fromBigNumber } from '../../utils/formatters/numbers'
 import { ZERO_BN } from '../../constants/bn'
 import { useLyra } from '../lyra/useLyra'
-
-export type VaultTrade = {
-  id: string
-  market?: string
-  txhash: string
-  strikeId: string
-  positionId: string
-  premiumEarned: BigNumber
-  strikePrice: BigNumber
-  size: BigNumber
-  optionType: number
-  openedAt: number
-  expiry: number
-  position: CurrentPosition
-}
-
-export type VaultStrategy = {
-  id?: string
-  allowedMarkets?: string[]
-  collatBuffer: BigNumber
-  collatPercent: BigNumber
-  minTimeToExpiry: number
-  maxTimeToExpiry: number
-  minTradeInterval: number
-  gwavPeriod: number
-  hedgeReserve: BigNumber
-}
-
-export type DynamicHedgeStrategy = {
-  id?: string
-  period?: number
-  maxLeverageSize: BigNumber
-  maxHedgeAttempts: BigNumber
-  threshold: BigNumber
-}
-
-type Strategy = {
-  id: string
-  latestUpdate: number
-  hedgeType: number
-  vaultStrategy: VaultStrategy
-  dynamicHedgeStrategy: DynamicHedgeStrategy
-}
-
-export type Vault = {
-  id: string
-  createdAt: string | any
-  manager: string
-  round: number
-  isActive: boolean
-  isPublic: boolean
-  strategy: Strategy
-  vaultTrades: VaultTrade[]
-  name: string
-  description: string
-  inProgress: boolean
-  totalDeposit: BigNumber
-  performanceFee: BigNumber
-  managementFee: BigNumber
-  asset: string
-  vaultCap: BigNumber
-}
-
-type ManagerVault = {
-  vaults?: Vault[]
-  isLoading: boolean
-  isSuccess: boolean
-}
-
-export type StrikeStrategy = {
-  id?: string
-  targetDelta: BigNumber
-  maxDeltaGap: BigNumber
-  minVol: BigNumber
-  maxVol: BigNumber
-  maxVolVariance: BigNumber
-  optionType: number | string
-}
+import { getMyVault } from '../../pages/api/subgraph'
+import { TwitterData } from '../../pages/api/utils/twitter'
+import { ManagerVault } from '../../utils/types/manager'
+import { StrikeStrategy, Vault } from '../../utils/types/vault'
 
 export const useMyVaults = () => {
   const { address: managerId, network } = useWeb3Context()
@@ -129,6 +55,24 @@ export const useMyVaults = () => {
   )
 }
 
+export const useTwitter = (twitter: string | undefined) => {
+  console.log({ twitter })
+  return useQuery<TwitterData | null>(
+    QUERY_KEYS.Leaderboard.Twitter(
+      twitter || ''
+    ),
+    async () => {
+      if (!twitter) return null
+      console.log('what')
+      const _twitterProfile = await fetch(`http://localhost:3000/api/twitter/${twitter}`);
+      console.log({ _twitterProfile })
+      const _twitterJson = await _twitterProfile.json();
+      console.log({ _twitterJson })
+      return _twitterJson;
+    }
+  )
+}
+
 export const useMyVault = (vaultId: any) => {
   const lyra = useLyra();
 
@@ -143,63 +87,9 @@ export const useMyVault = (vaultId: any) => {
     ),
     async () => {
       if (!managerId) return null
-      const response = await request(
-        otusEndpoint,
-        gql`
-          query ($vaultId: String!) {
-            vaults(where: { id: $vaultId }) {
-              id
-              round
-              createdAt
-              isActive
-              isPublic
-              inProgress
-              strategy
-              name
-              description
-              totalDeposit
-              performanceFee
-              managementFee
-              asset
-              vaultCap
-              strategy {
-                id
-                latestUpdate
-                hedgeType
-                vaultStrategy {
-                  id
-                  collatBuffer
-                  collatPercent
-                  minTimeToExpiry
-                  maxTimeToExpiry
-                  minTradeInterval
-                  gwavPeriod
-                  allowedMarkets
-                  hedgeReserve
-                }
-                dynamicHedgeStrategy {
-                  id
-                  maxHedgeAttempts
-                  maxLeverageSize
-                  threshold
-                }
-              }
-              vaultTrades {
-                id
-                txhash
-                strikeId
-                positionId
-                premiumEarned
-                strikePrice
-                openedAt
-                expiry
-                optionType
-              }
-            }
-          }
-        `,
-        { vaultId: vaultId?.toLowerCase() }
-      )
+      console.log('get my vault')
+      const response = await getMyVault(otusEndpoint, vaultId)
+      console.log('get my vault', response)
 
       let positions: CurrentPosition[];
 

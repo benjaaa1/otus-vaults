@@ -5412,7 +5412,7 @@
           ]
         },
         "OtusCloneFactory": {
-          "address": "0xf953b3A269d80e3eB0F2947630Da976B896A8C5b",
+          "address": "0x8A93d247134d91e0de6f96547cB0204e5BE8e5D8",
           "abi": [
             {
               "inputs": [
@@ -5703,7 +5703,7 @@
           ]
         },
         "OtusController": {
-          "address": "0x86A2EE8FAf9A840F7a2c64CA3d51209F9A02081D",
+          "address": "0x2a810409872AfC346F9B5b26571Fd6eC42EA4849",
           "abi": [
             {
               "inputs": [
@@ -5782,6 +5782,12 @@
                   "internalType": "address",
                   "name": "user",
                   "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "twitterHandle",
+                  "type": "string"
                 },
                 {
                   "indexed": true,
@@ -5933,6 +5939,11 @@
             },
             {
               "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "twitterHandle",
+                  "type": "string"
+                },
                 {
                   "components": [
                     {
@@ -7988,7 +7999,7 @@
           "abi": []
         },
         "Strategy": {
-          "address": "0xA4899D35897033b927acFCf422bc745916139776",
+          "address": "0xb9bEECD1A582768711dE1EE7B0A1d582D9d72a6C",
           "abi": [
             {
               "inputs": [
