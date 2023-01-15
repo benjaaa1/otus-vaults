@@ -9,7 +9,6 @@ export const useManager = (id: any) => {
   const { network } = useWeb3Context()
 
   const otusEndpoint = getOtusEndpoint(network)
-  console.log('managerId', id, otusEndpoint)
 
   return useQuery<Manager>(
     QUERY_KEYS.Vaults.ManagerVaults(id?.toLowerCase()),

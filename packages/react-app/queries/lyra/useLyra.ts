@@ -175,10 +175,22 @@ type OPTION_TYPE = {
   [key: number]: boolean[]
 }
 
+type OPTION_TYPE_NAME = {
+  [key: number]: string
+}
+
 const OPTION_TYPES: OPTION_TYPE = {
   0: [true, true], // buy call
   1: [false, true], // buy put
   2: [true, false], // sell covered call
   3: [true, false], // sell call
   4: [false, false], // sell put
+}
+
+export const OPTION_TYPE_NAMES: OPTION_TYPE_NAME = {
+  0: 'Buy Call',
+  1: 'Buy Put',
+  2: 'Sell Covered Call',
+  3: 'Sell Call',
+  4: 'Sell Put'
 }

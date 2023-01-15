@@ -2,10 +2,9 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import React from 'react'
 import Avatar from 'react-avatar';
-import ErrorPage from "next/error";
-import { TwitterData } from '../api/utils/twitter';
-import { useTwitter } from '../../queries/myVaults/useMyVaults';
 import { useManager } from '../../queries/manager/useManagers';
+import { useTwitter } from '../../queries/manager/useTwitter';
+
 import { useRouter } from 'next/router';
 
 const Manager: NextPage = () => {

@@ -19,7 +19,7 @@ import { StrikeStrategyInfo } from './StrategyModalInfo/StrikeStrategyInfo'
 import { VaultStrategyInfo } from './StrategyModalInfo/VaultStrategyInfo'
 import Link from 'next/link'
 import Avatar from 'react-avatar'
-import { useTwitter } from '../../../queries/myVaults/useMyVaults'
+import { useTwitter } from '../../../queries/manager/useTwitter'
 
 export default function Product() {
   const { network } = useWeb3Context()

@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import React from 'react'
+import React, { useCallback, useMemo } from 'react'
 import {
   formatUSD,
   fromBigNumber,
@@ -11,13 +11,16 @@ import SUSDIcon from '../../UI/Components/Icons/Color/SUSD'
 import { Tag } from '../../UI/Components/Tag'
 import { BigNumber } from 'ethers'
 import { BYTES32_MARKET } from '../../../constants/markets'
-import { Vault } from '../../../utils/types/vault'
+import { Vault, VaultTrade } from '../../../utils/types/vault'
+import { Twitter, TwitterData } from '../../../pages/api/utils/twitter'
+import Avatar from 'react-avatar'
+import { OPTION_TYPE_NAMES } from '../../../queries/lyra/useLyra'
 
 const BuildMarketTags = ({ allowedMarkets }: { allowedMarkets: string[] }) => {
   return <>
     {
       allowedMarkets.includes(BYTES32_MARKET.ETH) ?
-        <div className="sm:absolute sm:ml-48 sm:mt-[-8px]">
+        <div className="sm:absolute sm:ml-56 sm:mt-[-8px]">
           <ETHBWIcon />
         </div> :
         null
@@ -25,7 +28,7 @@ const BuildMarketTags = ({ allowedMarkets }: { allowedMarkets: string[] }) => {
 
     {
       allowedMarkets.includes(BYTES32_MARKET.BTC) ?
-        <div className="sm:absolute sm:ml-36 sm:mt-[-8px]">
+        <div className="sm:absolute sm:ml-56 sm:mt-[-8px]">
           <BTCBWIcon />
         </div> :
         null
@@ -33,7 +36,20 @@ const BuildMarketTags = ({ allowedMarkets }: { allowedMarkets: string[] }) => {
   </>
 }
 
-const Vault = ({ vault }: { vault: Vault }) => {
+const getOptionTypeTag = (vaultTrades: VaultTrade[]) => {
+
+  if (vaultTrades.length > 1) {
+    return 'Mix';
+  } else if (vaultTrades.length === 1) {
+    const optionType = vaultTrades[0].optionType;
+    return OPTION_TYPE_NAMES[optionType]
+  } else {
+    return 'No Active Trades'
+  }
+
+}
+
+const Vault = ({ vault, twitter }: { vault: Vault, twitter?: Twitter }) => {
   const router = useRouter()
 
   const handleVaultClick = (e: any, href: string) => {
@@ -45,23 +61,26 @@ const Vault = ({ vault }: { vault: Vault }) => {
     <div
       onClick={(e) => handleVaultClick(e, `vault/${vault.id}`)}
       key={vault.id}
-      className="cursor-pointer rounded-sm border border-zinc-800 bg-gradient-to-b from-black to-zinc-900 shadow-black  hover:shadow-emerald-200 hover:shadow-lg"
+      className="cursor-pointer rounded-sm border border-zinc-800 bg-gradient-to-b from-black to-zinc-900 shadow-black  hover:shadow-[0px_0px_14px_6px_rgba(0,0,0,.6)]"
     >
       <div key={vault.id} className="overflow-hidden border-b border-zinc-800">
         <div className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3">
-            <div className="sm:col-span-2">
+          <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 pb-4">
+            <div className="col-span-2">
               <Tag
-                label={vault.name}
-                textVariant={'uppercase'}
+                label={getOptionTypeTag(vault.vaultTrades || [])}
+                textVariant={'capitalize'}
                 size={'sm'}
                 variant={'primary'}
               />
             </div>
-            <div>
-              <SUSDIcon />
+            <div className='col-span-1'>
+              <div className='bg-zinc-900 inline-block rounded-full shadow-black'>
+                <SUSDIcon />
+
+              </div>
             </div>
-            <div className="pt-4">
+            <div className="col-span-1">
               <Tag label={getHedgeLabel(vault.strategy.hedgeType)} size={'xs'} variant={'default'} />
             </div>
           </div>
@@ -71,9 +90,11 @@ const Vault = ({ vault }: { vault: Vault }) => {
 
       <div className="overflow-hidden border-b border-zinc-800">
         <div className="p-4 pt-8">
+
           <div className="truncate font-mono text-xs font-semibold uppercase text-white">
-            {vault.description}
+            {vault.name}
           </div>
+
           <div className="grid grid-cols-2">
             <div className="py-2">
               <div className="py-2 font-mono text-2xl font-normal text-white">
@@ -87,15 +108,36 @@ const Vault = ({ vault }: { vault: Vault }) => {
             <div className="py-2">
               <div className="overflow-x-auto">
                 <div className="py-2 font-mono text-2xl font-normal text-white">
-                  {vault.vaultTrades && vault.vaultTrades.length > 0 ? formatUSD(fromBigNumber(vault.vaultTrades[0].strikePrice)) : 'N/A'}
+                  {vault.vaultTrades && vault.vaultTrades.length > 0 ?
+                    vault.vaultTrades.length > 1 ? 'Multiple' : formatUSD(fromBigNumber(vault.vaultTrades[0].strikePrice))
+                    : 'N/A'}
                 </div>
-                <div className="text-xxs font-light text-zinc-300">
+                <div className="text-xxs font-light text-zinc-300 hover:text-white">
                   View all Current Strikes
                 </div>
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2">
+
+          <div className="grid grid-cols-2 ">
+
+            <div className="py-4 col-span-2">
+              <div className="py-2 font-mono text-lg font-normal text-white">
+                {
+                  twitter && twitter?.id && twitter.profile_image_url ?
+                    <div>
+                      <Avatar size="40" className='cursor-pointer' twitterHandle={twitter.username} src={twitter.profile_image_url} round={true} />
+                    </div> :
+                    <div>
+                      {vault?.manager.id}
+                    </div>
+                }
+              </div>
+              <div className="text-xxs font-light text-zinc-300">
+                Managed By
+              </div>
+            </div>
+
             <div className="py-2">
               <div className="py-2 font-mono text-lg font-normal text-white">
                 {fromBigNumber(vault.managementFee)}%
@@ -105,7 +147,7 @@ const Vault = ({ vault }: { vault: Vault }) => {
               </div>
             </div>
 
-            <div className="py-2">
+            <div className="py-2 col-start-2 col-span-1">
               <div className="py-2 font-mono text-lg font-normal text-white">
                 {fromBigNumber(vault.performanceFee)}%
               </div>
@@ -114,6 +156,7 @@ const Vault = ({ vault }: { vault: Vault }) => {
               </div>
             </div>
           </div>
+
         </div>
       </div>
 

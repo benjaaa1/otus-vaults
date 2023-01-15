@@ -10,7 +10,7 @@ const ETHBWIcon = (props: any) => (
     {...props}
   >
     <g filter="url(#filter0_d_17_905)">
-      <circle cx={32} cy={28} r={28} fill="#18181B" />
+      <circle cx={32} cy={28} r={28} fill="#000" />
       <circle cx={32} cy={28} r={27.5} stroke="#242424" />
     </g>
     <g clipPath="url(#clip0_17_905)">

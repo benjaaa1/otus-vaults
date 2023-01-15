@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { useMyVault, useTwitter } from '../../../queries/myVaults/useMyVaults'
+import { useMyVault } from '../../../queries/myVaults/useMyVaults'
+import { useTwitter } from '../../../queries/manager/useTwitter'
+
 import ManagerTabs from './UI/ManagerTabs'
 import Trade from './Trade'
 import Current from './Current'

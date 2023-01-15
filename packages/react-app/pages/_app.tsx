@@ -17,7 +17,6 @@ const WhitelistComponent = () => {
 
 const InnerApp: FC<AppProps> = ({ Component, pageProps }) => {
   const { network, provider, address } = useWeb3Context()
-  console.log({ network, provider, address })
 
   // load whitelisted addresses 
   // query subgraph for whitelisted address

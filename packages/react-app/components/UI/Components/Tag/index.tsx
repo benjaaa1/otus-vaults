@@ -2,9 +2,9 @@ export type TagSize = 'xs' | 'sm' | 'fixed-xs'
 
 export type TagVariant = // primary - green / orange small ligher
 
-    | 'default' // bg trasnaparent border gray shadow dark
-    | 'primary' // bg dark border gray shadow dark
-    | 'secondary'
+  | 'default' // bg trasnaparent border gray shadow dark
+  | 'primary' // bg dark border gray shadow dark
+  | 'secondary'
 
 export type TagProps = {
   label: string | number
@@ -12,7 +12,7 @@ export type TagProps = {
   size: TagSize
   isLoading?: boolean
   isActive?: boolean
-  textVariant?: 'uppercase' | 'lowercase'
+  textVariant?: 'uppercase' | 'lowercase' | 'capitalize'
 }
 
 export const getTagSize = (size: TagSize): string => {
@@ -29,7 +29,7 @@ export const getTagSize = (size: TagSize): string => {
 export const getTagVariant = (variant: TagVariant): string => {
   switch (variant) {
     case 'default':
-      return 'text-white border-2 border-zinc-700 bg-transparent shadow-sm hover:bg-zinc-900'
+      return 'text-zinc-200 border-2 border-zinc-700 bg-transparent shadow-sm hover:bg-zinc-900'
     case 'primary':
       return 'text-white border-2 border-emerald-600 bg-transparent shadow-sm hover:bg-zinc-900'
     case 'secondary':

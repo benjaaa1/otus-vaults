@@ -2,7 +2,6 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import React from 'react'
 import VaultManagement from '../../components/VaultManager/VaultManagement'
-import { TwitterData } from '../api/utils/twitter'
 
 const VaultManager: NextPage = () => {
 

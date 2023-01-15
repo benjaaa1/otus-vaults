@@ -82,6 +82,9 @@ export const CURRENCY_BY_ADDRESS: CurrencyAddress = {
   31337: {
     '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8': 'sETH',
   },
+  421613: {
+    '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8': 'sETH',
+  },
 }
 
 export const CURRENCIES: Currency = {

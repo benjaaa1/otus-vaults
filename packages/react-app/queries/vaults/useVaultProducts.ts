@@ -20,7 +20,10 @@ export const useVaultProducts = () => {
             query AllAvailableVaults {
               vaults {
                 id
-                manager
+                manager {
+                  id
+                  twitter
+                }
                 round
                 isActive
                 isPublic
@@ -32,6 +35,18 @@ export const useVaultProducts = () => {
                 managementFee
                 asset
                 vaultCap
+                vaultTrades {
+                  id
+                  txhash
+                  strikeId
+                  positionId
+                  premiumEarned
+                  strikePrice
+                  size
+                  openedAt
+                  expiry
+                  optionType
+                }
                 strategy {
                   id 
                   hedgeType

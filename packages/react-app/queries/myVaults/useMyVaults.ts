@@ -9,7 +9,6 @@ import { fromBigNumber } from '../../utils/formatters/numbers'
 import { ZERO_BN } from '../../constants/bn'
 import { useLyra } from '../lyra/useLyra'
 import { getMyVault } from '../../pages/api/subgraph'
-import { TwitterData } from '../../pages/api/utils/twitter'
 import { ManagerVault } from '../../utils/types/manager'
 import { StrikeStrategy, Vault } from '../../utils/types/vault'
 
@@ -51,20 +50,6 @@ export const useMyVaults = () => {
     },
     {
       enabled: !!managerId,
-    }
-  )
-}
-
-export const useTwitter = (twitter: string | undefined) => {
-  return useQuery<TwitterData | null>(
-    QUERY_KEYS.Leaderboard.Twitter(
-      twitter || ''
-    ),
-    async () => {
-      if (!twitter) return null
-      const _twitterProfile = await fetch(`/api/twitter/${twitter}`);
-      const _twitterJson = await _twitterProfile.json();
-      return _twitterJson;
     }
   )
 }

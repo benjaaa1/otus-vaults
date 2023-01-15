@@ -10,6 +10,7 @@ import { Spinner } from '../components/UI/Components/Spinner'
 import { SelectFilterMarket } from '../components/Products/Vaults/Filters/market'
 import { SelectFilterOptionType } from '../components/Products/Vaults/Filters/optionType'
 import { SelectFilterNetwork } from '../components/Products/Vaults/Filters/network'
+import { useTwitters } from '../queries/manager/useTwitter'
 
 type VaultFilters = {
   market: string
@@ -20,6 +21,8 @@ type VaultFilters = {
 const Vaults: NextPage = () => {
   const vaultProducts = useVaultProducts() // need to refresh this when filters are updated pass in filters too
   const vaults = vaultProducts?.data?.vaults || [];
+
+  const { data: twitterData } = useTwitters(vaults.map(vault => vault.manager.twitter))
 
   const [filters, setFilters] = useState<VaultFilters>({ market: '', optionTypes: [], network: '' })
 
@@ -76,7 +79,10 @@ const Vaults: NextPage = () => {
               <Spinner />
             </div>
           ) : (
-            vaults.map((vault) => <Vault key={vault.id} vault={vault} />)
+            vaults.map((vault) => {
+              const _twitter = twitterData && twitterData[vault.manager.twitter];
+              return <Vault key={vault.id} vault={vault} twitter={_twitter} />
+            })
           )}
         </div>
       </div>
