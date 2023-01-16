@@ -262,10 +262,10 @@ export default function Product() {
           </div>
         </main>
 
-        <div className="grid grid-cols-12 gap-8">
-          <div className='col-span-7'>
-            <TradeTransactions vaultTrades={vault?.vaultTrades || []} />
-          </div>
+        <div className="mx-auto max-w-5xl">
+
+          <TradeTransactions vaultTrades={vault?.vaultTrades || []} />
+
         </div>
 
       </div>

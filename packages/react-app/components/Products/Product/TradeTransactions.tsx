@@ -39,7 +39,7 @@ export default function TradeTransactions({ vaultTrades }: { vaultTrades: VaultT
   const { network } = useWeb3Context()
 
   return (
-    <div className="relative pt-8 pb-8 font-sans">
+    <div className="mx-auto max-w-5xl relative pt-8 pb-8 font-sans">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
           <h1 className="text-xl font-semibold text-white">Current Trades</h1>
