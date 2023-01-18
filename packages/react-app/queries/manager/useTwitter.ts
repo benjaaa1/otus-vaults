@@ -4,6 +4,7 @@ import { useQuery } from 'react-query'
 import QUERY_KEYS from '../../constants/queryKeys'
 
 export const useTwitter = (twitter: string | undefined) => {
+  console.log({ twitter })
   return useQuery<TwitterData | null>(
     QUERY_KEYS.Leaderboard.Twitter(
       twitter || ''
@@ -11,7 +12,9 @@ export const useTwitter = (twitter: string | undefined) => {
     async () => {
       if (!twitter) return null
       const _twitterProfile = await fetch(`/api/twitter/${twitter}`);
+      console.log({ _twitterProfile })
       const _twitterJson = await _twitterProfile.json();
+      console.log({ _twitterJson })
       return _twitterJson;
     }
   )

@@ -1,5 +1,5 @@
 {
-  "printWidth": 120,
+  "printWidth": 110,
   "proseWrap": "preserve",
   "singleQuote": true,
   "useTabs": false,
@@ -11,12 +11,9 @@
     {
       "files": "*.sol",
       "options": {
-        "printWidth": 120,
-        "tabWidth": 2,
         "useTabs": false,
         "bracketSpacing": false,
-        "explicitTypes": "never",
-        "singleQuote": false
+        "explicitTypes": "never"
       }
     }
   ]

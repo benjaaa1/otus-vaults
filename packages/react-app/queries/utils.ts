@@ -22,11 +22,15 @@ export const getOtusEndpoint = (
   network: ethers.providers.Network | null | undefined
 ): string => {
 
+  if (process.env.NODE_ENV === 'development') {
+    return OTUS_ENDPOINT_LOCALHOST;
+  }
+
   const _endpoint = network && network.chainId === 10
     ? OTUS_ENDPOINT_MAINNET
     : network && network.chainId === 420
       ? OTUS_ENDPOINT_TESTNET
-      : OTUS_ENDPOINT_LOCALHOST
+      : OTUS_ENDPOINT_MAINNET
 
   return _endpoint;
 }

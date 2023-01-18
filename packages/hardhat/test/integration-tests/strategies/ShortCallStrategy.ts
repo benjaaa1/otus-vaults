@@ -168,7 +168,7 @@ describe('Strategy integration test', async () => {
       asset: susd.address,
     };
 
-    await otusController.connect(manager).createOptionsVault(vaultInfo, vaultParams, defaultStrategyDetail);
+    await otusController.connect(manager).createOptionsVault('', vaultInfo, vaultParams, defaultStrategyDetail);
     const vaultCloneAddress = await otusController.vaults(manager.address, 0);
     managersVault = (await ethers.getContractAt(OtusVault__factory.abi, vaultCloneAddress)) as OtusVault;
     expect(managersVault.address).to.not.be.eq(ZERO_ADDRESS);
@@ -220,10 +220,9 @@ describe('Strategy integration test', async () => {
         strikeId: strikes[1],
         size: toBN('7'),
         positionId: toBN('0'),
-        strikePrice: toBN('0'),
       };
 
-      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TradeDeltaOutOfRange');
+      await expect(managersVault.connect(manager).trade([], [strikeStrategy])).to.be.revertedWith('TradeDeltaOutOfRange');
     });
 
     it('should revert when min premium < premium calculated with min vol', async () => {
@@ -234,10 +233,9 @@ describe('Strategy integration test', async () => {
         strikeId: strikes[3],
         size: toBN('7'),
         positionId: toBN('0'),
-        strikePrice: toBN('0'),
       };
 
-      await expect(managersVault.connect(manager).trade([strikeStrategy])).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
+      await expect(managersVault.connect(manager).trade([], [strikeStrategy])).to.be.revertedWith('TotalCostOutsideOfSpecifiedBounds');
     });
 
     it('should successfully trade multiple short call options', async () => {
@@ -247,7 +245,6 @@ describe('Strategy integration test', async () => {
         strikeId: strikes[2],
         size: toBN('7'),
         positionId: toBN('0'),
-        strikePrice: toBN('0'),
       };
 
       const strikeStrategy2nd: StrategyBase.StrikeTradeStruct = {
@@ -256,10 +253,9 @@ describe('Strategy integration test', async () => {
         strikeId: strikes[4],
         size: toBN('7'),
         positionId: toBN('0'),
-        strikePrice: toBN('0'),
       };
 
-      await managersVault.connect(manager).trade([strikeStrategy1st, strikeStrategy2nd]);
+      await managersVault.connect(manager).trade([], [strikeStrategy1st, strikeStrategy2nd]);
       const activeStrikeTrades1 = await managersStrategy.activeStrikeTrades(0);
 
       const activeStrikeTrades2 = await managersStrategy.activeStrikeTrades(1);
@@ -279,10 +275,9 @@ describe('Strategy integration test', async () => {
         strikeId: strikes[3],
         size: toBN('7'),
         positionId: toBN('0'),
-        strikePrice: toBN('0'),
       };
 
-      await expect(managersVault.connect(manager).trade([strikeStrategy1st])).to.be.revertedWith('TradeDeltaOutOfRange');
+      await expect(managersVault.connect(manager).trade([], [strikeStrategy1st])).to.be.revertedWith('TradeDeltaOutOfRange');
 
     });
 

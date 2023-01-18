@@ -2,26 +2,26 @@
 pragma solidity >=0.8.4;
 pragma experimental ABIEncoderV2;
 
-import "hardhat/console.sol";
+import 'hardhat/console.sol';
 
 // Interfaces
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../../interfaces/ILyraBase.sol";
-import "../../interfaces/IFuturesMarket.sol";
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '../../interfaces/ILyraBase.sol';
+import '../../interfaces/IFuturesMarket.sol';
 
 // Libraries
-import "../../synthetix/SignedSafeDecimalMath.sol";
-import "../../synthetix/SafeDecimalMath.sol";
-import "../../synthetix/SignedSafeMath.sol";
-import {SignedDecimalMath} from "@lyrafinance/protocol/contracts/synthetix/SignedDecimalMath.sol";
-import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
-import {Vault} from "../../libraries/Vault.sol";
+import '../../synthetix/SignedSafeDecimalMath.sol';
+import '../../synthetix/SafeDecimalMath.sol';
+import '../../synthetix/SignedSafeMath.sol';
+import {SignedDecimalMath} from '@lyrafinance/protocol/contracts/synthetix/SignedDecimalMath.sol';
+import {DecimalMath} from '@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol';
+import {Vault} from '../../libraries/Vault.sol';
 
 // Vault
-import {OtusVault} from "../OtusVault.sol";
+import {OtusVault} from '../OtusVault.sol';
 
 // Inherited
-import {StrategyBase} from "./StrategyBase.sol";
+import {StrategyBase} from './StrategyBase.sol';
 
 /**
  * @title Strategy
@@ -61,9 +61,43 @@ contract Strategy is StrategyBase {
    ***********************************************/
 
   modifier onlyVault() {
-    require(msg.sender == vault, "NOT_VAULT");
+    require(msg.sender == vault, 'NOT_VAULT');
     _;
   }
+
+  /************************************************
+   *  ERRORS
+   ***********************************************/
+
+  /// @notice market has to be allowed
+  /// @param market: name of the market
+  error MarketNotAllowed(bytes32 market);
+
+  /// @notice strike has to be valid
+  /// @param strikeId lyra strikeid
+  /// @param market name of the market
+  error InvalidStrike(uint strikeId, bytes32 market);
+
+  /// @notice premium below expected
+  /// @param actual actual premium
+  /// @param expected expected premium
+  error PremiumBelowExpected(uint actual, uint expected);
+
+  /// @notice price above expected
+  /// @param actual actual premium
+  /// @param expected expected premium
+  error PremiumAboveExpected(uint actual, uint expected);
+
+  /// @notice close amount above allowed
+  /// @param closeAmount amount requested
+  error CloseAmountExceedsAllowed(uint closeAmount);
+
+  /// @notice position id not found
+  /// @param positionId position id
+  error InvalidPositionId(uint positionId);
+
+  /// @notice futures market not set
+  error NoFuturesMarketSet();
 
   /************************************************
    *  ADMIN
@@ -97,7 +131,7 @@ contract Strategy is StrategyBase {
    */
   function setStrategy(StrategyDetail memory _currentStrategy) external onlyOwner {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
-    require(!roundInProgress, "round opened");
+    require(!roundInProgress, 'round opened');
     currentStrategy = _currentStrategy;
 
     // after strategy is set need to update allowed markets :
@@ -112,7 +146,7 @@ contract Strategy is StrategyBase {
    */
   function setHedgeStrategyType(uint _hedgeType) external onlyOwner {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
-    require(!roundInProgress, "round opened");
+    require(!roundInProgress, 'round opened');
     hedgeType = HEDGETYPE(_hedgeType);
     emit StrategyHedgeTypeUpdated(vault, hedgeType);
   }
@@ -124,7 +158,7 @@ contract Strategy is StrategyBase {
    */
   function setHedgeStrategies(DynamicDeltaHedgeStrategy memory _dynamicStrategy) external onlyOwner {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
-    require(!roundInProgress, "round opened");
+    require(!roundInProgress, 'round opened');
 
     dynamicHedgeStrategy = _dynamicStrategy;
     emit HedgeStrategyUpdated(vault, dynamicHedgeStrategy);
@@ -134,9 +168,11 @@ contract Strategy is StrategyBase {
    * @notice Update the strike strategy by option
    * @param _currentStrikeStrategies different strike strategies for each option type supported
    */
-  function setStrikeStrategyDetail(StrikeStrategyDetail[] memory _currentStrikeStrategies) external onlyOwner {
+  function setStrikeStrategyDetail(
+    StrikeStrategyDetail[] memory _currentStrikeStrategies
+  ) external onlyOwner {
     (, , , , , , , bool roundInProgress, ) = OtusVault(vault).vaultState();
-    require(!roundInProgress, "round opened");
+    require(!roundInProgress, 'round opened');
 
     uint len = _currentStrikeStrategies.length;
     StrikeStrategyDetail memory currentStrikeStrategy;
@@ -156,71 +192,66 @@ contract Strategy is StrategyBase {
   /**
    * @notice Sell or buy options from vault
    * @dev sell a fix aomunt of options and collect premium or buy a fix amount and pay the price
-   * @param _strike lyra strike details to trade
+   * @param _trade lyra strike details to trade
    * @return positionId
    * @return premium
    * @return capitalUsed
    */
-  function doTrade(
-    StrikeTrade memory _strike
+  function trade(
+    StrikeTrade memory _trade
   ) external onlyVault returns (uint positionId, uint premium, uint capitalUsed, uint expiry) {
-    // check if market is allowed
-    require(allowedMarkets[_strike.market], "Market now allowed");
-    address lyraBase = lyraBases[_strike.market];
+    /// @notice check if market is allowed
+    if (allowedMarkets[_trade.market] == false) {
+      revert MarketNotAllowed(_trade.market);
+    }
 
-    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_strike.optionType];
+    (bool _isValid, ILyraBase.Strike memory strike) = _getValidStrike(_trade);
 
-    require(_isValidVolVariance(lyraBase, _strike.strikeId, _strike.optionType), "vol variance exceeded");
+    if (!_isValid) {
+      revert InvalidStrike(_trade.strikeId, _trade.market);
+    }
 
-    // check if valid market for trade here cuz it's part of strategy
-    ILyraBase.Strike memory strike = ILyraBase(lyraBase).getStrikes(_toDynamic(_strike.strikeId))[0];
+    StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_trade.optionType];
 
-    require(_isValidStrike(lyraBase, strike, _strike.optionType), "invalid strike");
+    bool isLong = _isLong(currentStrikeStrategy.optionType);
+    bool isMin = isLong ? false : true;
 
-    require(_isValidExpiry(strike.expiry), "not valid expiry");
+    uint premiumLimit = _getPremiumLimit(_trade, strike.expiry, strike.strikePrice, isMin);
 
-    if (_isLong(currentStrikeStrategy.optionType)) {
-      uint maxPremium = _getPremiumLimit(lyraBase, strike, false, _strike);
+    if (isLong) {
+      _trasferFromVault(premiumLimit);
 
-      // check if over limit of trade funds with hedge
-      _trasferFromVault(maxPremium);
+      (positionId, premium) = buyStrike(_trade, premiumLimit);
 
-      (positionId, premium) = _buyStrike(_strike.market, strike, _strike.size, _strike.optionType, maxPremium);
-      capitalUsed = maxPremium;
+      capitalUsed = premiumLimit;
     } else {
       (uint collateralToAdd, uint setCollateralTo) = getRequiredCollateral(
-        lyraBase,
-        strike,
-        _strike.size,
-        _strike.optionType
+        _trade,
+        strike.strikePrice,
+        strike.expiry
       );
 
-      // check if over limit of trade funds with hedge
       _trasferFromVault(collateralToAdd);
 
-      uint minExpectedPremium = _getPremiumLimit(lyraBase, strike, true, _strike);
-      (positionId, premium) = _sellStrike(
-        _strike.market,
-        strike,
-        _strike.size,
-        setCollateralTo,
-        _strike.optionType,
-        minExpectedPremium
-      );
+      (positionId, premium) = sellStrike(_trade, setCollateralTo, premiumLimit);
+
       capitalUsed = collateralToAdd;
     }
 
-    _strike.positionId = positionId;
+    _addActiveStrike(_trade, positionId);
 
-    _addActiveStrike(_strike, positionId, _strike.optionType);
+    expiry = strike.expiry;
   }
 
   /**
    * @notice transfer from vault
-   * @param amount quote amount to transfer
+   * @param _amount quote amount to transfer
    */
-  function _trasferFromVault(uint amount) internal onlyVault {
-    require(quoteAsset.transferFrom(address(vault), address(this), amount), "collateral transfer from vault failed");
+  function _trasferFromVault(uint _amount) internal onlyVault {
+    require(
+      quoteAsset.transferFrom(address(vault), address(this), _amount),
+      'collateral transfer from vault failed'
+    );
   }
 
   /**
@@ -236,7 +267,7 @@ contract Strategy is StrategyBase {
 
     uint quoteBal = quoteAsset.balanceOf(address(this));
 
-    require(quoteAsset.transfer(address(vault), quoteBal), "failed to return funds from strategy");
+    require(quoteAsset.transfer(address(vault), quoteBal), 'failed to return funds from strategy');
 
     _clearAllActiveStrikes();
   }
@@ -246,44 +277,43 @@ contract Strategy is StrategyBase {
    * @dev calculate required collateral to add in the next trade.
    * only add collateral if the additional sell will make the position out of buffer range
    * never remove collateral from an existing position
-   * @param strike strike to trade
-   * @param _size expected size
-   * @param _optionType optiontype of trade
+   * @param _trade strike trade
+   * @param _strikeExpiry expiry
    * @return collateralToAdd
    * @return setCollateralTo
    */
   function getRequiredCollateral(
-    address lyraBase,
-    ILyraBase.Strike memory strike,
-    uint _size,
-    uint _optionType
+    StrikeTrade memory _trade,
+    uint _strikePrice,
+    uint _strikeExpiry
   ) public view returns (uint collateralToAdd, uint setCollateralTo) {
-    uint sellAmount = _size;
-    ILyraBase.ExchangeRateParams memory exchangeParams = ILyraBase(lyraBase).getExchangeParams();
+    ILyraBase.ExchangeRateParams memory exchangeParams = lyra(_trade.market).getExchangeParams();
 
     // get existing position info if active
     uint existingAmount;
     uint existingCollateral;
 
-    if (_isActiveStrike(strike.id, _optionType)) {
-      uint positionId = positionIdByStrikeOption[keccak256(abi.encode(strike.id, _optionType))];
-      ILyraBase.OptionPosition memory position = ILyraBase(lyraBase).getPositions(_toDynamic(positionId))[0];
+    if (_isActiveStrike(_trade.strikeId, _trade.optionType)) {
+      uint positionId = positionIdByStrikeOption[keccak256(abi.encode(_trade.strikeId, _trade.optionType))];
+      ILyraBase.OptionPosition memory position = lyra(_trade.market).getPositions(_toDynamic(positionId))[0];
       existingCollateral = position.collateral;
       existingAmount = position.amount;
     }
     // gets minBufferCollat for the whole position
     uint minBufferCollateral = _getBufferCollateral(
-      lyraBase,
-      strike.strikePrice,
-      strike.expiry,
+      _trade.market,
+      _strikePrice,
+      _strikeExpiry,
       exchangeParams.spotPrice,
-      existingAmount + sellAmount,
-      _optionType
+      existingAmount + _trade.size,
+      _trade.optionType
     );
     // get targetCollat for this trade instance
     // prevents vault from adding excess collat just to meet targetCollat
     uint targetCollat = existingCollateral +
-      _getFullCollateral(strike.strikePrice, sellAmount, _optionType).multiplyDecimal(currentStrategy.collatPercent);
+      _getFullCollateral(_strikePrice, _trade.size, _trade.optionType).multiplyDecimal(
+        currentStrategy.collatPercent
+      );
 
     // if excess collateral, keep in position to encourage more option selling
     setCollateralTo = _max(_max(minBufferCollateral, targetCollat), existingCollateral);
@@ -294,79 +324,72 @@ contract Strategy is StrategyBase {
 
   /**
    * @notice perform the sell
-   * @param strike strike detail
-   * @param _size target size
-   * @param setCollateralTo target collateral amount
-   * @param _optionType strikes optionType
-   * @param minExpectedPremium minExpectedPremium
+   * @param _trade strike trade info
+   * @param _setCollateralTo target collateral amount
+   * @param _minExpectedPremium min premium acceptable
    * @return positionId lyra position id
    * @return totalCost the premium received from selling
    */
-  function _sellStrike(
-    bytes32 market,
-    ILyraBase.Strike memory strike,
-    uint _size,
-    uint setCollateralTo,
-    uint _optionType,
-    uint minExpectedPremium
+  function sellStrike(
+    StrikeTrade memory _trade,
+    uint _setCollateralTo,
+    uint _minExpectedPremium
   ) internal returns (uint, uint) {
     // get minimum expected premium based on minIv
-    OptionType optionType = OptionType(_optionType);
+    OptionType optionType = OptionType(_trade.optionType);
     // perform trade
+    console.log('_setCollateralTo');
+    console.log(_setCollateralTo);
     TradeResult memory result = openPosition(
-      market,
+      _trade.market,
       TradeInputParameters({
-        strikeId: strike.id,
-        positionId: positionIdByStrikeOption[keccak256(abi.encode(strike.id, _optionType))], // need to get track by strike id and option type
+        strikeId: _trade.strikeId,
+        positionId: positionIdByStrikeOption[keccak256(abi.encode(_trade.strikeId, _trade.optionType))], // need to get track by strike id and option type
         iterations: 1,
         optionType: optionType,
-        amount: _size, // size should be different depending on strategy
-        setCollateralTo: setCollateralTo,
-        minTotalCost: minExpectedPremium,
+        amount: _trade.size, // size should be different depending on strategy
+        setCollateralTo: _setCollateralTo,
+        minTotalCost: _minExpectedPremium,
         maxTotalCost: type(uint).max,
         rewardRecipient: address(0) // set to zero address if don't want to wait for whitelist
       })
     );
 
-    require(result.totalCost >= minExpectedPremium, "premium received is below min expected premium");
+    if (result.totalCost < _minExpectedPremium) {
+      revert PremiumBelowExpected(result.totalCost, _minExpectedPremium);
+    }
 
     return (result.positionId, result.totalCost);
   }
 
   /**
    * @notice perform the buy
-   * @param strike strike detail
-   * @param _size target size
-   * @param _optionType strikes optionType
-   * @param maxPremium total cost acceptable
+   * @param _trade strike trade info
+   * @param _maxPremium max price acceptable
    * @return positionId
    * @return totalCost
    */
-  function _buyStrike(
-    bytes32 market,
-    ILyraBase.Strike memory strike,
-    uint _size,
-    uint _optionType,
-    uint maxPremium
-  ) internal returns (uint, uint) {
-    OptionType optionType = OptionType(_optionType);
+  function buyStrike(StrikeTrade memory _trade, uint _maxPremium) internal returns (uint, uint) {
+    OptionType optionType = OptionType(_trade.optionType);
     // perform trade to long
     TradeResult memory result = openPosition(
-      market,
+      _trade.market,
       TradeInputParameters({
-        strikeId: strike.id,
-        positionId: positionIdByStrikeOption[keccak256(abi.encode(strike.id, _optionType))],
+        strikeId: _trade.strikeId,
+        positionId: positionIdByStrikeOption[keccak256(abi.encode(_trade.strikeId, _trade.optionType))],
         iterations: 1,
         optionType: optionType,
-        amount: _size,
+        amount: _trade.size,
         setCollateralTo: 0,
         minTotalCost: 0,
-        maxTotalCost: maxPremium,
+        maxTotalCost: _maxPremium,
         rewardRecipient: address(0) // set to zero address if don't want to wait for whitelist
       })
     );
 
-    require(result.totalCost <= maxPremium, "premium too high");
+    if (result.totalCost > _maxPremium) {
+      revert PremiumAboveExpected(result.totalCost, _maxPremium);
+    }
 
     return (result.positionId, result.totalCost);
   }
@@ -374,86 +397,96 @@ contract Strategy is StrategyBase {
   /**
    * @notice reduce size of lyra options position
    * @dev use premium in strategy to reduce position size if collateral ratio is out of range
-   * @param positionId lyra position id
-   * @param closeAmount amount closing
+   * @param _market btc/eth
+   * @param _positionId lyra position id
+   * @param _closeAmount amount closing
    */
-  function reducePosition(bytes32 market, uint positionId, uint closeAmount) external onlyVault {
-    address lyraBase = lyraBases[market];
-    ILyraBase.OptionPosition memory position = ILyraBase(lyraBase).getPositions(_toDynamic(positionId))[0];
-    ILyraBase.Strike memory strike = ILyraBase(lyraBase).getStrikes(_toDynamic(position.strikeId))[0];
+  function reducePosition(bytes32 _market, uint _positionId, uint _closeAmount) external onlyVault {
+    ILyraBase.OptionPosition memory position = lyra(_market).getPositions(_toDynamic(_positionId))[0];
+    ILyraBase.Strike memory strike = lyra(_market).getStrikes(_toDynamic(position.strikeId))[0];
 
-    require(
-      positionIdByStrikeOption[keccak256(abi.encode(position.strikeId, position.optionType))] == positionId,
-      "invalid positionId"
-    );
+    if (
+      positionIdByStrikeOption[keccak256(abi.encode(position.strikeId, position.optionType))] != _positionId
+    ) {
+      revert InvalidPositionId(_positionId);
+    }
 
-    // only allows closing if collat < minBuffer
-    require(
-      closeAmount <=
-        getAllowedCloseAmount(market, position, strike.strikePrice, strike.expiry, uint(position.optionType)),
-      "amount exceeds allowed close amount"
-    );
+    if (
+      _closeAmount >
+      getAllowedCloseAmount(
+        _market,
+        position.amount,
+        position.collateral,
+        strike.strikePrice,
+        strike.expiry,
+        uint(position.optionType)
+      )
+    ) {
+      revert CloseAmountExceedsAllowed(_closeAmount);
+    }
 
-    StrikeTrade memory currentStrikeTrade = activeStrikeByPositionId[positionId];
+    StrikeTrade memory currentTrade = activeStrikeByPositionId[_positionId];
 
+    bool isMin = _isLong(currentTrade.optionType) ? false : true;
     // closes excess position with premium balance
-    uint maxExpectedPremium = _getPremiumLimit(lyraBase, strike, false, currentStrikeTrade);
+    uint maxExpectedPremium = _getPremiumLimit(currentTrade, strike.expiry, strike.strikePrice, isMin);
     TradeInputParameters memory tradeParams = TradeInputParameters({
       strikeId: position.strikeId,
       positionId: position.positionId,
       iterations: 3,
       optionType: OptionType(uint(position.optionType)), // convert to lyraadapter optiontype
-      amount: closeAmount,
+      amount: _closeAmount,
       setCollateralTo: position.collateral,
       minTotalCost: type(uint).min,
       maxTotalCost: maxExpectedPremium,
       rewardRecipient: address(0) // set to zero address if don't want to wait for whitelist
     });
 
-    // needs to be delegated - not delegated move openPosition to strategybase or another adapter along with other state changers
     TradeResult memory result;
-    if (!_isOutsideDeltaCutoff(lyraBase, strike.id)) {
-      result = closePosition(market, tradeParams);
+    if (!_isOutsideDeltaCutoff(_market, strike.id)) {
+      result = closePosition(_market, tradeParams);
     } else {
       // will pay less competitive price to close position
-      result = forceClosePosition(market, tradeParams);
+      result = forceClosePosition(_market, tradeParams);
     }
 
-    require(result.totalCost <= maxExpectedPremium, "premium paid is above max expected premium");
+    require(result.totalCost <= maxExpectedPremium, 'premium paid is above max expected premium');
 
     // return closed collateral amount
     // quote collateral
-    quoteAsset.transfer(address(vault), closeAmount);
+    quoteAsset.transfer(address(vault), _closeAmount);
   }
 
   /**
    * @notice get allowed close amount
    * @dev calculates the position amount required to stay above the buffer collateral
-   * @param position lyra position id
-   * @param strikePrice strike price
-   * @param strikeExpiry strike expiry
+   * @param _market market btc / eth
+   * @param _positionAmount current position size
+   * @param _positionCollateral current collateral for position
+   * @param _strikePrice strike price
+   * @param _strikeExpiry strike expiry
    * @param _optionType option type
    */
   function getAllowedCloseAmount(
-    bytes32 market,
-    ILyraBase.OptionPosition memory position,
-    uint strikePrice,
-    uint strikeExpiry,
+    bytes32 _market,
+    uint _positionAmount,
+    uint _positionCollateral,
+    uint _strikePrice,
+    uint _strikeExpiry,
     uint _optionType
   ) public view returns (uint closeAmount) {
-    address lyraBase = lyraBases[market];
-    ILyraBase.ExchangeRateParams memory exchangeParams = ILyraBase(lyraBase).getExchangeParams();
+    ILyraBase.ExchangeRateParams memory exchangeParams = lyra(_market).getExchangeParams();
     uint minCollatPerAmount = _getBufferCollateral(
-      lyraBase,
-      strikePrice,
-      strikeExpiry,
+      _market,
+      _strikePrice,
+      _strikeExpiry,
       exchangeParams.spotPrice,
       1e18,
       _optionType
     );
 
-    closeAmount = position.collateral < minCollatPerAmount.multiplyDecimal(position.amount)
-      ? position.amount - position.collateral.divideDecimal(minCollatPerAmount)
+    closeAmount = _positionCollateral < minCollatPerAmount.multiplyDecimal(_positionAmount)
+      ? _positionCollateral - _positionCollateral.divideDecimal(minCollatPerAmount)
       : 0;
   }
 
@@ -463,13 +496,14 @@ contract Strategy is StrategyBase {
 
   /**
    * @notice transfer to synthetix futures market
-   * @param hedgeFunds funds to transfer
+   * @param _market btc / eth
+   * @param _hedgeFunds funds to transfer
    * @dev refactor this to move away from futuresadapter
    */
-  function _transferToFuturesMarket(bytes32 market, int hedgeFunds) internal {
+  function _transferToFuturesMarket(bytes32 _market, int _hedgeFunds) internal {
     // transfer from vault to strategy
-    address futuresMarket = futuresMarketsByKey[market];
-    IFuturesMarket(futuresMarket).transferMargin(hedgeFunds);
+    address futuresMarket = futuresMarketsByKey[_market];
+    IFuturesMarket(futuresMarket).transferMargin(_hedgeFunds);
   }
 
   /*****************************************************
@@ -478,31 +512,29 @@ contract Strategy is StrategyBase {
 
   /**
    * @notice delta hedging using synthetix futures based on strategy
-   * @param market btc or eth
-   * @param deltaToHedge deltaToHedge calcualted by keeper
-   * @param hedgeAttempts attempts
+   * @param _market btc or eth
+   * @param _deltaToHedge deltaToHedge calcualted by keeper
+   * @param _hedgeAttempts attempts
    * @dev refactor this to move away from futuresadapter
    */
-  function _dynamicDeltaHedge(bytes32 market, int deltaToHedge, uint hedgeAttempts) external onlyVault {
-    require(hedgeType == HEDGETYPE.DYNAMIC_DELTA_HEDGE, "Not allowed");
-    require(dynamicHedgeStrategy.maxHedgeAttempts <= hedgeAttempts);
+  function dynamicDeltaHedge(bytes32 _market, int _deltaToHedge, uint _hedgeAttempts) external onlyVault {
+    require(hedgeType == HEDGETYPE.DYNAMIC_DELTA_HEDGE, 'Not allowed');
+    require(dynamicHedgeStrategy.maxHedgeAttempts <= _hedgeAttempts);
 
-    address futuresMarket = futuresMarketsByKey[market];
+    address futuresMarket = futuresMarketsByKey[_market];
 
     (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
 
-    require(marginRemaining > 0, "Remaining margin is 0");
+    require(marginRemaining > 0, 'Remaining margin is 0');
 
-    address lyraBase = lyraBases[market];
-
-    uint spotPrice = ILyraBase(lyraBase).getSpotPriceForMarket();
-    uint fundsRequiredSUSD = _abs(deltaToHedge).multiplyDecimal(spotPrice); // 20 * 2000 = 40000
+    uint spotPrice = lyra(_market).getSpotPriceForMarket();
+    uint fundsRequiredSUSD = _abs(_deltaToHedge).multiplyDecimal(spotPrice); // 20 * 2000 = 40000
 
     uint currentLeverage = marginRemaining.divideDecimal(fundsRequiredSUSD);
 
     int size = dynamicHedgeStrategy.maxLeverageSize > currentLeverage
-      ? deltaToHedge
-      : _maxLeverageSize(deltaToHedge, dynamicHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
+      ? _deltaToHedge
+      : _maxLeverageSize(_deltaToHedge, dynamicHedgeStrategy.maxLeverageSize, marginRemaining, spotPrice);
 
     IFuturesMarket(futuresMarket).modifyPosition(size);
   }
@@ -513,24 +545,24 @@ contract Strategy is StrategyBase {
 
   /**
    * @notice one click delta hedge
-   * @param size total size of hedge
+   * @param _market btc or eth
+   * @param _size total size of hedge
    */
-  function _userHedge(bytes32 market, int size) external onlyVault {
-    require(hedgeType == HEDGETYPE.USER_HEDGE, "Not allowed");
-    address lyraBase = lyraBases[market];
-    address futuresMarket = futuresMarketsByKey[market];
+  function userHedge(bytes32 _market, int _size) external onlyVault {
+    require(hedgeType == HEDGETYPE.USER_HEDGE, 'Not allowed');
+    address futuresMarket = futuresMarketsByKey[_market];
     // check if there is enough roundhedgefunds left over
 
-    uint spotPrice = ILyraBase(lyraBase).getSpotPriceForMarket();
-    uint fundsRequiredSUSD = _abs(size).multiplyDecimal(spotPrice);
+    uint spotPrice = lyra(_market).getSpotPriceForMarket();
+    uint fundsRequiredSUSD = _abs(_size).multiplyDecimal(spotPrice);
 
     _trasferFromVault(fundsRequiredSUSD);
-    _transferToFuturesMarket(market, int(fundsRequiredSUSD));
+    _transferToFuturesMarket(_market, int(fundsRequiredSUSD));
 
     (uint marginRemaining, ) = IFuturesMarket(futuresMarket).remainingMargin(address(this));
-    require(marginRemaining > 0, "Remaining margin is 0");
+    require(marginRemaining > 0, 'Remaining margin is 0');
 
-    IFuturesMarket(futuresMarket).modifyPosition(size);
+    IFuturesMarket(futuresMarket).modifyPosition(_size);
   }
 
   /*****************************************************
@@ -541,9 +573,9 @@ contract Strategy is StrategyBase {
    * @notice close position
    * @dev refactor this to move away from futuresadapter
    */
-  function _closeHedge(bytes32[] memory markets) external onlyVault {
-    for (uint i = 0; i < markets.length; i++) {
-      bytes32 market = markets[i];
+  function _closeHedge(bytes32[] memory _markets) external onlyVault {
+    for (uint i = 0; i < _markets.length; i++) {
+      bytes32 market = _markets[i];
       address futuresMarket = futuresMarketsByKey[market];
       IFuturesMarket(futuresMarket).closePosition();
     }
@@ -553,8 +585,12 @@ contract Strategy is StrategyBase {
    * @notice withdraw margin
    * @dev refactor this to move away from futuresadapter
    */
-  function _closeHedgeEndOfRound(bytes32 market) public {
-    address futuresMarket = futuresMarketsByKey[market];
+  function _closeHedgeEndOfRound(bytes32 _market) public {
+    if (futuresMarketsByKey[_market] == address(0)) {
+      revert NoFuturesMarketSet();
+    }
+
+    address futuresMarket = futuresMarketsByKey[_market];
 
     IFuturesMarket(futuresMarket).withdrawAllMargin();
   }
@@ -570,8 +606,7 @@ contract Strategy is StrategyBase {
   /**
    * @dev checks delta for vault for a market
    */
-  function _checkNetDelta(bytes32 market) public view returns (int netDelta) {
-    address lyraBase = lyraBases[market];
+  function _checkNetDelta(bytes32 _market) public view returns (int netDelta) {
     uint _len = activeStrikeTrades.length;
 
     uint[] memory positionIds = new uint[](_len);
@@ -583,7 +618,7 @@ contract Strategy is StrategyBase {
       positionIds[i] = strike.positionId;
     }
 
-    ILyraBase.OptionPosition[] memory positions = ILyraBase(lyraBase).getPositions(positionIds);
+    ILyraBase.OptionPosition[] memory positions = lyra(_market).getPositions(positionIds);
     uint _positionsLen = positions.length;
     uint[] memory strikeIds = new uint[](_positionsLen);
 
@@ -594,7 +629,7 @@ contract Strategy is StrategyBase {
       }
     }
 
-    int[] memory deltas = ILyraBase(lyraBase).getDeltas(strikeIds);
+    int[] memory deltas = lyra(_market).getDeltas(strikeIds);
 
     for (uint i = 0; i < deltas.length; i++) {
       netDelta = netDelta + deltas[i];
@@ -604,22 +639,31 @@ contract Strategy is StrategyBase {
   /**
    * @dev checks delta for position - used by keeper and user to hedge (shown on ui)
    */
-  function _checkDeltaByPositionId(bytes32 market, uint positionId) external view returns (int delta) {
-    address lyraBase = lyraBases[market];
-    StrikeTrade memory _strikeTrade = activeStrikeByPositionId[positionId];
-    require(_strikeTrade.strikeId > 0, "No strike Id");
-    int callDelta = ILyraBase(lyraBase).getDeltas(_toDynamic(_strikeTrade.strikeId))[0];
+  function _checkDeltaByPositionId(bytes32 _market, uint _positionId) external view returns (int delta) {
+    StrikeTrade memory _strikeTrade = activeStrikeByPositionId[_positionId];
+    require(_strikeTrade.strikeId > 0, 'No strike Id');
+    int callDelta = lyra(_market).getDeltas(_toDynamic(_strikeTrade.strikeId))[0];
     // check direction
     delta = _isCall(_strikeTrade.optionType) ? callDelta : callDelta - SignedDecimalMath.UNIT;
   }
 
+  /**
+   * @notice gets allowed max leverage according to strategy
+   * @dev calculates the position amount required to stay above the buffer collateral
+   * @param _deltaToHedge position delta
+   * @param _maxLeverageSize strategy max leverage
+   * @param _marginRemaining remaining margin
+   * @param _spotPrice spot price
+   */
   function _maxLeverageSize(
-    int deltaToHedge,
-    uint maxLeverageSize,
-    uint marginRemaining,
-    uint spotPrice
+    int _deltaToHedge,
+    uint _maxLeverageSize,
+    uint _marginRemaining,
+    uint _spotPrice
   ) private pure returns (int size) {
-    int direction = deltaToHedge >= 0 ? int(1) : -int(1);
-    size = direction * (int(maxLeverageSize).multiplyDecimal(int(marginRemaining))).divideDecimal(int(spotPrice));
+    int direction = _deltaToHedge >= 0 ? int(1) : -int(1);
+    size =
+      direction *
+      (int(_maxLeverageSize).multiplyDecimal(int(_marginRemaining))).divideDecimal(int(_spotPrice));
   }
 }

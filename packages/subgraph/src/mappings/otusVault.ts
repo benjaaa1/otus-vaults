@@ -44,7 +44,7 @@ export function handleVaultTrade(event: Trade): void {
     newTrade.optionType = activeTrade.optionType;
     newTrade.positionId = activeTrade.positionId;
     newTrade.txhash = txhash;
-    newTrade.strikePrice = activeTrade.strikePrice;
+    // newTrade.strikePrice = activeTrade.strikePrice;
     newTrade.expiry = activeTrade.expiry;
     newTrade.openedAt = createdAt;
     newTrade.premiumEarned = activeTrade.premium;
