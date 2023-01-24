@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Web3Button, Web3Address } from '../components/UI/Web3'
 import Products from '../components/Products'
 import Vault from '../components/Products/Vaults/Vault'
@@ -11,6 +11,9 @@ import { SelectFilterMarket } from '../components/Products/Vaults/Filters/market
 import { SelectFilterOptionType } from '../components/Products/Vaults/Filters/optionType'
 import { SelectFilterNetwork } from '../components/Products/Vaults/Filters/network'
 import { useTwitters } from '../queries/manager/useTwitter'
+import { Vault as VaultType } from '../utils/types/vault'
+import { UserAction } from '../utils/types/portofolio'
+import { ethers } from 'ethers'
 
 type VaultFilters = {
   market: string
@@ -21,10 +24,63 @@ type VaultFilters = {
 const Vaults: NextPage = () => {
   const vaultProducts = useVaultProducts() // need to refresh this when filters are updated pass in filters too
   const vaults = vaultProducts?.data?.vaults || [];
+  const { data: twitterData } = useTwitters(vaults?.map(vault => vault.manager.twitter))
 
-  const { data: twitterData } = useTwitters(vaults.map(vault => vault.manager.twitter))
+  const [vaultParticipants, setVaultParticipants] = useState<Record<string, any[]> | null>(null);
+  const [filters, setFilters] = useState<VaultFilters>({ market: '', optionTypes: [], network: '' });
 
-  const [filters, setFilters] = useState<VaultFilters>({ market: '', optionTypes: [], network: '' })
+  const updateVaultParticipants = useCallback(async () => {
+    if (vaults.length > 0) {
+
+      const mainnetProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', 1);
+
+      const users: string[] = vaults.reduce((accum: string[], vault: VaultType) => {
+        const _users: string[] = vault.userActions.map((userAction: UserAction) => userAction.id.split('-')[1]);
+        return accum.concat(_users)
+      }, [] as string[]);
+
+      const userAvatarUrls = await Promise.all(users.map(async (user) => {
+        const _ensName = await mainnetProvider.lookupAddress(user);
+        const resolver = _ensName ? await mainnetProvider.getResolver(_ensName) : null;
+        const avatar = resolver ? await resolver.getAvatar() : null;
+        return { user, hasAvatar: avatar?.url ? true : false, avatarUrl: avatar?.url };
+      }))
+
+      const avatarsByUser = userAvatarUrls.reduce((accum, userAvatar) => {
+        if (userAvatar.hasAvatar) {
+          return { ...accum, [userAvatar.user]: userAvatar.avatarUrl }
+        }
+        return accum;
+      }, {} as Record<string, any>)
+
+      const vaultUsers = vaults.reduce((accum: Record<string, any[]>, vault: VaultType) => {
+        const userIds = vault.userActions
+          .map((userAction: UserAction) => userAction.id.split('-')[1])
+          .map(user => {
+            if (avatarsByUser.hasOwnProperty(user)) {
+              return { address: user, hasAvatar: true, avatar: avatarsByUser[user] }
+            } else {
+              return { address: user, hasAvatar: false }
+            }
+          }).sort((a, b) => {
+            return a.hasAvatar
+          }).slice(0, 4);
+
+
+        return { ...accum, [vault.id]: userIds }
+      }, {} as Record<string, any[]>)
+
+      setVaultParticipants(vaultUsers);
+    }
+  }, [vaults]);
+
+  useEffect(() => {
+    if (vaults.length > 0) {
+      updateVaultParticipants();
+    }
+  }, [vaults])
+
+  console.log({ vaultParticipants })
 
   useEffect(() => {
     if (filters.market != '' || filters.optionTypes.length > 0 || filters.network != '') {
@@ -81,7 +137,8 @@ const Vaults: NextPage = () => {
           ) : (
             vaults.map((vault) => {
               const _twitter = twitterData && twitterData[vault.manager.twitter];
-              return <Vault key={vault.id} vault={vault} twitter={_twitter} />
+              const _vaultParticipants = vaultParticipants && vaultParticipants[vault.id];
+              return <Vault key={vault.id} vault={vault} twitter={_twitter} vaultParticipants={_vaultParticipants} />
             })
           )}
         </div>

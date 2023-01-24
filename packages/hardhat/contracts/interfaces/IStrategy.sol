@@ -11,7 +11,7 @@ interface IStrategy {
 
   function trade(
     StrategyBase.StrikeTrade memory currentStrikeStrategy
-  ) external returns (uint positionId, uint premiumReceived, uint capitalUsed, uint expiry);
+  ) external returns (uint positionId, uint premiumReceived, uint capitalUsed, uint expiry, uint strikePrice);
 
   function reducePosition(bytes32 market, uint positionId, uint closeAmount) external;
 

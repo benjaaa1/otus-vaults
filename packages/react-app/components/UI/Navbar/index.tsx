@@ -2,7 +2,7 @@ import React from 'react'
 import { Disclosure } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { Web3Button } from '../Web3'
+import { Web3Button, Web3Network } from '../Web3'
 import { useRouter } from 'next/router'
 import LogoIcon from '../Components/Icons/OTUS'
 
@@ -54,8 +54,9 @@ export const Navbar = () => {
                 </div>
               </div>
               <div className="hidden sm:ml-6 sm:block">
-                <div className="flex items-center">
+                <div className="flex items-center gap-1">
                   {/* Profile dropdown */}
+                  <Web3Network />
                   <Web3Button />
                 </div>
               </div>

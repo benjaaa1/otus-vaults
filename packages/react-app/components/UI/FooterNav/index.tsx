@@ -56,6 +56,7 @@ export const Navbar = () => {
               <div className="hidden sm:ml-6 sm:block">
                 <div className="flex items-center">
                   {/* Profile dropdown */}
+
                   <Web3Button />
                 </div>
               </div>

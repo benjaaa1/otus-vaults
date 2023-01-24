@@ -199,7 +199,11 @@ contract Strategy is StrategyBase {
    */
   function trade(
     StrikeTrade memory _trade
-  ) external onlyVault returns (uint positionId, uint premium, uint capitalUsed, uint expiry) {
+  )
+    external
+    onlyVault
+    returns (uint positionId, uint premium, uint capitalUsed, uint expiry, uint strikePrice)
+  {
     /// @notice check if market is allowed
     if (allowedMarkets[_trade.market] == false) {
       revert MarketNotAllowed(_trade.market);
@@ -241,6 +245,7 @@ contract Strategy is StrategyBase {
     _addActiveStrike(_trade, positionId);
 
     expiry = strike.expiry;
+    strikePrice = strike.strikePrice;
   }
 
   /**

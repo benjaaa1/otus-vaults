@@ -38,6 +38,8 @@ export const useWeb3 = () => {
     provider,
     web3Provider,
     address,
+    ensName,
+    ensAvatar,
     network,
     transactionNotifier,
   } = state
@@ -46,9 +48,11 @@ export const useWeb3 = () => {
     if (web3Modal) {
       try {
         const provider = await web3Modal.connect()
-        const web3Provider = new ethers.providers.Web3Provider(provider)
+        const web3Provider = new ethers.providers.Web3Provider(provider);
         const signer = web3Provider.getSigner()
         const address = await signer.getAddress()
+
+
         const network = await web3Provider.getNetwork()
         const _transactionNotifier = transactionNotifier
           ? transactionNotifier.setProvider(web3Provider)
@@ -90,9 +94,35 @@ export const useWeb3 = () => {
   // Auto connect to the cached provider
   useEffect(() => {
     if (web3Modal && web3Modal.cachedProvider) {
-      connect()
+      connect();
     }
   }, [connect])
+
+  const connectEns = useCallback(async () => {
+    if (address) {
+      const mainnetProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', 1);
+      await mainnetProvider.detectNetwork()
+      const _ensName = await mainnetProvider.lookupAddress('0x983110309620D911731Ac0932219af06091b6744');
+
+      const resolver = _ensName ? await mainnetProvider.getResolver(_ensName) : null;
+      const avatar = resolver ? await resolver.getAvatar() : null;
+
+      if (_ensName) {
+        dispatch({
+          type: 'SET_ENS_ADDRESS',
+          ensName: _ensName,
+          ensAvatar: avatar?.url
+        })
+      }
+    }
+  }, [address])
+
+  useEffect(() => {
+    if (address) {
+      // get ens avatar
+      connectEns();
+    }
+  }, [address])
 
   // EIP-1193 events
   useEffect(() => {

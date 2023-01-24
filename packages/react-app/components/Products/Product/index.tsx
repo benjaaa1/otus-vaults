@@ -20,6 +20,11 @@ import { VaultStrategyInfo } from './StrategyModalInfo/VaultStrategyInfo'
 import Link from 'next/link'
 import Avatar from 'react-avatar'
 import { useTwitter } from '../../../queries/manager/useTwitter'
+import { ethers } from 'ethers'
+import { UserAction } from '../../../utils/types/portofolio'
+// @ts-ignore
+import Blockies from 'react-blockies'
+import { Spinner } from '../../UI/Components/Spinner'
 
 export default function Product() {
   const { network } = useWeb3Context()
@@ -54,6 +59,51 @@ export default function Product() {
       calculatePremiumEarned()
     } catch (error) {
       console.log({ error })
+    }
+  }, [vault])
+
+  const [vaultParticipants, setVaultParticipants] = useState<any[]>([]);
+
+  const updateVaultParticipants = useCallback(async () => {
+    if (vault) {
+
+      const mainnetProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', 1);
+
+      const users: string[] = vault.userActions.map((userAction: UserAction) => userAction.id.split('-')[1]);
+
+      const userAvatarUrls = await Promise.all(users.map(async (user) => {
+        const _ensName = await mainnetProvider.lookupAddress(user);
+        const resolver = _ensName ? await mainnetProvider.getResolver(_ensName) : null;
+        const avatar = resolver ? await resolver.getAvatar() : null;
+        return { user, hasAvatar: avatar?.url ? true : false, avatarUrl: avatar?.url };
+      }))
+
+      const avatarsByUser = userAvatarUrls.reduce((accum, userAvatar) => {
+        if (userAvatar.hasAvatar) {
+          return { ...accum, [userAvatar.user]: userAvatar.avatarUrl }
+        }
+        return accum;
+      }, {} as Record<string, any>)
+
+      const userIds = vault.userActions
+        .map((userAction: UserAction) => userAction.id.split('-')[1])
+        .map(user => {
+          if (avatarsByUser.hasOwnProperty(user)) {
+            return { address: user, hasAvatar: true, avatar: avatarsByUser[user] }
+          } else {
+            return { address: user, hasAvatar: false }
+          }
+        }).sort((a, b) => {
+          return a.hasAvatar
+        }).slice(0, 8);
+
+      setVaultParticipants(userIds);
+    }
+  }, [vault]);
+
+  useEffect(() => {
+    if (vault) {
+      updateVaultParticipants();
     }
   }, [vault])
 
@@ -232,6 +282,34 @@ export default function Product() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+              </div>
+
+              <div className="grid grid-cols-1">
+                <div className="py-4 text-sm font-bold uppercase text-zinc-400">
+                  Vault Participants
+                </div>
+                <div className="grid grid-cols-12">
+
+
+                  {
+                    vaultParticipants ?
+                      vaultParticipants.map(vaultParticipant => {
+                        if (vaultParticipant.hasAvatar) {
+                          return <Avatar size="40" className='cursor-pointer' src={vaultParticipant.avatarUrl} round={true} />
+                        } else {
+                          return <Blockies
+                            size={10}
+                            seed={vaultParticipant.user}
+                            className={'rounded-full border border-zinc-700'}
+                          />
+                        }
+                      }) :
+                      <div className="mx-auto h-10">
+                        <Spinner />
+                      </div>
+                  }
                 </div>
               </div>
             </div>

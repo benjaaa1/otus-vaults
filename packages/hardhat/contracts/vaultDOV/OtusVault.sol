@@ -49,6 +49,7 @@ contract OtusVault is BaseVault {
     uint premium;
     uint positionId;
     uint expiry;
+    uint strikePrice;
   }
 
   /************************************************
@@ -227,6 +228,7 @@ contract OtusVault is BaseVault {
     uint premium;
     uint capitalUsed;
     uint expiry;
+    uint strikePrice;
 
     uint longTradesLen = _longTrades.length;
     uint shortTradesLen = _shortTrades.length;
@@ -238,7 +240,7 @@ contract OtusVault is BaseVault {
     /// @notice execute short
     for (uint i = 0; i < shortTradesLen; i++) {
       StrategyBase.StrikeTrade memory shortTrade = _shortTrades[i];
-      (positionId, premium, capitalUsed, expiry) = IStrategy(strategy).trade(shortTrade);
+      (positionId, premium, capitalUsed, expiry, strikePrice) = IStrategy(strategy).trade(shortTrade);
       allCapitalUsed += capitalUsed;
 
       ActiveTrade memory activeTrade = ActiveTrade(
@@ -248,7 +250,8 @@ contract OtusVault is BaseVault {
         shortTrade.size,
         premium,
         positionId,
-        expiry
+        expiry,
+        strikePrice
       );
       activeTrades[i] = activeTrade;
     }
@@ -256,7 +259,7 @@ contract OtusVault is BaseVault {
     /// @notice execute long
     for (uint i = 0; i < longTradesLen; i++) {
       StrategyBase.StrikeTrade memory longTrade = _longTrades[i];
-      (positionId, premium, capitalUsed, expiry) = IStrategy(strategy).trade(longTrade);
+      (positionId, premium, capitalUsed, expiry, strikePrice) = IStrategy(strategy).trade(longTrade);
       allCapitalUsed += capitalUsed;
 
       ActiveTrade memory activeTrade = ActiveTrade(
@@ -266,7 +269,8 @@ contract OtusVault is BaseVault {
         longTrade.size,
         premium,
         positionId,
-        expiry
+        expiry,
+        strikePrice
       );
       activeTrades[i] = activeTrade;
     }

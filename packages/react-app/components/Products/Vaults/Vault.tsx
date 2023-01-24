@@ -15,6 +15,9 @@ import { Vault, VaultTrade } from '../../../utils/types/vault'
 import { Twitter, TwitterData } from '../../../pages/api/utils/twitter'
 import Avatar from 'react-avatar'
 import { OPTION_TYPE_NAMES } from '../../../queries/lyra/useLyra'
+// @ts-ignore
+import Blockies from 'react-blockies'
+import { Spinner } from '../../UI/Components/Spinner'
 
 const BuildMarketTags = ({ allowedMarkets }: { allowedMarkets: string[] }) => {
   return <>
@@ -49,7 +52,8 @@ const getOptionTypeTag = (vaultTrades: VaultTrade[]) => {
 
 }
 
-const Vault = ({ vault, twitter }: { vault: Vault, twitter?: Twitter }) => {
+const Vault = ({ vault, twitter, vaultParticipants }: { vault: Vault, twitter?: Twitter, vaultParticipants?: any[] | null }) => {
+
   const router = useRouter()
 
   const handleVaultClick = (e: any, href: string) => {
@@ -121,20 +125,51 @@ const Vault = ({ vault, twitter }: { vault: Vault, twitter?: Twitter }) => {
 
           <div className="grid grid-cols-2 ">
 
-            <div className="py-4 col-span-2">
+            <div className="py-4 col-span-1">
               <div className="py-2 font-mono text-lg font-normal text-white">
                 {
                   twitter && twitter?.id && twitter.profile_image_url ?
                     <div>
                       <Avatar size="40" className='cursor-pointer' twitterHandle={twitter.username} src={twitter.profile_image_url} round={true} />
                     </div> :
-                    <div>
-                      {vault?.manager.id}
-                    </div>
+                    <Blockies
+                      size={10}
+                      seed={vault?.manager.id}
+                      className={'rounded-full border border-zinc-700'}
+                    />
                 }
               </div>
               <div className="text-xxs font-light text-zinc-300">
                 Managed By
+              </div>
+            </div>
+
+            <div className="py-4 col-span-1">
+              <div className="py-2 font-mono text-lg font-normal text-white">
+                <div className='grid grid-cols-6'>
+                  {/* <Avatar size="40" className='cursor-pointer' src={'https://i.imgur.com/5njQAB8.png'} round={true} /> */}
+
+                  {
+                    vaultParticipants ?
+                      vaultParticipants.map(vaultParticipant => {
+                        if (vaultParticipant.hasAvatar) {
+                          return <Avatar size="40" className='cursor-pointer' src={vaultParticipant.avatarUrl} round={true} />
+                        } else {
+                          return <Blockies
+                            size={10}
+                            seed={vaultParticipant.user}
+                            className={'rounded-full border border-zinc-700'}
+                          />
+                        }
+                      }) :
+                      <div className="mx-auto h-10">
+                        <Spinner />
+                      </div>
+                  }
+                </div>
+              </div>
+              <div className="text-xxs font-light text-zinc-300">
+                Vault Participants
               </div>
             </div>
 

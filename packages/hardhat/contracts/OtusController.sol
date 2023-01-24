@@ -1,27 +1,27 @@
 //SPDX-License-Identifier:ISC
 pragma solidity 0.8.9;
 
-import "hardhat/console.sol";
+import 'hardhat/console.sol';
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import '@openzeppelin/contracts/access/Ownable.sol';
 
-import {StrategyBase} from "./vaultDOV/strategy/StrategyBase.sol";
+import {StrategyBase} from './vaultDOV/strategy/StrategyBase.sol';
 
-import {IOtusCloneFactory} from "./interfaces/IOtusCloneFactory.sol";
-import {IFuturesMarketManager} from "./interfaces/IFuturesMarketManager.sol";
-import {OptionGreekCache} from "@lyrafinance/protocol/contracts/OptionGreekCache.sol";
-import {LiquidityPool} from "@lyrafinance/protocol/contracts/LiquidityPool.sol";
-import {LiquidityToken} from "@lyrafinance/protocol/contracts/LiquidityToken.sol";
-import {PoolHedger} from "@lyrafinance/protocol/contracts/libraries/PoolHedger.sol";
-import {OptionMarketPricer} from "@lyrafinance/protocol/contracts/OptionMarketPricer.sol";
-import {OptionToken} from "@lyrafinance/protocol/contracts/OptionToken.sol";
-import {ShortCollateral} from "@lyrafinance/protocol/contracts/ShortCollateral.sol";
-import {OptionMarket} from "@lyrafinance/protocol/contracts/OptionMarket.sol";
-import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
-import {IERC20} from "openzeppelin-contracts-4.4.1/token/ERC20/IERC20.sol";
+import {IOtusCloneFactory} from './interfaces/IOtusCloneFactory.sol';
+import {IFuturesMarketManager} from './interfaces/IFuturesMarketManager.sol';
+import {OptionGreekCache} from '@lyrafinance/protocol/contracts/OptionGreekCache.sol';
+import {LiquidityPool} from '@lyrafinance/protocol/contracts/LiquidityPool.sol';
+import {LiquidityToken} from '@lyrafinance/protocol/contracts/LiquidityToken.sol';
+import {PoolHedger} from '@lyrafinance/protocol/contracts/libraries/PoolHedger.sol';
+import {OptionMarketPricer} from '@lyrafinance/protocol/contracts/OptionMarketPricer.sol';
+import {OptionToken} from '@lyrafinance/protocol/contracts/OptionToken.sol';
+import {ShortCollateral} from '@lyrafinance/protocol/contracts/ShortCollateral.sol';
+import {OptionMarket} from '@lyrafinance/protocol/contracts/OptionMarket.sol';
+import {GWAVOracle} from '@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol';
+import {IERC20} from 'openzeppelin-contracts-4.4.1/token/ERC20/IERC20.sol';
 
 // libraries
-import {Vault} from "./libraries/Vault.sol";
+import {Vault} from './libraries/Vault.sol';
 
 /**
  * @title OtusController
@@ -112,7 +112,7 @@ contract OtusController is Ownable {
    * @param _otusCloneFactory address
    */
   function setOtusCloneFactory(address _otusCloneFactory) public onlyOwner {
-    require(_otusCloneFactory != address(0), "Must be a contract address");
+    require(_otusCloneFactory != address(0), 'Must be a contract address');
     otusCloneFactory = _otusCloneFactory;
     emit OtusCloneFactoryUpdated(msg.sender, _otusCloneFactory);
   }
@@ -136,13 +136,13 @@ contract OtusController is Ownable {
     address[] memory _vaults = vaults[msg.sender];
     uint len = _vaults.length;
 
-    require(len < 18, "Max 18 vaults created");
+    require(len < 18, 'Max 18 vaults created');
     vaults[msg.sender].push(vault);
-    require(vault != address(0), "Vault not created");
+    require(vault != address(0), 'Vault not created');
 
     // create strategy clone
     address strategy = IOtusCloneFactory(otusCloneFactory).cloneStrategy();
-    require(strategy != address(0), "Strategy not created");
+    require(strategy != address(0), 'Strategy not created');
     strategies[vault] = strategy;
 
     // initialize vault
@@ -156,7 +156,12 @@ contract OtusController is Ownable {
     );
 
     // initialize strategy
-    IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(msg.sender, vault, strategy, currentStrategy);
+    IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(
+      msg.sender,
+      vault,
+      strategy,
+      currentStrategy
+    );
 
     emit VaultCreated(msg.sender, twitterHandle, vault, strategy, _vaultInfo, _vaultParams);
   }
@@ -174,7 +179,11 @@ contract OtusController is Ownable {
    * @return userVaults vault owned
    * @return userStrategies vault's strategies
    */
-  function getUserManagerDetails() public view returns (address[] memory userVaults, address[] memory userStrategies) {
+  function getUserManagerDetails()
+    public
+    view
+    returns (address[] memory userVaults, address[] memory userStrategies)
+  {
     address _msgSender = msg.sender;
     userVaults = _getVaults(_msgSender);
     userStrategies = _getStrategies(userVaults);

@@ -7,6 +7,8 @@ export type Web3ProviderState = {
   provider: any
   web3Provider: ethers.providers.Web3Provider | null | undefined
   address: string | null | undefined
+  ensName: string | null | undefined
+  ensAvatar: string | null | undefined
   network: ethers.providers.Network | null | undefined
   connect: (() => Promise<void>) | null
   disconnect: (() => Promise<void>) | null
@@ -18,6 +20,8 @@ export const web3InitialState: Web3ProviderState = {
   provider: null,
   web3Provider: null,
   address: null,
+  ensName: null,
+  ensAvatar: null,
   network: null,
   connect: null,
   disconnect: null,
@@ -26,25 +30,32 @@ export const web3InitialState: Web3ProviderState = {
 
 export type Web3Action =
   | {
-      type: 'SET_WEB3_PROVIDER'
-      signer?: Web3ProviderState['signer']
-      provider?: Web3ProviderState['provider']
-      web3Provider?: Web3ProviderState['web3Provider']
-      address?: Web3ProviderState['address']
-      network?: Web3ProviderState['network']
-      transactionNotifier?: Web3ProviderState['transactionNotifier']
-    }
+    type: 'SET_WEB3_PROVIDER'
+    signer?: Web3ProviderState['signer']
+    provider?: Web3ProviderState['provider']
+    web3Provider?: Web3ProviderState['web3Provider']
+    address?: Web3ProviderState['address'],
+    ensName?: Web3ProviderState['ensName'],
+    ensAvatar?: Web3ProviderState['ensName'],
+    network?: Web3ProviderState['network']
+    transactionNotifier?: Web3ProviderState['transactionNotifier']
+  }
   | {
-      type: 'SET_ADDRESS'
-      address?: Web3ProviderState['address']
-    }
+    type: 'SET_ADDRESS'
+    address?: Web3ProviderState['address']
+  }
   | {
-      type: 'SET_NETWORK'
-      network?: Web3ProviderState['network']
-    }
+    type: 'SET_ENS_ADDRESS'
+    ensName?: Web3ProviderState['ensName'],
+    ensAvatar?: Web3ProviderState['ensAvatar']
+  }
   | {
-      type: 'RESET_WEB3_PROVIDER'
-    }
+    type: 'SET_NETWORK'
+    network?: Web3ProviderState['network']
+  }
+  | {
+    type: 'RESET_WEB3_PROVIDER'
+  }
 
 export function web3Reducer(
   state: Web3ProviderState,
@@ -65,6 +76,12 @@ export function web3Reducer(
       return {
         ...state,
         address: action.address,
+      }
+    case 'SET_ENS_ADDRESS':
+      return {
+        ...state,
+        ensName: action.ensName,
+        ensAvatar: action.ensAvatar,
       }
     case 'SET_NETWORK':
       return {

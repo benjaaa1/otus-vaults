@@ -75,6 +75,7 @@ type VaultTrade @entity {
   optionType: BigInt!
   positionId: BigInt!
   txhash: Bytes!
+  strikePrice: BigInt!
   expiry: BigInt!
   openedAt: BigInt!
   premiumEarned: BigInt

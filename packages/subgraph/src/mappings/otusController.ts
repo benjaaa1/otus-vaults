@@ -29,7 +29,7 @@ export function handleVaultCreated(event: VaultCreated): void {
   // strategy.latestUpdate = event.block.timestamp;
 
   vault.strategy = _vaultStrategy.toHex();
-  vault.manager = manager.id || 'N/A';
+  vault.manager = manager.id;
   vault.round = 0;
   vault.isActive = false;
 

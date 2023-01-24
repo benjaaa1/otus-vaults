@@ -1,5 +1,6 @@
 import { BigNumber } from 'ethers'
 import { Manager } from './manager'
+import { UserAction } from './portofolio'
 
 export type VaultTrade = {
   id: string
@@ -35,6 +36,7 @@ export type Vault = {
   isPublic: boolean
   strategy: Strategy
   vaultTrades: VaultTrade[]
+  userActions: UserAction[]
   name: string
   description: string
   inProgress: boolean

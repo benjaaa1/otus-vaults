@@ -57,7 +57,6 @@ const buildTrades = async (strikes) => {
     strikeId: strikes[1].id,
     size: toBN('2'),
     positionId: toBN('0'),
-    strikePrice: strikes[1].strikePrice,
   };
 };
 
@@ -175,14 +174,15 @@ const create = async () => {
     // // select strikes StrategyBase.StrikeTrade[] and trade
     const trades = await buildTrades(strikeDetails);
 
-    const trade = await otusVaultInstance.connect(deployer).trade([trades]);
+    const trade = await otusVaultInstance.connect(deployer).trade([], [trades]);
     await trade.wait();
-
+    // console.log({ trade })
     // const _checkDeltaByPositionId = await strategyInstance._checkDeltaByPositionId(ethMarketKey, [strikes[1]]);
     // get positions opened
     // const [strikes, optionTypes, positionIds] = await strategyInstance.getStrikeOptionTypes();
     // console.log({ strikes, optionTypes, positionIds })
-
+    const _activeStrikeTrades = await strategyInstance.activeStrikeTrades(0);
+    console.log({ _activeStrikeTrades })
     return true;
   } catch (e) {
     // send back

@@ -35,7 +35,7 @@ const DisconnectButton = ({ disconnect }: DisconnectProps) => {
   )
 }
 
-export function Web3Button() {
+export function Web3Network() {
   const { web3Provider, address, ensAvatar, connect, disconnect } = useWeb3Context()
 
   return web3Provider ? (

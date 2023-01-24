@@ -35,6 +35,11 @@ export const useVaultProducts = () => {
                 managementFee
                 asset
                 vaultCap
+                userActions {
+                  id
+                  amount 
+                  isDeposit
+                }
                 vaultTrades {
                   id
                   txhash
