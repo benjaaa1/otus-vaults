@@ -7,7 +7,7 @@ import { useQuery } from 'react-query'
 import QUERY_KEYS from '../constants/queryKeys'
 
 export const useBalance = () => {
-  const { address, network } = useWeb3Context()
+  const { address } = useWeb3Context()
 
   const contracts = useContracts()
   const susdContract = contracts ? contracts['SUSD'] : null

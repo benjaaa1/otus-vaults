@@ -44,6 +44,10 @@ export const useWeb3 = () => {
     transactionNotifier,
   } = state
 
+  const changeChain = useCallback(async () => {
+
+  }, [])
+
   const connect = useCallback(async () => {
     if (web3Modal) {
       try {
