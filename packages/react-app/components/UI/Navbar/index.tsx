@@ -69,7 +69,7 @@ export const Navbar = () => {
               </div>
               <div className="-mr-2 flex sm:hidden">
                 {/* Mobile menu button */}
-                <Disclosure.Button className="text-white inline-flex items-center justify-center rounded-md p-2 hover:bg-zinc-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                <Disclosure.Button className="text-white inline-flex items-center justify-center rounded-md p-2 hover:bg-zinc-900 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-800">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
                     <XMarkIcon
@@ -105,8 +105,15 @@ export const Navbar = () => {
               </Link>
             </div>
             <div className=" border-t border-zinc-700 pt-4 pb-3">
-              <div className="flex items-center px-5">
-                <Web3Button />
+              <div className="flex px-4 gap-2">
+
+                <div>
+                  <Web3Network />
+                </div>
+                <div>
+                  <Web3Button />
+                </div>
+
               </div>
             </div>
           </Disclosure.Panel>
