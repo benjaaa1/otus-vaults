@@ -9,15 +9,6 @@ import {StrategyBase} from './vaultDOV/strategy/StrategyBase.sol';
 
 import {IOtusCloneFactory} from './interfaces/IOtusCloneFactory.sol';
 import {IFuturesMarketManager} from './interfaces/IFuturesMarketManager.sol';
-import {OptionGreekCache} from '@lyrafinance/protocol/contracts/OptionGreekCache.sol';
-import {LiquidityPool} from '@lyrafinance/protocol/contracts/LiquidityPool.sol';
-import {LiquidityToken} from '@lyrafinance/protocol/contracts/LiquidityToken.sol';
-import {PoolHedger} from '@lyrafinance/protocol/contracts/libraries/PoolHedger.sol';
-import {OptionMarketPricer} from '@lyrafinance/protocol/contracts/OptionMarketPricer.sol';
-import {OptionToken} from '@lyrafinance/protocol/contracts/OptionToken.sol';
-import {ShortCollateral} from '@lyrafinance/protocol/contracts/ShortCollateral.sol';
-import {OptionMarket} from '@lyrafinance/protocol/contracts/OptionMarket.sol';
-import {GWAVOracle} from '@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol';
 import {IERC20} from 'openzeppelin-contracts-4.4.1/token/ERC20/IERC20.sol';
 
 // libraries

@@ -2,15 +2,14 @@
 pragma solidity 0.8.9;
 
 // Hardhat
-import "hardhat/console.sol";
+import 'hardhat/console.sol';
 
 // Libraries
-import {BlackScholes} from "@lyrafinance/protocol/contracts/libraries/BlackScholes.sol";
-import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
+import {BlackScholes} from '@lyrafinance/protocol/contracts/libraries/BlackScholes.sol';
 
 // Inherited
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IOptionMarket} from "@lyrafinance/protocol/contracts/interfaces/IOptionMarket.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {IOptionMarket} from '@lyrafinance/protocol/contracts/interfaces/IOptionMarket.sol';
 
 /**
  * @title ILyraBase

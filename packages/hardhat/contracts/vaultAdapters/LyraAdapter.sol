@@ -19,6 +19,7 @@ import {OwnableUpgradeable} from '@openzeppelin/contracts-upgradeable/access/Own
  * @dev cloned for each strategy to interact with lyra markets
  */
 contract LyraAdapter is OwnableUpgradeable {
+  // can use different decimal math not synthetix
   using DecimalMath for uint;
 
   ///////////////////////

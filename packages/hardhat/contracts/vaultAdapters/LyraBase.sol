@@ -2,22 +2,23 @@
 pragma solidity 0.8.9;
 
 // Libraries
-import {BlackScholes} from "@lyrafinance/protocol/contracts/libraries/BlackScholes.sol";
-import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
+import {BlackScholes} from '@lyrafinance/protocol/contracts/libraries/BlackScholes.sol';
+import {DecimalMath} from '@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol';
 
 // Inherited
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 // Interfaces
-import {OptionToken} from "@lyrafinance/protocol/contracts/OptionToken.sol";
-import {OptionMarket} from "@lyrafinance/protocol/contracts/OptionMarket.sol";
-import {LiquidityPool} from "@lyrafinance/protocol/contracts/LiquidityPool.sol";
-import {ShortCollateral} from "@lyrafinance/protocol/contracts/ShortCollateral.sol";
-import {OptionGreekCache} from "@lyrafinance/protocol/contracts/OptionGreekCache.sol";
-import {SynthetixAdapter} from "@lyrafinance/protocol/contracts/SynthetixAdapter.sol";
-import {BasicFeeCounter} from "@lyrafinance/protocol/contracts/periphery/BasicFeeCounter.sol";
-import {OptionMarketPricer} from "@lyrafinance/protocol/contracts/OptionMarketPricer.sol";
-import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
+import {OptionToken} from '@lyrafinance/protocol/contracts/OptionToken.sol';
+import {OptionMarket} from '@lyrafinance/protocol/contracts/OptionMarket.sol';
+import {LiquidityPool} from '@lyrafinance/protocol/contracts/LiquidityPool.sol';
+import {ShortCollateral} from '@lyrafinance/protocol/contracts/ShortCollateral.sol';
+import {OptionGreekCache} from '@lyrafinance/protocol/contracts/OptionGreekCache.sol';
+// update synthetixadapter to inherit exchange adapter and create 2 LyraBase => LyraBaseSNX LyraBaseGMX
+import {SynthetixAdapter} from '@lyrafinance/protocol/contracts/SynthetixAdapter.sol';
+import {BasicFeeCounter} from '@lyrafinance/protocol/contracts/periphery/BasicFeeCounter.sol';
+import {OptionMarketPricer} from '@lyrafinance/protocol/contracts/OptionMarketPricer.sol';
+import {GWAVOracle} from '@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol';
 
 /**
  * @title LyraBase
@@ -199,9 +200,8 @@ contract LyraBase {
     allStrikes = new Strike[](strikeIds.length);
 
     for (uint i = 0; i < strikeIds.length; i++) {
-      (OptionMarket.Strike memory strike, OptionMarket.OptionBoard memory board) = optionMarket.getStrikeAndBoard(
-        strikeIds[i]
-      );
+      (OptionMarket.Strike memory strike, OptionMarket.OptionBoard memory board) = optionMarket
+        .getStrikeAndBoard(strikeIds[i]);
 
       allStrikes[i] = Strike({
         id: strike.id,
@@ -219,9 +219,8 @@ contract LyraBase {
     vols = new uint[](strikeIds.length);
 
     for (uint i = 0; i < strikeIds.length; i++) {
-      (OptionMarket.Strike memory strike, OptionMarket.OptionBoard memory board) = optionMarket.getStrikeAndBoard(
-        strikeIds[i]
-      );
+      (OptionMarket.Strike memory strike, OptionMarket.OptionBoard memory board) = optionMarket
+        .getStrikeAndBoard(strikeIds[i]);
 
       vols[i] = board.iv.multiplyDecimal(strike.skew);
     }
@@ -323,7 +322,13 @@ contract LyraBase {
     uint amount
   ) public view returns (uint) {
     return
-      greekCache.getMinCollateral(OptionMarket.OptionType(uint(optionType)), strikePrice, expiry, spotPrice, amount);
+      greekCache.getMinCollateral(
+        OptionMarket.OptionType(uint(optionType)),
+        strikePrice,
+        expiry,
+        spotPrice,
+        amount
+      );
   }
 
   function getMinCollateralForPosition(uint positionId) public view returns (uint) {
@@ -344,7 +349,11 @@ contract LyraBase {
       );
   }
 
-  function getMinCollateralForStrike(OptionType optionType, uint strikeId, uint amount) internal view returns (uint) {
+  function getMinCollateralForStrike(
+    OptionType optionType,
+    uint strikeId,
+    uint amount
+  ) internal view returns (uint) {
     if (_isLong(optionType)) return 0;
 
     uint strikePrice;
@@ -366,9 +375,8 @@ contract LyraBase {
   //////////
 
   function _getBsInput(uint strikeId) internal view returns (BlackScholes.BlackScholesInputs memory bsInput) {
-    (OptionMarket.Strike memory strike, OptionMarket.OptionBoard memory board) = optionMarket.getStrikeAndBoard(
-      strikeId
-    );
+    (OptionMarket.Strike memory strike, OptionMarket.OptionBoard memory board) = optionMarket
+      .getStrikeAndBoard(strikeId);
     bsInput = BlackScholes.BlackScholesInputs({
       timeToExpirySec: board.expiry - block.timestamp,
       volatilityDecimal: board.iv.multiplyDecimal(strike.skew),
@@ -388,6 +396,9 @@ contract LyraBase {
 
   function volGWAV(uint strikeId, uint secondsAgo) public view returns (uint) {
     OptionMarket.Strike memory strike = optionMarket.getStrike(strikeId);
-    return gwavOracle.ivGWAV(strike.boardId, secondsAgo).multiplyDecimal(gwavOracle.skewGWAV(strikeId, secondsAgo));
+    return
+      gwavOracle.ivGWAV(strike.boardId, secondsAgo).multiplyDecimal(
+        gwavOracle.skewGWAV(strikeId, secondsAgo)
+      );
   }
 }

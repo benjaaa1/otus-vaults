@@ -94,7 +94,7 @@ export default function Product() {
             return { address: user, hasAvatar: false }
           }
         }).sort((a, b) => {
-          return a.hasAvatar
+          return a.hasAvatar ? 1 : 0
         }).slice(0, 8);
 
       setVaultParticipants(userIds);
