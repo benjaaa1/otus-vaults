@@ -44,8 +44,27 @@ export const useWeb3 = () => {
     transactionNotifier,
   } = state
 
-  const changeChain = useCallback(async () => {
+  // const updateChain = () => {
+  //   dispatch({
 
+  //   })
+  // }
+
+  const setChain = useCallback(async () => {
+    window.ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [{
+        chainId: "0x89",
+        rpcUrls: ["https://polygon-rpc.com/"],
+        chainName: "Matic Mainnet",
+        nativeCurrency: {
+          name: "MATIC",
+          symbol: "MATIC",
+          decimals: 18
+        },
+        blockExplorerUrls: ["https://explorer.matic.network"]
+      }]
+    });
   }, [])
 
   const connect = useCallback(async () => {
@@ -171,6 +190,8 @@ export const useWeb3 = () => {
   }, [provider, disconnect])
 
   return {
+    ensName,
+    ensAvatar,
     signer,
     provider,
     web3Provider,
@@ -178,6 +199,7 @@ export const useWeb3 = () => {
     network,
     connect,
     disconnect,
+    // setNetwork,
     transactionNotifier,
   } as Web3ProviderState
 }

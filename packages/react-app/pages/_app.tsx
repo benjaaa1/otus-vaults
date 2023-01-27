@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 import Layout from '../components/UI/Layout'
 import { Network } from '../constants/networks'
+import PlausibleProvider from 'next-plausible';
 
 const WhitelistComponent = () => {
   return <div className='min-full-height'>
@@ -43,16 +44,18 @@ const InnerApp: FC<AppProps> = ({ Component, pageProps }) => {
 
 const MyApp: FC<AppProps> = (props) => {
   return (
-    <Web3ContextProvider>
-      <QueryClientProvider client={new QueryClient()}>
-        <InnerApp {...props} />
-        <ToastContainer
-          hideProgressBar
-          position="bottom-right"
-          autoClose={2000}
-        />
-      </QueryClientProvider>
-    </Web3ContextProvider>
+    <PlausibleProvider domain="app.otus.finance">
+      <Web3ContextProvider>
+        <QueryClientProvider client={new QueryClient()}>
+          <InnerApp {...props} />
+          <ToastContainer
+            hideProgressBar
+            position="bottom-right"
+            autoClose={2000}
+          />
+        </QueryClientProvider>
+      </Web3ContextProvider>
+    </PlausibleProvider>
   )
 }
 
