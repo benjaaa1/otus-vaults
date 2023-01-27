@@ -5,9 +5,11 @@ import { Spinner } from '../Components/Spinner'
 import Avatar from 'react-avatar'
 // @ts-ignore
 import Blockies from 'react-blockies'
+
 interface ConnectProps {
   connect: (() => Promise<void>)
 }
+
 const ConnectButton = ({ connect }: ConnectProps) => {
   return (
     <button
@@ -91,6 +93,6 @@ export function Web3Button() {
       ensAvatar={ensAvatar}
     />
   ) : (
-    <ConnectButton connect={connect} />
+    connect && <ConnectButton connect={connect} />
   )
 }
