@@ -14,11 +14,15 @@ import {OptionMarket} from '@lyrafinance/protocol/contracts/OptionMarket.sol';
 import {LiquidityPool} from '@lyrafinance/protocol/contracts/LiquidityPool.sol';
 import {ShortCollateral} from '@lyrafinance/protocol/contracts/ShortCollateral.sol';
 import {OptionGreekCache} from '@lyrafinance/protocol/contracts/OptionGreekCache.sol';
-// update synthetixadapter to inherit exchange adapter and create 2 LyraBase => LyraBaseSNX LyraBaseGMX
-import {SynthetixAdapter} from '@lyrafinance/protocol/contracts/SynthetixAdapter.sol';
 import {BasicFeeCounter} from '@lyrafinance/protocol/contracts/periphery/BasicFeeCounter.sol';
 import {OptionMarketPricer} from '@lyrafinance/protocol/contracts/OptionMarketPricer.sol';
 import {GWAVOracle} from '@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol';
+
+// Exchange adapter
+// update synthetixadapter to inherit exchange adapter and create 2 LyraBase => LyraBaseSNX LyraBaseGMX
+import {SynthetixAdapter} from '@lyrafinance/protocol/contracts/SynthetixAdapter.sol';
+
+// import {BaseExchangeAdapter} from './BaseExchangeAdapter.sol';
 
 /**
  * @title LyraBase
@@ -124,7 +128,8 @@ contract LyraBase {
   OptionMarket public optionMarket;
   LiquidityPool internal liquidityPool;
   ShortCollateral internal shortCollateral;
-  SynthetixAdapter internal immutable synthetixAdapter;
+  /// @dev GMX adaptor or SNX adaptor (for now using SynthetixAdapter not ExchangeAdapter)
+  SynthetixAdapter internal immutable exchangeAdapter;
   OptionMarketPricer internal optionPricer;
   OptionGreekCache internal greekCache;
   GWAVOracle internal gwavOracle;
@@ -134,7 +139,7 @@ contract LyraBase {
   /**
    * @notice Assigns synthetix adapter
    * @param _marketKey synth market name
-   * @param _synthetixAdapter SynthetixAdapter address
+   * @param _exchangeAdapter BaseExchangeAdapter address synthetix (OP) / gmx (ONE)
    * @param _optionToken OptionToken Address
    * @param _optionMarket OptionMarket Address
    * @param _liquidityPool LiquidityPool address
@@ -145,7 +150,7 @@ contract LyraBase {
    */
   constructor(
     bytes32 _marketKey,
-    address _synthetixAdapter,
+    address _exchangeAdapter,
     address _optionToken,
     address _optionMarket,
     address _liquidityPool,
@@ -155,7 +160,7 @@ contract LyraBase {
     address _gwavOracle
   ) {
     marketKey = _marketKey;
-    synthetixAdapter = SynthetixAdapter(_synthetixAdapter);
+    exchangeAdapter = SynthetixAdapter(_exchangeAdapter); // when optimism ExchangeAdapter(_synthetix) when arbritrum ExchangeAdapter(_gmx)
     optionToken = OptionToken(_optionToken); // option token will be different
     optionMarket = OptionMarket(_optionMarket); // option market will be different
     liquidityPool = LiquidityPool(_liquidityPool); // liquidity pool will be different
@@ -174,7 +179,7 @@ contract LyraBase {
    * @return spotPrice
    */
   function getSpotPriceForMarket() public view returns (uint spotPrice) {
-    spotPrice = synthetixAdapter.getSpotPriceForMarket(address(optionMarket));
+    spotPrice = exchangeAdapter.getSpotPriceForMarket(address(optionMarket));
   }
 
   ////////////////////
@@ -283,7 +288,8 @@ contract LyraBase {
 
   // get spot price of sAsset and exchange fee percentages
   function getExchangeParams() public view returns (ExchangeRateParams memory) {
-    SynthetixAdapter.ExchangeParams memory params = synthetixAdapter.getExchangeParams(address(optionMarket));
+    // update this to only return what is used (spot price)
+    SynthetixAdapter.ExchangeParams memory params = exchangeAdapter.getExchangeParams(address(optionMarket));
     return
       ExchangeRateParams({
         spotPrice: params.spotPrice,
@@ -344,7 +350,7 @@ contract LyraBase {
         OptionType(uint(position.optionType)),
         strikePrice,
         expiry,
-        synthetixAdapter.getSpotPriceForMarket(address(optionMarket)),
+        exchangeAdapter.getSpotPriceForMarket(address(optionMarket)),
         position.amount
       );
   }
@@ -365,7 +371,7 @@ contract LyraBase {
         optionType,
         strikePrice,
         expiry,
-        synthetixAdapter.getSpotPriceForMarket(address(optionMarket)),
+        exchangeAdapter.getSpotPriceForMarket(address(optionMarket)),
         amount
       );
   }
@@ -380,7 +386,7 @@ contract LyraBase {
     bsInput = BlackScholes.BlackScholesInputs({
       timeToExpirySec: board.expiry - block.timestamp,
       volatilityDecimal: board.iv.multiplyDecimal(strike.skew),
-      spotDecimal: synthetixAdapter.getSpotPriceForMarket(address(optionMarket)),
+      spotDecimal: exchangeAdapter.getSpotPriceForMarket(address(optionMarket)),
       strikePriceDecimal: strike.strikePrice,
       rateDecimal: greekCache.getGreekCacheParams().rateAndCarry
     });

@@ -12,7 +12,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     from: deployer,
     args: [ 
       markets.ETH,
-      lyraGlobal.SynthetixAdapter.address,
+      lyraGlobal.SynthetixAdapter.address, // in arbitrum will be gmx adapter deployed by lyra
       lyraMarket.OptionToken.address,
       lyraMarket.OptionMarket.address,
       lyraMarket.LiquidityPool.address,

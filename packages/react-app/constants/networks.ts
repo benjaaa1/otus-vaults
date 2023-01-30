@@ -6,13 +6,18 @@ export enum OptimismChainId {
   Local = 31337, // Optimism
 }
 
+export enum ArbitrumChainId {
+  ArbitrumMainnet = 42161,
+  ArbitrumGoerli = 421613,
+}
+
 export enum EthereumChainId {
   Mainnet = 1,
   Kovan = 42,
   Local = 31337,
 }
 
-export type ChainId = EthereumChainId | OptimismChainId
+export type ChainId = EthereumChainId | OptimismChainId | ArbitrumChainId
 
 export enum Network {
   Optimism = 'Optimism',

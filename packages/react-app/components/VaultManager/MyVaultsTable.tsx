@@ -20,16 +20,16 @@ const VaultManagementHeaders: VaultManagementHeader[] = [
     deviceVariant: 'default',
   },
   {
+    name: 'Chain',
+    deviceVariant: 'large',
+  },
+  {
     name: 'Timestamp',
     deviceVariant: 'large',
   },
   {
     name: 'Name',
     deviceVariant: 'default',
-  },
-  {
-    name: 'Asset',
-    deviceVariant: 'large',
   },
   {
     name: 'Is Public',
@@ -79,19 +79,16 @@ export default function MyVaultsTable() {
                 <Cell
                   deviceVariant='large'
                   variant="default"
+                  label={'N/A'}
+                  isButton={false}
+                />
+                <Cell
+                  deviceVariant='large'
+                  variant="default"
                   label={vault.createdAt ? formatDate(vault.createdAt) : ''}
                 />
 
                 <Cell variant="default" label={vault.name} isButton={false} />
-                <Cell
-                  deviceVariant='large'
-                  variant="default"
-                  label={
-                    CURRENCY_BY_ADDRESS[network?.chainId || 10][vault.id] ||
-                    'N/A'
-                  }
-                  isButton={false}
-                />
                 <Cell deviceVariant='large' variant="default" label={vault.isPublic ? 'Yes' : 'No'} />
                 <Cell
                   variant="default"

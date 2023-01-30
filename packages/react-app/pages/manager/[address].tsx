@@ -23,12 +23,10 @@ const Manager: NextPage = () => {
   const { data: manager } = useManager(query?.address)
 
   const { data: twitterData } = useTwitter(manager?.twitter)
-  console.log({ twitterData })
 
   const { network } = useWeb3Context();
 
   const { data: userPortfolio } = useUserPortfolioById(query?.address, network);
-  console.log({ userPortfolio })
 
   const [totalManaged, setTotalManaged] = useState<BigNumber>(ZERO_BN);
   const [totalDeposited, setTotalDeposited] = useState<BigNumber>(ZERO_BN);
@@ -73,7 +71,7 @@ const Manager: NextPage = () => {
       </Head>
 
       <main className='mx-auto w-full max-w-container'>
-        <div className='mx-auto max-w-5xl py-8'>
+        <div className='mx-auto max-w-7xl py-8'>
           <div className="md:flex md:items-center md:justify-between">
             <div className="min-w-0 flex-1 flex items-center  space-x-5">
 
@@ -142,12 +140,12 @@ const Manager: NextPage = () => {
         </div>
       </main>
 
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-7xl">
 
         <ManagerVaults />
       </div>
 
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-7xl">
 
         <ManagerDeposits />
 

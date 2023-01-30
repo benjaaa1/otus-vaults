@@ -55,7 +55,7 @@ export const FooterNav = () => {
   const router = useRouter()
   return (
     <footer className="bg-zinc-900 ">
-      <div className="mx-auto max-w-6xl py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
+      <div className="mx-auto max-w-full py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex justify-center space-x-6 md:order-2 text-sm">
           {navigation.map((item) => (
             <a

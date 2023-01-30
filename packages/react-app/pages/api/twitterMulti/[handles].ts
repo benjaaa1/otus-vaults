@@ -4,7 +4,6 @@ import { TwitterData } from "../utils/twitter";
 const twitterMulti: NextApiHandler = async (req, res) => {
   // const { vault, network } = req.query;
   const { handles } = req.query;
-  console.log({ handles })
   const _twitterData = await
     fetch(
       `https://api.twitter.com/2/users/by?usernames=${handles}&user.fields=profile_image_url`, {
@@ -13,7 +12,6 @@ const twitterMulti: NextApiHandler = async (req, res) => {
       })
     });
 
-  console.log({ _twitterData })
   const twitterProfiles: TwitterData[] = await _twitterData.json();
 
   if (twitterProfiles) {

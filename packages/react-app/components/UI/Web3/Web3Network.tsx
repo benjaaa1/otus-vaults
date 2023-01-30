@@ -1,14 +1,25 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import OneIcon from '../Components/Icons/Header/ONE'
 import OpIcon from '../Components/Icons/Header/OP'
 import { useWeb3Context } from '../../../context'
+import { SupportedChainsList } from '../../../constants/supportedChains'
 
-const chainOptions = [
-  { title: 'Optimism', current: true },
-  { title: 'Arbitrum', current: false },
-]
+type NetworkOption = {
+  title: string
+  chainId: number
+  current: boolean
+}
+
+const getChainOptions = (): NetworkOption[] => {
+  return SupportedChainsList.map((supported, index) => {
+    const { name, chainId } = supported;
+    return { title: name, chainId: chainId, current: false } as NetworkOption
+  })
+}
+
+const chainOptions = getChainOptions();
 
 const getIcon = (type: string) => {
   switch (type) {
@@ -26,13 +37,36 @@ function classNames(...classes: string[]) {
 }
 
 export function Web3Network() {
-  const { network, web3Provider } = useWeb3Context();
+  const { network, setNetwork } = useWeb3Context();
 
-  console.log({ network })
-  const [selected, setSelected] = useState(chainOptions[0])
+  const [selected, setSelected] = useState<NetworkOption>({ ...chainOptions[0], current: true });
+
+  const _setNetwork = useCallback(() => {
+    if (network) {
+      console.log({ network })
+      const chainOption = chainOptions.find(chain => chain.chainId === network?.chainId);
+      console.log({ chainOption })
+
+      if (chainOption) {
+        setSelected({ ...chainOption, current: true })
+      }
+    }
+  }, [network])
+
+  useEffect(() => {
+    if (network) {
+      _setNetwork();
+    }
+  }, [network])
+
+  console.log({ selected })
 
   return (
-    <Listbox value={selected} onChange={setSelected}>
+    <Listbox value={selected} onChange={async (networkOption) => {
+      // setSelected(v);
+      await setNetwork(networkOption);
+      // setSelected(networkOption);
+    }}>
       {({ open }) => (
         <>
           <Listbox.Label className="sr-only"> Change published status </Listbox.Label>
@@ -70,20 +104,22 @@ export function Web3Network() {
                     }
                     value={option}
                   >
-                    {({ selected, active }) => (
-                      <div className="flex flex-col">
-                        <div className="flex">
-                          {getIcon(option.title)}
+                    {({ active }) => {
+                      return (
+                        <div className="flex flex-col">
+                          <div className="flex">
+                            {getIcon(option.title)}
 
-                          <p className={selected ? 'ml-2.5 text-sm font-semibold' : 'ml-2.5 text-sm font-normal'}>{option.title}</p>
-                          {selected ? (
-                            <span className={active ? 'text-white' : 'text-indigo-500'}>
-                              <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                            </span>
-                          ) : null}
+                            <p className={selected.chainId === option.chainId ? 'ml-2.5 text-sm font-semibold' : 'ml-2.5 text-sm font-normal'}>{option.title}</p>
+                            {selected.chainId === option.chainId ? (
+                              <span className={active ? 'text-white' : 'text-indigo-500'}>
+                                <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            ) : null}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )
+                    }}
                   </Listbox.Option>
                 ))}
               </Listbox.Options>

@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useCallback } from 'react'
-import { ethers } from 'ethers'
+import { BigNumber, ethers, utils } from 'ethers'
 import Web3Modal from 'web3modal'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import { TransactionNotifier } from '@synthetixio/transaction-notifier'
@@ -12,6 +12,7 @@ import {
 } from '../reducers'
 
 import { toast } from 'react-toastify'
+import { SupportedChains } from '../constants/supportedChains'
 
 const providerOptions = {
   walletconnect: {
@@ -50,22 +51,31 @@ export const useWeb3 = () => {
   //   })
   // }
 
-  const setChain = useCallback(async () => {
-    window.ethereum.request({
-      method: "wallet_addEthereumChain",
-      params: [{
-        chainId: "0x89",
-        rpcUrls: ["https://polygon-rpc.com/"],
-        chainName: "Matic Mainnet",
-        nativeCurrency: {
-          name: "MATIC",
-          symbol: "MATIC",
-          decimals: 18
-        },
-        blockExplorerUrls: ["https://explorer.matic.network"]
-      }]
-    });
-  }, [])
+  const setNetwork = async (_network: any) => {
+    // window.ethereum.request({
+    //   method: "wallet_addEthereumChain",
+    //   params: [{
+    //     chainId: "0x89",
+    //     rpcUrls: ["https://polygon-rpc.com/"],
+    //     chainName: "Matic Mainnet",
+    //     nativeCurrency: {
+    //       name: "MATIC",
+    //       symbol: "MATIC",
+    //       decimals: 18
+    //     },
+    //     blockExplorerUrls: ["https://explorer.matic.network"]
+    //   }]
+    // });
+    if (web3Modal) {
+      const formattedChainId = utils.hexStripZeros(
+        BigNumber.from(_network.chainId).toHexString()
+      );
+      (window.ethereum as any).request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: formattedChainId }],
+      });
+    }
+  };
 
   const connect = useCallback(async () => {
     if (web3Modal) {
@@ -199,7 +209,7 @@ export const useWeb3 = () => {
     network,
     connect,
     disconnect,
-    // setNetwork,
+    setNetwork,
     transactionNotifier,
   } as Web3ProviderState
 }

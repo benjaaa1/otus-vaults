@@ -30,7 +30,7 @@ export const useManager = (id: any) => {
         `,
         { id: id.toLowerCase() }
       )
-      console.log({ response })
+
       return response.managers.length > 0 ? response.managers[0] : null
     },
     {

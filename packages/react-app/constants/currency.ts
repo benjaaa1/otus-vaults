@@ -1,4 +1,5 @@
 import keyBy from 'lodash/keyBy'
+import { ArbitrumChainId, OptimismChainId } from './networks'
 
 // TODO: standardize this
 export type Category =
@@ -68,37 +69,14 @@ enum Synths {
   sSOL = 'sSOL',
 }
 
-type CurrencyAddress = {
-  [key: number]: any
-}
-
-export const CURRENCY_BY_ADDRESS: CurrencyAddress = {
-  10: {
-    '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8': 'sETH',
-  },
-  420: {
-    '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8': 'sETH',
-  },
-  31337: {
-    '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8': 'sETH',
-  },
-  421613: {
-    '0x2400d0469bfda59fb0233c3027349d83f1a0f4c8': 'sETH',
-  },
-}
-
 export const CURRENCIES: Currency = {
-  10: {
-    'ETH': '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
-  },
-  420: {
-    'ETH': '0x42688EcDA9Dd35cbB44C90Ad53734EE0f30d0E57' // susd
-  },
-  31337: {
-    'ETH': '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
-  }
+  [OptimismChainId.OptimismMainnet]: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e', //susd
+  [OptimismChainId.OptimismGoerli]: '0x42688EcDA9Dd35cbB44C90Ad53734EE0f30d0E57',
+  [OptimismChainId.Local]: '0x42688EcDA9Dd35cbB44C90Ad53734EE0f30d0E57',
+  [ArbitrumChainId.ArbitrumMainnet]: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e', // usdc
+  [ArbitrumChainId.ArbitrumGoerli]: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e' // usdc
 }
 
 type Currency = {
-  [key: number]: Record<string, string>
+  [key: number]: string
 }

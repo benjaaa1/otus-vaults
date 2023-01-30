@@ -80,7 +80,7 @@ export default function Create({ setOpen, open }: { setOpen: any, open: any }) {
   const [vaultParams, setVaultParams] = useState<VaultParamsStruct>({
     decimals: 18,
     cap: toBN('50000'),
-    asset: CURRENCIES[network?.chainId || 420]?.ETH, // quote asset
+    asset: network ? CURRENCIES[network?.chainId] : '', // quote asset
   })
 
   const [vaultStrategy, setVaultStrategy] = useState<VaultStrategyStruct>({

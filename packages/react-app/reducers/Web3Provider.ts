@@ -10,6 +10,7 @@ export type Web3ProviderState = {
   ensName: string | null | undefined
   ensAvatar: string | null | undefined
   network: ethers.providers.Network | null | undefined
+  setNetwork: ((_network: any) => Promise<void>)
   connect: (() => Promise<void>) | null
   disconnect: (() => Promise<void>) | null
   transactionNotifier: TransactionNotifierInterface | null | undefined
@@ -23,6 +24,7 @@ export const web3InitialState: Web3ProviderState = {
   ensName: null,
   ensAvatar: null,
   network: null,
+  setNetwork: (_network: any) => { },
   connect: null,
   disconnect: null,
   transactionNotifier: null,

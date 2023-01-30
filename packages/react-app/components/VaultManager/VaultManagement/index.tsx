@@ -46,7 +46,7 @@ export default function VaultManagement() {
   return (
     <VaultManagerContextProvider>
       <div className="min-h-[70vh]">
-        <main className="py-8 mx-auto max-w-5xl">
+        <main className="py-8 mx-auto max-w-7xl">
           {/* Page header */}
           <div className=" text-white md:flex md:items-center md:justify-between md:space-x-5">
             <div className="flex items-center space-x-5">

@@ -17,7 +17,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className='mx-auto max-w-5xl'>
+      <div className='mx-auto max-w-7xl'>
         <div className="grid sm:grid-cols-12 grid-cols-1 gap-8">
           <div className="sm:col-span-7 col-span-1">
             <div className="grid grid-cols-1">

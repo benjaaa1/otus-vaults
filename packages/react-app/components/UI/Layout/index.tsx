@@ -10,7 +10,7 @@ interface Props {
 
 export default function Layout({ children }: Props) {
   const { network } = useWeb3Context()
-  console.log({ network })
+
   return (
     <div className="bg-zinc-900 font-sans flex flex-col h-screen">
       {
