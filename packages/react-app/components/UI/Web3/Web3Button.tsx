@@ -47,6 +47,7 @@ const DisconnectButton = (
   { disconnect, address, ensName, ensAvatar }:
     DisconnectProps
 ) => {
+  console.log({ ensAvatar })
   return (
     <button
       className='text-xs text-white font-normal px-4 py-2 w-full rounded-md bg-zinc-800 hover:bg-zinc-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2'
@@ -83,7 +84,7 @@ const DisconnectButton = (
 
 export function Web3Button() {
   const { web3Provider, address, ensName, ensAvatar, connect, disconnect } = useWeb3Context()
-
+  console.log({ ensAvatar })
   return web3Provider ? (
     disconnect
     && <DisconnectButton

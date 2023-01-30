@@ -12,13 +12,14 @@ import {
 } from '../reducers'
 
 import { toast } from 'react-toastify'
-import { SupportedChains } from '../constants/supportedChains'
+import { SUPPORTED_NETWORKS } from '../constants/supportedChains'
+import { ChainId, EthereumChainId } from '../constants/networks'
 
 const providerOptions = {
   walletconnect: {
     package: WalletConnectProvider, // required
     options: {
-      infuraId: process.env.INFURA_ID,
+      infuraId: process.env.NEXT_PUBLIC_INFURA_ID,
     },
   },
 }
@@ -45,28 +46,9 @@ export const useWeb3 = () => {
     transactionNotifier,
   } = state
 
-  // const updateChain = () => {
-  //   dispatch({
+  const updateNetwork = async (_network: any) => {
 
-  //   })
-  // }
-
-  const setNetwork = async (_network: any) => {
-    // window.ethereum.request({
-    //   method: "wallet_addEthereumChain",
-    //   params: [{
-    //     chainId: "0x89",
-    //     rpcUrls: ["https://polygon-rpc.com/"],
-    //     chainName: "Matic Mainnet",
-    //     nativeCurrency: {
-    //       name: "MATIC",
-    //       symbol: "MATIC",
-    //       decimals: 18
-    //     },
-    //     blockExplorerUrls: ["https://explorer.matic.network"]
-    //   }]
-    // });
-    if (web3Modal) {
+    if (web3Modal && provider) {
       const formattedChainId = utils.hexStripZeros(
         BigNumber.from(_network.chainId).toHexString()
       );
@@ -74,6 +56,16 @@ export const useWeb3 = () => {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: formattedChainId }],
       });
+    } else {
+      // wallet not connected 
+      // load network
+      const networkProvider = SUPPORTED_NETWORKS[_network.chainId as ChainId];
+      const provider = new ethers.providers.JsonRpcProvider(networkProvider, _network.chainId);
+      const network = await provider.getNetwork()
+      dispatch({
+        type: 'SET_NETWORK',
+        network: network
+      })
     }
   };
 
@@ -133,9 +125,10 @@ export const useWeb3 = () => {
 
   const connectEns = useCallback(async () => {
     if (address) {
-      const mainnetProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', 1);
+
+      const mainnetProvider = new ethers.providers.JsonRpcProvider(SUPPORTED_NETWORKS[EthereumChainId.Mainnet], EthereumChainId.Mainnet);
       await mainnetProvider.detectNetwork()
-      const _ensName = await mainnetProvider.lookupAddress('0x983110309620D911731Ac0932219af06091b6744');
+      const _ensName = await mainnetProvider.lookupAddress(address);
 
       const resolver = _ensName ? await mainnetProvider.getResolver(_ensName) : null;
       const avatar = resolver ? await resolver.getAvatar() : null;
@@ -209,7 +202,7 @@ export const useWeb3 = () => {
     network,
     connect,
     disconnect,
-    setNetwork,
+    updateNetwork,
     transactionNotifier,
   } as Web3ProviderState
 }

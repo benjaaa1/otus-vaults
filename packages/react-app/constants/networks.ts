@@ -1,4 +1,4 @@
-const INFURA_ID = process.env.INFURA_ID;
+const INFURA_ID_PUBLIC = process.env.NEXT_PUBLIC_INFURA_ID;
 
 export enum OptimismChainId {
   OptimismMainnet = 10,
@@ -41,8 +41,8 @@ export const NETWORK_CONFIGS: Record<ChainId, NetworkConfig> = {
     shortName: 'Mainnet',
     chainId: EthereumChainId.Mainnet,
     network: Network.Ethereum,
-    walletRpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
-    readRpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+    walletRpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID_PUBLIC}`,
+    readRpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID_PUBLIC}`,
     blockExplorerUrl: 'https://etherscan.io/',
     iconUrls: [],
   },
@@ -51,8 +51,8 @@ export const NETWORK_CONFIGS: Record<ChainId, NetworkConfig> = {
     shortName: 'Kovan',
     chainId: EthereumChainId.Kovan,
     network: Network.Ethereum,
-    walletRpcUrl: `https://kovan.infura.io/v3/${INFURA_ID}`,
-    readRpcUrl: `https://kovan.infura.io/v3/${INFURA_ID}`,
+    walletRpcUrl: `https://kovan.infura.io/v3/${INFURA_ID_PUBLIC}`,
+    readRpcUrl: `https://kovan.infura.io/v3/${INFURA_ID_PUBLIC}`,
     blockExplorerUrl: 'https://kovan.etherscan.io',
     iconUrls: [],
   },
@@ -75,7 +75,7 @@ export const NETWORK_CONFIGS: Record<ChainId, NetworkConfig> = {
     chainId: OptimismChainId.OptimismMainnet,
     network: Network.Optimism,
     walletRpcUrl: 'https://mainnet.optimism.io',
-    readRpcUrl: `https://optimism-mainnet.infura.io/v3/${INFURA_ID}`,
+    readRpcUrl: `https://optimism-mainnet.infura.io/v3/${INFURA_ID_PUBLIC}`,
     blockExplorerUrl: 'https://optimistic.etherscan.io',
     iconUrls: [
       'https://optimism.io/images/metamask_icon.svg',
@@ -88,7 +88,7 @@ export const NETWORK_CONFIGS: Record<ChainId, NetworkConfig> = {
     chainId: OptimismChainId.OptimismGoerli,
     network: Network.Optimism,
     walletRpcUrl: 'https://kovan.optimism.io',
-    readRpcUrl: `https://optimism-kovan.infura.io/v3/${INFURA_ID}`,
+    readRpcUrl: `https://optimism-kovan.infura.io/v3/${INFURA_ID_PUBLIC}`,
     blockExplorerUrl: 'https://kovan-explorer.optimism.io',
     iconUrls: [
       'https://optimism.io/images/metamask_icon.svg',

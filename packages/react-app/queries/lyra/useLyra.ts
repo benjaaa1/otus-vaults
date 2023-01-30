@@ -10,7 +10,7 @@ import { LyraBoard, LyraMarket, LyraStrike } from '../../utils/types/lyra'
 
 export const useLyra = () => {
   const { network } = useWeb3Context()
-  const provider = new ethers.providers.InfuraProvider(10, process.env.INFURA_ID);
+  const provider = new ethers.providers.InfuraProvider(10, process.env.NEXT_PUBLIC_INFURA_ID);
   const lyra = new Lyra({ provider });
   return lyra;
 }

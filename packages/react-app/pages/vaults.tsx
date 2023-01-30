@@ -11,6 +11,8 @@ import { useTwitters } from '../queries/manager/useTwitter'
 import { Vault as VaultType } from '../utils/types/vault'
 import { UserAction } from '../utils/types/portofolio'
 import { ethers } from 'ethers'
+import { SUPPORTED_NETWORKS } from '../constants/supportedChains'
+import { EthereumChainId } from '../constants/networks'
 
 type VaultFilters = {
   market: string
@@ -29,7 +31,7 @@ const Vaults: NextPage = () => {
   const updateVaultParticipants = useCallback(async () => {
     if (vaults.length > 0) {
 
-      const mainnetProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/db5ea6f9972b495ab63d88beb08b8925', 1);
+      const mainnetProvider = new ethers.providers.JsonRpcProvider(SUPPORTED_NETWORKS[EthereumChainId.Mainnet], EthereumChainId.Mainnet);
 
       const users: string[] = vaults.reduce((accum: string[], vault: VaultType) => {
         const _users: string[] = vault.userActions.map((userAction: UserAction) => userAction.id.split('-')[1]);

@@ -37,16 +37,13 @@ function classNames(...classes: string[]) {
 }
 
 export function Web3Network() {
-  const { network, setNetwork } = useWeb3Context();
+  const { network, updateNetwork } = useWeb3Context();
 
   const [selected, setSelected] = useState<NetworkOption>({ ...chainOptions[0], current: true });
 
   const _setNetwork = useCallback(() => {
     if (network) {
-      console.log({ network })
       const chainOption = chainOptions.find(chain => chain.chainId === network?.chainId);
-      console.log({ chainOption })
-
       if (chainOption) {
         setSelected({ ...chainOption, current: true })
       }
@@ -59,13 +56,9 @@ export function Web3Network() {
     }
   }, [network])
 
-  console.log({ selected })
-
   return (
     <Listbox value={selected} onChange={async (networkOption) => {
-      // setSelected(v);
-      await setNetwork(networkOption);
-      // setSelected(networkOption);
+      await updateNetwork(networkOption);
     }}>
       {({ open }) => (
         <>
