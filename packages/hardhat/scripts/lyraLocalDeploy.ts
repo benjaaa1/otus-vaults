@@ -41,10 +41,6 @@ async function main() {
 
   // 4. get global contracts
   let lyraGlobal: any = getGlobalDeploys('local');
-  console.log('contract name:', lyraGlobal.SynthetixAdapter.contractName);
-  console.log('address:', lyraGlobal.SynthetixAdapter.address);
-  // console.log("abi:", lyraGlobal.SynthetixAdapter.abi)
-  console.log('bytecode:', lyraGlobal.SynthetixAdapter.bytecode.slice(0, 20) + '...');
   // const susd = lyraGlobal.QuoteAsset.address;
   // console.log({ susd });
   // const susdContract = await ethers.getContractAt(ERC20ABI, susd);

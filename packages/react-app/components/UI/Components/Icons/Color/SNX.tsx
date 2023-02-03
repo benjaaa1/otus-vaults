@@ -3,8 +3,8 @@ export const SNXIcon =
 
 export default function SNXLogoIcon() {
   const props = {
-    width: '40px',
-    height: '40px',
+    width: '32px',
+    height: '32px',
   }
 
   return <img src={SNXIcon} {...props} alt="snx-icon" />

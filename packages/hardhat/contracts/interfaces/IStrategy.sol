@@ -2,7 +2,7 @@
 pragma solidity >=0.8.4;
 
 import {Vault} from '../libraries/Vault.sol';
-import {StrategyBase} from '../vaultDOV/strategy/StrategyBase.sol';
+import {StrategyBase} from '../dov/strategy/StrategyBase.sol';
 
 interface IStrategy {
   function returnFundsAndClearStrikes() external;

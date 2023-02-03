@@ -2,9 +2,10 @@ import { Dispatch } from 'react';
 import { VaultManagerTabs } from '../../../../constants/tabs'
 
 const tabs = [
-  { name: VaultManagerTabs.BUILD.TITLE, href: VaultManagerTabs.BUILD.HREF },
+  // { name: VaultManagerTabs.BUILD.TITLE, href: VaultManagerTabs.BUILD.HREF },
   { name: VaultManagerTabs.TRADE.TITLE, href: VaultManagerTabs.TRADE.HREF },
   { name: VaultManagerTabs.CURRENT.TITLE, href: VaultManagerTabs.CURRENT.HREF },
+  { name: VaultManagerTabs.NEXT.TITLE, href: VaultManagerTabs.NEXT.HREF },
 ]
 
 function classNames(...classes: string[]) {
@@ -24,8 +25,8 @@ export default function ManagerTabs({ setTab, active }: { setTab: Dispatch<strin
           className="border-gray focus:border-gray block w-full rounded-md focus:ring-zinc-900"
           defaultValue={tabs.find((tab) => tab.href == active)?.name}
           onChange={(e) => {
-            if (e.target.value == 'Build') {
-              setTab(VaultManagerTabs.BUILD.HREF)
+            if (e.target.value == 'Signal') {
+              setTab(VaultManagerTabs.NEXT.HREF)
             } else if (e.target.value == 'Trade') {
               setTab(VaultManagerTabs.TRADE.HREF)
             } else {

@@ -5,10 +5,9 @@ import 'hardhat/console.sol';
 
 import '@openzeppelin/contracts/access/Ownable.sol';
 
-import {StrategyBase} from './vaultDOV/strategy/StrategyBase.sol';
+import {StrategyBase} from './dov/strategy/StrategyBase.sol';
 
 import {IOtusCloneFactory} from './interfaces/IOtusCloneFactory.sol';
-import {IFuturesMarketManager} from './interfaces/IFuturesMarketManager.sol';
 import {IERC20} from 'openzeppelin-contracts-4.4.1/token/ERC20/IERC20.sol';
 
 // libraries
@@ -54,7 +53,6 @@ contract OtusController is Ownable {
 
   event VaultCreated(
     address indexed user,
-    string twitterHandle,
     address indexed vault,
     address strategy,
     Vault.VaultInformation vaultInfo,
@@ -73,7 +71,7 @@ contract OtusController is Ownable {
    * @param _markets bytes32 of market names (eth btc)
    * @param _lyraBases address of lyrabase (eth btc)
    * @param _optionMarkets addresses of lyra option market contracts
-   * @param _futuresMarkets futures markets synthetix
+   * @param _futuresMarkets futures markets synthetix / gmx
    */
   constructor(
     address _keeper,
@@ -115,7 +113,6 @@ contract OtusController is Ownable {
    * @param currentStrategy vault strategy settings
    */
   function createOptionsVault(
-    string calldata twitterHandle,
     Vault.VaultInformation memory _vaultInfo,
     Vault.VaultParams memory _vaultParams,
     StrategyBase.StrategyDetail memory currentStrategy
@@ -154,7 +151,7 @@ contract OtusController is Ownable {
       currentStrategy
     );
 
-    emit VaultCreated(msg.sender, twitterHandle, vault, strategy, _vaultInfo, _vaultParams);
+    emit VaultCreated(msg.sender, vault, strategy, _vaultInfo, _vaultParams);
   }
 
   /**
@@ -164,6 +161,12 @@ contract OtusController is Ownable {
   function setKeeper(address _keeper) external onlyOwner {
     keeper = _keeper;
   }
+
+  // Set Markets
+
+  // Set Option Markets Contract Addresses
+
+  // Set Futures Markets Contract Addresses
 
   /**
    * @notice Get vaults and strategies by owner

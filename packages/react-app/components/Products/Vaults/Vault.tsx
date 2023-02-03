@@ -81,7 +81,6 @@ const Vault = ({ vault, twitter, vaultParticipants }: { vault: Vault, twitter?: 
             <div className='col-span-1'>
               <div className='bg-zinc-900 inline-block rounded-full shadow-black'>
                 <SUSDIcon />
-
               </div>
             </div>
             <div className="col-span-1">

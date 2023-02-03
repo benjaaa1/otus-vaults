@@ -319,8 +319,6 @@ contract StrategyBase is LyraAdapter {
     uint _amount,
     uint _optionType
   ) internal view returns (uint) {
-    console.log('_strikePrice');
-    console.log(_strikePrice);
     uint minCollat = lyra(market).getMinCollateral(
       ILyraBase.OptionType(_optionType),
       _strikePrice,
@@ -355,8 +353,7 @@ contract StrategyBase is LyraAdapter {
     StrikeStrategyDetail memory currentStrikeStrategy = currentStrikeStrategies[_trade.optionType];
 
     uint limitVol = _isMin ? currentStrikeStrategy.minVol : currentStrikeStrategy.maxVol;
-    console.log('_strikePrice 2');
-    console.log(_strikePrice);
+
     (uint minCallPremium, uint minPutPremium) = lyra(_trade.market).getPurePremium(
       _getSecondsToExpiry(_expiry),
       limitVol,

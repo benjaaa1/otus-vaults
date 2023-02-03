@@ -24,10 +24,6 @@ const VaultManagementHeaders: VaultManagementHeader[] = [
     deviceVariant: 'large',
   },
   {
-    name: 'Timestamp',
-    deviceVariant: 'large',
-  },
-  {
     name: 'Name',
     deviceVariant: 'default',
   },
@@ -82,12 +78,6 @@ export default function MyVaultsTable() {
                   label={'N/A'}
                   isButton={false}
                 />
-                <Cell
-                  deviceVariant='large'
-                  variant="default"
-                  label={vault.createdAt ? formatDate(vault.createdAt) : ''}
-                />
-
                 <Cell variant="default" label={vault.name} isButton={false} />
                 <Cell deviceVariant='large' variant="default" label={vault.isPublic ? 'Yes' : 'No'} />
                 <Cell

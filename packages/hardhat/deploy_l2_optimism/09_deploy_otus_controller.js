@@ -10,6 +10,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   const lyraBaseETH = await ethers.getContract("LyraBase");
   const lyraMarket = await getMarketDeploys('goerli-ovm', 'sETH');
+  // can get contract addresses manually for arbi mainnet
 
   await deploy("OtusController", {
     from: deployer,

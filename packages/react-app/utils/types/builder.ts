@@ -32,7 +32,8 @@ export enum StrategyType {
   Bullish = 1,
   Volatile = 2,
   Calm = 3,
-  Neutral = 4
+  Neutral = 4,
+  NoIdea = 5
 }
 
 export enum StrategyTag {

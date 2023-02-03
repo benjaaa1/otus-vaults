@@ -140,20 +140,7 @@ contract OtusVault is BaseVault {
   }
 
   /************************************************
-   *  SETTERS
-   ***********************************************/
-
-  /**
-   * @notice Set and update keeper address
-   * @param _keeper address of keeper
-   */
-  function setKeeper(address _keeper) public onlyOwner {
-    keeper = _keeper;
-    emit KeeperUpdated(msg.sender, _keeper);
-  }
-
-  /************************************************
-   *  PUBLIC ACTIONS
+   *  PUBLIC VAULT ACTIONS
    ***********************************************/
 
   /**
@@ -193,7 +180,7 @@ contract OtusVault is BaseVault {
   /**
    * @notice Start the next/new round
    */
-  function startNextRound() external onlyOwner {
+  function startNextRound(address _strategy) external onlyOwner {
     //can't start next round before outstanding expired positions are settled.
     require(!vaultState.roundInProgress, 'round opened');
     require(block.timestamp > vaultState.nextRoundReadyTimestamp, 'Delay between rounds not elapsed');
@@ -212,6 +199,29 @@ contract OtusVault is BaseVault {
     emit RoundStarted(vaultState.round, uint104(lockedBalance));
   }
 
+  /************************************************
+   *  Strategy Update Manager Actions
+   ***********************************************/
+  struct StrategyAvailable {
+    ;
+  }
+
+  function setActiveStrategy() external onlyOwner {}
+
+  /************************************************
+   *  Execute Manager Actions
+   ***********************************************/
+
+  function execute(address strategy, bytes memory data) external onlyOwner {
+    // validate strategy is valid for vault
+    // get strategy contract
+    // abi.decode(data)
+    // emit execution
+  }
+
+  /************************************************
+   *  Trade Actions - Options
+   ***********************************************/
   /**
    * @notice Start the trade for the next/new round depending on strategy
    * @param _longTrades selected strikes to trade long
@@ -294,7 +304,7 @@ contract OtusVault is BaseVault {
   }
 
   /************************************************
-   *  Hedge Actions - Synthetix Futures
+   *  Hedge Actions - Futures
    ***********************************************/
 
   /**
@@ -311,7 +321,7 @@ contract OtusVault is BaseVault {
   /**
    * @notice delta hedge based on strategy settings
    */
-  function dynamicDeltaHedge(bytes32 _market, int _deltaToHedge, uint _positionId) external onlyKeeper {
+  function dynamicDeltaHedge(bytes32 _market, int _deltaToHedge, uint _positionId) external {
     require(vaultState.roundInProgress, 'Round closed');
 
     uint deltaHedgeAttempts = hedgeAttemptsByPositionId[_positionId];

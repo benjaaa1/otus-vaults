@@ -14,14 +14,14 @@ const Products = () => {
       </div>
       <div className="col-span-4 pl-2">
         <div className="text-3xl font-semibold text-white">
-          Build and manage a decentralized options vault.
+          Build and manage a decentralized vault.
         </div>
         <div className="py-5 text-xs font-normal leading-5 text-white/50">
-          We provide the tools to successfully and easily manage an options
-          vault built on Lyra and Synthetix Futures.
+          We provide the tools to successfully and easily manage different types
+          vaults built on Lyra, GMX or Synthetix Futures.
         </div>
       </div>
-      <div className="col-span-5">
+      <div className="col-span-5 mt-4">
         <Button
           label="Build a Vault"
           isLoading={false}

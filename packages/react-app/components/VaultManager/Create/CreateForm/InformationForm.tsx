@@ -8,6 +8,9 @@ import { TextArea } from '../../../UI/Components/TextArea'
 
 import { fromBigNumber, toBN } from '../../../../utils/formatters/numbers'
 import { VaultInformationStruct, VaultParamsStruct } from '..'
+import LyraIcon from '../../../UI/Components/Icons/Color/LYRA'
+import { SNXIcon } from '../../../UI/Components/Currency/CurrencyIcon'
+import SNXLogoIcon from '../../../UI/Components/Icons/Color/SNX'
 
 const vaultParamsStep = {
   cap: 1000,
@@ -39,6 +42,12 @@ export default function InformationForm(
 
   return (
     <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+      <div className="sm:col-span-6">
+        <h2 className='font-bold text-sm text-white '>
+          Vault Type
+        </h2>
+        <VaultTypePreference />
+      </div>
       <div className="sm:col-span-6">
         <Input
           showLabel={true}
@@ -190,4 +199,33 @@ export default function InformationForm(
     </div>
 
   )
+}
+
+const VaultTypePreference = () => {
+
+  return <div className='flex flex-wrap'>
+    <div
+      className={`p-2 border border-emerald-700 sm:mr-2 mt-2 sm:w-max w-full cursor-pointer`}>
+      <div className="items-center ">
+        <div className="flex items-center p-1">
+          <LyraIcon />
+          <div className="text-sm pl-2  text-white">
+            <strong>Options</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      className={`p-2  border hover:border-zinc-900 sm:mr-2 mt-2 w-full sm:w-max border-zinc-800 cursor-not-allowed`}>
+      <div className="items-center">
+        <div className="flex items-center p-1">
+          <SNXLogoIcon />
+          <div className="text-sm pl-2  text-zinc-400">
+            <strong>Perpetual Futures*</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 }

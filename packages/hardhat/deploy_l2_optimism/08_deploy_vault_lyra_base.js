@@ -8,6 +8,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const lyraMarket = getMarketDeploys('goerli-ovm', 'sETH');
   const lyraGlobal = await getGlobalDeploys('goerli-ovm');
 
+  // can get contract addresses manually for arbi mainnet
+
   await deploy("LyraBase", {
     from: deployer,
     args: [ 

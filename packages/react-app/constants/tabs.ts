@@ -11,6 +11,10 @@ export const VaultManagerTabs = {
     TITLE: 'Current Round',
     HREF: 'current',
   },
+  NEXT: {
+    TITLE: 'Signal',
+    HREF: 'signal',
+  },
 }
 
 export const UserActionTabs = {

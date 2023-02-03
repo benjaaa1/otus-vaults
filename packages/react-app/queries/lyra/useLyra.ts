@@ -1,22 +1,31 @@
 import { useQuery } from 'react-query'
 
-import Lyra, { Board, Market, Quote, Strike, AccountPortfolioBalance, PositionPnl } from '@lyrafinance/lyra-js'
+import Lyra, { Board, Market, Quote, Strike, PositionPnl, Version } from '@lyrafinance/lyra-js'
 import { BigNumber, ethers } from 'ethers'
 import QUERY_KEYS from '../../constants/queryKeys'
 import { MONTHS } from '../../constants/dates'
 import { ONE_BN } from '../../constants/bn'
 import { useWeb3Context } from '../../context'
 import { LyraBoard, LyraMarket, LyraStrike } from '../../utils/types/lyra'
+import { ChainId, OptimismChainId } from '../../constants/networks'
 
-export const useLyra = () => {
-  const { network } = useWeb3Context()
-  const provider = new ethers.providers.InfuraProvider(10, process.env.NEXT_PUBLIC_INFURA_ID);
-  const lyra = new Lyra({ provider });
+export const getLyra = (network: ChainId = OptimismChainId.OptimismMainnet) => {
+  // const { network } = useWeb3Context()
+  // console.log({ chainId: SUPPORTED_NETWORKS[ArbitrumChainId.ArbitrumMainnet] })
+  // const provider = new ethers.providers.InfuraProvider(ArbitrumChainId.ArbitrumMainnet, process.env.NEXT_PUBLIC_INFURA_ID);
+
+  // console.log({ provider })
+  // const lyra = new Lyra({ provider }, Version.Newport);
+
+  const provider = new ethers.providers.InfuraProvider(network, process.env.NEXT_PUBLIC_INFURA_ID);
+
+  const lyra = new Lyra({ provider }, network === OptimismChainId.OptimismMainnet ? Version.Avalon : Version.Newport)
+
   return lyra;
 }
 
 export const useLyraMarket = () => {
-  const lyra = useLyra();
+  const lyra = getLyra();
 
   return useQuery<LyraMarket[] | null>(
     QUERY_KEYS.Lyra.Markets(),
@@ -33,7 +42,7 @@ export const useLyraMarket = () => {
 }
 
 export const useStrikes = (market: string, strikeId: number) => {
-  const lyra = useLyra();
+  const lyra = getLyra();
 
   return useQuery<Strike>(
     QUERY_KEYS.Lyra.Strike(market, strikeId),

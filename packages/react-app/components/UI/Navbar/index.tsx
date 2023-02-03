@@ -50,6 +50,11 @@ export const Navbar = () => {
                         Vaults
                       </a>
                     </Link>
+                    <Link href="/learn">
+                      <a className={linkStyle('/learn', router.pathname)}>
+                        Learn
+                      </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -101,6 +106,13 @@ export const Navbar = () => {
                   className={linkStyleMobile('/vaults', router.pathname)}
                 >
                   Vaults
+                </Disclosure.Button>
+              </Link>
+              <Link href="/learn">
+                <Disclosure.Button
+                  className={linkStyleMobile('/learn', router.pathname)}
+                >
+                  Learn
                 </Disclosure.Button>
               </Link>
             </div>

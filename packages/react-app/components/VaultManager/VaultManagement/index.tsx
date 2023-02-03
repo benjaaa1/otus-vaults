@@ -4,11 +4,11 @@ import { useMyVault } from '../../../queries/myVaults/useMyVaults'
 import { useTwitter } from '../../../queries/manager/useTwitter'
 
 import ManagerTabs from './UI/ManagerTabs'
-import Trade from './Trade'
+import Trade from './Trade/Options'
 import Current from './Current'
 import { VaultManagerTabs } from '../../../constants/tabs'
 import { VaultManagerContextProvider } from '../../../context'
-import TradeExecute from './Trade/TradeExecute'
+import TradeExecute from './Trade/Options/TradeExecute'
 import { Button } from '../../UI/Components/Button'
 import {
   ArrowRightCircleIcon,
@@ -27,6 +27,7 @@ import { Builder } from './Builder'
 import Avatar from 'react-avatar';
 import Link from 'next/link'
 import { Vault } from '../../../utils/types/vault'
+import Signal from './Signal'
 
 // export default function VaultManagement({ twitterHandle, twitterProfileImage }: { twitterHandle: string, twitterProfileImage: string }) {
 export default function VaultManagement() {
@@ -98,15 +99,13 @@ export default function VaultManagement() {
               />
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-8 py-8">
-
             <div className="col-span-1 sm:col-span-8 grid grid-cols-1 rounded-sm border border-zinc-700 bg-gradient-to-b from-black to-zinc-900">
               <div className="rounded-sm  bg-transparent shadow shadow-black">
                 <ManagerTabs setTab={setTab} active={tab} />
 
                 {
-                  tab === VaultManagerTabs.BUILD.HREF && <Builder />
+                  tab === VaultManagerTabs.NEXT.HREF && <Signal />
                 }
 
                 {
@@ -141,7 +140,6 @@ export default function VaultManagement() {
             </div>
 
           </div>
-
         </main>
       </div >
       <Modal
@@ -371,8 +369,6 @@ const CurrentRoundProgress = ({
     </nav>
   )
 }
-
-
 
 const CurrentDetails = ({ vault }: { vault: Vault }) => {
   const {

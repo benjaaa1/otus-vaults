@@ -29,14 +29,15 @@ const Home: NextPage = () => {
               </div>
 
               <div>
-                <MyVaultsTable />
+                <Positions />
+
               </div>
             </div>
           </div>
           <div className="sm:col-span-5 col-span-1">
             <div className="grid grid-cols-1 sm:order-1">
               <div>
-                <Positions />
+                <MyVaultsTable />
               </div>
               <div className="order-first sm:order-2 shadow shadow-black">
                 <Products />

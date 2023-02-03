@@ -1,16 +1,16 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-import "hardhat/console.sol";
+import 'hardhat/console.sol';
 
 // libraries
-import {Vault} from "./libraries/Vault.sol";
+import {Vault} from './libraries/Vault.sol';
 
-import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {StrategyBase} from "./vaultDOV/strategy/StrategyBase.sol";
-import {IStrategy} from "./interfaces/IStrategy.sol";
-import {IOtusVault} from "./interfaces/IOtusVault.sol";
+import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {StrategyBase} from './dov/strategy/StrategyBase.sol';
+import {IStrategy} from './interfaces/IStrategy.sol';
+import {IOtusVault} from './interfaces/IOtusVault.sol';
 
 /**
  * @title OtusCloneFactory
@@ -19,11 +19,11 @@ import {IOtusVault} from "./interfaces/IOtusVault.sol";
  */
 contract OtusCloneFactory {
   /// @notice Stores the Otus vault contract implementation address
-
   address public immutable otusVault;
-  /// @notice Stores the Strategy contract implementation address
 
+  /// @notice Stores the Strategy contract implementation address
   address public immutable strategy;
+
   // address of controller
   address public immutable otusController;
 
@@ -51,7 +51,7 @@ contract OtusCloneFactory {
    * @return otusVaultClone proxy vault contract address
    */
   function cloneVault() public returns (address otusVaultClone) {
-    require(msg.sender == otusController, "Not allowed to create");
+    require(msg.sender == otusController, 'Not allowed to create');
     otusVaultClone = Clones.clone(otusVault);
     emit NewVaultClone(otusVaultClone, msg.sender);
   }
@@ -61,7 +61,7 @@ contract OtusCloneFactory {
    * @return strategyClone proxy strategy contract address
    */
   function cloneStrategy() public returns (address strategyClone) {
-    require(msg.sender == otusController, "Not allowed to create");
+    require(msg.sender == otusController, 'Not allowed to create');
     strategyClone = Clones.clone(strategy);
     emit NewStrategyClone(strategyClone, msg.sender);
   }
@@ -83,7 +83,7 @@ contract OtusCloneFactory {
     address _strategy,
     address _keeper
   ) public {
-    require(msg.sender == otusController, "Not allowed to create");
+    require(msg.sender == otusController, 'Not allowed to create');
     IOtusVault(_otusVaultClone).initialize(_owner, _vaultInfo, _vaultParams, _strategy, _keeper);
   }
 
@@ -102,9 +102,9 @@ contract OtusCloneFactory {
     address _strategy,
     StrategyBase.StrategyDetail memory _currentStrategy
   ) public {
-    require(msg.sender == otusController, "Not allowed to create");
+    require(msg.sender == otusController, 'Not allowed to create');
 
-    require(_vault != address(0), "_vault must be non zero address");
+    require(_vault != address(0), '_vault must be non zero address');
 
     IStrategy(_strategy).initialize(_owner, _vault, _currentStrategy);
   }

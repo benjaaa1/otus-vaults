@@ -12,6 +12,8 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const quoteAsset = lyraGlobal.QuoteAsset.address;
   const blackScholes = lyraGlobal.BlackScholes.address;
   
+  // can get contract addresses manually for mainnet
+
   const lyraBaseETH = await ethers.getContract("LyraBase");
 
   await deploy("Strategy", {

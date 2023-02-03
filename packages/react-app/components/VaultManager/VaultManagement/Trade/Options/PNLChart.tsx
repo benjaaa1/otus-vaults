@@ -11,9 +11,9 @@ import {
   ReferenceDot,
   ResponsiveContainer
 } from "recharts";
-import { useProfitLossChart } from "../../../../hooks/ProfitLossChart";
-import { useLatestRates } from "../../../../queries/synth/useLatestRates";
-import { formatUSD, fromBigNumber } from "../../../../utils/formatters/numbers";
+import { useProfitLossChart } from "../../../../../hooks/ProfitLossChart";
+import { useLatestRates } from "../../../../../queries/synth/useLatestRates";
+import { formatUSD, fromBigNumber } from "../../../../../utils/formatters/numbers";
 
 export const PNLChart = ({ assetType }: { assetType: string }) => {
 

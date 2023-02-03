@@ -12,7 +12,7 @@ import {
 import { Button } from '../../../UI/Components/Button'
 import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
 import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
-import { useLyra } from '../../../../queries/lyra/useLyra';
+import { getLyra } from '../../../../queries/lyra/useLyra';
 import { ZERO_BN } from '../../../../constants/bn'
 
 
@@ -22,7 +22,7 @@ export default function CloseExecute() {
   const [closeFee, setCloseFee] = useState(ZERO_BN);
   const [forceCloseFee, setForceCloseFee] = useState(ZERO_BN);
   const [isForceClose, setIsForceClose] = useState(false);
-  const lyra = useLyra();
+  const lyra = getLyra();
 
   const calculateCloseCosts = useCallback(async () => {
     if (builtStrikeToClose.strikeId != null) {

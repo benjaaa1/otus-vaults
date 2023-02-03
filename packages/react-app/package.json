@@ -18,7 +18,7 @@
     "@eth-optimism/sdk": "^1.0.0",
     "@headlessui/react": "^1.5.0",
     "@heroicons/react": "^2.0.11",
-    "@lyrafinance/lyra-js": "^0.0.22",
+    "@lyrafinance/lyra-js": "^0.0.24",
     "@synthetixio/contracts-interface": "^2.76.4",
     "@synthetixio/optimism-networks": "^2.74.6",
     "@synthetixio/transaction-notifier": "^2.74.13",
@@ -41,6 +41,7 @@
     "isomorphic-fetch": "^3.0.0",
     "lodash": "^4.17.21",
     "next": "12.2.3",
+    "next-plausible": "^3.2.0",
     "next-transpile-modules": "^9.0.0",
     "node-watch": "^0.7.1",
     "postcss": "^8.2.6",
@@ -57,8 +58,7 @@
     "recharts": "^2.1.12",
     "styled-components": "^5.3.5",
     "walletlink": "^2.1.5",
-    "web3modal": "^1.9.1",
-    "next-plausible": "^3.2.0"
+    "web3modal": "^1.9.1"
   },
   "devDependencies": {
     "@testing-library/dom": "^6.12.2",

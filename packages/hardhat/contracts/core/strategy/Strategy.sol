@@ -343,8 +343,6 @@ contract Strategy is StrategyBase {
     // get minimum expected premium based on minIv
     OptionType optionType = OptionType(_trade.optionType);
     // perform trade
-    console.log('_setCollateralTo');
-    console.log(_setCollateralTo);
     TradeResult memory result = openPosition(
       _trade.market,
       TradeInputParameters({

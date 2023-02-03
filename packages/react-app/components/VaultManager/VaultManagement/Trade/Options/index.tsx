@@ -1,13 +1,13 @@
 import {
   useLyraMarket,
-} from '../../../../queries/lyra/useLyra'
+} from '../../../../../queries/lyra/useLyra'
 import SelectStrikes from './SelectStrikes'
 import SelectExpiry from './SelectExpiry'
 import SelectOptionType from './SelectOptionType'
 import SelectMarket from './SelectMarket'
 import { useEffect, useState } from 'react'
-import { Spinner } from '../../../UI/Components/Spinner'
-import { LyraBoard, LyraMarket, LyraStrike } from '../../../../utils/types/lyra'
+import { Spinner } from '../../../../UI/Components/Spinner'
+import { LyraBoard, LyraMarket, LyraStrike } from '../../../../../utils/types/lyra'
 
 const calculateOptionType = (isLong: boolean, isCall: boolean) => {
   if (isLong && isCall) {
@@ -23,6 +23,7 @@ const calculateOptionType = (isLong: boolean, isCall: boolean) => {
 
 export default function Trade() {
   const { data, isLoading } = useLyraMarket() // return markets, boards
+  console.log({ data })
   const [selectedMarket, setSelectedMarket] = useState<LyraMarket>()
   const [isLong, setLong] = useState(true)
   const [isCall, setCall] = useState(true)

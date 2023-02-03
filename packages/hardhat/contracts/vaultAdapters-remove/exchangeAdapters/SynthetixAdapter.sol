@@ -12,19 +12,19 @@
 pragma solidity 0.8.9;
 
 // Libraries
-import '../synthetix/DecimalMath.sol';
-import '../libraries/ConvertDecimals.sol';
+import '../../synthetix/DecimalMath.sol';
+import '../../libraries/ConvertDecimals.sol';
 
 // Inherited
 import './BaseExchangeAdapter.sol';
 
 // Interfaces
-import '../interfaces/ISynthetix.sol';
-import '../interfaces/IAddressResolver.sol';
-import '../interfaces/IExchanger.sol';
-import '../interfaces/IExchangeRates.sol';
-import '../interfaces/IDelegateApprovals.sol';
-import '../interfaces/IERC20Decimals.sol';
+import '../../interfaces/ISynthetix.sol';
+import '../../interfaces/IAddressResolver.sol';
+import '../../interfaces/IExchanger.sol';
+import '../../interfaces/IExchangeRates.sol';
+import '../../interfaces/IDelegateApprovals.sol';
+import '../../interfaces/IERC20Decimals.sol';
 import {IOptionMarket} from '@lyrafinance/protocol/contracts/interfaces/IOptionMarket.sol';
 
 /**

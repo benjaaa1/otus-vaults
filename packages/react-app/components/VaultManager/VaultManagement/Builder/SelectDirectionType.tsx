@@ -1,30 +1,7 @@
 import React, { Dispatch, Fragment } from 'react'
 import { Listbox, Transition } from "@headlessui/react"
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/20/solid'
-import { StrategyDirection, StrategyType } from '../../../../utils/builder/types'
-
-const DirectionType: StrategyDirection[] = [
-  {
-    id: StrategyType.Bearish,
-    name: '🐻Bearish'
-  },
-  {
-    id: StrategyType.Bullish,
-    name: '🐂Bullish'
-  },
-  {
-    id: StrategyType.Volatile,
-    name: '🌊Volatile'
-  },
-  {
-    id: StrategyType.Calm,
-    name: '⛵Calm'
-  },
-  {
-    id: StrategyType.Neutral,
-    name: '✌Neutral'
-  }
-]
+import { StrategyDirection, StrategyType } from '../../../../utils/types/builder'
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')

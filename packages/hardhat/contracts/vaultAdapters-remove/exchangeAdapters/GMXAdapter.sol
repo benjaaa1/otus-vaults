@@ -2,15 +2,15 @@
 pragma solidity 0.8.9;
 
 // Libraries
-import '../libraries/Math.sol';
+import '../../libraries/Math.sol';
 
 // Inherited
 import './BaseExchangeAdapter.sol';
 
 // Interfaces
-import '../interfaces/gmx/IVault.sol';
-import '../interfaces/IAggregatorV3.sol';
-import '../interfaces/IERC20Decimals.sol';
+import '../../interfaces/gmx/IVault.sol';
+import '../../interfaces/IAggregatorV3.sol';
+import '../../interfaces/IERC20Decimals.sol';
 import {IOptionMarket} from '@lyrafinance/protocol/contracts/interfaces/IOptionMarket.sol';
 
 /**

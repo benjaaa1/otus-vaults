@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useLyraMarket } from "../../../../queries/lyra/useLyra"
-import { Strategy, StrategyDirection } from "../../../../utils/builder/types"
+import { Strategy, StrategyDirection } from "../../../../utils/types/builder"
 import { LyraBoard, LyraMarket } from "../../../../utils/types/lyra"
 import { Spinner } from "../../../UI/Components/Spinner"
 import { SelectDirectionType } from "./SelectDirectionType"

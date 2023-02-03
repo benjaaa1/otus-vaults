@@ -7,7 +7,7 @@ import { BigNumber, BigNumberish } from 'ethers'
 import { AccountPortfolioBalance, PositionPnl } from '@lyrafinance/lyra-js'
 import { fromBigNumber } from '../../utils/formatters/numbers'
 import { ZERO_BN } from '../../constants/bn'
-import { useLyra } from '../lyra/useLyra'
+import { getLyra, useLyra } from '../lyra/useLyra'
 import { getMyVault } from '../../pages/api/subgraph'
 import { ManagerVault } from '../../utils/types/manager'
 import { StrikeStrategy, Vault } from '../../utils/types/vault'
@@ -55,7 +55,7 @@ export const useMyVaults = () => {
 }
 
 export const useMyVault = (vaultId: any) => {
-  const lyra = useLyra();
+  const lyra = getLyra();
 
   const { address: managerId, network } = useWeb3Context()
 
@@ -75,9 +75,9 @@ export const useMyVault = (vaultId: any) => {
       let positions: CurrentPosition[];
 
       if (network && (network.chainId === 420 || network.chainId === 10)) {
-        const account = lyra.account(vaultId);
-        const portfolio: AccountPortfolioBalance = await account.portfolioBalance();
-        positions = portfolio.positions.map((position) => {
+        const _positions = await lyra.positions(vaultId);
+        // const portfolio: AccountPortfolioBalance = await account.portfolioBalance();
+        positions = _positions.map((position) => {
           const { isOpen, id, strikeId, size } = position;
           const _breakEven = fromBigNumber(position.breakEven());
           const { unrealizedPnlPercentage, settlementPnl }: PositionPnl = position.pnl();

@@ -2,26 +2,26 @@ import { XMarkIcon } from '@heroicons/react/20/solid'
 import Lyra from '@lyrafinance/lyra-js'
 import { parseUnits } from 'ethers/lib/utils'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ZERO_BN } from '../../../../constants/bn'
-import { getMarketInBytes } from '../../../../constants/markets'
-import { useVaultManagerContext } from '../../../../context'
-import { useOtusContracts } from '../../../../hooks/Contracts'
-import { useTransactionNotifier } from '../../../../hooks/TransactionNotifier'
-import { getStrikeQuote, useLyra } from '../../../../queries/lyra/useLyra'
+import { ZERO_BN } from '../../../../../constants/bn'
+import { getMarketInBytes } from '../../../../../constants/markets'
+import { useVaultManagerContext } from '../../../../../context'
+import { useOtusContracts } from '../../../../../hooks/Contracts'
+import { useTransactionNotifier } from '../../../../../hooks/TransactionNotifier'
+import { getStrikeQuote, getLyra } from '../../../../../queries/lyra/useLyra'
 import {
   formatPercentage,
   formatUSD,
   fromBigNumber,
   toBN,
-} from '../../../../utils/formatters/numbers'
-import { Button } from '../../../UI/Components/Button'
-import BTCIcon from '../../../UI/Components/Icons/Color/BTC'
-import ETHIcon from '../../../UI/Components/Icons/Color/ETH'
-import { RangeSlider } from '../../../UI/Components/RangeSlider'
+} from '../../../../../utils/formatters/numbers'
+import { Button } from '../../../../UI/Components/Button'
+import BTCIcon from '../../../../UI/Components/Icons/Color/BTC'
+import ETHIcon from '../../../../UI/Components/Icons/Color/ETH'
+import { RangeSlider } from '../../../../UI/Components/RangeSlider'
 import { PNLChart } from './PNLChart'
 import { DebounceInput } from 'react-debounce-input';
-import { Vault } from '../../../../utils/types/vault'
-import { LyraStrike, StrikeTrade } from '../../../../utils/types/lyra'
+import { Vault } from '../../../../../utils/types/vault'
+import { LyraStrike, StrikeTrade } from '../../../../../utils/types/lyra'
 
 const computeCosts = (trades: LyraStrike[] | null | undefined) => {
   return trades?.reduce(
@@ -79,8 +79,8 @@ const hasSingleAssetType = (builtTrades: any[]): [string, boolean] => {
 
   builtTrades.forEach(trade => {
     const { market } = trade;
-    if (market == 'ETH') ethCount++;
-    if (market == 'BTC') btcCount++;
+    if (market == 'sETH-sUSD') ethCount++;
+    if (market == 'sBTC-sUSD') btcCount++;
   })
 
   if (ethCount > 0 && btcCount == 0) {
@@ -96,7 +96,7 @@ const hasSingleAssetType = (builtTrades: any[]): [string, boolean] => {
 }
 
 export default function TradeExecute({ vault }: { vault: Vault }) {
-  const lyra = useLyra();
+  const lyra = getLyra();
   const { builtTrades, toggleTrade } = useVaultManagerContext()
   const otusContracts = useOtusContracts()
 

@@ -2,14 +2,14 @@
 pragma solidity 0.8.9;
 
 // Libraries
-import '../synthetix/DecimalMath.sol';
-import '../libraries/ConvertDecimals.sol';
+import '../../synthetix/DecimalMath.sol';
+import '../../libraries/ConvertDecimals.sol';
 
 // Inherited
-import '../synthetix/OwnedUpgradeable.sol';
+import '../../synthetix/OwnedUpgradeable.sol';
 
 // Interfaces
-import '../interfaces/IERC20Decimals.sol';
+import '../../interfaces/IERC20Decimals.sol';
 
 /**
  * @title BaseExchangeAdapter

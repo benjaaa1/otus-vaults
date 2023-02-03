@@ -2,7 +2,7 @@ import { Dispatch, useEffect, useState } from "react"
 import ETHIcon from "../../../../UI/Components/Icons/Color/ETH"
 import BTCIcon from "../../../../UI/Components/Icons/Color/BTC"
 
-import { OptionType, PriceAt, Strategy, StrategyDirection, StrategyTag, StrategyType } from "../../../../../utils/builder/types"
+import { OptionType, PriceAt, Strategy, StrategyDirection, StrategyTag, StrategyType } from "../../../../../utils/types/builder"
 import { motion } from "framer-motion"
 import { LyraBoard, LyraMarket } from "../../../../../utils/types/lyra"
 
