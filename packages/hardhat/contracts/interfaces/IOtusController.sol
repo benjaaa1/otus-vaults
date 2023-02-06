@@ -2,7 +2,7 @@
 pragma solidity >=0.8.4;
 
 interface IOtusController {
-  function _getMarketContracts()
+  function _getOptionsContracts()
     external
     returns (
       bytes32[] memory _markets,
