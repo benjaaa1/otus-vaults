@@ -16,7 +16,7 @@ interface IOtusCloneFactory {
     address _keeper
   ) external;
 
-  /** v
+  /**
    * @notice Clones strategy contract if supervisor has a vault created
    */
   function _initializeClonedStrategy(address _owner, address _vault, address _strategy) external;
