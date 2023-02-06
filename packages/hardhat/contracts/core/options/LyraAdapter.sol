@@ -2,16 +2,16 @@
 pragma solidity 0.8.9;
 
 // Libraries
-import {BlackScholes} from '@lyrafinance/protocol/contracts/libraries/BlackScholes.sol';
-import {DecimalMath} from '@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol';
+import {BlackScholes} from "@lyrafinance/protocol/contracts/libraries/BlackScholes.sol";
+import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
 
 // Inherited
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // Interfaces
-import {IOptionMarket} from '@lyrafinance/protocol/contracts/interfaces/IOptionMarket.sol';
+import {IOptionMarket} from "@lyrafinance/protocol/contracts/interfaces/IOptionMarket.sol";
 
-import {OwnableUpgradeable} from '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @title LyraAdapter
@@ -137,7 +137,11 @@ contract LyraAdapter is OwnableUpgradeable {
     IOptionMarket.Result memory result = IOptionMarket(optionMarket).openPosition(convertedParams);
 
     return
-      TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});
+      TradeResult({
+        positionId: result.positionId,
+        totalCost: result.totalCost,
+        totalFee: result.totalFee
+      });
   }
 
   /**
@@ -151,10 +155,16 @@ contract LyraAdapter is OwnableUpgradeable {
   ) internal returns (TradeResult memory) {
     address optionMarket = lyraOptionMarkets[market];
 
-    IOptionMarket.Result memory result = IOptionMarket(optionMarket).closePosition(_convertParams(params));
+    IOptionMarket.Result memory result = IOptionMarket(optionMarket).closePosition(
+      _convertParams(params)
+    );
 
     return
-      TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});
+      TradeResult({
+        positionId: result.positionId,
+        totalCost: result.totalCost,
+        totalFee: result.totalFee
+      });
   }
 
   /**
@@ -173,7 +183,11 @@ contract LyraAdapter is OwnableUpgradeable {
     );
 
     return
-      TradeResult({positionId: result.positionId, totalCost: result.totalCost, totalFee: result.totalFee});
+      TradeResult({
+        positionId: result.positionId,
+        totalCost: result.totalCost,
+        totalFee: result.totalFee
+      });
   }
 
   //////////
