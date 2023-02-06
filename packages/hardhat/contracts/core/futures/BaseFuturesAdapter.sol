@@ -9,8 +9,22 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
  * @dev Base contract for managing access to futures functions.
  */
 abstract contract BaseFuturesAdapter is OwnableUpgradeable {
-  // errors
+  struct Trade {
+    bool isIncrease;
+    bool limitOrder;
+    bool isLong;
+    uint leverage;
+    int size;
+    bytes32 market; // base asset
+  }
 
+  // events
+  event PositionIncrease(bytes32 key, uint amount);
+  event PositionClose(bytes32 key, uint amount);
+
+  event PositionDecrease(bytes32 key, uint amount);
+
+  // errors
   error NotImplemented(address thrower);
 
   error InsufficientEthBalance(uint balance, uint minimum);

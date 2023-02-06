@@ -82,3 +82,13 @@ require()
 - strieId
 - optionType
 - size
+
+## Version name matches first char of Chain name
+
+- Optimism
+
+-- o
+
+- Arbitrum
+
+-- a

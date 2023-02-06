@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.4;
+
+import "../../interfaces/gmx/IVault.sol";
+import "../../interfaces/gmx/IPositionRouter.sol";
+import {BaseFuturesAdapter} from "./BaseFuturesAdapter.sol";
+
 contract GMXAdapter is BaseFuturesAdapter {
   IVault public vault;
 
@@ -11,18 +18,21 @@ contract GMXAdapter is BaseFuturesAdapter {
   }
 
   function increasePosition(Trade memory _trade) external {
+    int positionAmount = _trade.size;
+
     address[] memory path;
     uint acceptableSpot;
     uint _acceptableSpotSlippage = Strategy._acceptableSpotSlippage;
-    if (isLong) {
+
+    if (positionAmount < 0) {
+      path = new address[](1);
+      path[0] = address(quoteAsset);
+      acceptableSpot = _convertToGMXPrecision(spot.divideDecimalRound(_acceptableSpotSlippage));
+    } else {
       path = new address[](2);
       path[0] = address(quoteAsset);
       path[1] = address(baseAsset);
       acceptableSpot = _convertToGMXPrecision(spot.multiplyDecimal(_acceptableSpotSlippage));
-    } else {
-      path = new address[](1);
-      path[0] = address(quoteAsset);
-      acceptableSpot = _convertToGMXPrecision(spot.divideDecimalRound(_acceptableSpotSlippage));
     }
 
     uint executionFee = _getExecutionFee();

@@ -28,7 +28,9 @@ contract Strategy is BaseFuturesAdapter {
 
   struct StrategyDetail {
     uint stopLoss;
+    // max leverage of strategy
     uint maxLeverage;
+    // eth btc link
     bytes32[] allowedMarkets;
   }
 
@@ -40,10 +42,6 @@ contract Strategy is BaseFuturesAdapter {
   /************************************************
    *  EVENTS
    ***********************************************/
-
-  event Trade(address indexed vault, uint round);
-
-  event PositionReduced(uint positionId, uint amount);
 
   event StrategyUpdated(address vault, StrategyDetail updatedStrategy);
 
@@ -111,15 +109,6 @@ contract Strategy is BaseFuturesAdapter {
   /******************************************************
    * VAULT ACTIONS
    *****************************************************/
-
-  struct Trade {
-    bool isIncrease;
-    bool limitOrder;
-    bool isLong;
-    uint leverage;
-    uint size;
-    bytes32 market; // base asset
-  }
 
   function trade(
     bytes32 _key,
