@@ -7,7 +7,7 @@ library Vault {
    ***********************************************/
 
   // Fees are 6-decimal places. For example: 20 * 10**6 = 20%
-  uint internal constant FEE_MULTIPLIER = 10**6;
+  uint internal constant FEE_MULTIPLIER = 10 ** 6;
 
   uint internal constant ROUND_DELAY = 12 hours;
 
@@ -51,8 +51,6 @@ library Vault {
     uint nextRoundReadyTimestamp;
     // true if the current round is in progress, false if the round is idle
     bool roundInProgress;
-    // true if the current round has set trades, false if the round has not traded is idle
-    bool tradesExecuted;
   }
 
   struct DepositReceipt {
