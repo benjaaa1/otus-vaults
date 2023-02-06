@@ -8,7 +8,14 @@ interface IOtusVault {
     address _owner,
     Vault.VaultInformation memory _vaultInfo,
     Vault.VaultParams memory _vaultParams,
-    address _strategy,
     address _keeper
   ) external;
+
+  function setStrategy(uint _type, address _strategy) external;
+
+  function setNextRoundStrategy(address _strategy) external;
+
+  function startNextRound() external;
+
+  function closeRound() external;
 }
