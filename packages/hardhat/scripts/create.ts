@@ -112,12 +112,12 @@ const create = async () => {
 
     const createVault = await otusController
       .connect(deployer)
-      .createOptionsVault('otusfinance', vaultInfo, vaultParams, defaultStrategyDetail);
+      .createVault(vaultInfo, vaultParams);
 
     await createVault.wait();
 
     const { userVaults, userStrategies } = await otusController.connect(deployer).getUserManagerDetails();
-    console.log({ userVaults, userStrategies })
+
     const userVaultInformation = userVaults.map((vault: string, index: number) => {
       const strategy = userStrategies[index];
       return { vault, strategy };
