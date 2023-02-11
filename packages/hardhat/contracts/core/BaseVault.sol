@@ -63,13 +63,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   // https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable#modifying-your-contracts
 
   /************************************************
-   *  CONSTANTS
-   ***********************************************/
-
-  // Round per year scaled up FEE_MULTIPLIER
-  uint private roundPerYear;
-
-  /************************************************
    *  EVENTS
    ***********************************************/
 
@@ -98,17 +91,7 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    *  CONSTRUCTOR & INITIALIZATION
    ***********************************************/
 
-  /**
-   * @notice Set round duration
-   * @param _roundDuration in ms
-   * @dev may remove this and let users set duration
-   * @dev only used for calculating management fee
-   * @dev may not be needed
-   */
-  constructor(uint _roundDuration) {
-    uint _roundPerYear = uint(365 days).mul(Vault.FEE_MULTIPLIER).div(_roundDuration);
-    roundPerYear = _roundPerYear;
-  }
+  constructor() {}
 
   /**
    * @notice Initializes the contract with variables from user
