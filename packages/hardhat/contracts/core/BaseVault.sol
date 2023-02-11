@@ -50,18 +50,16 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
   /// @notice Performance fee charged on premiums earned in rollToNextOption. Only charged when there is no loss.
   uint public performanceFee;
 
-  /// @notice Management fee charged on entire AUM in rollToNextOption. Only charged when there is no loss.
-  uint public managementFee;
-
   /// @notice Fees collected;
-  uint fees;
+  uint public fees;
 
   // Gap is left to avoid storage collisions. Though RibbonVault is not upgradeable, we add this as a safety measure.
   uint[30] private ____gap;
 
   // *IMPORTANT* NO NEW STORAGE VARIABLES SHOULD BE ADDED HERE
-  // This is to prevent storage collisions. All storage variables should be appended to RibbonThetaVaultStorage
-  // or RibbonDeltaVaultStorage instead. Read this documentation to learn more:
+  // This is to prevent storage collisions. All storage variables should be appended
+  // to RibbonThetaVaultStorage  or RibbonDeltaVaultStorage instead. Read this
+  // documentation to learn more:
   // https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable#modifying-your-contracts
 
   /************************************************
@@ -81,8 +79,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
   event Redeem(address indexed account, uint share, uint round);
 
-  event ManagementFeeSet(uint managementFee, uint newManagementFee);
-
   event PerformanceFeeSet(uint performanceFee, uint newPerformanceFee);
 
   event CapSet(uint oldCap, uint newCap, address manager);
@@ -91,12 +87,24 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
   event InstantWithdraw(address indexed account, uint256 amount, uint256 round);
 
-  event CollectVaultFees(uint performanceFee, uint vaultFee, uint round, address indexed feeRecipient);
+  event CollectVaultFees(
+    uint performanceFee,
+    uint vaultFee,
+    uint round,
+    address indexed feeRecipient
+  );
 
   /************************************************
    *  CONSTRUCTOR & INITIALIZATION
    ***********************************************/
 
+  /**
+   * @notice Set round duration
+   * @param _roundDuration in ms
+   * @dev may remove this and let users set duration
+   * @dev only used for calculating management fee
+   * @dev may not be needed
+   */
   constructor(uint _roundDuration) {
     uint _roundPerYear = uint(365 days).mul(Vault.FEE_MULTIPLIER).div(_roundDuration);
     roundPerYear = _roundPerYear;
@@ -110,7 +118,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     string memory _tokenName,
     string memory _tokenSymbol,
     uint _performanceFee,
-    uint _managementFee,
     Vault.VaultParams memory _vaultParams
   ) internal initializer {
     __ReentrancyGuard_init();
@@ -122,7 +129,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     vaultParams = _vaultParams;
 
     performanceFee = _performanceFee;
-    managementFee = _managementFee;
 
     uint assetBalance = IERC20(vaultParams.asset).balanceOf(address(this));
 
@@ -144,18 +150,6 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     require(newFeeRecipient != address(0), "!newFeeRecipient");
     require(newFeeRecipient != feeRecipient, "Must be new feeRecipient");
     feeRecipient = newFeeRecipient;
-  }
-
-  /**
-   * @notice Sets the management fee for the vault
-   * @param newManagementFee is the management fee (6 decimals). ex: 2 * 10 ** 6 = 2%
-   */
-  function setManagementFee(uint newManagementFee) external onlyOwner {
-    require(newManagementFee < 100 * Vault.FEE_MULTIPLIER, "Invalid management fee");
-
-    emit ManagementFeeSet(managementFee, newManagementFee);
-    // We are dividing annualized management fee by number of rounds in a year
-    managementFee = newManagementFee.mul(Vault.FEE_MULTIPLIER).div(roundPerYear);
   }
 
   /**
@@ -266,7 +260,9 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     // We do a max redeem before initiating a withdrawal
     // But we check if they must first have unredeemed shares
-    if (depositReceipts[msg.sender].amount > 0 || depositReceipts[msg.sender].unredeemedShares > 0) {
+    if (
+      depositReceipts[msg.sender].amount > 0 || depositReceipts[msg.sender].unredeemedShares > 0
+    ) {
       _redeem(0, true);
     }
 
@@ -314,7 +310,9 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
 
     // We leave the round number as non-zero to save on gas for subsequent writes
     withdrawals[msg.sender].shares = 0;
-    vaultState.queuedWithdrawShares = uint128(uint(vaultState.queuedWithdrawShares).sub(withdrawalShares));
+    vaultState.queuedWithdrawShares = uint128(
+      uint(vaultState.queuedWithdrawShares).sub(withdrawalShares)
+    );
 
     uint withdrawAmount = ShareMath.sharesToAsset(
       withdrawalShares,
@@ -374,7 +372,9 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
     // If we have a depositReceipt on the same round, BUT we have some unredeemed shares
     // we debit from the unredeemedShares, but leave the amount field intact
     // If the round has past, with no new deposits, we just zero it out for new deposits.
-    depositReceipts[msg.sender].amount = depositReceipt.round < currentRound ? 0 : depositReceipt.amount;
+    depositReceipts[msg.sender].amount = depositReceipt.round < currentRound
+      ? 0
+      : depositReceipt.amount;
 
     ShareMath.assertUint128(numShares);
     depositReceipts[msg.sender].unredeemedShares = uint128(unredeemedShares.sub(numShares));
@@ -461,11 +461,10 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    * @return vaultFee is the fee deducted
    */
   function _collectVaultFees(uint pastRoundProfit) internal returns (uint) {
-    (uint performanceFeeInAsset, , uint vaultFee) = VaultLifeCycle.getVaultFees(
+    (uint performanceFeeInAsset, uint vaultFee) = VaultLifeCycle.getVaultFees(
       vaultState,
       pastRoundProfit,
-      performanceFee,
-      managementFee
+      performanceFee
     );
 
     if (vaultFee > 0) {
@@ -497,7 +496,12 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    */
   function accountVaultBalance(address account) external view returns (uint) {
     uint _decimals = vaultParams.decimals;
-    uint assetPerShare = ShareMath.pricePerShare(totalSupply(), totalBalance(), vaultState.totalPending, _decimals);
+    uint assetPerShare = ShareMath.pricePerShare(
+      totalSupply(),
+      totalBalance(),
+      vaultState.totalPending,
+      _decimals
+    );
     return ShareMath.sharesToAsset(shares(account), assetPerShare, _decimals);
   }
 
@@ -517,7 +521,9 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    * @return heldByAccount is the shares held by account
    * @return heldByVault is the shares held on the vault (unredeemedShares)
    */
-  function shareBalances(address account) public view returns (uint heldByAccount, uint heldByVault) {
+  function shareBalances(
+    address account
+  ) public view returns (uint heldByAccount, uint heldByVault) {
     Vault.DepositReceipt memory depositReceipt = depositReceipts[account];
 
     if (depositReceipt.round == 0) {
@@ -537,7 +543,13 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    * @notice The price of a unit of share denominated in the `asset`
    */
   function pricePerShare() external view returns (uint) {
-    return ShareMath.pricePerShare(totalSupply(), totalBalance(), vaultState.totalPending, vaultParams.decimals);
+    return
+      ShareMath.pricePerShare(
+        totalSupply(),
+        totalBalance(),
+        vaultState.totalPending,
+        vaultParams.decimals
+      );
   }
 
   /**
@@ -546,7 +558,8 @@ contract BaseVault is ReentrancyGuardUpgradeable, OwnableUpgradeable, ERC20Upgra
    */
   function totalBalance() public view returns (uint) {
     return
-      uint(vaultState.lockedAmount - vaultState.lockedAmountLeft) + IERC20(vaultParams.asset).balanceOf(address(this));
+      uint(vaultState.lockedAmount - vaultState.lockedAmountLeft) +
+      IERC20(vaultParams.asset).balanceOf(address(this));
   }
 
   /**
