@@ -1,5 +1,5 @@
 //SPDX-License-Identifier:ISC
-pragma solidity 0.8.9;
+pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
 
@@ -11,23 +11,66 @@ import {IERC20} from "openzeppelin-contracts-4.4.1/token/ERC20/IERC20.sol";
 // libraries
 import {Vault} from "../libraries/Vault.sol";
 
+/*
+ * Otus Controller
+ * =================
+ *
+ * Otus Vaults allows anyone to create a vault with a specified end date, from 1 day - 4 weeks.
+ * Otus Controller is used by managers to create an instance of their
+ * own vault and then an intstance of different strategies (options / futures).
+ * Otus Controller holds vault/strategy addresses.
+ * It also controls access to clone factory clone vault/strategy and instantiation methods.
+ *
+ */
+
 /**
  * @title OtusController
  * @author Otus
- * @dev - Stores created vaults and strategies with owners
  */
 contract OtusController is Ownable {
-  struct StrategyInformation {
-    uint strategyType;
-    address strategyImpl;
+  enum StrategyTypes {
+    OPTIONS,
+    FUTURES,
+    NFT,
+    SPOT,
+    CUSTOM
   }
 
-  ///////////////
-  // Variables //
-  ///////////////
+  // otus strategy information
+  struct StrategyInformation {
+    StrategyTypes strategyType;
+    address strategyImpl;
+    bool active;
+  }
+
+  // vault and it's strategies set
+  struct VaultStrategy {
+    StrategyTypes strategyType;
+    address strategyInstance;
+  }
+
+  /************************************************
+   *  Otus Vault Strategy Information
+   ***********************************************/
+
+  mapping(uint => bool) public types;
+
+  mapping(StrategyTypes => StrategyInformation) public strategies;
+
+  uint public minDuration = 24 hours;
+
+  uint public maxDuration = 4 weeks;
+
+  /************************************************
+   *  Otus Markets Supported
+   ***********************************************/
 
   // markets supported by otus
   bytes32[] public markets;
+
+  /************************************************
+   * STATE - VAULT STRATEGY MANAGERS
+   ***********************************************/
 
   // otus deploys a lyrabase contract for each market (bytes32 is name of market)
   mapping(bytes32 => address) public lyraBases;
@@ -50,20 +93,8 @@ contract OtusController is Ownable {
   // mapping of manager to vaults
   mapping(address => address[]) public vaults;
 
-  // mapping of strategy to its vault
-  mapping(address => address) public strategies;
-
-  // mapping of vault to its Strategy
-  mapping(address => StrategyInformation[]) public vaultStrategies;
-
-  /************************************************
-   *  Otus Vault Strategy Information
-   ***********************************************/
-
-  // mapping strategy types 1 => options 2 => futures
-  mapping(uint => bool) public types;
-
-  mapping(uint => StrategyInformation) public strategies;
+  // mapping of vault to its VaultStrategy
+  mapping(address => VaultStrategy[]) public vaultStrategies;
 
   /************************************************
    *  EVENTS
@@ -78,12 +109,14 @@ contract OtusController is Ownable {
 
   event OtusCloneFactoryUpdated(address indexed user, address otusCloneFactory);
 
-  event StrategyCreated(msg.sender, vault, strategy);
+  event StrategyCreated(address indexed user, address vault, address strategy);
 
   /************************************************
    *  ERRORS
    ***********************************************/
   error NotVaultOwner();
+
+  error VaultHasStrategyType(address user, address vault);
 
   /************************************************
    *  CONSTRUCTOR & INITIALIZATION
@@ -91,12 +124,10 @@ contract OtusController is Ownable {
 
   /**
    * @notice Assign lyra registry and snx market managers
-   * @param _keeper keeper address - gelato
    * @param _markets bytes32 of market names (eth btc)
    * @param _lyraBases address of lyrabase (eth btc)
    */
-  constructor(address _keeper, bytes32[] memory _markets, address[] memory _lyraBases) Ownable() {
-    keeper = _keeper;
+  constructor(bytes32[] memory _markets, address[] memory _lyraBases) Ownable() {
     markets = _markets;
     uint len = _markets.length;
     for (uint i = 0; i < len; i++) {
@@ -104,6 +135,32 @@ contract OtusController is Ownable {
       address lyraBase = _lyraBases[i];
       lyraBases[key] = lyraBase;
     }
+  }
+
+  /************************************************
+   *  SET CONTRACT ADDRESSES
+   ***********************************************/
+
+  ///@dev add set lyra base
+
+  /************************************************
+   *  SETTINGS
+   ***********************************************/
+
+  /**
+   * @notice set min vault duration - controlled by otus
+   * @param _minDuration min vault duration
+   */
+  function setMinDuration(uint _minDuration) external onlyOwner {
+    minDuration = _minDuration;
+  }
+
+  /**
+   * @notice set max vault duration - controlled by otus
+   * @param _maxDuration max vault duration
+   */
+  function setMaxDuration(uint _maxDuration) external onlyOwner {
+    maxDuration = _maxDuration;
   }
 
   /**
@@ -146,8 +203,8 @@ contract OtusController is Ownable {
 
   /**
    * @notice set valid clone
-   * @param _type
-   * @param _valid
+   * @param _type 0 - options 1 - futures
+   * @param _valid bool to activate
    */
   function setValidType(uint _type, bool _valid) public onlyOwner {
     // can turn off certain strategy types for otus vaults
@@ -156,14 +213,29 @@ contract OtusController is Ownable {
 
   /**
    * @notice set strategy info
-   * @param _type
-   * @param _strategyImpl
+   * @param _type 0 - options 1 - futures
+   * @param _strategyImpl address of impl
    */
-  function setStrategy(uint _type, address _strategyImpl) public onlyOwner {
-    Strategy memory strategyImpl = StrategyInformation(_type, _strategyImpl);
-    strategies[_type] = strategyImpl;
+  function setStrategy(StrategyTypes _type, address _strategyImpl) public onlyOwner {
+    StrategyInformation memory strategyInfo = StrategyInformation({
+      strategyType: _type,
+      strategyImpl: _strategyImpl,
+      active: true
+    });
+    strategies[_type] = strategyInfo;
   }
 
+  /**
+   * @notice Set options keeper
+   * @param _keeper address
+   */
+  function setKeeper(address _keeper) external onlyOwner {
+    keeper = _keeper;
+  }
+
+  /************************************************
+   *  CREATE OTUS VAULT
+   ***********************************************/
   /**
    * @notice Create Options Vault controlled
    * @param _vaultInfo vault information
@@ -197,72 +269,71 @@ contract OtusController is Ownable {
     emit VaultCreated(msg.sender, vault, _vaultInfo, _vaultParams);
   }
 
+  /************************************************
+   *  CREATE STRATEGY FOR VAULT
+   ***********************************************/
   /**
    * @notice Create Options Strategy for Vault controlled
    * @param _type type = 0 options 1 futures
    * @param _otusVault vault instant information
    */
-  function createOptionsStrategy(uint _type, address _otusVault) public {
-    // verify _otusVault is owned by msg.sender and does not have a strategy instant already
+  function createStrategy(StrategyTypes _type, address _otusVault) public {
+    // verify _otusVault is owned by msg.sender and does not have a strategy type
+    // instance already
     address owner = managers[_otusVault];
 
     if (owner != msg.sender) {
       revert NotVaultOwner();
     }
 
+    VaultStrategy[] storage _vaultStrategies = vaultStrategies[_otusVault];
+
+    for (uint i = 0; i < _vaultStrategies.length; i++) {
+      if (
+        _vaultStrategies[i].strategyType == _type &&
+        _vaultStrategies[i].strategyInstance != address(0)
+      ) {
+        revert VaultHasStrategyType(msg.sender, _otusVault);
+      }
+    }
+
     // 0 is options 1 - futures 2 - nft
-    address strategy = IOtusCloneFactory(otusCloneFactory).cloneStrategy(
+    address strategyInstance = IOtusCloneFactory(otusCloneFactory).cloneStrategy(
       strategies[_type].strategyImpl
     );
 
-    require(strategy != address(0), "Strategy not created");
+    require(strategyInstance != address(0), "Strategy not created");
 
-    strategies[strategy] = vault;
+    // mapping(address => VaultStrategy[]) public vaultStrategies;
+    // VaultStrategy memory _vaultStrategy = ;
 
-    vaultStrategies[vault] = StrategyInformation(_type, strategy);
+    _vaultStrategies.push(VaultStrategy({strategyType: _type, strategyInstance: strategyInstance}));
 
     // initialize strategy
-    IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(msg.sender, _otusVault, strategy);
+    IOtusCloneFactory(otusCloneFactory)._initializeClonedStrategy(
+      msg.sender,
+      _otusVault,
+      strategyInstance
+    );
 
     // set strategy on vault
-    emit StrategyCreated(msg.sender, vault, strategy);
+    emit StrategyCreated(msg.sender, _otusVault, strategyInstance);
   }
 
-  /**
-   * @notice Set options keeper
-   * @param _keeper address
-   */
-  function setKeeper(address _keeper) external onlyOwner {
-    keeper = _keeper;
-  }
-
-  /**
-   * @notice Get vaults and strategies by owner
-   * @return userVaults vault owned
-   * @return userStrategies vault's strategies
-   */
-  function getUserManagerDetails()
-    public
-    view
-    returns (address[] memory userVaults, Strategy[] memory userStrategies)
-  {
-    address _msgSender = msg.sender;
-    userVaults = _getVaults(_msgSender);
-    userStrategies = _getStrategies(userVaults);
-  }
-
-  function _getVaultOwner(address _vault) public view returns (address _owner) {
-    return managers[_vault];
-  }
+  /************************************************
+   *  GETTERS - VAULT / STRATEGY / MANAGER INFO
+   ***********************************************/
 
   function _getVaults(address _msgSender) public view returns (address[] memory userVaults) {
     userVaults = vaults[_msgSender];
   }
 
-  function _getStrategies(
-    address _managerVault
-  ) public view returns (Strategy[] memory userStrategies) {
+  function _getStrategies(address _managerVault) public view returns (VaultStrategy[] memory) {
     return vaultStrategies[_managerVault];
+  }
+
+  function _getVaultOwner(address _vault) public view returns (address _owner) {
+    return managers[_vault];
   }
 
   // get set values (option markets lyra base futures markets used by strategies)
@@ -289,5 +360,34 @@ contract OtusController is Ownable {
       _lyraOptionMarkets[i] = lyraOptionMarkets[market];
     }
     _markets = markets;
+  }
+
+  /************************************************
+   * VALIDATE
+   ***********************************************/
+
+  /**
+   * @notice Low level call guard
+   * In futures strategies
+   * - close
+   * In options strategies
+   * - close
+   * - reducePosition
+   * - userHedge
+   * - closeUserHedge
+   */
+  mapping(bytes32 => bool) public validSignature;
+
+  function setValidExecute(bytes calldata _data, bool _valid) external onlyOwner {
+    validSignature[keccak256(abi.encodePacked(_data))] = _valid;
+  }
+
+  function _validateFunctionSignature(bytes calldata _data) public view returns (bool, bytes32) {
+    bytes32 _methodSignature = keccak256(abi.encodePacked(_data));
+    if (validSignature[_methodSignature]) {
+      return (true, _methodSignature);
+    } else {
+      return (false, _methodSignature);
+    }
   }
 }
