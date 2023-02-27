@@ -1,6 +1,5 @@
 //SPDX-License-Identifier: ISC
-
-pragma solidity 0.8.16;
+pragma solidity ^0.8.9;
 
 interface IPositionRouter {
   struct IncreasePositionRequest {
@@ -120,9 +119,15 @@ interface IPositionRouter {
     address _callbackTarget
   ) external payable returns (bytes32);
 
-  function cancelIncreasePosition(bytes32 _key, address _executionFeeReceiver) external returns (bool);
+  function cancelIncreasePosition(
+    bytes32 _key,
+    address _executionFeeReceiver
+  ) external returns (bool);
 
-  function cancelDecreasePosition(bytes32 _key, address _executionFeeReceiver) external returns (bool);
+  function cancelDecreasePosition(
+    bytes32 _key,
+    address _executionFeeReceiver
+  ) external returns (bool);
 
   function maxGlobalLongSizes(address _token) external view returns (uint256);
 

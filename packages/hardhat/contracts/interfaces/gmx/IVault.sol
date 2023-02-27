@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: ISC
 
-pragma solidity 0.8.9;
+pragma solidity ^0.8.9;
 
-import './IVaultUtils.sol';
+import "./IVaultUtils.sol";
 
 interface IVault {
   function PRICE_PRECISION() external view returns (uint);
