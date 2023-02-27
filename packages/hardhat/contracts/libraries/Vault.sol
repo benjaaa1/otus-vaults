@@ -9,16 +9,16 @@ library Vault {
   // Fees are 6-decimal places. For example: 20 * 10**6 = 20%
   uint internal constant FEE_MULTIPLIER = 10 ** 6;
 
-  uint internal constant ROUND_DELAY = 12 hours;
+  uint internal constant ROUND_DELAY = 1 days;
 
   struct VaultInformation {
-    string name;
-    string tokenName;
-    string tokenSymbol;
-    string description;
-    bool isPublic;
-    uint performanceFee;
-    uint managementFee;
+    // name set by manager
+    string name; // can move to otus vault
+    string tokenName; // can move to otus vault
+    string tokenSymbol; // can move to otus vault
+    string description; // can move to otus vault
+    bool isPublic; // can move to otus vault
+    uint performanceFee; // can move to otus vault
   }
 
   struct VaultParams {
@@ -51,6 +51,8 @@ library Vault {
     uint nextRoundReadyTimestamp;
     // true if the current round is in progress, false if the round is idle
     bool roundInProgress;
+    // expiration of round
+    uint roundExpiration;
   }
 
   struct DepositReceipt {

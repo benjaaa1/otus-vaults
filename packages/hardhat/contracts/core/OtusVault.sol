@@ -9,17 +9,27 @@ import {Vault} from "../libraries/Vault.sol";
 // Interfaces
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IStrategy} from "../interfaces/IStrategy.sol";
-
 // controller
-import "./OtusController.sol";
+import {OtusController} from "./OtusController.sol";
 
 // Inherited
 import {BaseVault} from "./BaseVault.sol";
 
+/*
+ * Otus Vault
+ * =================
+ *
+ * Manage manager's vault state (including user deposits and withdrawals)
+ * and access to funds for trading based on active strategy (options / futures).
+ * Users can set the round expiration, any user can close the round if the expiration
+ * date has been reached. Otus keeper will close round if necessary (to release user funds).
+ *
+ *
+ */
+
 /**
  * @title OtusVault
  * @author Lyra
- * @dev - Allows for maintaining vault
  */
 contract OtusVault is BaseVault {
   using SafeMath for uint;
@@ -33,7 +43,6 @@ contract OtusVault is BaseVault {
 
   OtusController public otusController;
 
-  address public strategy;
   address public keeper;
 
   string public vaultName;
@@ -44,11 +53,14 @@ contract OtusVault is BaseVault {
   // add details for for vault type ~
   bool public isPublic;
 
-  // only used when checking if valid strategy
+  // only used when checking if valid strategy for type
   mapping(uint => address) public strategies;
 
   // mapping to check round strategy
   mapping(uint => address) public strategyByRound;
+
+  // current active strategy for vault
+  address public strategy;
 
   /************************************************
    *  EVENTS
@@ -59,6 +71,14 @@ contract OtusVault is BaseVault {
   event RoundClosed(uint16 roundId, uint104 lockAmount);
 
   event RoundSettled(address user, uint16 roundId, uint currentCollateral);
+
+  event VaultSettingUpdated(address user, Vault.VaultInformation _vaultInfo);
+
+  event VaultStrategyUpdated(
+    address indexed _vault,
+    OtusController.StrategyTypes _type,
+    address _strategy
+  );
 
   /************************************************
    *  ERRORS
@@ -81,6 +101,13 @@ contract OtusVault is BaseVault {
 
   /// @notice Strategy type not valid for vault
   error StrategyTypeNotValidForVault();
+
+  /// @notice Round not valid to be closed
+  error RoundStillValid(uint timestamp, uint roundExpiration);
+
+  /// @notice Round duration set not valid
+  error RoundDurationNotValid();
+
   /************************************************
    *  Modifiers
    ***********************************************/
@@ -94,7 +121,7 @@ contract OtusVault is BaseVault {
    *  CONSTRUCTOR & INITIALIZATION
    ***********************************************/
 
-  constructor(uint _roundDuration, address _otusController) BaseVault(_roundDuration) {
+  constructor(address _otusController) BaseVault() {
     otusController = OtusController(_otusController);
   }
 
@@ -104,19 +131,15 @@ contract OtusVault is BaseVault {
    * @param _owner owner of vault
    * @param _vaultInfo basic vault information
    * @param _vaultParams vault share information
-   * @param _keeper address of keeper
    */
   function initialize(
     address _owner,
     Vault.VaultInformation memory _vaultInfo,
-    Vault.VaultParams memory _vaultParams,
-    address _keeper
+    Vault.VaultParams memory _vaultParams
   ) external {
     vaultName = _vaultInfo.name;
     vaultDescription = _vaultInfo.description;
     isPublic = _vaultInfo.isPublic;
-
-    keeper = _keeper;
 
     collateralAsset = IERC20(_vaultParams.asset);
 
@@ -125,20 +148,40 @@ contract OtusVault is BaseVault {
       _vaultInfo.tokenName,
       _vaultInfo.tokenSymbol,
       _vaultInfo.performanceFee,
-      _vaultInfo.managementFee,
       _vaultParams
     );
   }
 
   /************************************************
-   *  PUBLIC VAULT ACTIONS
+   *  VAULT SETTERS
+   ***********************************************/
+
+  /**
+   * @notice Updates vault settings
+   * @param _vaultInfo basic vault information
+   * @dev Should only be updated when vault is closed
+   */
+  function setVaultSetting(Vault.VaultInformation memory _vaultInfo) external onlyOwner {
+    require(!vaultState.roundInProgress, "round opened");
+
+    vaultName = _vaultInfo.name;
+    vaultDescription = _vaultInfo.description;
+    isPublic = _vaultInfo.isPublic;
+
+    emit VaultSettingUpdated(msg.sender, _vaultInfo);
+  }
+
+  /************************************************
+   *  PUBLIC VAULT STRATEGY ACTIONS
    ***********************************************/
 
   /**
    * @notice  Closes the current round, enable user to deposit for the next round
+   * @dev can be closed by anyone as long as round end time is < block timestamp
    */
-  function closeRound() external onlyOwner {
+  function closeRound() external {
     require(vaultState.roundInProgress, "round closed");
+    _validClose();
 
     uint104 lockAmount = vaultState.lockedAmount;
     vaultState.lastLockedAmount = lockAmount;
@@ -147,13 +190,11 @@ contract OtusVault is BaseVault {
     vaultState.nextRoundReadyTimestamp = block.timestamp + Vault.ROUND_DELAY;
     vaultState.roundInProgress = false;
 
-    address _strategy = strategyByRound[vaultState.round];
-
-    require(address(_strategy) != address(0), "Strategy not set");
+    // won't be able to close if positions are not settled
+    IStrategy(strategy).close();
 
     // execute all close/clean up methods required by strategy
-    // won't be able to close if positions are not settled
-    IStrategy(_strategy).close();
+    collateralAsset.approve(strategy, type(uint).min);
 
     emit RoundClosed(vaultState.round, lockAmount);
   }
@@ -179,6 +220,8 @@ contract OtusVault is BaseVault {
 
     lastQueuedWithdrawAmount = uint128(queuedWithdrawAmount);
 
+    collateralAsset.approve(strategy, type(uint).max);
+
     emit RoundStarted(vaultState.round, uint104(lockedBalance));
   }
 
@@ -187,38 +230,37 @@ contract OtusVault is BaseVault {
    ***********************************************/
   /**
    * @notice Used for trade/investment
-   * @param _strategy strategy address for vault
-   * @param _data trade/investment functiona and param - bytes
+   * @param _data trade/investment function and param - bytes
    */
-  function trade(address _strategy, bytes calldata _data) external onlyOwner {
+  function trade(bytes calldata _data) external onlyOwner {
     require(vaultState.roundInProgress, "Round closed");
 
-    // validate strategy is valid for vault
-    validate(_strategy);
-
-    uint allCapitalUsed = IStrategy(_strategy).trade(_data);
+    uint round = vaultState.round;
+    // capital used includes committed margin for
+    // limit orders and hedging
+    uint allCapitalUsed = IStrategy(strategy).trade(_data, round);
 
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
   }
 
   function execute(bytes calldata _data) external onlyOwner {
     require(vaultState.roundInProgress, "Round closed");
-    // add guard
-    address _strategy = strategyByRound[vaultState.round];
-    (bool success, ) = _strategy.call(_data);
+    // check function signature
+    _validFunction(_data);
+    // options - reducePosition close
+    // @sol-ignore avoid-low-level-calls
+    (bool success, ) = strategy.call(_data);
     require(success, "Execute failed");
-    // userHedge
-    // reducePosition
   }
 
-  function keeperExecute(address _strategy, bytes memory data) external onlyKeeper {
-    require(vaultState.roundInProgress, "Round closed");
+  /************************************************
+   *  Round Duration - 1 day to 4 weeks
+   ***********************************************/
 
-    validate(strategy);
-    (bool success, ) = IStrategy(_strategy).keeper(data);
-    require(success, "Keeper execute failed");
-    // dynamicDeltaHedge
-    // closeHedgeByPositionId
+  function setRoundDuration(uint _duration) external onlyOwner {
+    require(!vaultState.roundInProgress, "round opened");
+    _validDuration(_duration);
+    vaultState.roundExpiration = vaultState.nextRoundReadyTimestamp + _duration;
   }
 
   /************************************************
@@ -226,51 +268,28 @@ contract OtusVault is BaseVault {
    ***********************************************/
 
   /**
-   * @notice Sets strategy available
-   * @param _type type of strategy
-   * @param _strategy address of strategy
-   */
-  function setStrategy(uint _type, address _strategy) public onlyOwner {
-    //check type isn't set already
-    if (strategies[_type] != address(0)) {
-      revert StrategyAlreadySet();
-    }
-
-    //check if strategy address was instantiated by OtusController
-    if (otusController.strategies(_strategy) == address(this)) {
-      revert StrategyNotValidForVault();
-    }
-
-    if (otusController.types(_type) != true) {
-      revert StrategyTypeNotValidForVault();
-    }
-
-    collateralAsset.approve(_strategy, type(uint).max);
-
-    strategies[_type] = _strategy;
-  }
-
-  /**
-   * @notice Sets strategy for next round
+   * @notice Sets strategy for vault
    * @param _type of strategy
    */
-  function setNextRoundStrategy(uint _type) internal onlyOwner {
-    // validate implemenation for strategy instance address
-    // only set for next round if round open
-    // if round closed set for current
-    address _strategy = strategies[_type];
+  function setStrategy(OtusController.StrategyTypes _type) external onlyOwner {
+    require(!vaultState.roundInProgress, "round opened");
 
-    if (_strategy == address(0)) {
-      revert StrategyTypeNotValidForVault();
+    OtusController.VaultStrategy[] memory vaultStrategies = otusController._getStrategies(
+      address(this)
+    );
+
+    for (uint i = 0; i < vaultStrategies.length; i++) {
+      if (
+        vaultStrategies[i].strategyType == _type &&
+        vaultStrategies[i].strategyInstance != address(0)
+      ) {
+        strategy = vaultStrategies[i].strategyInstance;
+      } else {
+        revert StrategyTypeNotValidForVault();
+      }
     }
 
-    uint round = vaultState.round;
-
-    if (vaultState.roundInProgress) {
-      strategyByRound[round + 1] = _strategy;
-    } else {
-      strategyByRound[round] = _strategy;
-    }
+    emit VaultStrategyUpdated(address(this), _type, strategy);
   }
 
   /************************************************
@@ -278,16 +297,42 @@ contract OtusVault is BaseVault {
    ***********************************************/
 
   /**
-   * @notice Validates strategy for vault
-   * @param _strategy address of strategy
+   * @notice Validates close round time to release funds
    */
-  function validate(address _strategy) internal returns (bool valid) {
-    address _roundStrategy = strategyByRound(vaultState.round);
+  function _validClose() internal view {
+    if (block.timestamp < vaultState.roundExpiration) {
+      revert RoundStillValid(block.timestamp, vaultState.roundExpiration);
+    }
+  }
 
-    if (_strategy != _roundStrategy) {
-      revert StrategyNotValidForRound();
+  /**
+   * @notice Validates close round time to release funds
+   * @param _duration set by vault owner
+   */
+  function _validDuration(uint _duration) internal view {
+    // round delay is 12 hours constant
+    uint minDuration = otusController.minDuration();
+    uint maxDuration = otusController.maxDuration();
+
+    if (minDuration > _duration) {
+      revert RoundDurationNotValid();
     }
 
-    valid = true;
+    if (maxDuration < _duration) {
+      revert RoundDurationNotValid();
+    }
   }
+
+  /**
+   * @notice Validates close round time to release funds
+   * @param _data set by vault owner
+   */
+  function _validFunction(bytes calldata _data) internal view {
+    (bool _valid, bytes32 _method) = otusController._validateFunctionSignature(_data);
+    if (!_valid) {
+      revert MethodCallNotValid(msg.sender, _method);
+    }
+  }
+
+  error MethodCallNotValid(address user, bytes32 method);
 }

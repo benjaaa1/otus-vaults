@@ -74,8 +74,7 @@ library VaultLifeCycle {
   }
 
   /**
-   * @notice Calculates the performance and management fee for this week's round
-   * @dev update to remove management fees?
+   * @notice Calculates the performance for this week's round
    * @param vaultState is the struct with vault accounting state
    * @param currentLockedBalance is the amount of funds currently locked in lyra
    * @param performanceFeePercent is the performance fee pct.
@@ -94,14 +93,11 @@ library VaultLifeCycle {
     uint _performanceFeeInAsset;
     uint _vaultFee;
 
-    // Take performance fee and management fee ONLY if difference between
+    // Take performance fee ONLY if difference between
     // last week and this week's vault deposits, taking into account pending
     // deposits and withdrawals, is positive. If it is negative, last week's
     // option expired ITM past breakeven, and the vault took a loss so we
     // do not collect performance fee for last week
-    // Update this to include management fee and performance only
-
-    // todo: update management fee to exclude profit?
     if (lockedBalanceSansPending > prevLockedAmount) {
       _performanceFeeInAsset = performanceFeePercent > 0
         ? lockedBalanceSansPending.sub(prevLockedAmount).mul(performanceFeePercent).div(
