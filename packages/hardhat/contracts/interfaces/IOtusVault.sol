@@ -11,9 +11,7 @@ interface IOtusVault {
     address _keeper
   ) external;
 
-  function setStrategy(uint _type, address _strategy) external;
-
-  function setNextRoundStrategy(address _strategy) external;
+  function setVaultSetting(Vault.VaultInformation memory _vaultInfo) external;
 
   function startNextRound() external;
 
