@@ -85,11 +85,11 @@ const calculateProfitAtTick = (totalSumOfFees: number, _strikePrice: BigNumber, 
       if (tick < strikePrice) {
         profitAtTick = totalSumOfFees;
       } else {
-        profitAtTick = ((tick - strikePrice) * size) - totalSumOfFees // (tick - (strikePrice - (totalSumOfFees))) * size; // 1200 - 1150 = 50 - 60 = -10 
+        profitAtTick = ((tick - strikePrice) * size) + totalSumOfFees // (tick - (strikePrice - (totalSumOfFees))) * size; // 1200 - 1150 = 50 - 60 = -10 
       }
     } else {
       if (tick < strikePrice) {
-        profitAtTick = ((strikePrice - tick) * size) - totalSumOfFees  // (strikePrice - (tick + totalSumOfFees)) * size; // 1200 - 
+        profitAtTick = ((strikePrice - tick) * size) + totalSumOfFees  // (strikePrice - (tick + totalSumOfFees)) * size; // 1200 - 
       } else {
         profitAtTick = totalSumOfFees;
       }
@@ -101,12 +101,12 @@ const calculateProfitAtTick = (totalSumOfFees: number, _strikePrice: BigNumber, 
       if (tick < strikePrice) {
         profitAtTick = totalSumOfFees;
       } else {
-        profitAtTick = (strikePrice + totalSumOfFees) - tick;
+        profitAtTick = ((strikePrice - tick) * size) + totalSumOfFees;
       }
 
     } else {
       if (tick < strikePrice) {
-        profitAtTick = tick - strikePrice + (totalSumOfFees);
+        profitAtTick = ((tick - strikePrice) * size) + totalSumOfFees
       } else {
         profitAtTick = totalSumOfFees;
       }
