@@ -1,15 +1,15 @@
 //SPDX-License-Identifier:ISC
-pragma solidity 0.8.9;
+pragma solidity ^0.8.9;
 
 // Hardhat
-import 'hardhat/console.sol';
+import "hardhat/console.sol";
 
 // Libraries
-import {BlackScholes} from '@lyrafinance/protocol/contracts/libraries/BlackScholes.sol';
+import {BlackScholes} from "@lyrafinance/protocol/contracts/libraries/BlackScholes.sol";
 
 // Inherited
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {IOptionMarket} from '@lyrafinance/protocol/contracts/interfaces/IOptionMarket.sol';
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IOptionMarket} from "@lyrafinance/protocol/contracts/interfaces/IOptionMarket.sol";
 
 /**
  * @title ILyraBase
@@ -168,9 +168,28 @@ interface ILyraBase {
   // Misc //
   //////////
 
-  function _getBsInput(uint strikeId) external view returns (BlackScholes.BlackScholesInputs memory bsInput);
+  function _getBsInput(
+    uint strikeId
+  ) external view returns (BlackScholes.BlackScholesInputs memory bsInput);
 
   function _isLong(OptionType optionType) external pure returns (bool);
+
+  function _isOutsideDeltaCutoff(uint strikeId) external view returns (bool);
+
+  function _getBufferCollateral(
+    uint _strikePrice,
+    uint _expiry,
+    uint _spotPrice,
+    uint _amount,
+    uint _optionType,
+    uint _collatBuffer
+  ) external view returns (uint);
+
+  function _getFullCollateral(
+    uint strikePrice,
+    uint amount,
+    uint _optionType
+  ) external pure returns (uint fullCollat);
 
   //////////
   // GWAV //

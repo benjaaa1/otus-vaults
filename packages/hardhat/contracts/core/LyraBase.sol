@@ -2,25 +2,25 @@
 pragma solidity 0.8.9;
 
 // Libraries
-import {BlackScholes} from '@lyrafinance/protocol/contracts/libraries/BlackScholes.sol';
-import {DecimalMath} from '@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol';
+import {BlackScholes} from "@lyrafinance/protocol/contracts/libraries/BlackScholes.sol";
+import {DecimalMath} from "@lyrafinance/protocol/contracts/synthetix/DecimalMath.sol";
 
 // Inherited
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // Interfaces
-import {OptionToken} from '@lyrafinance/protocol/contracts/OptionToken.sol';
-import {OptionMarket} from '@lyrafinance/protocol/contracts/OptionMarket.sol';
-import {LiquidityPool} from '@lyrafinance/protocol/contracts/LiquidityPool.sol';
-import {ShortCollateral} from '@lyrafinance/protocol/contracts/ShortCollateral.sol';
-import {OptionGreekCache} from '@lyrafinance/protocol/contracts/OptionGreekCache.sol';
-import {BasicFeeCounter} from '@lyrafinance/protocol/contracts/periphery/BasicFeeCounter.sol';
-import {OptionMarketPricer} from '@lyrafinance/protocol/contracts/OptionMarketPricer.sol';
-import {GWAVOracle} from '@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol';
+import {OptionToken} from "@lyrafinance/protocol/contracts/OptionToken.sol";
+import {OptionMarket} from "@lyrafinance/protocol/contracts/OptionMarket.sol";
+import {LiquidityPool} from "@lyrafinance/protocol/contracts/LiquidityPool.sol";
+import {ShortCollateral} from "@lyrafinance/protocol/contracts/ShortCollateral.sol";
+import {OptionGreekCache} from "@lyrafinance/protocol/contracts/OptionGreekCache.sol";
+import {BasicFeeCounter} from "@lyrafinance/protocol/contracts/periphery/BasicFeeCounter.sol";
+import {OptionMarketPricer} from "@lyrafinance/protocol/contracts/OptionMarketPricer.sol";
+import {GWAVOracle} from "@lyrafinance/protocol/contracts/periphery/GWAVOracle.sol";
 
 // Exchange adapter
 // update synthetixadapter to inherit exchange adapter and create 2 LyraBase => LyraBaseSNX LyraBaseGMX
-import {SynthetixAdapter} from '@lyrafinance/protocol/contracts/SynthetixAdapter.sol';
+import {SynthetixAdapter} from "@lyrafinance/protocol/contracts/SynthetixAdapter.sol";
 
 // import {BaseExchangeAdapter} from './BaseExchangeAdapter.sol';
 
@@ -197,7 +197,8 @@ contract LyraBase {
   // get all board related info (non GWAV)
   function getBoard(uint boardId) internal view returns (Board memory) {
     OptionMarket.OptionBoard memory board = optionMarket.getOptionBoard(boardId);
-    return Board({id: board.id, expiry: board.expiry, boardIv: board.iv, strikeIds: board.strikeIds});
+    return
+      Board({id: board.id, expiry: board.expiry, boardIv: board.iv, strikeIds: board.strikeIds});
   }
 
   // get all strike related info (non GWAV)
@@ -289,7 +290,9 @@ contract LyraBase {
   // get spot price of sAsset and exchange fee percentages
   function getExchangeParams() public view returns (ExchangeRateParams memory) {
     // update this to only return what is used (spot price)
-    SynthetixAdapter.ExchangeParams memory params = exchangeAdapter.getExchangeParams(address(optionMarket));
+    SynthetixAdapter.ExchangeParams memory params = exchangeAdapter.getExchangeParams(
+      address(optionMarket)
+    );
     return
       ExchangeRateParams({
         spotPrice: params.spotPrice,
@@ -380,7 +383,9 @@ contract LyraBase {
   // Misc //
   //////////
 
-  function _getBsInput(uint strikeId) internal view returns (BlackScholes.BlackScholesInputs memory bsInput) {
+  function _getBsInput(
+    uint strikeId
+  ) internal view returns (BlackScholes.BlackScholesInputs memory bsInput) {
     (OptionMarket.Strike memory strike, OptionMarket.OptionBoard memory board) = optionMarket
       .getStrikeAndBoard(strikeId);
     bsInput = BlackScholes.BlackScholesInputs({
@@ -406,5 +411,93 @@ contract LyraBase {
       gwavOracle.ivGWAV(strike.boardId, secondsAgo).multiplyDecimal(
         gwavOracle.skewGWAV(strikeId, secondsAgo)
       );
+  }
+
+  /**
+   * @dev use latest optionMarket delta cutoff to determine whether trade delta is out of bounds
+   */
+  function _isOutsideDeltaCutoff(uint strikeId) internal view returns (bool) {
+    MarketParams memory marketParams = getMarketParams();
+    int callDelta = getDeltas(_toDynamic(strikeId))[0];
+    return
+      callDelta > (int(DecimalMath.UNIT) - marketParams.deltaCutOff) ||
+      callDelta < marketParams.deltaCutOff;
+  }
+
+  /*****************************************************
+   *  VAULT STRATEGY DELTA HELPERS
+   *****************************************************/
+  /**
+   * @dev checks delta for vault for a market - helpful in user hedge / dynamic
+   * @dev this is grabbing all the striketrades and not separating by market
+   * @dev need to filter out by market first
+   */
+  function checkNetDelta(uint[] memory _positionIds) public view returns (int netDelta) {
+    OptionPosition[] memory positions = getPositions(_positionIds);
+    uint _positionsLen = positions.length;
+    uint[] memory strikeIds = new uint[](_positionsLen);
+
+    for (uint i = 0; i < _positionsLen; i++) {
+      OptionPosition memory position = positions[i];
+      if (position.state == PositionState.ACTIVE) {
+        strikeIds[i] = positions[i].strikeId;
+      }
+    }
+
+    int[] memory deltas = getDeltas(strikeIds);
+
+    for (uint i = 0; i < deltas.length; i++) {
+      netDelta = netDelta + deltas[i];
+    }
+  }
+
+  /**
+   * @dev get amount of collateral needed for shorting {amount} of strike, according to the strategy
+   */
+  function _getBufferCollateral(
+    uint _strikePrice,
+    uint _expiry,
+    uint _spotPrice,
+    uint _amount,
+    uint _optionType,
+    uint _collatBuffer
+  ) internal view returns (uint) {
+    uint minCollat = getMinCollateral(
+      OptionType(_optionType),
+      _strikePrice,
+      _expiry,
+      _spotPrice,
+      _amount
+    );
+    require(minCollat > 0, "min collat must be more");
+    uint minCollatWithBuffer = minCollat.multiplyDecimal(_collatBuffer);
+
+    uint fullCollat = _getFullCollateral(_strikePrice, _amount, _optionType);
+    require(fullCollat > 0, "fullCollat collat must be more");
+
+    return _min(minCollatWithBuffer, fullCollat);
+  }
+
+  function _getFullCollateral(
+    uint strikePrice,
+    uint amount,
+    uint _optionType
+  ) internal pure returns (uint fullCollat) {
+    // calculate required collat based on collatBuffer and collatPercent
+    fullCollat = _isBaseCollat(_optionType) ? amount : amount.multiplyDecimal(strikePrice);
+  }
+
+  function _isBaseCollat(uint _optionType) internal pure returns (bool isBase) {
+    isBase = (OptionType(_optionType) == OptionType.SHORT_CALL_BASE) ? true : false;
+  }
+
+  function _min(uint x, uint y) internal pure returns (uint) {
+    return (x < y) ? x : y;
+  }
+
+  // temporary fix - eth core devs promised Q2 2022 fix
+  function _toDynamic(uint val) internal pure returns (uint[] memory dynamicArray) {
+    dynamicArray = new uint[](1);
+    dynamicArray[0] = val;
   }
 }
