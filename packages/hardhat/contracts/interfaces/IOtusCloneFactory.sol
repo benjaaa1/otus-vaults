@@ -6,7 +6,7 @@ import {Vault} from "../libraries/Vault.sol";
 interface IOtusCloneFactory {
   function cloneVault() external returns (address otusVaultClone);
 
-  function cloneStrategy(uint _type) external returns (address strategyClone);
+  function cloneStrategy(address _strategyImpl) external returns (address strategyClone);
 
   function _initializeClonedVault(
     address _otusVaultClone,
