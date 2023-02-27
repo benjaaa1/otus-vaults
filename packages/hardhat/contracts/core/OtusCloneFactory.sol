@@ -73,7 +73,7 @@ contract OtusCloneFactory is Ownable {
     Vault.VaultParams memory _vaultParams,
     address _keeper
   ) public {
-    require(msg.sender == otusController, "Not allowed to create");
+    require(msg.sender == otusController, "Not allowed to init");
     IOtusVault(_otusVaultClone).initialize(_owner, _vaultInfo, _vaultParams, _keeper);
   }
 
@@ -84,7 +84,7 @@ contract OtusCloneFactory is Ownable {
    * @param _strategy address
    */
   function _initializeClonedStrategy(address _owner, address _vault, address _strategy) public {
-    require(msg.sender == otusController, "Not allowed to create");
+    require(msg.sender == otusController, "Not allowed to init");
     require(_vault != address(0), "_vault must be non zero address");
     IStrategy(_strategy).initialize(_owner, _vault);
   }
