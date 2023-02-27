@@ -116,30 +116,39 @@ const create = async () => {
 
     await createVault.wait();
 
-    const { userVaults, userStrategies } = await otusController.connect(deployer).getUserManagerDetails();
+    const { userVaults } = await otusController.connect(deployer)._getVaults();
 
-    const userVaultInformation = userVaults.map((vault: string, index: number) => {
-      const strategy = userStrategies[index];
-      return { vault, strategy };
-    });
+    // const userVaultInformation = userVaults.map((vault: string, index: number) => {
+    //   const strategy = userStrategies[index];
+    //   return { vault, strategy };
+    // });
 
-    const len = userVaultInformation.length;
+    // const len = userVaultInformation.length;
 
-    const _vault = userVaultInformation[len - 1].vault;
-    const _strategy = userVaultInformation[len - 1].strategy;
-    const otusVaultInstance = otusVault.attach(_vault);
-    const strategyInstance = strategy.attach(_strategy);
+    // const _vault = userVaultInformation[len - 1].vault;
+    // const _strategy = userVaultInformation[len - 1].strategy;
+
+    const otusVaultInstance = otusVault.attach(userVaults[0]);
+
+    const { _strategies } = await otusController.connect(deployer)._getStrategies(userVaults[0]);
+
+    const strategyInstance = strategy.attach(_strategies[0]);
 
     // approve and deposit susd
-    await drip(susd, otusVaultInstance, _vault);
+    await drip(susd, otusVaultInstance, userVaults[0]);
 
     // // set strike options strategies
     // const currentStrikeStrategies = buildStrikeStrategies();
     // console.log({ currentStrikeStrategies });
+
+    // type - 0 => options
+    const setNextRoundStrategy = await otusVaultInstance.connect(deployer).setNextRoundStrategy(0);
+    await setNextRoundStrategy.wait();
+
     const strikeStrategiesSet = await strategyInstance
       .connect(deployer)
       .setStrikeStrategyDetail([defaultStrikeStrategyDetail]);
-    const strikeStrategiesSetReceipt = strikeStrategiesSet.wait();
+    await strikeStrategiesSet.wait();
 
     await strategyInstance.connect(deployer).setHedgeStrategyType(2);
 

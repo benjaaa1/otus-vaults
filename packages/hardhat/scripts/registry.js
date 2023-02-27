@@ -7,6 +7,8 @@ const registerMarkets = async () => {
 
     const chainId = await getChainId(); 
 
+    console.log({ chainId })
+
     const otusCloneFactory = await ethers.getContract("OtusCloneFactory");
     const outsController = await ethers.getContract("OtusController");
 
