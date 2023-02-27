@@ -2,7 +2,7 @@
 pragma solidity 0.8.9;
 
 // Libraries
-import './Math.sol';
+import "./Math.sol";
 
 /**
  * @title ConvertDecimals
