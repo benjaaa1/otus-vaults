@@ -155,13 +155,11 @@ contract LyraAdapter is SynthetixHedgeExtension {
    * @notice initialize ownership
    * @param _markets _owner
    * @param _lyraBases _owner
-   * @param _futuresMarkets _owner
    * @param _lyraOptionMarkets _owner
    */
   function lyraInitialize(
     bytes32[] memory _markets,
     address[] memory _lyraBases,
-    address[] memory _futuresMarkets,
     address[] memory _lyraOptionMarkets
   ) internal {
     uint len = _markets.length;
@@ -169,23 +167,11 @@ contract LyraAdapter is SynthetixHedgeExtension {
     for (uint i = 0; i < len; i++) {
       bytes32 key = _markets[i];
       address _lyraBase = _lyraBases[i];
-      address futuresMarket = _futuresMarkets[i];
       address optionMarket = _lyraOptionMarkets[i];
 
       lyraBases[key] = ILyraBase(_lyraBase);
       lyraOptionMarkets[key] = optionMarket;
     }
-  }
-
-  /// @dev should be only otus controller
-  function setSynthetixAddresses() external {
-    // futuresMarketsByKey[key] = IFuturesMarket(futuresMarket);
-    // set futures market settings
-  }
-
-  function setGMXAddresses() external {
-    // futuresMarketsByKey[key] = IFuturesMarket(futuresMarket);
-    // set futures market settings
   }
 
   /************************************************
@@ -429,8 +415,7 @@ contract LyraAdapter is SynthetixHedgeExtension {
    ***********************************************/
 
   /**
-   * @notice Return funds to vault and clera strikes
-   * @dev calculate required collateral to add in the next trade.
+   * @notice calculate required collateral to add in the next trade.
    * only add collateral if the additional sell will make the position out of buffer range
    * never remove collateral from an existing position
    * @param _trade strike trade

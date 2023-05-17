@@ -128,12 +128,28 @@ contract Strategy is LyraAdapter, StrategyBase {
     (
       bytes32[] memory _markets,
       address[] memory _lyraBases,
-      address[] memory _futuresMarkets,
       address[] memory _lyraOptionMarkets
     ) = otusController._getOptionsContracts();
 
-    lyraInitialize(_markets, _lyraBases, _futuresMarkets, _lyraOptionMarkets);
+    lyraInitialize(_markets, _lyraBases, _lyraOptionMarkets);
     baseInitialize(_owner, _vault);
+  }
+
+  /************************************************
+   *  FUTURES SETTERS
+   ***********************************************/
+
+  /// @dev should be only otus controller
+  /// @notice sets futures perps market address
+  function setSynthetixAddresses(bytes32 key, address _futuresMarket) external onlyController {
+    futuresMarketsByKey[key] = IFuturesMarket(_futuresMarket);
+    // set futures market settings
+  }
+
+  /// @dev should be only otus controller
+  function setGMXAddresses() external onlyController {
+    // futuresMarketsByKey[key] = IFuturesMarket(futuresMarket);
+    // set futures market settings
   }
 
   /************************************************
@@ -249,11 +265,9 @@ contract Strategy is LyraAdapter, StrategyBase {
         capitalUsed = _placeOrder(shortTrade);
       } else {
         (positionId, premium, capitalUsed, expiry, strikePrice) = _executeTrade(shortTrade);
+        // emit Trade(address(this), shortTrade, premium, expiry, _round);
       }
-
       allCapitalUsed += capitalUsed;
-
-      // emit Trade(address(this), shortTrade, premium, expiry, _round);
     }
 
     for (uint i = 0; i < longTradesLen; i++) {
@@ -264,6 +278,7 @@ contract Strategy is LyraAdapter, StrategyBase {
         capitalUsed = _placeOrder(longTrade);
       } else {
         (positionId, premium, capitalUsed, expiry, strikePrice) = _executeTrade(longTrade);
+        // emit Trade(address(this), longTrade, premium, expiry, _round);
       }
 
       allCapitalUsed += capitalUsed;
@@ -330,6 +345,7 @@ contract Strategy is LyraAdapter, StrategyBase {
       revert CloseAmountExceedsAllowed(_closeAmount);
     }
 
+    // @dev this should be storage
     StrikeTrade memory currentTrade = tradeByPositionId[_positionId];
 
     bool isMin = _isLong(currentTrade.optionType) ? false : true;
@@ -560,7 +576,12 @@ contract Strategy is LyraAdapter, StrategyBase {
     orderId++;
   }
 
-  /// @dev need a checker
+  /**
+   * @notice check if limit order is valid and execute
+   * @param _orderId trade order id
+   * @return canExec
+   * @return execPayload
+   */
   function checker(
     uint256 _orderId
   ) external view returns (bool canExec, bytes memory execPayload) {
@@ -568,7 +589,10 @@ contract Strategy is LyraAdapter, StrategyBase {
     execPayload = abi.encodeWithSelector(this.executeOrder.selector, _orderId);
   }
 
-  /// @dev cancel an order too
+  /**
+   * @notice cancel order
+   * @param _orderId trade order id
+   */
   function cancelOrder(uint256 _orderId) external onlyOwner {
     StrikeTradeOrder memory order = orders[_orderId];
     IOps(ops).cancelTask(order.gelatoTaskId);
@@ -577,7 +601,10 @@ contract Strategy is LyraAdapter, StrategyBase {
     emit OrderCancelled(address(this), _orderId);
   }
 
-  /// @dev execute order
+  /**
+   * @notice execute order
+   * @param _orderId trade order id
+   */
   function executeOrder(uint256 _orderId) external onlyOps {
     (bool isValidOrder, uint256 premiumLimit) = validOrder(_orderId);
 
@@ -627,7 +654,12 @@ contract Strategy is LyraAdapter, StrategyBase {
     emit OrderFilled(address(this), _orderId, premium, fee);
   }
 
-  /// @dev valid order
+  /**
+   * @notice check validity of orderid
+   * @param _orderId trade order id
+   * @return valid
+   * @return premium
+   */
   function validOrder(uint256 _orderId) public view returns (bool, uint) {
     // get order info
     StrikeTradeOrder memory order = orders[_orderId];

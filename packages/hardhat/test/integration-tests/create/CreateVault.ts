@@ -25,7 +25,7 @@ import { LyraGlobal, LyraMarket } from '@lyrafinance/protocol/dist/test/utils/pa
 import { Vault } from '../../../typechain-types/OtusVault';
 import { defaultDynamicDeltaHedgeDetail, defaultStrategyDetail, defaultStrikeStrategyDetailCall, vaultInfo } from '../utils/init';
 
-const spotPrice = toBN('3000');
+
 
 const boardId = toBN('0');
 

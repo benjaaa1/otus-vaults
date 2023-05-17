@@ -53,14 +53,12 @@ contract OtusVault is BaseVault {
   // add details for for vault type ~
   bool public isPublic;
 
-  // only used when checking if valid strategy for type
-  mapping(uint => address) public strategies;
-
-  // mapping to check round strategy
-  mapping(uint => address) public strategyByRound;
-
   // current active strategy for vault
-  address public strategy;
+  /// @dev will be able to support multiple strategies
+  mapping(bytes32 => address) public strategies;
+
+  /// @dev list of strategytypes
+  bytes32 public roundStrategyTypes;
 
   /************************************************
    *  EVENTS
@@ -74,11 +72,7 @@ contract OtusVault is BaseVault {
 
   event VaultSettingUpdated(address user, Vault.VaultInformation _vaultInfo);
 
-  event VaultStrategyUpdated(
-    address indexed _vault,
-    OtusController.StrategyTypes _type,
-    address _strategy
-  );
+  event VaultStrategyUpdated(address indexed _vault, bytes32 _type, address _strategy);
 
   /************************************************
    *  ERRORS
@@ -191,10 +185,13 @@ contract OtusVault is BaseVault {
     vaultState.roundInProgress = false;
 
     // won't be able to close if positions are not settled
-    IStrategy(strategy).close();
-
-    // execute all close/clean up methods required by strategy
-    collateralAsset.approve(strategy, type(uint).min);
+    for (uint i = 0; i < roundStrategyTypes.length; i++) {
+      bytes32 roundStrategyType = roundStrategyTypes[i];
+      address strategy = strategies[roundStrategyType];
+      IStrategy(strategy).close();
+      // execute all close/clean up methods required by strategy
+      collateralAsset.approve(strategy, type(uint).min);
+    }
 
     emit RoundClosed(vaultState.round, lockAmount);
   }
@@ -220,7 +217,12 @@ contract OtusVault is BaseVault {
 
     lastQueuedWithdrawAmount = uint128(queuedWithdrawAmount);
 
-    collateralAsset.approve(strategy, type(uint).max);
+    // won't be able to close if positions are not settled
+    for (uint i = 0; i < roundStrategyTypes.length; i++) {
+      bytes32 roundStrategyType = roundStrategyTypes[i];
+      address strategy = strategies[roundStrategyType];
+      collateralAsset.approve(strategy, type(uint).min);
+    }
 
     emit RoundStarted(vaultState.round, uint104(lockedBalance));
   }
@@ -231,10 +233,15 @@ contract OtusVault is BaseVault {
   /**
    * @notice Used for trade/investment
    * @param _data trade/investment function and param - bytes
+   * @dev OPTIONS => trade options
+   * @dev FUTURES => trade perps
+   * @dev LENDING => trade for aTokens
+   * @dev SWAP => trade spot
+   * @dev NFT => trade NFT
    */
-  function trade(bytes calldata _data) external onlyOwner {
+  function trade(bytes32 _strategyType, bytes calldata _data) external onlyOwner {
     require(vaultState.roundInProgress, "Round closed");
-
+    address strategy = strategies[_strategyType];
     uint round = vaultState.round;
     // capital used includes committed margin for
     // limit orders and hedging
@@ -243,9 +250,11 @@ contract OtusVault is BaseVault {
     vaultState.lockedAmountLeft = vaultState.lockedAmountLeft - allCapitalUsed;
   }
 
-  function execute(bytes calldata _data) external onlyOwner {
+  function execute(bytes32 _strategyType, bytes calldata _data) external onlyOwner {
     require(vaultState.roundInProgress, "Round closed");
     // check function signature
+    address strategy = strategies[_strategyType];
+
     _validFunction(_data);
     // options - reducePosition close
     // @sol-ignore avoid-low-level-calls
@@ -268,11 +277,19 @@ contract OtusVault is BaseVault {
    ***********************************************/
 
   /**
-   * @notice Sets strategy for vault
-   * @param _type of strategy
+   * @notice Sets strategies for vault
+   * @param _type of strategy OPTIONS / FUTURES / LEND / SWAP
    */
-  function setStrategy(OtusController.StrategyTypes _type) external onlyOwner {
+  function setStrategy(string memory _type) external onlyOwner {
     require(!vaultState.roundInProgress, "round opened");
+
+    bytes32 _etype = keccak256(abi.encodePacked(_type));
+
+    bool _valid = otusController._validateVaultStrategy(_etype);
+
+    if (!_valid) {
+      revert StrategyTypeNotValidForVault();
+    }
 
     OtusController.VaultStrategy[] memory vaultStrategies = otusController._getStrategies(
       address(this)
@@ -280,16 +297,14 @@ contract OtusVault is BaseVault {
 
     for (uint i = 0; i < vaultStrategies.length; i++) {
       if (
-        vaultStrategies[i].strategyType == _type &&
+        vaultStrategies[i].strategyType == _etype &&
         vaultStrategies[i].strategyInstance != address(0)
       ) {
-        strategy = vaultStrategies[i].strategyInstance;
-      } else {
-        revert StrategyTypeNotValidForVault();
+        address strategy = vaultStrategies[i].strategyInstance;
+        strategies[_etype] = strategy;
+        emit VaultStrategyUpdated(address(this), _etype, strategy);
       }
     }
-
-    emit VaultStrategyUpdated(address(this), _type, strategy);
   }
 
   /************************************************

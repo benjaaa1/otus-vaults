@@ -85,10 +85,26 @@ require()
 
 ## Version name matches first char of Chain name
 
+- Base
+
+-- Bacchus (V1.0.0.alpha1)
+-- Brontes (V2.0.0)
+
 - Optimism
 
--- o
+-- Orion (V1.0.0.alpha1)
+-- Orestes (V2.0.0)
+-- Okeanos (V3.0.0)
 
 - Arbitrum
 
--- a
+-- Alcmene (V1.0.0.alpha1)
+-- Aiolos (V2.0.0)
+-- Agamemnon (V3.0.0)
+-- Aoide
+
+UI needs to move away from these branches
+Graph needs to move away from
+Services
+
+-->

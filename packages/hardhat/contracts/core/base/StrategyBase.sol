@@ -59,6 +59,14 @@ abstract contract StrategyBase is OwnableUpgradeable {
     _;
   }
 
+  modifier onlyController() {
+    require(msg.sender == address(otusController), "NOT_CONTROLLER");
+    _;
+  }
+
+  /************************************************
+   *  Initialize
+   ***********************************************/
   /**
    * @dev
    * @param _owner _owner address

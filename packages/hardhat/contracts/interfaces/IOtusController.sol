@@ -7,7 +7,6 @@ interface IOtusController {
     returns (
       bytes32[] memory _markets,
       address[] memory _lyraBases,
-      address[] memory _futuresMarkets,
       address[] memory _lyraOptionMarkets
     );
 }

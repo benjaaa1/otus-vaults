@@ -28,6 +28,7 @@ async function main() {
   await mintQuoteAndBaseTokens();
   console.log("✅  Minted Base and Quote Tokens to User.");
 }
+
 main()
   .then(() => process.exit(0))
   .catch((error) => {
